@@ -1,0 +1,1030 @@
+# Medium Profile Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Medium tenant profile architecture for growing businesses
+# - Senior DevOps Engineer: Scalable infrastructure and deployment automation
+# - Platform Engineer: Balanced performance and cost optimization
+# - Security Engineer: Enhanced security controls and compliance features
+# - Product Manager: Feature expansion for medium business requirements
+
+# ==========================================
+# MEDIUM PROFILE CONFIGURATION
+# ==========================================
+
+medium:
+  # Profile Metadata
+  metadata:
+    name: "medium"
+    description: "Medium profile for growing businesses and teams (50-500 users)"
+    version: "1.0.0"
+    profile_type: "medium"
+    tier: "professional"
+    
+    # Profile Labels
+    labels:
+      profile: "medium"
+      tier: "professional"
+      target_users: "50-500"
+      deployment_scale: "multi-node"
+      cost_tier: "balanced"
+      managed_by: "tenant-templates"
+    
+    # Profile Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Balanced profile for growing businesses and medium teams"
+      recommended_for: "Growing startups, medium businesses, departmental deployments"
+      max_concurrent_users: "500"
+      max_data_storage: "100GB"
+      sla_tier: "99.5%"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # API Service
+      api_service:
+        replicas: ${MEDIUM_API_REPLICAS:-2}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${MEDIUM_API_CPU_REQUEST:-250m}"
+            memory: "${MEDIUM_API_MEMORY_REQUEST:-512Mi}"
+          limits:
+            cpu: "${MEDIUM_API_CPU_LIMIT:-1000m}"
+            memory: "${MEDIUM_API_MEMORY_LIMIT:-2Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${MEDIUM_API_HPA_ENABLED:-true}
+          min_replicas: ${MEDIUM_API_HPA_MIN:-2}
+          max_replicas: ${MEDIUM_API_HPA_MAX:-8}
+          target_cpu_utilization: ${MEDIUM_API_HPA_CPU_TARGET:-70}
+          target_memory_utilization: ${MEDIUM_API_HPA_MEMORY_TARGET:-80}
+      
+      # Frontend Service
+      frontend_service:
+        replicas: ${MEDIUM_FRONTEND_REPLICAS:-2}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${MEDIUM_FRONTEND_CPU_REQUEST:-100m}"
+            memory: "${MEDIUM_FRONTEND_MEMORY_REQUEST:-256Mi}"
+          limits:
+            cpu: "${MEDIUM_FRONTEND_CPU_LIMIT:-500m}"
+            memory: "${MEDIUM_FRONTEND_MEMORY_LIMIT:-1Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${MEDIUM_FRONTEND_HPA_ENABLED:-true}
+          min_replicas: ${MEDIUM_FRONTEND_HPA_MIN:-2}
+          max_replicas: ${MEDIUM_FRONTEND_HPA_MAX:-5}
+          target_cpu_utilization: ${MEDIUM_FRONTEND_HPA_CPU_TARGET:-70}
+      
+      # ML Service
+      ml_service:
+        enabled: ${MEDIUM_ML_SERVICE_ENABLED:-true}
+        replicas: ${MEDIUM_ML_REPLICAS:-1}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${MEDIUM_ML_CPU_REQUEST:-500m}"
+            memory: "${MEDIUM_ML_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${MEDIUM_ML_CPU_LIMIT:-2000m}"
+            memory: "${MEDIUM_ML_MEMORY_LIMIT:-4Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${MEDIUM_ML_HPA_ENABLED:-true}
+          min_replicas: ${MEDIUM_ML_HPA_MIN:-1}
+          max_replicas: ${MEDIUM_ML_HPA_MAX:-3}
+          target_cpu_utilization: ${MEDIUM_ML_HPA_CPU_TARGET:-75}
+      
+      # Background Workers
+      background_workers:
+        enabled: ${MEDIUM_WORKERS_ENABLED:-true}
+        replicas: ${MEDIUM_WORKERS_REPLICAS:-2}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${MEDIUM_WORKERS_CPU_REQUEST:-200m}"
+            memory: "${MEDIUM_WORKERS_MEMORY_REQUEST:-512Mi}"
+          limits:
+            cpu: "${MEDIUM_WORKERS_CPU_LIMIT:-1000m}"
+            memory: "${MEDIUM_WORKERS_MEMORY_LIMIT:-2Gi}"
+    
+    # Storage Resources
+    storage:
+      # Database Storage
+      database:
+        enabled: ${MEDIUM_DB_STORAGE_ENABLED:-true}
+        size: "${MEDIUM_DB_STORAGE_SIZE:-50Gi}"
+        storage_class: "${MEDIUM_DB_STORAGE_CLASS:-ssd}"
+        
+        # Backup Configuration
+        backup:
+          enabled: ${MEDIUM_DB_BACKUP_ENABLED:-true}
+          retention_days: ${MEDIUM_DB_BACKUP_RETENTION:-30}
+          schedule: "${MEDIUM_DB_BACKUP_SCHEDULE:-0 2 * * *}"  # Daily at 2 AM
+          cross_region: ${MEDIUM_DB_CROSS_REGION_BACKUP:-false}
+      
+      # Application Storage
+      application:
+        enabled: ${MEDIUM_APP_STORAGE_ENABLED:-true}
+        size: "${MEDIUM_APP_STORAGE_SIZE:-20Gi}"
+        storage_class: "${MEDIUM_APP_STORAGE_CLASS:-ssd}"
+      
+      # Log Storage
+      logs:
+        enabled: ${MEDIUM_LOG_STORAGE_ENABLED:-true}
+        size: "${MEDIUM_LOG_STORAGE_SIZE:-10Gi}"
+        retention_days: ${MEDIUM_LOG_RETENTION:-30}
+        storage_class: "${MEDIUM_LOG_STORAGE_CLASS:-standard}"
+      
+      # Cache Storage
+      cache:
+        enabled: ${MEDIUM_CACHE_STORAGE_ENABLED:-true}
+        size: "${MEDIUM_CACHE_STORAGE_SIZE:-5Gi}"
+        storage_class: "${MEDIUM_CACHE_STORAGE_CLASS:-ssd}"
+
+  # Database Configuration
+  database:
+    # PostgreSQL Configuration
+    postgresql:
+      # High Availability
+      high_availability:
+        enabled: ${MEDIUM_DB_HA_ENABLED:-true}
+        primary_replicas: ${MEDIUM_DB_PRIMARY_REPLICAS:-1}
+        read_replicas: ${MEDIUM_DB_READ_REPLICAS:-2}
+        
+        # Failover Configuration
+        failover:
+          automatic: ${MEDIUM_DB_AUTO_FAILOVER:-true}
+          timeout: ${MEDIUM_DB_FAILOVER_TIMEOUT:-30}
+      
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${MEDIUM_DB_CPU_REQUEST:-500m}"
+          memory: "${MEDIUM_DB_MEMORY_REQUEST:-1Gi}"
+        limits:
+          cpu: "${MEDIUM_DB_CPU_LIMIT:-2000m}"
+          memory: "${MEDIUM_DB_MEMORY_LIMIT:-4Gi}"
+      
+      # Connection Pool
+      connection_pool:
+        min_connections: ${MEDIUM_DB_POOL_MIN:-5}
+        max_connections: ${MEDIUM_DB_POOL_MAX:-50}
+        idle_timeout: ${MEDIUM_DB_POOL_IDLE_TIMEOUT:-300}
+        acquire_timeout: ${MEDIUM_DB_POOL_ACQUIRE_TIMEOUT:-30}
+      
+      # Storage Configuration
+      storage:
+        size: "${MEDIUM_DB_STORAGE_SIZE:-50Gi}"
+        storage_class: "${MEDIUM_DB_STORAGE_CLASS:-ssd}"
+        
+        # IOPS Configuration
+        iops:
+          provisioned: ${MEDIUM_DB_PROVISIONED_IOPS:-3000}
+          burst: ${MEDIUM_DB_BURST_IOPS:-6000}
+      
+      # Performance Tuning
+      performance:
+        shared_buffers: "${MEDIUM_DB_SHARED_BUFFERS:-256MB}"
+        effective_cache_size: "${MEDIUM_DB_EFFECTIVE_CACHE_SIZE:-1GB}"
+        work_mem: "${MEDIUM_DB_WORK_MEM:-4MB}"
+        maintenance_work_mem: "${MEDIUM_DB_MAINTENANCE_WORK_MEM:-64MB}"
+        
+        # Query Optimization
+        query_optimization:
+          random_page_cost: ${MEDIUM_DB_RANDOM_PAGE_COST:-1.1}
+          seq_page_cost: ${MEDIUM_DB_SEQ_PAGE_COST:-1.0}
+          cpu_tuple_cost: ${MEDIUM_DB_CPU_TUPLE_COST:-0.01}
+          
+        # WAL Configuration
+        wal:
+          wal_buffers: "${MEDIUM_DB_WAL_BUFFERS:-16MB}"
+          checkpoint_completion_target: ${MEDIUM_DB_CHECKPOINT_COMPLETION_TARGET:-0.7}
+          max_wal_size: "${MEDIUM_DB_MAX_WAL_SIZE:-1GB}"
+    
+    # Redis Configuration
+    redis:
+      enabled: ${MEDIUM_REDIS_ENABLED:-true}
+      
+      # High Availability
+      high_availability:
+        enabled: ${MEDIUM_REDIS_HA_ENABLED:-true}
+        mode: "${MEDIUM_REDIS_HA_MODE:-sentinel}"  # sentinel, cluster
+        
+        # Sentinel Configuration
+        sentinel:
+          enabled: ${MEDIUM_REDIS_SENTINEL_ENABLED:-true}
+          replicas: ${MEDIUM_REDIS_SENTINEL_REPLICAS:-3}
+          quorum: ${MEDIUM_REDIS_SENTINEL_QUORUM:-2}
+      
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${MEDIUM_REDIS_CPU_REQUEST:-100m}"
+          memory: "${MEDIUM_REDIS_MEMORY_REQUEST:-256Mi}"
+        limits:
+          cpu: "${MEDIUM_REDIS_CPU_LIMIT:-500m}"
+          memory: "${MEDIUM_REDIS_MEMORY_LIMIT:-1Gi}"
+      
+      # Memory Configuration
+      memory:
+        maxmemory: "${MEDIUM_REDIS_MAXMEMORY:-512MB}"
+        maxmemory_policy: "${MEDIUM_REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+      
+      # Persistence
+      persistence:
+        enabled: ${MEDIUM_REDIS_PERSISTENCE_ENABLED:-true}
+        
+        # AOF Configuration
+        aof:
+          enabled: ${MEDIUM_REDIS_AOF_ENABLED:-true}
+          appendfsync: "${MEDIUM_REDIS_AOF_APPENDFSYNC:-everysec}"
+          
+        # RDB Configuration
+        rdb:
+          enabled: ${MEDIUM_REDIS_RDB_ENABLED:-true}
+          save_points:
+            - "900 1"    # save after 900 sec if at least 1 key changed
+            - "300 10"   # save after 300 sec if at least 10 keys changed
+            - "60 10000" # save after 60 sec if at least 10000 keys changed
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # JWT Configuration
+      jwt:
+        algorithm: "${MEDIUM_JWT_ALGORITHM:-RS256}"
+        access_token_expire: ${MEDIUM_JWT_ACCESS_TOKEN_EXPIRE:-1800}  # 30 minutes
+        refresh_token_expire: ${MEDIUM_JWT_REFRESH_TOKEN_EXPIRE:-86400}  # 24 hours
+        
+        # Security Features
+        features:
+          token_blacklist: ${MEDIUM_JWT_TOKEN_BLACKLIST:-true}
+          token_rotation: ${MEDIUM_JWT_TOKEN_ROTATION:-true}
+          secure_cookies: ${MEDIUM_JWT_SECURE_COOKIES:-true}
+          httponly_cookies: ${MEDIUM_JWT_HTTPONLY_COOKIES:-true}
+        
+        # Key Management
+        key_management:
+          rotation_enabled: ${MEDIUM_JWT_KEY_ROTATION_ENABLED:-true}
+          rotation_interval: ${MEDIUM_JWT_KEY_ROTATION_INTERVAL:-604800}  # 7 days
+      
+      # OAuth2 Configuration
+      oauth2:
+        enabled: ${MEDIUM_OAUTH2_ENABLED:-true}
+        
+        # Enhanced OAuth2 Settings
+        enhanced:
+          spotify:
+            enabled: ${MEDIUM_SPOTIFY_OAUTH_ENABLED:-true}
+          google:
+            enabled: ${MEDIUM_GOOGLE_OAUTH_ENABLED:-true}
+          github:
+            enabled: ${MEDIUM_GITHUB_OAUTH_ENABLED:-false}
+        
+        # Multi-factor Authentication
+        mfa:
+          enabled: ${MEDIUM_MFA_ENABLED:-true}
+          enforcement: "${MEDIUM_MFA_ENFORCEMENT:-optional}"
+          methods:
+            - "totp"
+            - "email"
+            - "sms"
+          
+          # Backup Codes
+          backup_codes:
+            enabled: ${MEDIUM_MFA_BACKUP_CODES_ENABLED:-true}
+            count: ${MEDIUM_MFA_BACKUP_CODES_COUNT:-8}
+    
+    # Authorization
+    authorization:
+      # Enhanced RBAC
+      rbac:
+        enabled: ${MEDIUM_RBAC_ENABLED:-true}
+        strict_mode: ${MEDIUM_RBAC_STRICT_MODE:-true}
+        
+        # Enhanced Roles
+        roles:
+          - name: "admin"
+            permissions: ["admin:*"]
+          - name: "manager"
+            permissions: ["user:*", "team:*"]
+          - name: "user"
+            permissions: ["user:read", "user:write"]
+          - name: "readonly"
+            permissions: ["user:read"]
+          - name: "api_user"
+            permissions: ["api:read", "api:write"]
+        
+        # Role Hierarchies
+        role_hierarchies:
+          enabled: ${MEDIUM_RBAC_HIERARCHIES_ENABLED:-true}
+          
+      # Policy Enforcement
+      policy_enforcement:
+        enabled: ${MEDIUM_POLICY_ENFORCEMENT_ENABLED:-true}
+        audit_logs: ${MEDIUM_POLICY_AUDIT_LOGS:-true}
+    
+    # Enhanced Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${MEDIUM_DATA_ENCRYPTION_ENABLED:-true}
+        algorithm: "${MEDIUM_ENCRYPTION_ALGORITHM:-AES-256-GCM}"
+        
+        # Field-level Encryption
+        field_level:
+          enabled: ${MEDIUM_FIELD_LEVEL_ENCRYPTION_ENABLED:-true}
+          fields:
+            - "email"
+            - "phone"
+            - "address"
+        
+      # TLS Configuration
+      tls:
+        enabled: ${MEDIUM_TLS_ENABLED:-true}
+        version: "${MEDIUM_TLS_VERSION:-TLSv1.3}"
+        verify: ${MEDIUM_TLS_VERIFY:-true}
+        
+        # Certificate Management
+        certificates:
+          auto_renewal: ${MEDIUM_CERT_AUTO_RENEWAL:-true}
+          renewal_threshold: ${MEDIUM_CERT_RENEWAL_THRESHOLD:-30}
+          issuer: "${MEDIUM_CERT_ISSUER:-letsencrypt}"
+    
+    # Security Monitoring
+    security_monitoring:
+      enabled: ${MEDIUM_SECURITY_MONITORING_ENABLED:-true}
+      
+      # Vulnerability Scanning
+      vulnerability_scanning:
+        enabled: ${MEDIUM_VULN_SCANNING_ENABLED:-true}
+        schedule: "${MEDIUM_VULN_SCAN_SCHEDULE:-0 2 * * 0}"  # Weekly on Sunday
+        
+      # Intrusion Detection
+      intrusion_detection:
+        enabled: ${MEDIUM_INTRUSION_DETECTION_ENABLED:-true}
+        
+        # Anomaly Detection
+        anomaly_detection:
+          enabled: ${MEDIUM_ANOMALY_DETECTION_ENABLED:-true}
+          sensitivity: "${MEDIUM_ANOMALY_SENSITIVITY:-medium}"
+
+  # Monitoring Configuration
+  monitoring:
+    # Enhanced Metrics
+    metrics:
+      enabled: ${MEDIUM_METRICS_ENABLED:-true}
+      
+      # Prometheus Configuration
+      prometheus:
+        enabled: ${MEDIUM_PROMETHEUS_ENABLED:-true}
+        retention: "${MEDIUM_PROMETHEUS_RETENTION:-15d}"
+        
+        # High Availability
+        high_availability:
+          enabled: ${MEDIUM_PROMETHEUS_HA_ENABLED:-true}
+          replicas: ${MEDIUM_PROMETHEUS_REPLICAS:-2}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${MEDIUM_PROMETHEUS_CPU_REQUEST:-200m}"
+            memory: "${MEDIUM_PROMETHEUS_MEMORY_REQUEST:-512Mi}"
+          limits:
+            cpu: "${MEDIUM_PROMETHEUS_CPU_LIMIT:-1000m}"
+            memory: "${MEDIUM_PROMETHEUS_MEMORY_LIMIT:-2Gi}"
+        
+        # Storage
+        storage:
+          enabled: ${MEDIUM_PROMETHEUS_STORAGE_ENABLED:-true}
+          size: "${MEDIUM_PROMETHEUS_STORAGE_SIZE:-20Gi}"
+          storage_class: "${MEDIUM_PROMETHEUS_STORAGE_CLASS:-ssd}"
+        
+        # Enhanced Alerting
+        alerting:
+          enabled: ${MEDIUM_PROMETHEUS_ALERTING_ENABLED:-true}
+          alertmanager_url: "${MEDIUM_ALERTMANAGER_URL:-http://alertmanager:9093}"
+          
+          # Alert Rules
+          alert_rules:
+            - name: "high_cpu_usage"
+              expression: "rate(cpu_usage_total[5m]) > 0.8"
+              for: "5m"
+              severity: "warning"
+              
+            - name: "high_memory_usage"
+              expression: "memory_usage_percent > 85"
+              for: "5m"
+              severity: "warning"
+              
+            - name: "high_error_rate"
+              expression: "rate(http_requests_total{status=~'5..'}[5m]) > 0.05"
+              for: "5m"
+              severity: "critical"
+    
+    # Enhanced Logging
+    logging:
+      level: "${MEDIUM_LOG_LEVEL:-INFO}"
+      format: "${MEDIUM_LOG_FORMAT:-json}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${MEDIUM_LOG_CONSOLE:-true}
+          colorize: ${MEDIUM_LOG_COLORIZE:-false}
+        
+        file:
+          enabled: ${MEDIUM_LOG_FILE:-true}
+          path: "${MEDIUM_LOG_FILE_PATH:-/var/log/app/medium.log}"
+          rotation: ${MEDIUM_LOG_ROTATION:-true}
+          max_size: "${MEDIUM_LOG_MAX_SIZE:-100MB}"
+          retention: ${MEDIUM_LOG_RETENTION:-30}
+        
+        elasticsearch:
+          enabled: ${MEDIUM_LOG_ELASTICSEARCH:-true}
+          hosts:
+            - "${MEDIUM_ELASTICSEARCH_HOST:-elasticsearch:9200}"
+          index: "${MEDIUM_LOG_INDEX:-medium-logs}"
+          
+          # Index Management
+          index_management:
+            enabled: ${MEDIUM_LOG_INDEX_MANAGEMENT_ENABLED:-true}
+            rollover_size: "${MEDIUM_LOG_ROLLOVER_SIZE:-1GB}"
+            retention_days: ${MEDIUM_LOG_INDEX_RETENTION:-30}
+    
+    # Distributed Tracing
+    tracing:
+      enabled: ${MEDIUM_TRACING_ENABLED:-true}
+      
+      # Jaeger Configuration
+      jaeger:
+        enabled: ${MEDIUM_JAEGER_ENABLED:-true}
+        endpoint: "${MEDIUM_JAEGER_ENDPOINT:-http://jaeger-collector:14268/api/traces}"
+        sampling_rate: ${MEDIUM_JAEGER_SAMPLING_RATE:-0.1}  # 10% sampling
+    
+    # Enhanced Health Checks
+    health_checks:
+      enabled: ${MEDIUM_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Health Check Configuration
+      checks:
+        database:
+          enabled: ${MEDIUM_HEALTH_CHECK_DB:-true}
+          timeout: ${MEDIUM_HEALTH_CHECK_DB_TIMEOUT:-5}
+          interval: ${MEDIUM_HEALTH_CHECK_DB_INTERVAL:-30}
+          failure_threshold: ${MEDIUM_HEALTH_CHECK_DB_FAILURE_THRESHOLD:-3}
+        
+        redis:
+          enabled: ${MEDIUM_HEALTH_CHECK_REDIS:-true}
+          timeout: ${MEDIUM_HEALTH_CHECK_REDIS_TIMEOUT:-3}
+          interval: ${MEDIUM_HEALTH_CHECK_REDIS_INTERVAL:-30}
+          failure_threshold: ${MEDIUM_HEALTH_CHECK_REDIS_FAILURE_THRESHOLD:-3}
+        
+        external_apis:
+          enabled: ${MEDIUM_HEALTH_CHECK_EXTERNAL_APIS:-true}
+          timeout: ${MEDIUM_HEALTH_CHECK_EXTERNAL_TIMEOUT:-10}
+          interval: ${MEDIUM_HEALTH_CHECK_EXTERNAL_INTERVAL:-60}
+          failure_threshold: ${MEDIUM_HEALTH_CHECK_EXTERNAL_FAILURE_THRESHOLD:-5}
+        
+        # Deep Health Checks
+        deep_health_checks:
+          enabled: ${MEDIUM_DEEP_HEALTH_CHECKS_ENABLED:-true}
+          interval: ${MEDIUM_DEEP_HEALTH_CHECK_INTERVAL:-300}
+
+  # Application Features
+  application_features:
+    # Enhanced Core Features
+    core:
+      # User Management
+      user_management:
+        enabled: ${MEDIUM_USER_MANAGEMENT_ENABLED:-true}
+        max_users: ${MEDIUM_MAX_USERS:-500}
+        
+        # Enhanced User Features
+        features:
+          profile_management: ${MEDIUM_USER_PROFILE_MANAGEMENT:-true}
+          password_reset: ${MEDIUM_USER_PASSWORD_RESET:-true}
+          email_verification: ${MEDIUM_USER_EMAIL_VERIFICATION:-true}
+          account_lockout: ${MEDIUM_USER_ACCOUNT_LOCKOUT:-true}
+          session_management: ${MEDIUM_USER_SESSION_MANAGEMENT:-true}
+          audit_trail: ${MEDIUM_USER_AUDIT_TRAIL:-true}
+      
+      # Enhanced Spotify Integration
+      spotify_integration:
+        enabled: ${MEDIUM_SPOTIFY_INTEGRATION_ENABLED:-true}
+        
+        # Enhanced Spotify Features
+        features:
+          playlist_access: ${MEDIUM_SPOTIFY_PLAYLIST_ACCESS:-true}
+          track_analysis: ${MEDIUM_SPOTIFY_TRACK_ANALYSIS:-true}
+          recommendations: ${MEDIUM_SPOTIFY_RECOMMENDATIONS:-true}
+          artist_insights: ${MEDIUM_SPOTIFY_ARTIST_INSIGHTS:-true}
+          playlist_generation: ${MEDIUM_SPOTIFY_PLAYLIST_GENERATION:-true}
+      
+      # Enhanced File Processing
+      file_processing:
+        enabled: ${MEDIUM_FILE_PROCESSING_ENABLED:-true}
+        
+        # Enhanced Processing Limits
+        limits:
+          max_file_size: "${MEDIUM_MAX_FILE_SIZE:-50MB}"
+          max_files_per_user: ${MEDIUM_MAX_FILES_PER_USER:-100}
+          max_processing_time: ${MEDIUM_MAX_PROCESSING_TIME:-300}  # 5 minutes
+          concurrent_processing: ${MEDIUM_CONCURRENT_PROCESSING:-5}
+    
+    # Advanced Features
+    advanced:
+      # AI/ML Features
+      ai_ml:
+        enabled: ${MEDIUM_AI_ML_ENABLED:-true}
+        
+        # AI/ML Features
+        features:
+          audio_analysis: ${MEDIUM_AUDIO_ANALYSIS:-true}
+          music_generation: ${MEDIUM_MUSIC_GENERATION:-false}
+          recommendation_engine: ${MEDIUM_RECOMMENDATION_ENGINE:-true}
+          sentiment_analysis: ${MEDIUM_SENTIMENT_ANALYSIS:-true}
+          audio_classification: ${MEDIUM_AUDIO_CLASSIFICATION:-true}
+      
+      # Analytics
+      analytics:
+        enabled: ${MEDIUM_ANALYTICS_ENABLED:-true}
+        
+        # Analytics Features
+        features:
+          usage_tracking: ${MEDIUM_USAGE_TRACKING:-true}
+          performance_metrics: ${MEDIUM_PERFORMANCE_METRICS:-true}
+          business_intelligence: ${MEDIUM_BUSINESS_INTELLIGENCE:-true}
+          custom_dashboards: ${MEDIUM_CUSTOM_DASHBOARDS:-true}
+          data_export: ${MEDIUM_DATA_EXPORT:-true}
+      
+      # Collaboration
+      collaboration:
+        enabled: ${MEDIUM_COLLABORATION_ENABLED:-true}
+        
+        # Collaboration Features
+        features:
+          team_workspaces: ${MEDIUM_TEAM_WORKSPACES:-true}
+          sharing: ${MEDIUM_SHARING:-true}
+          comments: ${MEDIUM_COMMENTS:-true}
+          real_time_collaboration: ${MEDIUM_REAL_TIME_COLLABORATION:-true}
+          version_control: ${MEDIUM_VERSION_CONTROL:-true}
+      
+      # Workflow Automation
+      workflow_automation:
+        enabled: ${MEDIUM_WORKFLOW_AUTOMATION_ENABLED:-true}
+        
+        # Automation Features
+        features:
+          scheduled_tasks: ${MEDIUM_SCHEDULED_TASKS:-true}
+          triggers_and_actions: ${MEDIUM_TRIGGERS_AND_ACTIONS:-true}
+          batch_processing: ${MEDIUM_BATCH_PROCESSING:-true}
+          notifications: ${MEDIUM_NOTIFICATIONS:-true}
+
+  # Networking Configuration
+  networking:
+    # Enhanced Service Configuration
+    services:
+      # API Service
+      api_service:
+        type: "ClusterIP"
+        port: 8000
+        target_port: 8000
+        
+        # Load Balancer
+        load_balancer:
+          enabled: ${MEDIUM_API_LB_ENABLED:-true}
+          algorithm: "${MEDIUM_API_LB_ALGORITHM:-round_robin}"
+          health_check:
+            enabled: ${MEDIUM_API_LB_HEALTH_CHECK:-true}
+            path: "/health"
+            interval: ${MEDIUM_API_LB_HEALTH_CHECK_INTERVAL:-30}
+      
+      # Frontend Service
+      frontend_service:
+        type: "ClusterIP"
+        port: 3000
+        target_port: 3000
+        
+        # CDN Configuration
+        cdn:
+          enabled: ${MEDIUM_FRONTEND_CDN_ENABLED:-true}
+          provider: "${MEDIUM_CDN_PROVIDER:-cloudflare}"
+    
+    # Enhanced Ingress Configuration
+    ingress:
+      enabled: ${MEDIUM_INGRESS_ENABLED:-true}
+      
+      # Enhanced Ingress Configuration
+      configuration:
+        class: "${MEDIUM_INGRESS_CLASS:-nginx}"
+        
+        # TLS Configuration
+        tls:
+          enabled: ${MEDIUM_INGRESS_TLS_ENABLED:-true}
+          wildcard_certificate: ${MEDIUM_WILDCARD_CERT_ENABLED:-true}
+          
+        # Rate Limiting
+        rate_limiting:
+          enabled: ${MEDIUM_INGRESS_RATE_LIMITING_ENABLED:-true}
+          requests_per_minute: ${MEDIUM_INGRESS_RATE_LIMIT:-300}
+          
+        # Rules
+        rules:
+          - host: "${MEDIUM_API_HOST:-api-medium.spotify-ai-agent.com}"
+            paths:
+              - path: "/"
+                service: "api-service"
+                port: 8000
+          
+          - host: "${MEDIUM_FRONTEND_HOST:-medium.spotify-ai-agent.com}"
+            paths:
+              - path: "/"
+                service: "frontend-service"
+                port: 3000
+    
+    # Network Policies
+    network_policies:
+      enabled: ${MEDIUM_NETWORK_POLICIES_ENABLED:-true}
+      
+      # Default Deny
+      default_deny:
+        enabled: ${MEDIUM_DEFAULT_DENY_ENABLED:-true}
+        
+      # Custom Policies
+      policies:
+        - name: "api-to-db"
+          from_selector:
+            matchLabels:
+              app: "api-service"
+          to_selector:
+            matchLabels:
+              app: "database"
+          ports:
+            - port: 5432
+        
+        - name: "api-to-redis"
+          from_selector:
+            matchLabels:
+              app: "api-service"
+          to_selector:
+            matchLabels:
+              app: "redis"
+          ports:
+            - port: 6379
+
+  # Performance Configuration
+  performance:
+    # Enhanced Caching
+    caching:
+      enabled: ${MEDIUM_CACHING_ENABLED:-true}
+      
+      # Redis Caching
+      redis_cache:
+        enabled: ${MEDIUM_REDIS_CACHE_ENABLED:-true}
+        ttl: ${MEDIUM_REDIS_CACHE_TTL:-3600}  # 1 hour
+        max_connections: ${MEDIUM_REDIS_CACHE_MAX_CONNECTIONS:-30}
+      
+      # Memory Caching
+      memory_cache:
+        enabled: ${MEDIUM_MEMORY_CACHE_ENABLED:-true}
+        size: "${MEDIUM_MEMORY_CACHE_SIZE:-256MB}"
+      
+      # CDN Caching
+      cdn:
+        enabled: ${MEDIUM_CDN_ENABLED:-true}
+        provider: "${MEDIUM_CDN_PROVIDER:-cloudflare}"
+        ttl: ${MEDIUM_CDN_TTL:-86400}  # 24 hours
+    
+    # Enhanced Connection Pooling
+    connection_pooling:
+      # Database Pool
+      database_pool:
+        min_connections: ${MEDIUM_DB_POOL_MIN:-5}
+        max_connections: ${MEDIUM_DB_POOL_MAX:-50}
+        acquire_timeout: ${MEDIUM_DB_POOL_ACQUIRE_TIMEOUT:-30}
+        idle_timeout: ${MEDIUM_DB_POOL_IDLE_TIMEOUT:-300}
+      
+      # HTTP Pool
+      http_pool:
+        max_connections: ${MEDIUM_HTTP_POOL_MAX:-100}
+        max_connections_per_host: ${MEDIUM_HTTP_POOL_MAX_PER_HOST:-20}
+        keepalive_timeout: ${MEDIUM_HTTP_POOL_KEEPALIVE_TIMEOUT:-30}
+    
+    # Performance Optimization
+    optimization:
+      # Compression
+      compression:
+        enabled: ${MEDIUM_COMPRESSION_ENABLED:-true}
+        algorithm: "${MEDIUM_COMPRESSION_ALGORITHM:-gzip}"
+        level: ${MEDIUM_COMPRESSION_LEVEL:-6}
+        
+      # Database Query Optimization
+      database_optimization:
+        enabled: ${MEDIUM_DB_OPTIMIZATION_ENABLED:-true}
+        query_cache: ${MEDIUM_DB_QUERY_CACHE:-true}
+        prepared_statements: ${MEDIUM_DB_PREPARED_STATEMENTS:-true}
+        connection_pooling: ${MEDIUM_DB_CONNECTION_POOLING:-true}
+
+  # External Services Configuration
+  external_services:
+    # Enhanced Spotify API
+    spotify_api:
+      enabled: ${MEDIUM_SPOTIFY_API_ENABLED:-true}
+      
+      # Enhanced Configuration
+      configuration:
+        timeout: ${MEDIUM_SPOTIFY_TIMEOUT:-30}
+        rate_limit: ${MEDIUM_SPOTIFY_RATE_LIMIT:-100}
+        
+        # Circuit Breaker
+        circuit_breaker:
+          enabled: ${MEDIUM_SPOTIFY_CIRCUIT_BREAKER_ENABLED:-true}
+          failure_threshold: ${MEDIUM_SPOTIFY_FAILURE_THRESHOLD:-5}
+          reset_timeout: ${MEDIUM_SPOTIFY_RESET_TIMEOUT:-30}
+        
+        # Retry Configuration
+        retry:
+          enabled: ${MEDIUM_SPOTIFY_RETRY_ENABLED:-true}
+          max_attempts: ${MEDIUM_SPOTIFY_MAX_ATTEMPTS:-3}
+          backoff_factor: ${MEDIUM_SPOTIFY_BACKOFF_FACTOR:-2}
+    
+    # ML Services
+    ml_services:
+      enabled: ${MEDIUM_ML_SERVICES_ENABLED:-true}
+      
+      # TensorFlow Serving
+      tensorflow_serving:
+        enabled: ${MEDIUM_TF_SERVING_ENABLED:-true}
+        endpoint: "${MEDIUM_TF_SERVING_ENDPOINT:-http://tensorflow-serving:8501}"
+        
+        # Model Configuration
+        models:
+          - name: "music_genre_classifier"
+            version: "${MEDIUM_GENRE_MODEL_VERSION:-1}"
+          - name: "audio_feature_extractor"
+            version: "${MEDIUM_AUDIO_MODEL_VERSION:-1}"
+          - name: "recommendation_engine"
+            version: "${MEDIUM_RECOMMENDATION_MODEL_VERSION:-1}"
+      
+      # Spleeter Service
+      spleeter:
+        enabled: ${MEDIUM_SPLEETER_ENABLED:-true}
+        endpoint: "${MEDIUM_SPLEETER_ENDPOINT:-http://spleeter-service:8080}"
+        
+        # Configuration
+        configuration:
+          models:
+            - "2stems-16kHz"
+            - "4stems-16kHz"
+            - "5stems-16kHz"
+          timeout: ${MEDIUM_SPLEETER_TIMEOUT:-300}  # 5 minutes
+          max_file_size: "${MEDIUM_SPLEETER_MAX_FILE_SIZE:-100MB}"
+    
+    # Third-party Integrations
+    third_party:
+      enabled: ${MEDIUM_THIRD_PARTY_ENABLED:-true}
+      
+      # Integrations
+      integrations:
+        # Analytics
+        google_analytics:
+          enabled: ${MEDIUM_GOOGLE_ANALYTICS_ENABLED:-true}
+          
+        # Email Service
+        sendgrid:
+          enabled: ${MEDIUM_SENDGRID_ENABLED:-true}
+          
+        # Payment Processing
+        stripe:
+          enabled: ${MEDIUM_STRIPE_ENABLED:-false}
+          
+        # Cloud Storage
+        aws_s3:
+          enabled: ${MEDIUM_AWS_S3_ENABLED:-true}
+
+  # Backup and Recovery
+  backup_recovery:
+    # Enhanced Backup
+    backup:
+      enabled: ${MEDIUM_BACKUP_ENABLED:-true}
+      
+      # Backup Configuration
+      configuration:
+        frequency: "${MEDIUM_BACKUP_FREQUENCY:-daily}"
+        retention: ${MEDIUM_BACKUP_RETENTION:-30}  # 30 days
+        storage_type: "${MEDIUM_BACKUP_STORAGE_TYPE:-cloud}"
+        
+        # Backup Types
+        types:
+          database: ${MEDIUM_BACKUP_DATABASE:-true}
+          application_data: ${MEDIUM_BACKUP_APP_DATA:-true}
+          configuration: ${MEDIUM_BACKUP_CONFIG:-true}
+          user_data: ${MEDIUM_BACKUP_USER_DATA:-true}
+        
+        # Cross-region Backup
+        cross_region:
+          enabled: ${MEDIUM_CROSS_REGION_BACKUP_ENABLED:-false}
+          regions:
+            - "${MEDIUM_BACKUP_REGION_1:-us-west-2}"
+    
+    # Enhanced Recovery
+    recovery:
+      enabled: ${MEDIUM_RECOVERY_ENABLED:-true}
+      
+      # Recovery Options
+      options:
+        point_in_time_recovery: ${MEDIUM_PITR_ENABLED:-true}
+        full_recovery: ${MEDIUM_FULL_RECOVERY_ENABLED:-true}
+        partial_recovery: ${MEDIUM_PARTIAL_RECOVERY_ENABLED:-true}
+        
+        # Recovery Testing
+        recovery_testing:
+          enabled: ${MEDIUM_RECOVERY_TESTING_ENABLED:-true}
+          schedule: "${MEDIUM_RECOVERY_TEST_SCHEDULE:-0 3 * * 0}"  # Weekly
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      resources:
+        compute:
+          api_service:
+            replicas: 1
+            auto_scaling:
+              enabled: false
+          
+          ml_service:
+            enabled: false
+      
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "3d"
+        
+        logging:
+          level: "DEBUG"
+      
+      application_features:
+        advanced:
+          ai_ml:
+            enabled: false
+    
+    staging:
+      resources:
+        compute:
+          api_service:
+            replicas: 2
+            auto_scaling:
+              enabled: true
+              max_replicas: 4
+      
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "7d"
+        
+        logging:
+          level: "INFO"
+      
+      security:
+        authentication:
+          mfa:
+            enforcement: "optional"
+    
+    production:
+      resources:
+        compute:
+          api_service:
+            replicas: 3
+            auto_scaling:
+              enabled: true
+              min_replicas: 3
+              max_replicas: 8
+          
+          ml_service:
+            replicas: 2
+            auto_scaling:
+              enabled: true
+              min_replicas: 2
+              max_replicas: 3
+      
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "30d"
+            high_availability:
+              enabled: true
+              replicas: 3
+        
+        logging:
+          level: "WARNING"
+          outputs:
+            elasticsearch:
+              enabled: true
+      
+      security:
+        authentication:
+          mfa:
+            enforcement: "required"
+        
+        encryption:
+          data_encryption:
+            enabled: true
+        
+        security_monitoring:
+          enabled: true
+      
+      backup_recovery:
+        backup:
+          configuration:
+            frequency: "daily"
+            retention: 30
+            cross_region:
+              enabled: true
+
+  # Scaling Thresholds
+  scaling_thresholds:
+    # Upgrade Recommendations
+    upgrade_recommendations:
+      # To Large Profile
+      to_large:
+        triggers:
+          concurrent_users: ${MEDIUM_TO_LARGE_USERS_THRESHOLD:-400}
+          storage_usage: ${MEDIUM_TO_LARGE_STORAGE_THRESHOLD:-80}  # GB
+          cpu_utilization: ${MEDIUM_TO_LARGE_CPU_THRESHOLD:-75}  # %
+          memory_utilization: ${MEDIUM_TO_LARGE_MEMORY_THRESHOLD:-80}  # %
+          team_size: ${MEDIUM_TO_LARGE_TEAM_SIZE_THRESHOLD:-50}
+          api_requests_per_minute: ${MEDIUM_TO_LARGE_API_RPM_THRESHOLD:-1000}
+          
+        recommendations:
+          - "Consider upgrading to Large profile for enterprise features"
+          - "Large profile offers enhanced security and compliance"
+          - "Multi-region deployment capabilities"
+          - "Advanced ML and analytics features"
+          - "Dedicated support and SLA guarantees"
+      
+      # To Enterprise Profile
+      to_enterprise:
+        triggers:
+          concurrent_users: ${MEDIUM_TO_ENTERPRISE_USERS_THRESHOLD:-450}
+          compliance_requirements: ${MEDIUM_TO_ENTERPRISE_COMPLIANCE_THRESHOLD:-true}
+          custom_integrations: ${MEDIUM_TO_ENTERPRISE_CUSTOM_INTEGRATIONS_THRESHOLD:-5}
+          
+        recommendations:
+          - "Enterprise profile recommended for large organizations"
+          - "Custom deployment and configuration options"
+          - "Dedicated infrastructure and support"
+          - "Advanced compliance and security features"
+
+  # Support and Documentation
+  support:
+    # Enhanced Documentation
+    documentation:
+      enabled: ${MEDIUM_DOCUMENTATION_ENABLED:-true}
+      
+      # Documentation Types
+      types:
+        getting_started: ${MEDIUM_GETTING_STARTED_DOCS:-true}
+        api_documentation: ${MEDIUM_API_DOCS:-true}
+        troubleshooting: ${MEDIUM_TROUBLESHOOTING_DOCS:-true}
+        best_practices: ${MEDIUM_BEST_PRACTICES_DOCS:-true}
+        integration_guides: ${MEDIUM_INTEGRATION_GUIDES_DOCS:-true}
+        advanced_tutorials: ${MEDIUM_ADVANCED_TUTORIALS_DOCS:-true}
+    
+    # Enhanced Support Channels
+    support_channels:
+      # Community Support
+      community:
+        enabled: ${MEDIUM_COMMUNITY_SUPPORT_ENABLED:-true}
+        channels:
+          - "forum"
+          - "documentation"
+          - "tutorials"
+          - "webinars"
+      
+      # Email Support
+      email:
+        enabled: ${MEDIUM_EMAIL_SUPPORT_ENABLED:-true}
+        tier: "${MEDIUM_EMAIL_SUPPORT_TIER:-standard}"
+        response_time: "${MEDIUM_EMAIL_RESPONSE_TIME:-24h}"
+        
+      # Priority Support
+      priority:
+        enabled: ${MEDIUM_PRIORITY_SUPPORT_ENABLED:-true}
+        tier: "${MEDIUM_PRIORITY_SUPPORT_TIER:-business}"
+        response_time: "${MEDIUM_PRIORITY_RESPONSE_TIME:-4h}"

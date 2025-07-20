@@ -1,0 +1,422 @@
+# Cassandra Production Environment Overrides
+# =========================================
+# Configuration Cassandra pour gestion de données volumineuses
+# Optimisée pour Big Data, streaming et historiques à long terme
+
+cassandra:
+  # Configuration cluster distribuée
+  cluster:
+    name: "spotify-cassandra-prod"
+    
+    # Datacenters et racks pour haute disponibilité
+    datacenters:
+      dc1:
+        name: "datacenter1"
+        replication_factor: 3
+        nodes:
+          - host: cassandra-prod-dc1-rack1-01.internal
+            rack: "rack1"
+            tokens: 256
+          - host: cassandra-prod-dc1-rack1-02.internal
+            rack: "rack1"
+            tokens: 256
+          - host: cassandra-prod-dc1-rack2-01.internal
+            rack: "rack2"
+            tokens: 256
+          - host: cassandra-prod-dc1-rack2-02.internal
+            rack: "rack2"
+            tokens: 256
+          - host: cassandra-prod-dc1-rack3-01.internal
+            rack: "rack3"
+            tokens: 256
+          - host: cassandra-prod-dc1-rack3-02.internal
+            rack: "rack3"
+            tokens: 256
+            
+      dc2:
+        name: "datacenter2"
+        replication_factor: 3
+        nodes:
+          - host: cassandra-prod-dc2-rack1-01.internal
+            rack: "rack1"
+            tokens: 256
+          - host: cassandra-prod-dc2-rack1-02.internal
+            rack: "rack1"
+            tokens: 256
+          - host: cassandra-prod-dc2-rack2-01.internal
+            rack: "rack2"
+            tokens: 256
+
+  # Configuration des connexions
+  connection:
+    # Contact points pour discovery
+    contact_points:
+      - cassandra-prod-dc1-rack1-01.internal
+      - cassandra-prod-dc1-rack2-01.internal
+      - cassandra-prod-dc1-rack3-01.internal
+      
+    port: 9042
+    
+    # Configuration du driver
+    driver_config:
+      local_dc: "datacenter1"
+      load_balancing_policy: "DCAwareRoundRobinPolicy"
+      
+      # Pool de connexions pour haute charge
+      connection_pool:
+        core_connections_per_host_local: 8
+        max_connections_per_host_local: 32
+        core_connections_per_host_remote: 2
+        max_connections_per_host_remote: 8
+        max_requests_per_connection: 32768
+        
+      # Timeouts pour production
+      timeouts:
+        connect_timeout: 5000      # 5 secondes
+        read_timeout: 12000        # 12 secondes
+        
+      # Configuration retry
+      retry_policy:
+        class: "DefaultRetryPolicy"
+        read_timeout_retries: 2
+        write_timeout_retries: 2
+        unavailable_retries: 1
+        
+    # Configuration SSL/TLS
+    ssl:
+      enabled: true
+      client_encryption_options:
+        enabled: true
+        optional: false
+        keystore: "/etc/ssl/cassandra/keystore.jks"
+        keystore_password: "${CASSANDRA_KEYSTORE_PASSWORD}"
+        truststore: "/etc/ssl/cassandra/truststore.jks"
+        truststore_password: "${CASSANDRA_TRUSTSTORE_PASSWORD}"
+        protocol: "TLS"
+        algorithm: "SunX509"
+        store_type: "JKS"
+        cipher_suites: ["TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
+
+  # Configuration serveur Cassandra
+  server:
+    # Configuration JVM pour production
+    jvm:
+      heap_size: "16g"           # 16GB heap pour nœud avec 64GB RAM
+      new_generation_size: "3200m"  # 20% du heap
+      
+      # Garbage collection optimisé pour Cassandra
+      gc_settings:
+        - "-XX:+UseG1GC"
+        - "-XX:+UnlockExperimentalVMOptions"
+        - "-XX:+UseStringDeduplication"
+        - "-XX:G1RSetUpdatingPauseTimePercent=5"
+        - "-XX:MaxGCPauseMillis=300"
+        - "-XX:InitiatingHeapOccupancyPercent=70"
+        
+    # Configuration réseau
+    network:
+      listen_address: "${CASSANDRA_NODE_IP}"
+      rpc_address: "${CASSANDRA_NODE_IP}"
+      broadcast_address: "${CASSANDRA_NODE_IP}"
+      broadcast_rpc_address: "${CASSANDRA_NODE_IP}"
+      
+      # Interfaces et ports
+      storage_port: 7000
+      ssl_storage_port: 7001
+      native_transport_port: 9042
+      
+    # Configuration stockage
+    storage:
+      data_file_directories:
+        - "/var/lib/cassandra/data"
+      commitlog_directory: "/var/lib/cassandra/commitlog"
+      saved_caches_directory: "/var/lib/cassandra/saved_caches"
+      hints_directory: "/var/lib/cassandra/hints"
+      
+      # Configuration commit log
+      commitlog:
+        segment_size_in_mb: 128
+        total_space_in_mb: 8192  # 8GB total
+        sync_period_in_ms: 10000 # 10 secondes
+        
+      # Configuration memtable
+      memtable:
+        allocation_type: "heap_buffers"
+        heap_pool_size_in_mb: 2048
+        offheap_pool_size_in_mb: 0
+        cleanup_threshold: 0.11
+        
+    # Configuration compaction
+    compaction:
+      throughput_mb_per_sec: 128  # 128 MB/s pour production
+      large_partition_warning_threshold_mb: 1000
+      compaction_large_partition_warning_threshold_mb: 1000
+
+  # Keyspaces et tables optimisés pour Spotify
+  keyspaces:
+    # Keyspace principal pour streaming data
+    streaming_data:
+      name: "${TENANT_ID}_streaming"
+      replication:
+        class: "NetworkTopologyStrategy"
+        datacenter1: 3
+        datacenter2: 3
+        
+      tables:
+        # Table des événements de streaming
+        listening_events:
+          partition_key: ["user_id", "date"]
+          clustering_columns: ["timestamp", "track_id"]
+          compaction:
+            class: "TimeWindowCompactionStrategy"
+            compaction_window_unit: "DAYS"
+            compaction_window_size: 1
+          gc_grace_seconds: 864000  # 10 jours
+          default_time_to_live: 31536000  # 1 an
+          
+        # Table des métriques d'engagement
+        user_engagement:
+          partition_key: ["user_id"]
+          clustering_columns: ["metric_type", "timestamp"]
+          compaction:
+            class: "LeveledCompactionStrategy"
+            sstable_size_in_mb: 256
+          bloom_filter_fp_chance: 0.01
+          
+    # Keyspace pour données analytiques
+    analytics:
+      name: "${TENANT_ID}_analytics"
+      replication:
+        class: "NetworkTopologyStrategy"
+        datacenter1: 3
+        datacenter2: 2  # Moins de réplication pour analytics
+        
+      tables:
+        # Métriques agrégées par heure
+        hourly_metrics:
+          partition_key: ["metric_name", "date"]
+          clustering_columns: ["hour", "dimension"]
+          compaction:
+            class: "TimeWindowCompactionStrategy"
+            compaction_window_unit: "HOURS"
+            compaction_window_size: 24
+          default_time_to_live: 7776000  # 90 jours
+          
+        # Données de machine learning
+        ml_features:
+          partition_key: ["user_id"]
+          clustering_columns: ["feature_type", "computed_at"]
+          compaction:
+            class: "SizeTieredCompactionStrategy"
+            min_threshold: 6
+            max_threshold: 32
+            
+    # Keyspace pour données temporaires
+    temporary_data:
+      name: "${TENANT_ID}_temp"
+      replication:
+        class: "SimpleStrategy"
+        replication_factor: 2  # Réplication réduite pour données temporaires
+        
+      tables:
+        # Sessions utilisateur
+        user_sessions:
+          partition_key: ["session_id"]
+          default_time_to_live: 86400  # 24 heures
+          compaction:
+            class: "TimeWindowCompactionStrategy"
+            compaction_window_unit: "HOURS"
+            compaction_window_size: 6
+            
+        # Cache de recommandations
+        recommendation_cache:
+          partition_key: ["user_id"]
+          clustering_columns: ["recommendation_type"]
+          default_time_to_live: 3600  # 1 heure
+          bloom_filter_fp_chance: 0.1  # Plus permissif pour cache
+
+  # Configuration sécurité
+  security:
+    # Authentification
+    authenticator: "PasswordAuthenticator"
+    authorizer: "CassandraAuthorizer"
+    role_manager: "CassandraRoleManager"
+    
+    # Utilisateurs et rôles
+    roles:
+      # Rôle admin
+      "${TENANT_ID}_admin":
+        password: "${CASSANDRA_ADMIN_PASSWORD}"
+        superuser: true
+        
+      # Rôle application
+      "${TENANT_ID}_app":
+        password: "${CASSANDRA_APP_PASSWORD}"
+        permissions:
+          - "SELECT ON ${TENANT_ID}_streaming.*"
+          - "INSERT ON ${TENANT_ID}_streaming.*"
+          - "UPDATE ON ${TENANT_ID}_streaming.*"
+          - "SELECT ON ${TENANT_ID}_analytics.*"
+          - "INSERT ON ${TENANT_ID}_analytics.*"
+          
+      # Rôle analytics read-only
+      "${TENANT_ID}_analytics_ro":
+        password: "${CASSANDRA_ANALYTICS_PASSWORD}"
+        permissions:
+          - "SELECT ON ${TENANT_ID}_analytics.*"
+          - "SELECT ON ${TENANT_ID}_streaming.*"
+          
+    # Audit logging
+    audit_logging:
+      enabled: true
+      logger:
+        class_name: "BinAuditLogger"
+      included_keyspaces: 
+        - "${TENANT_ID}_streaming"
+        - "${TENANT_ID}_analytics"
+      included_categories:
+        - "AUTH"
+        - "DDL"
+        - "DML"
+
+  # Monitoring et observabilité
+  monitoring:
+    # JMX metrics
+    jmx:
+      enabled: true
+      port: 7199
+      
+    # Métriques système
+    metrics:
+      enabled: true
+      collection_interval: 30
+      
+      # Métriques clés pour Cassandra
+      key_metrics:
+        - "ReadLatency"
+        - "WriteLatency"
+        - "PendingFlushes"
+        - "CompactionBytesWritten"
+        - "LiveSSTableCount"
+        - "MemtableColumnsCount"
+        - "DroppedMessages"
+        
+    # Intégration avec systèmes de monitoring
+    exporters:
+      prometheus:
+        enabled: true
+        port: 8080
+        
+      datadog:
+        enabled: true
+        tags:
+          - "environment:production"
+          - "tenant:${TENANT_ID}"
+          - "service:cassandra"
+          
+    # Alerting
+    alerts:
+      enabled: true
+      thresholds:
+        read_latency_p99: 100     # 100ms
+        write_latency_p99: 50     # 50ms
+        pending_compactions: 20
+        dropped_mutations: 10
+        heap_usage_percent: 85
+
+  # Performance optimizations
+  performance:
+    # Configuration lecture
+    read_optimizations:
+      # Row cache pour données chaudes
+      row_cache_size_in_mb: 2048
+      row_cache_save_period: 14400  # 4 heures
+      
+      # Key cache
+      key_cache_size_in_mb: 512
+      key_cache_save_period: 14400
+      
+      # File cache
+      file_cache_size_in_mb: 1024
+      
+    # Configuration écriture
+    write_optimizations:
+      # Batch size warnings
+      batch_size_warn_threshold_in_kb: 5120  # 5MB
+      batch_size_fail_threshold_in_kb: 51200 # 50MB
+      
+      # Memtable flush
+      memtable_flush_writers: 4
+      
+    # Configuration concurrent
+    concurrent_operations:
+      concurrent_reads: 64
+      concurrent_writes: 64
+      concurrent_counter_writes: 64
+      concurrent_materialized_view_writes: 64
+
+  # Backup et disaster recovery
+  backup:
+    # Configuration snapshots
+    snapshots:
+      enabled: true
+      schedule: "0 2 * * *"       # Quotidien à 2h
+      retention_days: 30
+      auto_cleanup: true
+      
+      # Compression des snapshots
+      compression:
+        enabled: true
+        algorithm: "lz4"
+        
+    # Backup incrémental
+    incremental:
+      enabled: true
+      frequency: "0 */6 * * *"    # Toutes les 6h
+      retention_days: 7
+      
+    # Destinations cloud
+    destinations:
+      s3:
+        enabled: true
+        bucket: "${CASSANDRA_BACKUP_BUCKET}"
+        region: "${AWS_REGION}"
+        encryption: true
+        storage_class: "STANDARD_IA"
+        
+      gcs:
+        enabled: true
+        bucket: "${CASSANDRA_BACKUP_GCS_BUCKET}"
+        encryption: true
+        storage_class: "NEARLINE"
+
+# Variables d'environnement
+environment_variables:
+  CASSANDRA_KEYSTORE_PASSWORD: "${CASSANDRA_PROD_KEYSTORE_PWD}"
+  CASSANDRA_TRUSTSTORE_PASSWORD: "${CASSANDRA_PROD_TRUSTSTORE_PWD}"
+  CASSANDRA_ADMIN_PASSWORD: "${CASSANDRA_PROD_ADMIN_PWD}"
+  CASSANDRA_APP_PASSWORD: "${CASSANDRA_PROD_APP_PWD}"
+  CASSANDRA_ANALYTICS_PASSWORD: "${CASSANDRA_PROD_ANALYTICS_PWD}"
+  CASSANDRA_BACKUP_BUCKET: "spotify-ai-cassandra-backups-prod"
+  CASSANDRA_BACKUP_GCS_BUCKET: "spotify-ai-cassandra-backups-gcs-prod"
+  CASSANDRA_NODE_IP: "${NODE_IP}"
+  AWS_REGION: "us-east-1"
+
+# Métadonnées de configuration
+metadata:
+  environment: production
+  purpose: "Big Data et streaming à haute échelle"
+  maintainer: "Big Data & Streaming Team"
+  last_updated: "2025-07-16"
+  version: "2.1.0"
+  notes: |
+    Configuration Cassandra optimisée pour:
+    - Gestion de données de streaming à très haute échelle
+    - Historiques de données à long terme
+    - Analytics sur big data
+    - Haute disponibilité multi-datacenter
+    - Performance optimale pour écritures massives
+    - TTL automatique pour gestion du cycle de vie des données
+    
+    Architecture distribuée avec réplication cross-datacenter.
+    Optimisations spécifiques pour workloads time-series.

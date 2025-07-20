@@ -1,0 +1,14 @@
+# Spotify AI Agent – Security Requirements
+# ---------------------------------------
+# Security, Audit, Compliance, Secrets-Management, Vulnerability-Scan
+# Rollen: Security Specialist, Lead Dev, Architecte IA
+
+bandit>=1.7
+safety>=3.2
+trivy>=0.50
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+pyjwt>=2.8
+python-json-logger>=2.0
+opentelemetry-sdk>=1.25
+sentry-sdk>=2.0

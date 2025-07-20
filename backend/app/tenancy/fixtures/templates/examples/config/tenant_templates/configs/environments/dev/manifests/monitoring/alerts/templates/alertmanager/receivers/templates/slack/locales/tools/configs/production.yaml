@@ -1,0 +1,258 @@
+# Configuration Production - Outils Slack Localisés
+# Environnement: production
+# Maintenu par: Fahed Mlaiel - Lead Developer & Architecte IA
+
+# Configuration Redis Production
+redis:
+  host: "${REDIS_HOST}"
+  port: 6379
+  db: 5
+  password: "${REDIS_PASSWORD}"
+  ssl: true
+  timeout: 10
+  max_connections: 50
+  retry_on_timeout: true
+  health_check_interval: 15
+  sentinel:
+    enabled: true
+    hosts: ["${REDIS_SENTINEL_1}", "${REDIS_SENTINEL_2}", "${REDIS_SENTINEL_3}"]
+    master_name: "slack-tools-master"
+
+# Configuration Cache Production
+cache:
+  enabled: true
+  default_ttl: 600  # 10 minutes
+  max_cache_size: 10000
+  compression_threshold: 512
+  compression_enabled: true
+  l1_cache_enabled: true
+  l1_cache_size: 2000
+  eviction_policy: "lru"
+
+# Configuration Slack Production
+slack:
+  default_locale: "fr_FR"
+  supported_locales: ["fr_FR", "en_US", "de_DE", "es_ES", "it_IT"]
+  timeout: 10
+  retry_attempts: 5
+  rate_limit:
+    requests_per_minute: 300
+    burst_limit: 50
+  webhooks:
+    enabled: true
+    signature_verification: true
+    timeout: 5
+    ssl_verify: true
+
+# Configuration AlertManager Production
+alertmanager:
+  template_engine: "jinja2"
+  cache_ttl: 600
+  batch_size: 100
+  compression: true
+  aggregation:
+    enabled: true
+    window_seconds: 180  # 3 minutes
+    max_size: 20
+  validation:
+    enabled: true
+    strict_mode: true
+
+# Configuration Tenant Production
+tenant:
+  isolation_level: "paranoid"
+  context_cache_ttl: 1800  # 30 minutes
+  max_context_size: 2048
+  audit_enabled: true
+  encryption_enabled: true
+  max_tenants: 10000
+  rate_limiting:
+    per_tenant: true
+    default_limit: 100
+
+# Configuration Localisation Production
+localization:
+  default_locale: "fr_FR"
+  cache_ttl: 7200  # 2 heures
+  hot_reload: false
+  validation_enabled: true
+  preload_all: true
+  supported_locales:
+    - code: "fr_FR"
+      name: "Français"
+      fallback: "en_US"
+    - code: "en_US"
+      name: "English"
+      fallback: null
+    - code: "de_DE"
+      name: "Deutsch"
+      fallback: "en_US"
+    - code: "es_ES"
+      name: "Español"
+      fallback: "en_US"
+    - code: "it_IT"
+      name: "Italiano"
+      fallback: "en_US"
+
+# Configuration Templates Production
+templates:
+  auto_reload: false
+  sandbox_enabled: true
+  cache_ttl: 1800
+  validation_enabled: true
+  precompile: true
+  severity_templates:
+    critical: "alert_critical.json.j2"
+    warning: "alert_warning.json.j2"
+    info: "alert_info.json.j2"
+    resolved: "alert_resolved.json.j2"
+    aggregated: "alert_aggregated.json.j2"
+
+# Configuration Métriques Production
+monitoring:
+  metrics_enabled: true
+  collection_interval: 15
+  system_metrics_enabled: true
+  export_enabled: true
+  namespace: "slack_tools"
+  alert_thresholds:
+    cpu_critical: 80
+    memory_critical: 80
+    disk_critical: 85
+    response_time_critical: 5.0
+  performance_tracking: true
+  max_history_size: 10000
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+
+# Configuration Logging Production
+logging:
+  level: "INFO"
+  format: "json"
+  structured: true
+  correlation_id: true
+  output: "stdout"
+  components:
+    localization_engine: "INFO"
+    template_renderer: "INFO"
+    cache_manager: "WARN"
+    tenant_context: "INFO"
+    alert_formatter: "INFO"
+    metrics_collector: "WARN"
+  log_rotation:
+    enabled: true
+    max_size: "100MB"
+    max_files: 10
+
+# Configuration Sécurité Production
+security:
+  validation:
+    strict_input: true
+    sanitize_output: true
+    input_size_limit: 1048576  # 1MB
+  rate_limiting:
+    enabled: true
+    per_tenant: true
+    global_limit: 10000
+    sliding_window: 60
+  audit:
+    enabled: true
+    detailed_logging: true
+    retention_days: 90
+    encryption: true
+  tls:
+    enabled: true
+    cert_file: "/etc/ssl/certs/slack-tools.crt"
+    key_file: "/etc/ssl/private/slack-tools.key"
+
+# Configuration Performance Production
+performance:
+  optimization_enabled: true
+  concurrent_requests: 200
+  request_timeout: 10
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 10
+    recovery_timeout: 30
+  connection_pooling:
+    enabled: true
+    max_connections: 500
+    idle_timeout: 300
+  compression:
+    enabled: true
+    min_size: 1024
+
+# Configuration Haute Disponibilité
+high_availability:
+  clustering:
+    enabled: true
+    node_id: "${NODE_ID}"
+    cluster_nodes: ["${CLUSTER_NODE_1}", "${CLUSTER_NODE_2}", "${CLUSTER_NODE_3}"]
+  health_checks:
+    enabled: true
+    interval: 30
+    timeout: 10
+    failure_threshold: 3
+  backup:
+    enabled: true
+    interval: 3600  # 1 heure
+    retention: 168  # 7 jours
+    storage: "s3"
+
+# URLs et Endpoints Production
+urls:
+  base_url: "https://slack-tools.spotify-ai.com"
+  metrics_endpoint: "/metrics"
+  health_endpoint: "/health"
+  webhook_base: "/webhook/slack"
+  api_base: "/api/v1"
+
+# Configuration Tenants Premium
+premium_tenant_config:
+  slack_config:
+    channel: "#alerts-premium"
+    bot_name: "Spotify AI Premium"
+    icon_emoji: ":premium:"
+  locale: "fr_FR"
+  timezone: "Europe/Paris"
+  alert_config:
+    max_alerts_per_hour: 1000
+    severity_filter: ["info", "warning", "critical"]
+    auto_resolve: true
+    escalation_enabled: true
+  permissions:
+    level: "admin"
+    resources: ["alerts", "notifications", "templates", "metrics", "config"]
+    operations: ["view", "create", "update", "delete", "admin"]
+
+# Configuration Tenants Standard
+standard_tenant_config:
+  slack_config:
+    channel: "#alerts"
+    bot_name: "Spotify AI"
+    icon_emoji: ":robot_face:"
+  locale: "fr_FR"
+  timezone: "UTC"
+  alert_config:
+    max_alerts_per_hour: 200
+    severity_filter: ["warning", "critical"]
+    auto_resolve: true
+  permissions:
+    level: "write"
+    resources: ["alerts", "notifications"]
+    operations: ["view", "create", "update"]
+
+# Configuration Disaster Recovery
+disaster_recovery:
+  backup_strategy: "incremental"
+  backup_schedule: "0 2 * * *"  # 2h du matin
+  restore_timeout: 300
+  failover:
+    enabled: true
+    automatic: true
+    threshold: 5  # échecs consécutifs
+  geographic_replication:
+    enabled: true
+    regions: ["eu-west-1", "us-east-1"]

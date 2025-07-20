@@ -1,0 +1,843 @@
+# Vault Advanced Configuration Template for Enterprise Tenant Templates
+# ====================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced Vault architecture with AI secret optimization
+# - Senior Backend Developer: Python/FastAPI/Django Vault enterprise patterns
+# - Backend Security Specialist: Vault security hardening, policies, and secret management
+# - Microservices Architect: Vault service mesh integration and monitoring
+# - DBA & Data Engineer: Vault database secret engines and dynamic credentials
+
+# ==========================================
+# HASHICORP VAULT ENTERPRISE CONFIGURATION
+# ==========================================
+
+vault:
+  # Server Configuration
+  server:
+    # Listener Configuration
+    listener:
+      tcp:
+        address: "${VAULT_ADDR:-0.0.0.0:8200}"
+        cluster_address: "${VAULT_CLUSTER_ADDR:-0.0.0.0:8201}"
+        tls_disable: ${VAULT_TLS_DISABLE:-false}
+        
+        # TLS Configuration
+        tls_cert_file: "${VAULT_TLS_CERT_FILE:-/etc/vault/tls/vault.crt}"
+        tls_key_file: "${VAULT_TLS_KEY_FILE:-/etc/vault/tls/vault.key}"
+        tls_client_ca_file: "${VAULT_TLS_CLIENT_CA_FILE:-/etc/vault/tls/ca.crt}"
+        tls_cipher_suites: "${VAULT_TLS_CIPHER_SUITES:-TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384}"
+        tls_min_version: "${VAULT_TLS_MIN_VERSION:-tls12}"
+        tls_max_version: "${VAULT_TLS_MAX_VERSION:-tls13}"
+        tls_prefer_server_cipher_suites: ${VAULT_TLS_PREFER_SERVER_CIPHERS:-true}
+        
+        # HTTP Configuration
+        http_read_timeout: "${VAULT_HTTP_READ_TIMEOUT:-30s}"
+        http_write_timeout: "${VAULT_HTTP_WRITE_TIMEOUT:-30s}"
+        http_idle_timeout: "${VAULT_HTTP_IDLE_TIMEOUT:-5m}"
+        
+        # CORS Configuration
+        cors_enabled: ${VAULT_CORS_ENABLED:-false}
+        cors_allowed_origins: "${VAULT_CORS_ALLOWED_ORIGINS:-*}"
+        cors_allowed_headers: "${VAULT_CORS_ALLOWED_HEADERS:-Content-Type,X-Requested-With,X-Vault-AWS-IAM-Server-ID,X-Vault-MFA,X-Vault-No-Request-Forwarding,X-Vault-Wrap-Format,X-Vault-Wrap-TTL}"
+        
+        # X-Forwarded-For
+        x_forwarded_for_authorized_addrs: "${VAULT_X_FORWARDED_FOR_AUTHORIZED_ADDRS:-127.0.0.1/32,::1/128}"
+        x_forwarded_for_hop_skips: ${VAULT_X_FORWARDED_FOR_HOP_SKIPS:-0}
+        x_forwarded_for_reject_not_authorized: ${VAULT_X_FORWARDED_FOR_REJECT_NOT_AUTHORIZED:-true}
+        x_forwarded_for_reject_not_present: ${VAULT_X_FORWARDED_FOR_REJECT_NOT_PRESENT:-true}
+    
+    # Storage Backend Configuration
+    storage:
+      # Consul Storage Backend
+      consul:
+        enabled: ${VAULT_STORAGE_CONSUL_ENABLED:-false}
+        address: "${VAULT_CONSUL_ADDRESS:-127.0.0.1:8500}"
+        path: "${VAULT_CONSUL_PATH:-vault/}"
+        scheme: "${VAULT_CONSUL_SCHEME:-http}"
+        token: "${VAULT_CONSUL_TOKEN:-}"
+        
+        # Consul TLS
+        tls_ca_file: "${VAULT_CONSUL_TLS_CA_FILE:-}"
+        tls_cert_file: "${VAULT_CONSUL_TLS_CERT_FILE:-}"
+        tls_key_file: "${VAULT_CONSUL_TLS_KEY_FILE:-}"
+        tls_skip_verify: ${VAULT_CONSUL_TLS_SKIP_VERIFY:-false}
+        tls_min_version: "${VAULT_CONSUL_TLS_MIN_VERSION:-tls12}"
+        
+        # Consul Configuration
+        consistency_mode: "${VAULT_CONSUL_CONSISTENCY_MODE:-default}"
+        datacenter: "${VAULT_CONSUL_DATACENTER:-}"
+        disable_clustering: ${VAULT_CONSUL_DISABLE_CLUSTERING:-false}
+        max_parallel: ${VAULT_CONSUL_MAX_PARALLEL:-128}
+        session_ttl: "${VAULT_CONSUL_SESSION_TTL:-15s}"
+        lock_wait_time: "${VAULT_CONSUL_LOCK_WAIT_TIME:-15s}"
+      
+      # Integrated Storage (Raft)
+      raft:
+        enabled: ${VAULT_STORAGE_RAFT_ENABLED:-true}
+        path: "${VAULT_RAFT_PATH:-/opt/vault/data}"
+        node_id: "${VAULT_RAFT_NODE_ID:-node1}"
+        
+        # Raft Performance
+        performance_multiplier: ${VAULT_RAFT_PERFORMANCE_MULTIPLIER:-1}
+        trailing_logs: ${VAULT_RAFT_TRAILING_LOGS:-10000}
+        snapshot_threshold: ${VAULT_RAFT_SNAPSHOT_THRESHOLD:-8192}
+        snapshot_interval: "${VAULT_RAFT_SNAPSHOT_INTERVAL:-5s}"
+        
+        # Raft Clustering
+        retry_join:
+          - leader_api_addr: "${VAULT_RAFT_LEADER_API_ADDR:-http://127.0.0.1:8200}"
+            leader_ca_cert_file: "${VAULT_RAFT_LEADER_CA_CERT:-}"
+            leader_client_cert_file: "${VAULT_RAFT_LEADER_CLIENT_CERT:-}"
+            leader_client_key_file: "${VAULT_RAFT_LEADER_CLIENT_KEY:-}"
+        
+        # Autopilot (Enterprise)
+        autopilot:
+          cleanup_dead_servers: ${VAULT_RAFT_AUTOPILOT_CLEANUP_DEAD_SERVERS:-true}
+          last_contact_threshold: "${VAULT_RAFT_AUTOPILOT_LAST_CONTACT_THRESHOLD:-10s}"
+          max_trailing_logs: ${VAULT_RAFT_AUTOPILOT_MAX_TRAILING_LOGS:-1000}
+          min_quorum: ${VAULT_RAFT_AUTOPILOT_MIN_QUORUM:-3}
+          server_stabilization_time: "${VAULT_RAFT_AUTOPILOT_SERVER_STABILIZATION_TIME:-10s}"
+      
+      # Database Storage Backend
+      postgresql:
+        enabled: ${VAULT_STORAGE_POSTGRESQL_ENABLED:-false}
+        connection_url: "${VAULT_POSTGRESQL_CONNECTION_URL:-postgres://vault:vault@localhost/vault?sslmode=disable}"
+        table: "${VAULT_POSTGRESQL_TABLE:-vault_kv_store}"
+        max_parallel: ${VAULT_POSTGRESQL_MAX_PARALLEL:-128}
+        
+        # PostgreSQL HA
+        ha_enabled: ${VAULT_POSTGRESQL_HA_ENABLED:-false}
+        ha_table: "${VAULT_POSTGRESQL_HA_TABLE:-vault_ha_locks}"
+    
+    # Cluster Configuration
+    cluster:
+      name: "${VAULT_CLUSTER_NAME:-vault-cluster}"
+      disable_clustering: ${VAULT_DISABLE_CLUSTERING:-false}
+      
+      # Cluster Communication
+      cluster_cipher_suites: "${VAULT_CLUSTER_CIPHER_SUITES:-TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384}"
+      
+      # Raft Join
+      raft_join:
+        leader_api_addr: "${VAULT_RAFT_LEADER_API_ADDR:-http://127.0.0.1:8200}"
+        leader_ca_cert: "${VAULT_RAFT_LEADER_CA_CERT:-}"
+        leader_client_cert: "${VAULT_RAFT_LEADER_CLIENT_CERT:-}"
+        leader_client_key: "${VAULT_RAFT_LEADER_CLIENT_KEY:-}"
+    
+    # UI Configuration
+    ui: ${VAULT_UI_ENABLED:-true}
+    
+    # API Configuration
+    api_addr: "${VAULT_API_ADDR:-http://127.0.0.1:8200}"
+    cluster_addr: "${VAULT_CLUSTER_ADDR:-http://127.0.0.1:8201}"
+    
+    # Disable Mlock
+    disable_mlock: ${VAULT_DISABLE_MLOCK:-false}
+    
+    # Disable Cache
+    disable_cache: ${VAULT_DISABLE_CACHE:-false}
+    
+    # Default Lease TTL
+    default_lease_ttl: "${VAULT_DEFAULT_LEASE_TTL:-768h}"
+    max_lease_ttl: "${VAULT_MAX_LEASE_TTL:-8760h}"
+    
+    # Plugin Directory
+    plugin_directory: "${VAULT_PLUGIN_DIRECTORY:-/opt/vault/plugins}"
+
+  # Authentication Methods
+  auth_methods:
+    # Username/Password Authentication
+    userpass:
+      enabled: ${VAULT_AUTH_USERPASS_ENABLED:-true}
+      path: "${VAULT_AUTH_USERPASS_PATH:-userpass}"
+      description: "${VAULT_AUTH_USERPASS_DESCRIPTION:-Username and password authentication}"
+      
+      # Default User Configuration
+      default_users:
+        - username: "${VAULT_ADMIN_USERNAME:-admin}"
+          password: "${VAULT_ADMIN_PASSWORD:-admin}"
+          policies: ["admin-policy"]
+        
+        - username: "${VAULT_APP_USERNAME:-app-user}"
+          password: "${VAULT_APP_PASSWORD:-app-password}"
+          policies: ["app-policy"]
+    
+    # LDAP Authentication
+    ldap:
+      enabled: ${VAULT_AUTH_LDAP_ENABLED:-false}
+      path: "${VAULT_AUTH_LDAP_PATH:-ldap}"
+      description: "${VAULT_AUTH_LDAP_DESCRIPTION:-LDAP authentication}"
+      
+      # LDAP Configuration
+      config:
+        url: "${VAULT_LDAP_URL:-ldap://ldap.example.com}"
+        userdn: "${VAULT_LDAP_USERDN:-ou=Users,dc=example,dc=com}"
+        userattr: "${VAULT_LDAP_USERATTR:-uid}"
+        groupdn: "${VAULT_LDAP_GROUPDN:-ou=Groups,dc=example,dc=com}"
+        groupfilter: "${VAULT_LDAP_GROUPFILTER:-(&(objectClass=groupOfNames)(member={{.UserDN}}))}"
+        groupattr: "${VAULT_LDAP_GROUPATTR:-cn}"
+        
+        # LDAP TLS
+        insecure_tls: ${VAULT_LDAP_INSECURE_TLS:-false}
+        starttls: ${VAULT_LDAP_STARTTLS:-false}
+        tls_min_version: "${VAULT_LDAP_TLS_MIN_VERSION:-tls12}"
+        tls_max_version: "${VAULT_LDAP_TLS_MAX_VERSION:-tls13}"
+        certificate: "${VAULT_LDAP_CERTIFICATE:-}"
+        
+        # LDAP Binding
+        binddn: "${VAULT_LDAP_BINDDN:-}"
+        bindpass: "${VAULT_LDAP_BINDPASS:-}"
+        
+        # LDAP Search
+        deny_null_bind: ${VAULT_LDAP_DENY_NULL_BIND:-true}
+        discoverdn: ${VAULT_LDAP_DISCOVERDN:-false}
+        upndomain: "${VAULT_LDAP_UPNDOMAIN:-}"
+        
+        # Token Configuration
+        token_ttl: "${VAULT_LDAP_TOKEN_TTL:-1h}"
+        token_max_ttl: "${VAULT_LDAP_TOKEN_MAX_TTL:-24h}"
+        token_policies: ["ldap-user-policy"]
+        token_bound_cidrs: ["0.0.0.0/0"]
+        token_explicit_max_ttl: "${VAULT_LDAP_TOKEN_EXPLICIT_MAX_TTL:-0}"
+        token_no_default_policy: ${VAULT_LDAP_TOKEN_NO_DEFAULT_POLICY:-false}
+        token_num_uses: ${VAULT_LDAP_TOKEN_NUM_USES:-0}
+        token_period: "${VAULT_LDAP_TOKEN_PERIOD:-0}"
+        token_type: "${VAULT_LDAP_TOKEN_TYPE:-default}"
+    
+    # Kubernetes Authentication
+    kubernetes:
+      enabled: ${VAULT_AUTH_KUBERNETES_ENABLED:-false}
+      path: "${VAULT_AUTH_KUBERNETES_PATH:-kubernetes}"
+      description: "${VAULT_AUTH_KUBERNETES_DESCRIPTION:-Kubernetes authentication}"
+      
+      # Kubernetes Configuration
+      config:
+        kubernetes_host: "${VAULT_KUBERNETES_HOST:-https://kubernetes.default.svc.cluster.local}"
+        kubernetes_ca_cert: "${VAULT_KUBERNETES_CA_CERT:-}"
+        token_reviewer_jwt: "${VAULT_KUBERNETES_TOKEN_REVIEWER_JWT:-}"
+        issuer: "${VAULT_KUBERNETES_ISSUER:-https://kubernetes.default.svc.cluster.local}"
+        disable_iss_validation: ${VAULT_KUBERNETES_DISABLE_ISS_VALIDATION:-true}
+        disable_local_ca_jwt: ${VAULT_KUBERNETES_DISABLE_LOCAL_CA_JWT:-false}
+    
+    # JWT/OIDC Authentication
+    jwt:
+      enabled: ${VAULT_AUTH_JWT_ENABLED:-false}
+      path: "${VAULT_AUTH_JWT_PATH:-jwt}"
+      description: "${VAULT_AUTH_JWT_DESCRIPTION:-JWT/OIDC authentication}"
+      
+      # JWT Configuration
+      config:
+        oidc_discovery_url: "${VAULT_JWT_OIDC_DISCOVERY_URL:-}"
+        oidc_discovery_ca_pem: "${VAULT_JWT_OIDC_DISCOVERY_CA_PEM:-}"
+        oidc_client_id: "${VAULT_JWT_OIDC_CLIENT_ID:-}"
+        oidc_client_secret: "${VAULT_JWT_OIDC_CLIENT_SECRET:-}"
+        oidc_response_mode: "${VAULT_JWT_OIDC_RESPONSE_MODE:-query}"
+        oidc_response_types: ["code"]
+        jwks_url: "${VAULT_JWT_JWKS_URL:-}"
+        jwks_ca_pem: "${VAULT_JWT_JWKS_CA_PEM:-}"
+        jwt_validation_pubkeys: []
+        jwt_supported_algs: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+        bound_issuer: "${VAULT_JWT_BOUND_ISSUER:-}"
+        expiration_leeway: ${VAULT_JWT_EXPIRATION_LEEWAY:-0}
+        not_before_leeway: ${VAULT_JWT_NOT_BEFORE_LEEWAY:-0}
+        clock_skew_leeway: ${VAULT_JWT_CLOCK_SKEW_LEEWAY:-0}
+    
+    # AWS IAM Authentication
+    aws:
+      enabled: ${VAULT_AUTH_AWS_ENABLED:-false}
+      path: "${VAULT_AUTH_AWS_PATH:-aws}"
+      description: "${VAULT_AUTH_AWS_DESCRIPTION:-AWS IAM authentication}"
+      
+      # AWS Configuration
+      config:
+        access_key: "${VAULT_AWS_ACCESS_KEY:-}"
+        secret_key: "${VAULT_AWS_SECRET_KEY:-}"
+        region: "${VAULT_AWS_REGION:-us-east-1}"
+        iam_endpoint: "${VAULT_AWS_IAM_ENDPOINT:-https://iam.amazonaws.com}"
+        sts_endpoint: "${VAULT_AWS_STS_ENDPOINT:-https://sts.amazonaws.com}"
+        sts_region: "${VAULT_AWS_STS_REGION:-us-east-1}"
+        max_retries: ${VAULT_AWS_MAX_RETRIES:-3}
+
+  # Secret Engines
+  secret_engines:
+    # Key-Value v2 Secret Engine
+    kv_v2:
+      enabled: ${VAULT_SECRET_KV_V2_ENABLED:-true}
+      path: "${VAULT_SECRET_KV_V2_PATH:-secret/}"
+      description: "${VAULT_SECRET_KV_V2_DESCRIPTION:-Key-Value v2 secret engine}"
+      
+      # KV Configuration
+      config:
+        max_versions: ${VAULT_KV_V2_MAX_VERSIONS:-10}
+        cas_required: ${VAULT_KV_V2_CAS_REQUIRED:-false}
+        delete_version_after: "${VAULT_KV_V2_DELETE_VERSION_AFTER:-0s}"
+    
+    # Database Secret Engine
+    database:
+      enabled: ${VAULT_SECRET_DATABASE_ENABLED:-true}
+      path: "${VAULT_SECRET_DATABASE_PATH:-database/}"
+      description: "${VAULT_SECRET_DATABASE_DESCRIPTION:-Database secret engine}"
+      
+      # Database Connections
+      connections:
+        # PostgreSQL Connection
+        postgresql:
+          plugin_name: "postgresql-database-plugin"
+          allowed_roles: ["readonly", "readwrite", "admin"]
+          connection_url: "${VAULT_DB_POSTGRESQL_CONNECTION_URL:-postgresql://{{username}}:{{password}}@localhost:5432/postgres?sslmode=disable}"
+          username: "${VAULT_DB_POSTGRESQL_USERNAME:-vault}"
+          password: "${VAULT_DB_POSTGRESQL_PASSWORD:-vault}"
+          max_open_connections: ${VAULT_DB_POSTGRESQL_MAX_OPEN_CONNECTIONS:-5}
+          max_connection_lifetime: "${VAULT_DB_POSTGRESQL_MAX_CONNECTION_LIFETIME:-5m}"
+          
+          # Roles
+          roles:
+            readonly:
+              db_name: "postgresql"
+              creation_statements:
+                - "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"
+                - "GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";"
+              revocation_statements:
+                - "DROP ROLE IF EXISTS \"{{name}}\";"
+              default_ttl: "${VAULT_DB_POSTGRESQL_READONLY_TTL:-1h}"
+              max_ttl: "${VAULT_DB_POSTGRESQL_READONLY_MAX_TTL:-24h}"
+            
+            readwrite:
+              db_name: "postgresql"
+              creation_statements:
+                - "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"
+                - "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";"
+              revocation_statements:
+                - "DROP ROLE IF EXISTS \"{{name}}\";"
+              default_ttl: "${VAULT_DB_POSTGRESQL_READWRITE_TTL:-1h}"
+              max_ttl: "${VAULT_DB_POSTGRESQL_READWRITE_MAX_TTL:-24h}"
+        
+        # MongoDB Connection
+        mongodb:
+          plugin_name: "mongodb-database-plugin"
+          allowed_roles: ["readonly", "readwrite", "admin"]
+          connection_url: "${VAULT_DB_MONGODB_CONNECTION_URL:-mongodb://{{username}}:{{password}}@localhost:27017/admin}"
+          username: "${VAULT_DB_MONGODB_USERNAME:-vault}"
+          password: "${VAULT_DB_MONGODB_PASSWORD:-vault}"
+          
+          # Roles
+          roles:
+            readonly:
+              db_name: "mongodb"
+              creation_statement: |
+                {
+                  "db": "admin",
+                  "roles": [
+                    {
+                      "role": "read",
+                      "db": "${VAULT_DB_MONGODB_DATABASE:-spotify_ai_agent}"
+                    }
+                  ]
+                }
+              default_ttl: "${VAULT_DB_MONGODB_READONLY_TTL:-1h}"
+              max_ttl: "${VAULT_DB_MONGODB_READONLY_MAX_TTL:-24h}"
+            
+            readwrite:
+              db_name: "mongodb"
+              creation_statement: |
+                {
+                  "db": "admin",
+                  "roles": [
+                    {
+                      "role": "readWrite",
+                      "db": "${VAULT_DB_MONGODB_DATABASE:-spotify_ai_agent}"
+                    }
+                  ]
+                }
+              default_ttl: "${VAULT_DB_MONGODB_READWRITE_TTL:-1h}"
+              max_ttl: "${VAULT_DB_MONGODB_READWRITE_MAX_TTL:-24h}"
+        
+        # Redis Connection
+        redis:
+          plugin_name: "redis-database-plugin"
+          allowed_roles: ["readonly", "readwrite"]
+          url: "${VAULT_DB_REDIS_URL:-redis://localhost:6379}"
+          username: "${VAULT_DB_REDIS_USERNAME:-}"
+          password: "${VAULT_DB_REDIS_PASSWORD:-}"
+          
+          # Roles
+          roles:
+            readonly:
+              db_name: "redis"
+              creation_statements:
+                - "ACL SETUSER {{username}} on >{{password}} ~* +@read -@dangerous"
+              default_ttl: "${VAULT_DB_REDIS_READONLY_TTL:-1h}"
+              max_ttl: "${VAULT_DB_REDIS_READONLY_MAX_TTL:-24h}"
+            
+            readwrite:
+              db_name: "redis"
+              creation_statements:
+                - "ACL SETUSER {{username}} on >{{password}} ~* +@all -@dangerous"
+              default_ttl: "${VAULT_DB_REDIS_READWRITE_TTL:-1h}"
+              max_ttl: "${VAULT_DB_REDIS_READWRITE_MAX_TTL:-24h}"
+    
+    # PKI Secret Engine
+    pki:
+      enabled: ${VAULT_SECRET_PKI_ENABLED:-true}
+      path: "${VAULT_SECRET_PKI_PATH:-pki/}"
+      description: "${VAULT_SECRET_PKI_DESCRIPTION:-PKI secret engine}"
+      
+      # PKI Configuration
+      config:
+        # Root CA
+        root_ca:
+          common_name: "${VAULT_PKI_ROOT_CA_CN:-Spotify AI Agent Root CA}"
+          ttl: "${VAULT_PKI_ROOT_CA_TTL:-8760h}"  # 1 year
+          key_type: "${VAULT_PKI_ROOT_CA_KEY_TYPE:-rsa}"
+          key_bits: ${VAULT_PKI_ROOT_CA_KEY_BITS:-4096}
+          exclude_cn_from_sans: ${VAULT_PKI_ROOT_CA_EXCLUDE_CN_FROM_SANS:-true}
+        
+        # Intermediate CA
+        intermediate_ca:
+          common_name: "${VAULT_PKI_INTERMEDIATE_CA_CN:-Spotify AI Agent Intermediate CA}"
+          ttl: "${VAULT_PKI_INTERMEDIATE_CA_TTL:-4380h}"  # 6 months
+          key_type: "${VAULT_PKI_INTERMEDIATE_CA_KEY_TYPE:-rsa}"
+          key_bits: ${VAULT_PKI_INTERMEDIATE_CA_KEY_BITS:-2048}
+        
+        # Certificate Roles
+        roles:
+          server:
+            allowed_domains: ["spotify-ai-agent.com", "localhost"]
+            allow_subdomains: true
+            allow_localhost: true
+            allow_ip_sans: true
+            key_type: "${VAULT_PKI_SERVER_KEY_TYPE:-rsa}"
+            key_bits: ${VAULT_PKI_SERVER_KEY_BITS:-2048}
+            ttl: "${VAULT_PKI_SERVER_TTL:-720h}"  # 30 days
+            max_ttl: "${VAULT_PKI_SERVER_MAX_TTL:-8760h}"  # 1 year
+          
+          client:
+            allowed_domains: ["spotify-ai-agent.com"]
+            allow_subdomains: false
+            client_flag: true
+            server_flag: false
+            key_type: "${VAULT_PKI_CLIENT_KEY_TYPE:-rsa}"
+            key_bits: ${VAULT_PKI_CLIENT_KEY_BITS:-2048}
+            ttl: "${VAULT_PKI_CLIENT_TTL:-168h}"  # 7 days
+            max_ttl: "${VAULT_PKI_CLIENT_MAX_TTL:-720h}"  # 30 days
+    
+    # Transit Secret Engine
+    transit:
+      enabled: ${VAULT_SECRET_TRANSIT_ENABLED:-true}
+      path: "${VAULT_SECRET_TRANSIT_PATH:-transit/}"
+      description: "${VAULT_SECRET_TRANSIT_DESCRIPTION:-Transit secret engine}"
+      
+      # Transit Keys
+      keys:
+        # Application Encryption Key
+        app_key:
+          type: "${VAULT_TRANSIT_APP_KEY_TYPE:-aes256-gcm96}"
+          derived: ${VAULT_TRANSIT_APP_KEY_DERIVED:-false}
+          exportable: ${VAULT_TRANSIT_APP_KEY_EXPORTABLE:-false}
+          allow_plaintext_backup: ${VAULT_TRANSIT_APP_KEY_ALLOW_PLAINTEXT_BACKUP:-false}
+          min_decryption_version: ${VAULT_TRANSIT_APP_KEY_MIN_DECRYPTION_VERSION:-1}
+          min_encryption_version: ${VAULT_TRANSIT_APP_KEY_MIN_ENCRYPTION_VERSION:-0}
+          deletion_allowed: ${VAULT_TRANSIT_APP_KEY_DELETION_ALLOWED:-false}
+        
+        # User Data Encryption Key
+        user_data_key:
+          type: "${VAULT_TRANSIT_USER_DATA_KEY_TYPE:-aes256-gcm96}"
+          derived: ${VAULT_TRANSIT_USER_DATA_KEY_DERIVED:-true}
+          exportable: ${VAULT_TRANSIT_USER_DATA_KEY_EXPORTABLE:-false}
+          allow_plaintext_backup: ${VAULT_TRANSIT_USER_DATA_KEY_ALLOW_PLAINTEXT_BACKUP:-false}
+          min_decryption_version: ${VAULT_TRANSIT_USER_DATA_KEY_MIN_DECRYPTION_VERSION:-1}
+          min_encryption_version: ${VAULT_TRANSIT_USER_DATA_KEY_MIN_ENCRYPTION_VERSION:-0}
+          deletion_allowed: ${VAULT_TRANSIT_USER_DATA_KEY_DELETION_ALLOWED:-false}
+    
+    # AWS Secret Engine
+    aws:
+      enabled: ${VAULT_SECRET_AWS_ENABLED:-false}
+      path: "${VAULT_SECRET_AWS_PATH:-aws/}"
+      description: "${VAULT_SECRET_AWS_DESCRIPTION:-AWS secret engine}"
+      
+      # AWS Configuration
+      config:
+        access_key: "${VAULT_AWS_SECRET_ACCESS_KEY:-}"
+        secret_key: "${VAULT_AWS_SECRET_SECRET_KEY:-}"
+        region: "${VAULT_AWS_SECRET_REGION:-us-east-1}"
+        
+        # AWS Roles
+        roles:
+          s3_readonly:
+            credential_type: "iam_user"
+            policy_document: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "s3:GetObject",
+                      "s3:ListBucket"
+                    ],
+                    "Resource": [
+                      "arn:aws:s3:::${VAULT_AWS_S3_BUCKET:-spotify-ai-agent-bucket}",
+                      "arn:aws:s3:::${VAULT_AWS_S3_BUCKET:-spotify-ai-agent-bucket}/*"
+                    ]
+                  }
+                ]
+              }
+          
+          s3_readwrite:
+            credential_type: "iam_user"
+            policy_document: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "s3:GetObject",
+                      "s3:PutObject",
+                      "s3:DeleteObject",
+                      "s3:ListBucket"
+                    ],
+                    "Resource": [
+                      "arn:aws:s3:::${VAULT_AWS_S3_BUCKET:-spotify-ai-agent-bucket}",
+                      "arn:aws:s3:::${VAULT_AWS_S3_BUCKET:-spotify-ai-agent-bucket}/*"
+                    ]
+                  }
+                ]
+              }
+
+  # Policies Configuration
+  policies:
+    # Admin Policy
+    admin_policy:
+      name: "admin-policy"
+      policy: |
+        # Full access to all paths
+        path "*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+        }
+        
+        # Ability to manage policies
+        path "sys/policies/acl/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        
+        # Ability to manage auth methods
+        path "sys/auth/*" {
+          capabilities = ["create", "read", "update", "delete", "sudo"]
+        }
+        
+        # Ability to manage secret engines
+        path "sys/mounts/*" {
+          capabilities = ["create", "read", "update", "delete", "sudo"]
+        }
+        
+        # Ability to manage users
+        path "auth/userpass/users/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+    
+    # Application Policy
+    app_policy:
+      name: "app-policy"
+      policy: |
+        # Access to application secrets
+        path "secret/data/app/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        
+        # Access to database credentials
+        path "database/creds/readwrite" {
+          capabilities = ["read"]
+        }
+        
+        # Access to transit encryption
+        path "transit/encrypt/app_key" {
+          capabilities = ["update"]
+        }
+        
+        path "transit/decrypt/app_key" {
+          capabilities = ["update"]
+        }
+        
+        # Access to PKI for server certificates
+        path "pki/issue/server" {
+          capabilities = ["update"]
+        }
+        
+        # Read own token information
+        path "auth/token/lookup-self" {
+          capabilities = ["read"]
+        }
+        
+        path "auth/token/renew-self" {
+          capabilities = ["update"]
+        }
+    
+    # Read-Only Policy
+    readonly_policy:
+      name: "readonly-policy"
+      policy: |
+        # Read access to application secrets
+        path "secret/data/app/*" {
+          capabilities = ["read"]
+        }
+        
+        # Access to read-only database credentials
+        path "database/creds/readonly" {
+          capabilities = ["read"]
+        }
+        
+        # Read own token information
+        path "auth/token/lookup-self" {
+          capabilities = ["read"]
+        }
+        
+        path "auth/token/renew-self" {
+          capabilities = ["update"]
+        }
+    
+    # LDAP User Policy
+    ldap_user_policy:
+      name: "ldap-user-policy"
+      policy: |
+        # Access to user-specific secrets
+        path "secret/data/users/{{identity.entity.aliases.${VAULT_AUTH_LDAP_PATH:-ldap}_accessor.name}}/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        
+        # Access to user data encryption
+        path "transit/encrypt/user_data_key" {
+          capabilities = ["update"]
+        }
+        
+        path "transit/decrypt/user_data_key" {
+          capabilities = ["update"]
+        }
+        
+        # Access to client certificates
+        path "pki/issue/client" {
+          capabilities = ["update"]
+        }
+        
+        # Read own token information
+        path "auth/token/lookup-self" {
+          capabilities = ["read"]
+        }
+        
+        path "auth/token/renew-self" {
+          capabilities = ["update"]
+        }
+
+  # Audit Devices
+  audit:
+    # File Audit Device
+    file:
+      enabled: ${VAULT_AUDIT_FILE_ENABLED:-true}
+      path: "${VAULT_AUDIT_FILE_PATH:-audit/}"
+      description: "${VAULT_AUDIT_FILE_DESCRIPTION:-File audit device}"
+      
+      # File Audit Options
+      options:
+        file_path: "${VAULT_AUDIT_FILE_FILE_PATH:-/opt/vault/logs/audit.log}"
+        log_raw: ${VAULT_AUDIT_FILE_LOG_RAW:-false}
+        hmac_accessor: ${VAULT_AUDIT_FILE_HMAC_ACCESSOR:-true}
+        mode: "${VAULT_AUDIT_FILE_MODE:-0600}"
+        format: "${VAULT_AUDIT_FILE_FORMAT:-json}"
+        prefix: "${VAULT_AUDIT_FILE_PREFIX:-}"
+    
+    # Syslog Audit Device
+    syslog:
+      enabled: ${VAULT_AUDIT_SYSLOG_ENABLED:-false}
+      path: "${VAULT_AUDIT_SYSLOG_PATH:-syslog/}"
+      description: "${VAULT_AUDIT_SYSLOG_DESCRIPTION:-Syslog audit device}"
+      
+      # Syslog Audit Options
+      options:
+        facility: "${VAULT_AUDIT_SYSLOG_FACILITY:-AUTH}"
+        tag: "${VAULT_AUDIT_SYSLOG_TAG:-vault}"
+        log_raw: ${VAULT_AUDIT_SYSLOG_LOG_RAW:-false}
+        hmac_accessor: ${VAULT_AUDIT_SYSLOG_HMAC_ACCESSOR:-true}
+        format: "${VAULT_AUDIT_SYSLOG_FORMAT:-json}"
+
+  # Telemetry Configuration
+  telemetry:
+    # Prometheus Metrics
+    prometheus_retention_time: "${VAULT_TELEMETRY_PROMETHEUS_RETENTION_TIME:-24h}"
+    disable_hostname: ${VAULT_TELEMETRY_DISABLE_HOSTNAME:-false}
+    
+    # StatsD Configuration
+    statsd_address: "${VAULT_TELEMETRY_STATSD_ADDRESS:-}"
+    
+    # Circonus Configuration
+    circonus_api_token: "${VAULT_TELEMETRY_CIRCONUS_API_TOKEN:-}"
+    circonus_api_app: "${VAULT_TELEMETRY_CIRCONUS_API_APP:-vault}"
+    circonus_api_url: "${VAULT_TELEMETRY_CIRCONUS_API_URL:-https://api.circonus.com/v2}"
+    circonus_submission_interval: "${VAULT_TELEMETRY_CIRCONUS_SUBMISSION_INTERVAL:-10s}"
+    circonus_submission_url: "${VAULT_TELEMETRY_CIRCONUS_SUBMISSION_URL:-}"
+    circonus_check_id: "${VAULT_TELEMETRY_CIRCONUS_CHECK_ID:-}"
+    circonus_check_force_metric_activation: "${VAULT_TELEMETRY_CIRCONUS_CHECK_FORCE_METRIC_ACTIVATION:-}"
+    circonus_check_instance_id: "${VAULT_TELEMETRY_CIRCONUS_CHECK_INSTANCE_ID:-}"
+    circonus_check_search_tag: "${VAULT_TELEMETRY_CIRCONUS_CHECK_SEARCH_TAG:-}"
+    circonus_check_display_name: "${VAULT_TELEMETRY_CIRCONUS_CHECK_DISPLAY_NAME:-}"
+    circonus_check_tags: "${VAULT_TELEMETRY_CIRCONUS_CHECK_TAGS:-}"
+    circonus_broker_id: "${VAULT_TELEMETRY_CIRCONUS_BROKER_ID:-}"
+    circonus_broker_select_tag: "${VAULT_TELEMETRY_CIRCONUS_BROKER_SELECT_TAG:-}"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      server:
+        listener:
+          tcp:
+            tls_disable: true
+            address: "0.0.0.0:8200"
+        
+        storage:
+          raft:
+            path: "/tmp/vault/data"
+        
+        ui: true
+        disable_mlock: true
+        disable_cache: false
+        default_lease_ttl: "1h"
+        max_lease_ttl: "24h"
+      
+      auth_methods:
+        userpass:
+          enabled: true
+          default_users:
+            - username: "admin"
+              password: "admin"
+              policies: ["admin-policy"]
+      
+      secret_engines:
+        kv_v2:
+          enabled: true
+        database:
+          enabled: false
+        pki:
+          enabled: false
+        transit:
+          enabled: true
+      
+      audit:
+        file:
+          enabled: false
+        syslog:
+          enabled: false
+    
+    production:
+      server:
+        listener:
+          tcp:
+            tls_disable: false
+            tls_cert_file: "/etc/vault/tls/vault.crt"
+            tls_key_file: "/etc/vault/tls/vault.key"
+            tls_client_ca_file: "/etc/vault/tls/ca.crt"
+            tls_min_version: "tls12"
+        
+        storage:
+          raft:
+            path: "/opt/vault/data"
+            retry_join:
+              - leader_api_addr: "https://vault-0.vault-internal:8200"
+              - leader_api_addr: "https://vault-1.vault-internal:8200"
+              - leader_api_addr: "https://vault-2.vault-internal:8200"
+        
+        ui: false
+        disable_mlock: false
+        disable_cache: false
+        default_lease_ttl: "768h"
+        max_lease_ttl: "8760h"
+      
+      auth_methods:
+        userpass:
+          enabled: false
+        ldap:
+          enabled: true
+        kubernetes:
+          enabled: true
+        jwt:
+          enabled: true
+      
+      secret_engines:
+        kv_v2:
+          enabled: true
+        database:
+          enabled: true
+        pki:
+          enabled: true
+        transit:
+          enabled: true
+        aws:
+          enabled: true
+      
+      audit:
+        file:
+          enabled: true
+          options:
+            file_path: "/opt/vault/logs/audit.log"
+        syslog:
+          enabled: true
+      
+      telemetry:
+        prometheus_retention_time: "72h"
+        disable_hostname: false
+
+# ==========================================
+# VAULT CLIENT CONFIGURATION
+# ==========================================
+
+vault_client:
+  # Connection Configuration
+  connection:
+    address: "${VAULT_ADDR:-http://127.0.0.1:8200}"
+    token: "${VAULT_TOKEN:-}"
+    
+    # TLS Configuration
+    ca_cert: "${VAULT_CACERT:-}"
+    ca_path: "${VAULT_CAPATH:-}"
+    client_cert: "${VAULT_CLIENT_CERT:-}"
+    client_key: "${VAULT_CLIENT_KEY:-}"
+    tls_skip_verify: ${VAULT_SKIP_VERIFY:-false}
+    
+    # Timeout Configuration
+    timeout: "${VAULT_CLIENT_TIMEOUT:-60s}"
+    
+    # Retry Configuration
+    max_retries: ${VAULT_MAX_RETRIES:-2}
+    
+    # Rate Limiting
+    rate_limiter:
+      enabled: ${VAULT_RATE_LIMITER_ENABLED:-false}
+      rate: ${VAULT_RATE_LIMITER_RATE:-10}
+      burst: ${VAULT_RATE_LIMITER_BURST:-20}
+  
+  # Authentication Configuration
+  auth:
+    method: "${VAULT_AUTH_METHOD:-token}"
+    
+    # Token Authentication
+    token:
+      token: "${VAULT_TOKEN:-}"
+    
+    # AppRole Authentication
+    approle:
+      role_id: "${VAULT_ROLE_ID:-}"
+      secret_id: "${VAULT_SECRET_ID:-}"
+      mount_point: "${VAULT_APPROLE_MOUNT_POINT:-approle}"
+    
+    # Kubernetes Authentication
+    kubernetes:
+      role: "${VAULT_K8S_ROLE:-}"
+      jwt_path: "${VAULT_K8S_JWT_PATH:-/var/run/secrets/kubernetes.io/serviceaccount/token}"
+      mount_point: "${VAULT_K8S_MOUNT_POINT:-kubernetes}"
+    
+    # AWS IAM Authentication
+    aws_iam:
+      role: "${VAULT_AWS_ROLE:-}"
+      mount_point: "${VAULT_AWS_MOUNT_POINT:-aws}"
+      region: "${VAULT_AWS_REGION:-us-east-1}"
+      header_value: "${VAULT_AWS_HEADER_VALUE:-}"

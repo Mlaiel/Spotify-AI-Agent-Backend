@@ -1,0 +1,163 @@
+# Enterprise Infrastructure Alert Template (English) - Advanced Industrial Grade
+{% set infra_icons = {
+    'compute': '🖥️',
+    'storage': '💾',
+    'network': '🌐',
+    'database': '🗄️',
+    'kubernetes': '☸️',
+    'docker': '🐳',
+    'load_balancer': '⚖️',
+    'cdn': '🌍',
+    'cache': '⚡'
+} %}
+
+🏗️ **INFRASTRUCTURE ALERT** 🏗️
+
+**{{ infra_icons.get(alert.infrastructure_context.component_type, '🔧') }} Infrastructure Component Alert**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Infrastructure Context**
+• **Component**: `{{ alert.infrastructure_context.component_name }}`
+• **Type**: {{ alert.infrastructure_context.component_type | title }}
+• **Environment**: `{{ environment | upper }}`
+• **Cluster**: `{{ alert.infrastructure_context.cluster_name }}`
+• **Region**: `{{ alert.infrastructure_context.region }}`
+• **Availability Zone**: `{{ alert.infrastructure_context.availability_zone }}`
+
+🚨 **Alert Details**
+• **Issue**: {{ alert.title }}
+• **Description**: {{ alert.description }}
+• **Severity**: `{{ alert.severity.upper() }}` ({{ alert.priority_score | default(0) }}/10)
+• **Detected**: {{ format_date(alert.created_at) }}
+• **Duration**: {{ alert.duration | duration_format | default('Just detected') }}
+
+{% if alert.infrastructure_context.node_details %}
+🖥️ **Node/Instance Information**
+• **Node ID**: `{{ alert.infrastructure_context.node_details.node_id }}`
+• **Instance Type**: {{ alert.infrastructure_context.node_details.instance_type }}
+• **Instance State**: {{ alert.infrastructure_context.node_details.instance_state }}
+• **Private IP**: {{ alert.infrastructure_context.node_details.private_ip }}
+• **Public IP**: {{ alert.infrastructure_context.node_details.public_ip | default('N/A') }}
+• **Launch Time**: {{ format_date(alert.infrastructure_context.node_details.launch_time) }}
+• **Uptime**: {{ alert.infrastructure_context.node_details.uptime | duration_format }}
+{% endif %}
+
+{% if alert.infrastructure_context.resource_utilization %}
+📊 **Resource Utilization**
+• **CPU Usage**: {{ alert.infrastructure_context.resource_utilization.cpu_percent }}% (Threshold: {{ alert.infrastructure_context.resource_utilization.cpu_threshold }}%)
+• **Memory Usage**: {{ alert.infrastructure_context.resource_utilization.memory_percent }}% ({{ alert.infrastructure_context.resource_utilization.memory_used }}/{{ alert.infrastructure_context.resource_utilization.memory_total }})
+• **Disk Usage**: {{ alert.infrastructure_context.resource_utilization.disk_percent }}% ({{ alert.infrastructure_context.resource_utilization.disk_used }}/{{ alert.infrastructure_context.resource_utilization.disk_total }})
+• **Network I/O**: In: {{ alert.infrastructure_context.resource_utilization.network_in }}/s, Out: {{ alert.infrastructure_context.resource_utilization.network_out }}/s
+• **Load Average**: {{ alert.infrastructure_context.resource_utilization.load_average }}
+{% endif %}
+
+{% if alert.infrastructure_context.kubernetes_context %}
+☸️ **Kubernetes Context**
+• **Namespace**: `{{ alert.infrastructure_context.kubernetes_context.namespace }}`
+• **Pod Name**: `{{ alert.infrastructure_context.kubernetes_context.pod_name }}`
+• **Pod Status**: {{ alert.infrastructure_context.kubernetes_context.pod_status }}
+• **Container**: `{{ alert.infrastructure_context.kubernetes_context.container_name }}`
+• **Image**: {{ alert.infrastructure_context.kubernetes_context.image_name }}:{{ alert.infrastructure_context.kubernetes_context.image_tag }}
+• **Restart Count**: {{ alert.infrastructure_context.kubernetes_context.restart_count }}
+• **Node**: `{{ alert.infrastructure_context.kubernetes_context.node_name }}`
+{% endif %}
+
+{% if alert.infrastructure_context.service_impact %}
+🎯 **Service Impact Analysis**
+• **Affected Services**: {{ alert.infrastructure_context.service_impact.affected_services_count }}
+• **Critical Services**: {{ alert.infrastructure_context.service_impact.critical_services | join(', ') }}
+• **Traffic Impact**: {{ alert.infrastructure_context.service_impact.traffic_impact_percentage }}% of total traffic
+• **Request Failure Rate**: {{ alert.infrastructure_context.service_impact.failure_rate }}%
+• **Estimated Recovery Time**: {{ alert.infrastructure_context.service_impact.estimated_recovery_time }}
+{% endif %}
+
+{% if alert.infrastructure_context.network_details %}
+🌐 **Network Infrastructure**
+• **VPC ID**: `{{ alert.infrastructure_context.network_details.vpc_id }}`
+• **Subnet**: `{{ alert.infrastructure_context.network_details.subnet_id }}`
+• **Security Groups**: {{ alert.infrastructure_context.network_details.security_groups | join(', ') }}
+• **Load Balancer**: {{ alert.infrastructure_context.network_details.load_balancer_name | default('N/A') }}
+• **Auto Scaling Group**: {{ alert.infrastructure_context.network_details.asg_name | default('N/A') }}
+• **Network ACLs**: {{ alert.infrastructure_context.network_details.network_acls | join(', ') }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🤖 **AI Infrastructure Analysis**
+{% if alert.ai_insights.capacity_prediction %}
+**📊 Capacity Prediction**: {{ alert.ai_insights.capacity_prediction.forecast }}
+**⏰ Time to Capacity Limit**: {{ alert.ai_insights.capacity_prediction.time_to_limit }}
+{% endif %}
+
+{% if alert.ai_insights.recommended_actions %}
+**🛠️ Infrastructure Recommendations**:
+{% for action in alert.ai_insights.recommended_actions[:4] %}
+{{ loop.index }}. {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.cost_optimization %}
+**💰 Cost Optimization Opportunities**:
+{% for optimization in alert.ai_insights.cost_optimization %}
+• {{ optimization.description }} (Potential Savings: {{ optimization.estimated_savings }})
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if alert.infrastructure_context.backup_status %}
+💾 **Backup & Disaster Recovery**
+• **Last Backup**: {{ format_date(alert.infrastructure_context.backup_status.last_backup_time) }}
+• **Backup Status**: {{ alert.infrastructure_context.backup_status.status }}
+• **RPO Compliance**: {{ alert.infrastructure_context.backup_status.rpo_compliant | ternary('✅ Compliant', '❌ Non-compliant') }}
+• **RTO Estimate**: {{ alert.infrastructure_context.backup_status.rto_estimate }}
+{% endif %}
+
+{% if alert.infrastructure_context.scaling_context %}
+📈 **Auto-Scaling Information**
+• **Current Capacity**: {{ alert.infrastructure_context.scaling_context.current_capacity }}
+• **Desired Capacity**: {{ alert.infrastructure_context.scaling_context.desired_capacity }}
+• **Min/Max Capacity**: {{ alert.infrastructure_context.scaling_context.min_capacity }}/{{ alert.infrastructure_context.scaling_context.max_capacity }}
+• **Scaling Policy**: {{ alert.infrastructure_context.scaling_context.policy_name }}
+• **Last Scaling Activity**: {{ format_date(alert.infrastructure_context.scaling_context.last_scaling_activity) }}
+• **Scaling Cooldown**: {{ alert.infrastructure_context.scaling_context.cooldown_period }}
+{% endif %}
+
+🚀 **Infrastructure Management Links**
+• [🏗️ Infrastructure Dashboard]({{ dashboard_url }}/infrastructure/overview)
+• [📊 Resource Monitoring]({{ monitoring_url }}/infrastructure/{{ alert.infrastructure_context.component_name }})
+• [☸️ Kubernetes Dashboard]({{ k8s_dashboard_url }}/{{ alert.infrastructure_context.kubernetes_context.namespace | default('default') }})
+• [🔧 Auto-Scaling Console]({{ aws_console_url }}/ec2/autoscaling/home)
+• [📋 Infrastructure Logs]({{ logs_url }}/infrastructure/{{ alert.infrastructure_context.component_name }})
+• [💾 Backup Console]({{ backup_url }}/{{ alert.infrastructure_context.component_name }})
+
+{% if alert.infrastructure_context.health_checks %}
+🏥 **Health Check Status**
+{% for check in alert.infrastructure_context.health_checks %}
+• **{{ check.name }}**: {{ check.status }} (Last Check: {{ format_date(check.last_check) }})
+{% endfor %}
+{% endif %}
+
+{% if alert.infrastructure_context.compliance_status %}
+📋 **Compliance & Security**
+• **Security Compliance**: {{ alert.infrastructure_context.compliance_status.security_score }}/100
+• **Patch Level**: {{ alert.infrastructure_context.compliance_status.patch_status }}
+• **Vulnerability Scan**: {{ format_date(alert.infrastructure_context.compliance_status.last_vuln_scan) }}
+• **Configuration Drift**: {{ alert.infrastructure_context.compliance_status.config_drift | ternary('⚠️ Detected', '✅ None') }}
+{% endif %}
+
+{% if alert.infrastructure_context.immediate_actions %}
+⚡ **Immediate Actions Available**
+{% for action in alert.infrastructure_context.immediate_actions %}
+• **{{ action.type }}**: {{ action.description }} (Risk: {{ action.risk_level }}, ETA: {{ action.estimated_time }})
+{% endfor %}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Alert ID**: `{{ alert.alert_id }}`
+**Infrastructure ID**: `{{ alert.infrastructure_context.component_id }}`
+**Cost Center**: `{{ alert.infrastructure_context.cost_center | default('N/A') }}`
+**Owner Team**: `{{ alert.infrastructure_context.owner_team | default('Infrastructure') }}`
+
+*🎵 Spotify AI Agent Infrastructure Monitoring*
+*Infrastructure alert detected: {{ format_date(now, 'iso') }}*
+*Escalation Path: {{ alert.infrastructure_context.escalation_path | default('Standard') }}*
+*📞 Emergency Infrastructure Team: @infra-emergency*

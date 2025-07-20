@@ -1,0 +1,49 @@
+{
+  "number_formats": {
+    "decimal_separator": ".",
+    "thousand_separator": ",",
+    "currency_position": "prefix",
+    "currency_symbol": "$",
+    "percentage_suffix": "%",
+    "negative_format": "-{value}"
+  },
+  "date_formats": {
+    "short_date": "MM/DD/YYYY",
+    "long_date": "MMMM DD, YYYY",
+    "short_time": "h:mm A",
+    "long_time": "h:mm:ss A",
+    "datetime": "MM/DD/YYYY h:mm A",
+    "iso_datetime": "YYYY-MM-DD HH:mm:ss UTC",
+    "relative_time_patterns": {
+      "just_now": "just now",
+      "minutes_ago": "{count} minute{s} ago",
+      "hours_ago": "{count} hour{s} ago",
+      "days_ago": "{count} day{s} ago"
+    }
+  },
+  "units": {
+    "system": "imperial",
+    "temperature": "fahrenheit",
+    "distance": "miles",
+    "weight": "pounds",
+    "volume": "gallons",
+    "data_size": {
+      "binary": true,
+      "units": ["B", "KB", "MB", "GB", "TB", "PB"]
+    }
+  },
+  "performance_metrics": {
+    "response_time_unit": "milliseconds",
+    "throughput_unit": "requests/second",
+    "cpu_format": "percentage",
+    "memory_format": "bytes",
+    "disk_format": "bytes"
+  },
+  "localization_preferences": {
+    "rtl_support": false,
+    "encoding": "utf-8",
+    "collation": "en_US",
+    "first_day_of_week": "sunday",
+    "week_numbering": "iso"
+  }
+}

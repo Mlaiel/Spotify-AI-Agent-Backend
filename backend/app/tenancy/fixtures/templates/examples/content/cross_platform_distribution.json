@@ -1,0 +1,442 @@
+{
+  "_metadata": {
+    "template_type": "content_distribution",
+    "template_version": "2.5.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "DistributionTemplateGenerator",
+    "tags": ["distribution", "cross-platform", "sync", "automation", "multi-channel"],
+    "description": "Cross-platform content distribution with automated sync and multi-channel publishing"
+  },
+  "distribution_id": "{{ distribution_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "user_id": "{{ user_id }}",
+  "content_info": {
+    "source_type": "{{ source_type | default('playlist') }}",
+    "source_id": "{{ source_id }}",
+    "content_title": "{{ content_title }}",
+    "content_description": "{{ content_description | default('') }}",
+    "content_category": "{{ content_category | default('music') }}",
+    "content_language": "{{ content_language | default('en') }}",
+    "content_tags": [
+      "{{ content_tag_1 | default('') }}",
+      "{{ content_tag_2 | default('') }}",
+      "{{ content_tag_3 | default('') }}"
+    ],
+    "explicit_content": "{{ explicit_content | default(false) }}",
+    "age_rating": "{{ age_rating | default('all_ages') }}",
+    "copyright_cleared": "{{ copyright_cleared | default(true) }}"
+  },
+  "distribution_settings": {
+    "distribution_type": "{{ distribution_type | default('multi_platform') }}",
+    "auto_distribution": "{{ auto_distribution | default(true) }}",
+    "scheduled_publishing": "{{ scheduled_publishing | default(false) }}",
+    "publishing_schedule": {
+      "immediate": "{{ publish_immediate | default(true) }}",
+      "scheduled_time": "{{ scheduled_time | default(null) }}",
+      "time_zone": "{{ publishing_timezone | default('UTC') }}",
+      "recurring": "{{ recurring_publishing | default(false) }}",
+      "frequency": "{{ publishing_frequency | default('weekly') }}"
+    },
+    "content_optimization": {
+      "auto_optimize": "{{ auto_optimize | default(true) }}",
+      "platform_specific": "{{ platform_specific_optimization | default(true) }}",
+      "seo_optimization": "{{ seo_optimization | default(true) }}",
+      "thumbnail_generation": "{{ thumbnail_generation | default(true) }}",
+      "metadata_enhancement": "{{ metadata_enhancement | default(true) }}"
+    }
+  },
+  "target_platforms": [
+    {
+      "platform_id": "spotify",
+      "platform_name": "Spotify",
+      "enabled": "{{ spotify_enabled | default(true) }}",
+      "priority": 1,
+      "configuration": {
+        "api_credentials": {
+          "client_id": "{{ spotify_client_id | encrypt_sensitive }}",
+          "client_secret": "{{ spotify_client_secret | encrypt_sensitive }}",
+          "refresh_token": "{{ spotify_refresh_token | encrypt_sensitive }}"
+        },
+        "publishing_settings": {
+          "playlist_public": "{{ spotify_playlist_public | default(false) }}",
+          "collaborative": "{{ spotify_collaborative | default(false) }}",
+          "playlist_cover": "{{ spotify_playlist_cover | default('auto_generate') }}",
+          "playlist_description": "{{ spotify_playlist_description | default(content_description) }}"
+        },
+        "sync_settings": {
+          "bidirectional_sync": "{{ spotify_bidirectional_sync | default(false) }}",
+          "sync_frequency": "{{ spotify_sync_frequency | default('real_time') }}",
+          "conflict_resolution": "{{ spotify_conflict_resolution | default('source_wins') }}",
+          "track_order_sync": "{{ spotify_track_order_sync | default(true) }}"
+        },
+        "metadata_mapping": {
+          "title_field": "name",
+          "description_field": "description",
+          "tags_field": "custom_tags",
+          "cover_image_field": "cover_image"
+        }
+      },
+      "distribution_status": "pending",
+      "last_sync": null,
+      "sync_errors": [],
+      "platform_url": null,
+      "analytics_enabled": "{{ spotify_analytics | default(true) }}"
+    },
+    {
+      "platform_id": "apple_music",
+      "platform_name": "Apple Music",
+      "enabled": "{{ apple_music_enabled | default(false) }}",
+      "priority": 2,
+      "configuration": {
+        "api_credentials": {
+          "developer_token": "{{ apple_developer_token | encrypt_sensitive }}",
+          "user_token": "{{ apple_user_token | encrypt_sensitive }}"
+        },
+        "publishing_settings": {
+          "playlist_public": "{{ apple_playlist_public | default(false) }}",
+          "playlist_artwork": "{{ apple_playlist_artwork | default('auto_generate') }}",
+          "playlist_description": "{{ apple_playlist_description | default(content_description) }}"
+        },
+        "sync_settings": {
+          "sync_frequency": "{{ apple_sync_frequency | default('hourly') }}",
+          "conflict_resolution": "{{ apple_conflict_resolution | default('manual') }}",
+          "availability_check": "{{ apple_availability_check | default(true) }}"
+        },
+        "metadata_mapping": {
+          "title_field": "name",
+          "description_field": "description",
+          "artwork_field": "artwork"
+        }
+      },
+      "distribution_status": "disabled",
+      "last_sync": null,
+      "sync_errors": [],
+      "platform_url": null,
+      "analytics_enabled": "{{ apple_analytics | default(false) }}"
+    },
+    {
+      "platform_id": "youtube_music",
+      "platform_name": "YouTube Music",
+      "enabled": "{{ youtube_music_enabled | default(false) }}",
+      "priority": 3,
+      "configuration": {
+        "api_credentials": {
+          "api_key": "{{ youtube_api_key | encrypt_sensitive }}",
+          "oauth_token": "{{ youtube_oauth_token | encrypt_sensitive }}"
+        },
+        "publishing_settings": {
+          "playlist_privacy": "{{ youtube_playlist_privacy | default('unlisted') }}",
+          "playlist_thumbnail": "{{ youtube_playlist_thumbnail | default('auto_generate') }}",
+          "playlist_description": "{{ youtube_playlist_description | default(content_description) }}"
+        },
+        "sync_settings": {
+          "sync_frequency": "{{ youtube_sync_frequency | default('daily') }}",
+          "video_creation": "{{ youtube_video_creation | default(false) }}",
+          "availability_filtering": "{{ youtube_availability_filtering | default(true) }}"
+        },
+        "metadata_mapping": {
+          "title_field": "title",
+          "description_field": "description",
+          "thumbnail_field": "thumbnail"
+        }
+      },
+      "distribution_status": "disabled",
+      "last_sync": null,
+      "sync_errors": [],
+      "platform_url": null,
+      "analytics_enabled": "{{ youtube_analytics | default(false) }}"
+    },
+    {
+      "platform_id": "soundcloud",
+      "platform_name": "SoundCloud",
+      "enabled": "{{ soundcloud_enabled | default(false) }}",
+      "priority": 4,
+      "configuration": {
+        "api_credentials": {
+          "client_id": "{{ soundcloud_client_id | encrypt_sensitive }}",
+          "oauth_token": "{{ soundcloud_oauth_token | encrypt_sensitive }}"
+        },
+        "publishing_settings": {
+          "playlist_sharing": "{{ soundcloud_playlist_sharing | default('public') }}",
+          "playlist_artwork": "{{ soundcloud_playlist_artwork | default('auto_generate') }}",
+          "playlist_genre": "{{ soundcloud_playlist_genre | default('Various') }}"
+        },
+        "sync_settings": {
+          "sync_frequency": "{{ soundcloud_sync_frequency | default('manual') }}",
+          "track_availability_check": "{{ soundcloud_availability_check | default(true) }}",
+          "quality_filtering": "{{ soundcloud_quality_filtering | default(true) }}"
+        },
+        "metadata_mapping": {
+          "title_field": "title",
+          "description_field": "description",
+          "artwork_field": "artwork_url"
+        }
+      },
+      "distribution_status": "disabled",
+      "last_sync": null,
+      "sync_errors": [],
+      "platform_url": null,
+      "analytics_enabled": "{{ soundcloud_analytics | default(false) }}"
+    }
+  ],
+  "social_media_integration": {
+    "twitter": {
+      "enabled": "{{ twitter_enabled | default(false) }}",
+      "auto_post": "{{ twitter_auto_post | default(false) }}",
+      "post_template": "{{ twitter_post_template | default('Check out my new playlist: {{content_title}} {{platform_url}}') }}",
+      "hashtags": [
+        "{{ twitter_hashtag_1 | default('#music') }}",
+        "{{ twitter_hashtag_2 | default('#playlist') }}",
+        "{{ twitter_hashtag_3 | default('#spotify') }}"
+      ],
+      "include_cover_image": "{{ twitter_include_image | default(true) }}",
+      "post_timing": "{{ twitter_post_timing | default('immediate') }}"
+    },
+    "instagram": {
+      "enabled": "{{ instagram_enabled | default(false) }}",
+      "auto_post": "{{ instagram_auto_post | default(false) }}",
+      "story_post": "{{ instagram_story_post | default(true) }}",
+      "feed_post": "{{ instagram_feed_post | default(false) }}",
+      "post_template": "{{ instagram_post_template | default('New playlist alert! 🎵\\n{{content_title}}\\nLink in bio!') }}",
+      "story_template": "{{ instagram_story_template | default('{{content_title}} is live!') }}",
+      "hashtags": [
+        "{{ instagram_hashtag_1 | default('#music') }}",
+        "{{ instagram_hashtag_2 | default('#playlist') }}",
+        "{{ instagram_hashtag_3 | default('#newmusic') }}"
+      ]
+    },
+    "facebook": {
+      "enabled": "{{ facebook_enabled | default(false) }}",
+      "auto_post": "{{ facebook_auto_post | default(false) }}",
+      "page_post": "{{ facebook_page_post | default(true) }}",
+      "personal_post": "{{ facebook_personal_post | default(false) }}",
+      "post_template": "{{ facebook_post_template | default('🎵 New playlist: {{content_title}}\\n\\n{{content_description}}\\n\\nListen here: {{platform_url}}') }}",
+      "include_cover_image": "{{ facebook_include_image | default(true) }}",
+      "target_audience": "{{ facebook_target_audience | default('public') }}"
+    },
+    "discord": {
+      "enabled": "{{ discord_enabled | default(false) }}",
+      "webhook_url": "{{ discord_webhook_url | encrypt_sensitive | default('') }}",
+      "auto_announce": "{{ discord_auto_announce | default(false) }}",
+      "announcement_template": "{{ discord_announcement_template | default('🎵 **{{content_title}}** is now live!\\n{{platform_url}}') }}",
+      "embed_enabled": "{{ discord_embed_enabled | default(true) }}",
+      "mention_role": "{{ discord_mention_role | default('') }}"
+    }
+  },
+  "content_transformation": {
+    "format_conversions": {
+      "playlist_to_video": "{{ playlist_to_video | default(false) }}",
+      "playlist_to_podcast": "{{ playlist_to_podcast | default(false) }}",
+      "playlist_to_blog": "{{ playlist_to_blog | default(false) }}",
+      "playlist_to_newsletter": "{{ playlist_to_newsletter | default(false) }}"
+    },
+    "video_generation": {
+      "enabled": "{{ video_generation_enabled | default(false) }}",
+      "template_style": "{{ video_template_style | default('minimal') }}",
+      "include_visualizer": "{{ video_include_visualizer | default(true) }}",
+      "duration_per_track": "{{ video_duration_per_track | default(30) }}",
+      "transition_effects": "{{ video_transition_effects | default(true) }}",
+      "watermark": "{{ video_watermark | default(true) }}"
+    },
+    "blog_generation": {
+      "enabled": "{{ blog_generation_enabled | default(false) }}",
+      "content_style": "{{ blog_content_style | default('casual') }}",
+      "include_track_reviews": "{{ blog_include_reviews | default(true) }}",
+      "include_artist_info": "{{ blog_include_artist_info | default(true) }}",
+      "seo_optimization": "{{ blog_seo_optimization | default(true) }}",
+      "publish_to_medium": "{{ blog_publish_medium | default(false) }}"
+    }
+  },
+  "analytics_and_tracking": {
+    "cross_platform_analytics": {
+      "enabled": "{{ cross_platform_analytics | default(true) }}",
+      "unified_dashboard": "{{ unified_analytics_dashboard | default(true) }}",
+      "real_time_tracking": "{{ real_time_analytics_tracking | default(true) }}",
+      "conversion_tracking": "{{ conversion_tracking | default(true) }}",
+      "attribution_modeling": "{{ attribution_modeling | default(true) }}"
+    },
+    "tracked_metrics": [
+      {
+        "metric_name": "total_plays",
+        "enabled": "{{ track_total_plays | default(true) }}",
+        "aggregation": "sum"
+      },
+      {
+        "metric_name": "unique_listeners",
+        "enabled": "{{ track_unique_listeners | default(true) }}",
+        "aggregation": "count_distinct"
+      },
+      {
+        "metric_name": "completion_rate",
+        "enabled": "{{ track_completion_rate | default(true) }}",
+        "aggregation": "average"
+      },
+      {
+        "metric_name": "share_count",
+        "enabled": "{{ track_share_count | default(true) }}",
+        "aggregation": "sum"
+      },
+      {
+        "metric_name": "save_rate",
+        "enabled": "{{ track_save_rate | default(true) }}",
+        "aggregation": "average"
+      }
+    ],
+    "reporting": {
+      "daily_reports": "{{ daily_analytics_reports | default(true) }}",
+      "weekly_summaries": "{{ weekly_analytics_summaries | default(true) }}",
+      "monthly_insights": "{{ monthly_analytics_insights | default(true) }}",
+      "custom_reporting": "{{ custom_analytics_reporting | default(false) }}",
+      "export_formats": ["json", "csv", "pdf"]
+    }
+  },
+  "automation_workflows": {
+    "trigger_events": [
+      {
+        "event_type": "content_created",
+        "enabled": "{{ auto_on_content_created | default(true) }}",
+        "delay_minutes": "{{ auto_delay_content_created | default(0) }}",
+        "conditions": []
+      },
+      {
+        "event_type": "content_updated",
+        "enabled": "{{ auto_on_content_updated | default(true) }}",
+        "delay_minutes": "{{ auto_delay_content_updated | default(5) }}",
+        "conditions": [
+          "significant_changes_only"
+        ]
+      },
+      {
+        "event_type": "scheduled_time",
+        "enabled": "{{ auto_on_scheduled_time | default(false) }}",
+        "delay_minutes": 0,
+        "conditions": [
+          "schedule_active"
+        ]
+      }
+    ],
+    "workflow_actions": [
+      {
+        "action_type": "distribute_to_platforms",
+        "enabled": "{{ workflow_distribute_platforms | default(true) }}",
+        "platforms": ["spotify", "apple_music"],
+        "parallel_execution": "{{ workflow_parallel_execution | default(true) }}"
+      },
+      {
+        "action_type": "post_to_social_media",
+        "enabled": "{{ workflow_post_social_media | default(false) }}",
+        "platforms": ["twitter", "instagram"],
+        "delay_after_distribution": "{{ workflow_social_delay | default(10) }}"
+      },
+      {
+        "action_type": "send_notifications",
+        "enabled": "{{ workflow_send_notifications | default(true) }}",
+        "notification_types": ["email", "push"],
+        "target_audience": "followers"
+      }
+    ],
+    "error_handling": {
+      "retry_failed_distributions": "{{ retry_failed_distributions | default(true) }}",
+      "max_retry_attempts": "{{ max_retry_attempts | default(3) }}",
+      "retry_backoff_strategy": "{{ retry_backoff_strategy | default('exponential') }}",
+      "notification_on_failure": "{{ notify_on_failure | default(true) }}",
+      "fallback_actions": [
+        "manual_notification",
+        "queue_for_manual_review"
+      ]
+    }
+  },
+  "content_versioning": {
+    "version_control": {
+      "enabled": "{{ version_control_enabled | default(true) }}",
+      "automatic_versioning": "{{ automatic_versioning | default(true) }}",
+      "version_naming_scheme": "{{ version_naming_scheme | default('semantic') }}",
+      "track_changes": "{{ track_content_changes | default(true) }}",
+      "rollback_enabled": "{{ rollback_enabled | default(true) }}"
+    },
+    "change_detection": {
+      "track_metadata_changes": "{{ track_metadata_changes | default(true) }}",
+      "track_content_changes": "{{ track_track_list_changes | default(true) }}",
+      "track_order_changes": "{{ track_order_changes | default(true) }}",
+      "significant_change_threshold": "{{ significant_change_threshold | default(0.3) }}",
+      "auto_republish_on_changes": "{{ auto_republish_on_changes | default(false) }}"
+    },
+    "approval_workflow": {
+      "require_approval": "{{ require_approval | default(false) }}",
+      "approval_roles": ["content_manager", "admin"],
+      "auto_approve_minor_changes": "{{ auto_approve_minor_changes | default(true) }}",
+      "approval_timeout_hours": "{{ approval_timeout_hours | default(24) }}",
+      "escalation_enabled": "{{ approval_escalation_enabled | default(true) }}"
+    }
+  },
+  "compliance_and_rights": {
+    "copyright_management": {
+      "automatic_copyright_check": "{{ auto_copyright_check | default(true) }}",
+      "rights_clearance_required": "{{ rights_clearance_required | default(false) }}",
+      "content_id_matching": "{{ content_id_matching | default(true) }}",
+      "dmca_compliance": "{{ dmca_compliance | default(true) }}",
+      "regional_restrictions_check": "{{ regional_restrictions_check | default(true) }}"
+    },
+    "content_policies": {
+      "explicit_content_handling": "{{ explicit_content_handling | default('label_and_restrict') }}",
+      "age_rating_enforcement": "{{ age_rating_enforcement | default(true) }}",
+      "community_guidelines_check": "{{ community_guidelines_check | default(true) }}",
+      "spam_prevention": "{{ spam_prevention | default(true) }}",
+      "quality_standards": "{{ quality_standards | default(true) }}"
+    },
+    "data_privacy": {
+      "gdpr_compliance": "{{ gdpr_compliance | default(true) }}",
+      "ccpa_compliance": "{{ ccpa_compliance | default(true) }}",
+      "data_anonymization": "{{ data_anonymization | default(true) }}",
+      "user_consent_tracking": "{{ user_consent_tracking | default(true) }}",
+      "data_retention_policy": "{{ data_retention_days | default(365) }} days"
+    }
+  },
+  "performance_optimization": {
+    "caching_strategy": {
+      "enabled": "{{ caching_enabled | default(true) }}",
+      "cache_duration_hours": "{{ cache_duration_hours | default(6) }}",
+      "intelligent_invalidation": "{{ intelligent_cache_invalidation | default(true) }}",
+      "cdn_integration": "{{ cdn_integration | default(true) }}",
+      "edge_caching": "{{ edge_caching | default(true) }}"
+    },
+    "load_balancing": {
+      "enabled": "{{ load_balancing_enabled | default(true) }}",
+      "distribution_strategy": "{{ distribution_load_strategy | default('round_robin') }}",
+      "health_checks": "{{ health_checks_enabled | default(true) }}",
+      "failover_enabled": "{{ failover_enabled | default(true) }}",
+      "auto_scaling": "{{ auto_scaling_enabled | default(true) }}"
+    },
+    "optimization_settings": {
+      "concurrent_distributions": "{{ max_concurrent_distributions | default(5) }}",
+      "batch_processing": "{{ batch_processing_enabled | default(true) }}",
+      "compression_enabled": "{{ compression_enabled | default(true) }}",
+      "image_optimization": "{{ image_optimization_enabled | default(true) }}",
+      "lazy_loading": "{{ lazy_loading_enabled | default(true) }}"
+    }
+  },
+  "monitoring_and_alerts": {
+    "system_monitoring": {
+      "uptime_monitoring": "{{ uptime_monitoring | default(true) }}",
+      "performance_monitoring": "{{ performance_monitoring | default(true) }}",
+      "error_tracking": "{{ error_tracking | default(true) }}",
+      "resource_usage_monitoring": "{{ resource_monitoring | default(true) }}",
+      "security_monitoring": "{{ security_monitoring | default(true) }}"
+    },
+    "alerting": {
+      "distribution_failures": "{{ alert_distribution_failures | default(true) }}",
+      "performance_degradation": "{{ alert_performance_degradation | default(true) }}",
+      "quota_limits": "{{ alert_quota_limits | default(true) }}",
+      "security_threats": "{{ alert_security_threats | default(true) }}",
+      "unusual_activity": "{{ alert_unusual_activity | default(true) }}"
+    },
+    "notification_channels": {
+      "email_alerts": "{{ email_alerts | default(true) }}",
+      "sms_alerts": "{{ sms_alerts | default(false) }}",
+      "slack_alerts": "{{ slack_alerts | default(false) }}",
+      "webhook_alerts": "{{ webhook_alerts | default(false) }}",
+      "in_app_notifications": "{{ in_app_notifications | default(true) }}"
+    }
+  }
+}

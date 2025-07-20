@@ -1,0 +1,311 @@
+# Performance Testing Environment Overrides
+# =========================================
+# Configuration spécialisée pour tests de performance et benchmarking
+# Optimisée pour mesures précises et charge intensive
+
+performance_testing:
+  # Configuration globale des tests de performance
+  global:
+    environment: "performance"
+    tenant_isolation: true
+    metrics_collection: "high_frequency"
+    
+  # Configuration PostgreSQL pour tests de performance
+  postgresql:
+    # Configuration serveur haute performance
+    server:
+      # Mémoire optimisée pour charge intensive
+      memory:
+        shared_buffers: "16GB"        # 25% de 64GB RAM
+        effective_cache_size: "48GB"  # 75% de 64GB RAM
+        work_mem: "64MB"             # Pour requêtes complexes
+        maintenance_work_mem: "4GB"   # Maintenance intensive
+        
+      # WAL optimisé pour writes intensifs
+      wal:
+        wal_buffers: "128MB"
+        max_wal_size: "8GB"
+        min_wal_size: "2GB"
+        checkpoint_completion_target: 0.9
+        checkpoint_timeout: "10min"
+        
+      # Parallélisme maximal
+      parallelism:
+        max_worker_processes: 32
+        max_parallel_workers: 32
+        max_parallel_workers_per_gather: 16
+        max_parallel_maintenance_workers: 8
+        
+    # Configuration connexions pour charge
+    connections:
+      max_connections: 1000
+      superuser_reserved_connections: 10
+      
+      # Pool de connexions optimisé
+      connection_pool:
+        pool_size: 200
+        max_overflow: 100
+        pool_timeout: 30
+        pool_recycle: 7200
+        
+    # Monitoring haute fréquence
+    monitoring:
+      metrics_interval: 1          # 1 seconde
+      log_statement_stats: true
+      log_executor_stats: true
+      log_planner_stats: true
+      track_io_timing: true
+      track_functions: all
+      
+    # Test scenarios
+    test_scenarios:
+      read_heavy:
+        read_replicas: 5
+        cache_hit_target: 98
+        query_timeout: "30s"
+        
+      write_heavy:
+        batch_size: 10000
+        commit_frequency: 100
+        sync_commit: false  # Pour performance max
+        
+      mixed_workload:
+        read_write_ratio: "70:30"
+        transaction_isolation: "read_committed"
+        
+      analytics_workload:
+        parallel_workers: 16
+        work_mem: "256MB"
+        hash_mem_multiplier: 2.0
+
+  # Configuration Redis pour tests de performance
+  redis:
+    # Configuration serveur haute performance
+    server:
+      # Mémoire optimisée
+      memory:
+        maxmemory: "32GB"
+        maxmemory_policy: allkeys-lru
+        maxmemory_samples: 10
+        
+      # Threading maximal
+      threading:
+        io_threads: 8
+        io_threads_do_reads: true
+        io_threads_do_writes: true
+        
+      # Networking optimisé
+      networking:
+        tcp_backlog: 2048
+        tcp_keepalive: 300
+        timeout: 0              # Pas de timeout pour tests
+        
+    # Configuration cluster pour tests distribués
+    cluster:
+      enabled: true
+      nodes: 12                 # 4 shards x 3 replicas
+      slots_per_shard: 4096
+      
+    # Pool de connexions haute performance
+    connection_pool:
+      max_connections: 2000
+      min_connections: 100
+      connection_timeout: 1
+      socket_timeout: 1
+      
+    # Test scenarios
+    test_scenarios:
+      throughput_test:
+        pipeline_size: 1000
+        concurrent_clients: 100
+        operations_per_client: 100000
+        
+      latency_test:
+        single_threaded: true
+        operation_types: ["GET", "SET", "INCR", "LPUSH"]
+        percentiles: [50, 95, 99, 99.9]
+        
+      memory_test:
+        key_count: 10000000     # 10M keys
+        value_size_range: [100, 10240]  # 100B to 10KB
+        memory_efficiency_target: 85
+
+  # Configuration MongoDB pour tests de performance
+  mongodb:
+    # Configuration serveur
+    server:
+      # Cache optimisé
+      wiredtiger:
+        cache_size_gb: 32
+        journal_compressor: "none"  # Pas de compression pour vitesse
+        
+      # Oplog sizing
+      replication:
+        oplog_size_mb: 51200     # 50GB pour workload intensif
+        
+    # Configuration connections
+    connections:
+      max_incoming_connections: 2000
+      
+    # Test scenarios
+    test_scenarios:
+      insert_performance:
+        batch_size: 10000
+        ordered_inserts: false
+        write_concern: "unacknowledged"  # Performance max
+        
+      query_performance:
+        index_usage_target: 95
+        query_timeout: 30000
+        
+      aggregation_performance:
+        pipeline_stages_max: 20
+        memory_limit_mb: 1024
+
+  # Configuration ClickHouse pour analytics performance
+  clickhouse:
+    # Configuration serveur
+    server:
+      # Memory settings
+      max_memory_usage: 64000000000      # 64GB
+      max_memory_usage_for_user: 32000000000  # 32GB
+      max_bytes_before_external_group_by: 32000000000
+      max_bytes_before_external_sort: 32000000000
+      
+      # Threading
+      max_threads: 32
+      max_thread_pool_size: 64
+      
+    # Test scenarios
+    test_scenarios:
+      olap_queries:
+        complex_aggregations: true
+        time_series_analysis: true
+        window_functions: true
+        
+      data_ingestion:
+        batch_size: 1000000     # 1M rows
+        parallel_streams: 16
+        compression: false      # Pour vitesse max
+
+# Configuration des benchmarks
+benchmarks:
+  # PostgreSQL benchmarks
+  postgresql:
+    pgbench:
+      scale_factor: 1000        # 1000x scale pour charge
+      clients: 100
+      threads: 32
+      transactions: 1000000
+      
+    custom_workloads:
+      spotify_simulation:
+        user_queries_per_second: 10000
+        analytics_queries_per_minute: 100
+        data_ingestion_rate: "1GB/hour"
+
+  # Redis benchmarks  
+  redis:
+    redis_benchmark:
+      clients: 100
+      requests: 10000000
+      pipeline: 1000
+      data_size: 1024
+      
+    custom_workloads:
+      session_cache:
+        operations_per_second: 50000
+        hit_ratio_target: 95
+        
+  # MongoDB benchmarks
+  mongodb:
+    ycsb:
+      workload: "workloadA"     # 50% read, 50% update
+      record_count: 10000000
+      operation_count: 10000000
+      
+# Monitoring et métriques haute fréquence
+monitoring:
+  collection_frequency: "1s"    # Métriques chaque seconde
+  
+  metrics:
+    system:
+      - cpu_usage_per_core
+      - memory_usage_detailed
+      - disk_io_per_device
+      - network_io_per_interface
+      
+    database_specific:
+      postgresql:
+        - active_connections
+        - transactions_per_second
+        - cache_hit_ratio
+        - query_latency_p99
+        
+      redis:
+        - operations_per_second
+        - memory_usage_percent
+        - hit_rate
+        - latency_per_command
+        
+      mongodb:
+        - operations_per_second
+        - queue_lengths
+        - working_set_size
+        - replication_lag
+        
+  alerting:
+    thresholds:
+      performance_regression: 5    # 5% de dégradation
+      memory_usage: 90            # 90% d'utilisation mémoire
+      cpu_usage: 85               # 85% d'utilisation CPU
+      
+# Génération de rapports de performance
+reporting:
+  auto_generation: true
+  frequency: "end_of_test"
+  
+  formats:
+    - html
+    - json
+    - pdf
+    
+  content:
+    - executive_summary
+    - detailed_metrics
+    - performance_graphs
+    - recommendations
+    - comparison_baseline
+    
+  distribution:
+    email_recipients:
+      - "performance-team@spotify.com"
+      - "architecture-team@spotify.com"
+    slack_channels:
+      - "#performance-alerts"
+      - "#architecture-updates"
+
+# Variables d'environnement pour tests de performance
+environment_variables:
+  PERF_TEST_DURATION: "3600"     # 1 heure
+  PERF_TEST_RAMP_UP: "300"       # 5 minutes de montée en charge
+  PERF_TEST_BASELINE_FILE: "/var/lib/spotify-ai/performance-baselines.json"
+  PERF_TEST_RESULTS_DIR: "/var/lib/spotify-ai/performance-results"
+
+# Métadonnées
+metadata:
+  environment: performance
+  purpose: "Tests de performance et benchmarking"
+  maintainer: "Performance Engineering Team"
+  last_updated: "2025-07-16"
+  version: "2.1.0"
+  notes: |
+    Configuration optimisée pour tests de performance avec:
+    - Paramètres de performance maximaux
+    - Monitoring haute fréquence
+    - Benchmarks automatisés
+    - Rapports détaillés
+    - Comparaison avec baselines
+    
+    Configuration non adaptée pour usage production.
+    Consommation de ressources très élevée.

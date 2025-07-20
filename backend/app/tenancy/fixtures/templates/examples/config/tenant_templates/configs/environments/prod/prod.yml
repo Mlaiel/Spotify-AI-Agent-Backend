@@ -1,0 +1,922 @@
+# Production Environment Configuration Template for Enterprise Tenant Templates
+# ========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Production environment architecture and enterprise scalability
+# - Senior DevOps Engineer: Production deployment automation and infrastructure management
+# - Platform Engineer: Production infrastructure optimization and disaster recovery
+# - Security Engineer: Production security hardening and enterprise compliance
+# - SRE Specialist: Production reliability engineering and performance optimization
+
+# ==========================================
+# PRODUCTION ENVIRONMENT CONFIGURATION
+# ==========================================
+
+production:
+  # Environment Metadata
+  metadata:
+    name: "production"
+    description: "Production environment for live customer-facing applications"
+    version: "1.0.0"
+    environment_type: "production"
+    tier: "production"
+    
+    # Environment Labels
+    labels:
+      environment: "production"
+      tier: "production"
+      team: "${PROD_TEAM:-platform}"
+      project: "${PROJECT_NAME:-spotify-ai-agent}"
+      managed_by: "tenant-templates"
+      deployment_strategy: "rolling"
+      criticality: "high"
+    
+    # Environment Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Production environment for customer-facing applications"
+      compliance_certified: "${COMPLIANCE_CERTIFIED:-true}"
+      sla_tier: "99.9%"
+      backup_retention: "90d"
+
+  # Application Configuration
+  application:
+    # General Settings
+    general:
+      debug: ${PROD_DEBUG:-false}
+      log_level: "${PROD_LOG_LEVEL:-WARNING}"
+      reload: ${PROD_RELOAD:-false}
+      hot_reload: ${PROD_HOT_RELOAD:-false}
+      
+      # Production Features
+      features:
+        high_availability: ${PROD_HIGH_AVAILABILITY:-true}
+        disaster_recovery: ${PROD_DISASTER_RECOVERY:-true}
+        auto_scaling: ${PROD_AUTO_SCALING:-true}
+        monitoring: ${PROD_MONITORING:-true}
+        alerting: ${PROD_ALERTING:-true}
+        security_hardening: ${PROD_SECURITY_HARDENING:-true}
+        performance_optimization: ${PROD_PERFORMANCE_OPTIMIZATION:-true}
+        compliance_enforcement: ${PROD_COMPLIANCE_ENFORCEMENT:-true}
+    
+    # API Configuration
+    api:
+      # FastAPI Settings
+      fastapi:
+        debug: ${PROD_FASTAPI_DEBUG:-false}
+        reload: ${PROD_FASTAPI_RELOAD:-false}
+        host: "${PROD_FASTAPI_HOST:-0.0.0.0}"
+        port: ${PROD_FASTAPI_PORT:-8000}
+        workers: ${PROD_FASTAPI_WORKERS:-8}
+        
+        # Production Features
+        docs_enabled: ${PROD_DOCS_ENABLED:-false}
+        redoc_enabled: ${PROD_REDOC_ENABLED:-false}
+        openapi_enabled: ${PROD_OPENAPI_ENABLED:-false}
+        
+        # CORS Configuration
+        cors:
+          enabled: ${PROD_CORS_ENABLED:-true}
+          allow_origins:
+            - "https://spotify-ai-agent.com"
+            - "https://app.spotify-ai-agent.com"
+            - "https://www.spotify-ai-agent.com"
+          allow_methods:
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "DELETE"
+          allow_headers:
+            - "Content-Type"
+            - "Authorization"
+            - "X-Requested-With"
+            - "X-API-Key"
+          allow_credentials: ${PROD_CORS_ALLOW_CREDENTIALS:-true}
+          
+        # Security Headers
+        security_headers:
+          enabled: ${PROD_SECURITY_HEADERS_ENABLED:-true}
+          strict_transport_security: ${PROD_HSTS_ENABLED:-true}
+          content_security_policy: ${PROD_CSP_ENABLED:-true}
+          x_frame_options: "DENY"
+          x_content_type_options: "nosniff"
+          referrer_policy: "strict-origin-when-cross-origin"
+      
+      # Rate Limiting
+      rate_limiting:
+        enabled: ${PROD_RATE_LIMITING_ENABLED:-true}
+        requests_per_minute: ${PROD_RATE_LIMIT_RPM:-60}
+        burst: ${PROD_RATE_LIMIT_BURST:-10}
+        
+        # Advanced Rate Limiting
+        advanced:
+          per_user_limit: ${PROD_PER_USER_LIMIT:-30}
+          per_ip_limit: ${PROD_PER_IP_LIMIT:-60}
+          enterprise_limits: ${PROD_ENTERPRISE_LIMITS:-1000}
+          whitelist_enabled: ${PROD_RATE_LIMIT_WHITELIST:-true}
+          blacklist_enabled: ${PROD_RATE_LIMIT_BLACKLIST:-true}
+          
+        # DDoS Protection
+        ddos_protection:
+          enabled: ${PROD_DDOS_PROTECTION_ENABLED:-true}
+          threshold: ${PROD_DDOS_THRESHOLD:-100}
+          block_duration: ${PROD_DDOS_BLOCK_DURATION:-3600}  # 1 hour
+    
+    # Frontend Configuration
+    frontend:
+      # React/Next.js Settings
+      react:
+        development_mode: ${PROD_REACT_DEV_MODE:-false}
+        hot_reload: ${PROD_REACT_HOT_RELOAD:-false}
+        source_maps: ${PROD_REACT_SOURCE_MAPS:-false}
+        minification: ${PROD_REACT_MINIFICATION:-true}
+        
+        # Production Build
+        build:
+          optimization: ${PROD_REACT_OPTIMIZATION:-true}
+          tree_shaking: ${PROD_REACT_TREE_SHAKING:-true}
+          code_splitting: ${PROD_REACT_CODE_SPLITTING:-true}
+          compression: ${PROD_REACT_COMPRESSION:-true}
+          
+        # CDN Configuration
+        cdn:
+          enabled: ${PROD_CDN_ENABLED:-true}
+          provider: "${PROD_CDN_PROVIDER:-cloudflare}"
+          cache_headers: ${PROD_CDN_CACHE_HEADERS:-true}
+
+  # Database Configuration
+  database:
+    # PostgreSQL Production Settings
+    postgresql:
+      # Primary Database
+      primary:
+        host: "${PROD_DB_PRIMARY_HOST:-prod-db-primary.spotify-ai-agent.internal}"
+        port: ${PROD_DB_PRIMARY_PORT:-5432}
+        database: "${PROD_DB_NAME:-spotify_ai_agent_prod}"
+        username: "${PROD_DB_USER:-app_user}"
+        password: "${PROD_DB_PASSWORD:-}"
+        
+        # Connection Pool
+        pool:
+          min_size: ${PROD_DB_POOL_MIN:-10}
+          max_size: ${PROD_DB_POOL_MAX:-50}
+          timeout: ${PROD_DB_POOL_TIMEOUT:-30}
+          recycle: ${PROD_DB_POOL_RECYCLE:-3600}
+          
+        # Performance Settings
+        performance:
+          shared_buffers: "${PROD_DB_SHARED_BUFFERS:-256MB}"
+          effective_cache_size: "${PROD_DB_EFFECTIVE_CACHE_SIZE:-1GB}"
+          work_mem: "${PROD_DB_WORK_MEM:-4MB}"
+          maintenance_work_mem: "${PROD_DB_MAINTENANCE_WORK_MEM:-64MB}"
+          
+      # Read Replicas
+      read_replicas:
+        enabled: ${PROD_DB_READ_REPLICAS_ENABLED:-true}
+        count: ${PROD_DB_READ_REPLICA_COUNT:-3}
+        
+        # Replica Configuration
+        replicas:
+          - host: "${PROD_DB_REPLICA_1_HOST:-prod-db-replica-1.spotify-ai-agent.internal}"
+            port: ${PROD_DB_REPLICA_1_PORT:-5432}
+            lag_threshold: ${PROD_DB_REPLICA_1_LAG_THRESHOLD:-1000}  # ms
+            
+          - host: "${PROD_DB_REPLICA_2_HOST:-prod-db-replica-2.spotify-ai-agent.internal}"
+            port: ${PROD_DB_REPLICA_2_PORT:-5432}
+            lag_threshold: ${PROD_DB_REPLICA_2_LAG_THRESHOLD:-1000}  # ms
+            
+          - host: "${PROD_DB_REPLICA_3_HOST:-prod-db-replica-3.spotify-ai-agent.internal}"
+            port: ${PROD_DB_REPLICA_3_PORT:-5432}
+            lag_threshold: ${PROD_DB_REPLICA_3_LAG_THRESHOLD:-1000}  # ms
+      
+      # Backup Configuration
+      backup:
+        enabled: ${PROD_DB_BACKUP_ENABLED:-true}
+        schedule: "${PROD_DB_BACKUP_SCHEDULE:-0 1 * * *}"  # Daily at 1 AM
+        retention_days: ${PROD_DB_BACKUP_RETENTION:-90}
+        
+        # Point-in-time Recovery
+        pitr:
+          enabled: ${PROD_DB_PITR_ENABLED:-true}
+          wal_retention: ${PROD_DB_WAL_RETENTION:-7}  # days
+          
+        # Cross-region Backup
+        cross_region_backup:
+          enabled: ${PROD_DB_CROSS_REGION_BACKUP_ENABLED:-true}
+          regions:
+            - "${PROD_DB_BACKUP_REGION_1:-us-west-2}"
+            - "${PROD_DB_BACKUP_REGION_2:-eu-west-1}"
+      
+      # High Availability
+      high_availability:
+        enabled: ${PROD_DB_HA_ENABLED:-true}
+        
+        # Failover Configuration
+        failover:
+          automatic: ${PROD_DB_AUTO_FAILOVER:-true}
+          timeout: ${PROD_DB_FAILOVER_TIMEOUT:-30}  # seconds
+          
+        # Load Balancing
+        load_balancing:
+          enabled: ${PROD_DB_LOAD_BALANCING_ENABLED:-true}
+          algorithm: "${PROD_DB_LB_ALGORITHM:-least_connections}"
+    
+    # Redis Production Settings
+    redis:
+      # Primary Redis
+      primary:
+        host: "${PROD_REDIS_PRIMARY_HOST:-prod-redis-primary.spotify-ai-agent.internal}"
+        port: ${PROD_REDIS_PRIMARY_PORT:-6379}
+        database: ${PROD_REDIS_DB:-0}
+        password: "${PROD_REDIS_PASSWORD:-}"
+        
+        # Configuration
+        configuration:
+          decode_responses: ${PROD_REDIS_DECODE_RESPONSES:-true}
+          max_connections: ${PROD_REDIS_MAX_CONNECTIONS:-100}
+          retry_on_timeout: ${PROD_REDIS_RETRY_ON_TIMEOUT:-true}
+          socket_keepalive: ${PROD_REDIS_SOCKET_KEEPALIVE:-true}
+          
+        # Memory Configuration
+        memory:
+          maxmemory: "${PROD_REDIS_MAXMEMORY:-2GB}"
+          maxmemory_policy: "${PROD_REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+          
+      # Redis Clustering
+      clustering:
+        enabled: ${PROD_REDIS_CLUSTERING_ENABLED:-true}
+        nodes: ${PROD_REDIS_CLUSTER_NODES:-6}
+        
+        # Cluster Configuration
+        cluster_config:
+          cluster_require_full_coverage: ${PROD_REDIS_CLUSTER_FULL_COVERAGE:-true}
+          cluster_node_timeout: ${PROD_REDIS_CLUSTER_NODE_TIMEOUT:-15000}  # ms
+          
+      # Redis Sentinel
+      sentinel:
+        enabled: ${PROD_REDIS_SENTINEL_ENABLED:-true}
+        service_name: "${PROD_REDIS_SENTINEL_SERVICE:-mymaster}"
+        
+        # Sentinel Nodes
+        sentinels:
+          - host: "${PROD_REDIS_SENTINEL_1_HOST:-prod-redis-sentinel-1.spotify-ai-agent.internal}"
+            port: ${PROD_REDIS_SENTINEL_1_PORT:-26379}
+            
+          - host: "${PROD_REDIS_SENTINEL_2_HOST:-prod-redis-sentinel-2.spotify-ai-agent.internal}"
+            port: ${PROD_REDIS_SENTINEL_2_PORT:-26379}
+            
+          - host: "${PROD_REDIS_SENTINEL_3_HOST:-prod-redis-sentinel-3.spotify-ai-agent.internal}"
+            port: ${PROD_REDIS_SENTINEL_3_PORT:-26379}
+      
+      # Persistence
+      persistence:
+        enabled: ${PROD_REDIS_PERSISTENCE_ENABLED:-true}
+        
+        # AOF Configuration
+        aof:
+          enabled: ${PROD_REDIS_AOF_ENABLED:-true}
+          appendfsync: "${PROD_REDIS_AOF_APPENDFSYNC:-everysec}"
+          
+        # RDB Configuration
+        rdb:
+          enabled: ${PROD_REDIS_RDB_ENABLED:-true}
+          save_points:
+            - "900 1"    # save after 900 sec if at least 1 key changed
+            - "300 10"   # save after 300 sec if at least 10 keys changed
+            - "60 10000" # save after 60 sec if at least 10000 keys changed
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # JWT Settings
+      jwt:
+        secret_key: "${PROD_JWT_SECRET:-}"
+        algorithm: "${PROD_JWT_ALGORITHM:-RS256}"
+        access_token_expire: ${PROD_JWT_ACCESS_TOKEN_EXPIRE:-900}  # 15 minutes
+        refresh_token_expire: ${PROD_JWT_REFRESH_TOKEN_EXPIRE:-7200}  # 2 hours
+        
+        # Security Features
+        features:
+          token_blacklist: ${PROD_JWT_TOKEN_BLACKLIST:-true}
+          token_rotation: ${PROD_JWT_TOKEN_ROTATION:-true}
+          secure_cookies: ${PROD_JWT_SECURE_COOKIES:-true}
+          httponly_cookies: ${PROD_JWT_HTTPONLY_COOKIES:-true}
+          samesite_cookies: "${PROD_JWT_SAMESITE_COOKIES:-strict}"
+          
+        # Key Management
+        key_management:
+          rotation_enabled: ${PROD_JWT_KEY_ROTATION_ENABLED:-true}
+          rotation_interval: ${PROD_JWT_KEY_ROTATION_INTERVAL:-86400}  # 24 hours
+          key_versions: ${PROD_JWT_KEY_VERSIONS:-3}
+      
+      # OAuth2 Settings
+      oauth2:
+        enabled: ${PROD_OAUTH2_ENABLED:-true}
+        
+        # Spotify OAuth2
+        spotify:
+          client_id: "${PROD_SPOTIFY_CLIENT_ID:-}"
+          client_secret: "${PROD_SPOTIFY_CLIENT_SECRET:-}"
+          redirect_uri: "${PROD_SPOTIFY_REDIRECT_URI:-https://spotify-ai-agent.com/auth/spotify/callback}"
+          
+        # Multi-factor Authentication
+        mfa:
+          enabled: ${PROD_MFA_ENABLED:-true}
+          enforcement: "${PROD_MFA_ENFORCEMENT:-required}"
+          methods:
+            - "totp"
+            - "sms"
+            - "email"
+            - "hardware_token"
+          
+          # Backup Codes
+          backup_codes:
+            enabled: ${PROD_MFA_BACKUP_CODES_ENABLED:-true}
+            count: ${PROD_MFA_BACKUP_CODES_COUNT:-10}
+    
+    # Authorization
+    authorization:
+      # RBAC Settings
+      rbac:
+        enabled: ${PROD_RBAC_ENABLED:-true}
+        strict_mode: ${PROD_RBAC_STRICT_MODE:-true}
+        
+        # Production Roles
+        roles:
+          - name: "admin"
+            permissions: ["admin:*"]
+          - name: "user"
+            permissions: ["user:read", "user:write"]
+          - name: "readonly"
+            permissions: ["user:read"]
+          - name: "api_user"
+            permissions: ["api:read", "api:write"]
+        
+        # Role Hierarchies
+        role_hierarchies:
+          enabled: ${PROD_RBAC_HIERARCHIES_ENABLED:-true}
+          
+      # Policy Enforcement
+      policy_enforcement:
+        enabled: ${PROD_POLICY_ENFORCEMENT_ENABLED:-true}
+        audit_logs: ${PROD_POLICY_AUDIT_LOGS:-true}
+        real_time_enforcement: ${PROD_REAL_TIME_ENFORCEMENT:-true}
+        
+        # OPA (Open Policy Agent)
+        opa:
+          enabled: ${PROD_OPA_ENABLED:-true}
+          endpoint: "${PROD_OPA_ENDPOINT:-http://opa:8181}"
+    
+    # Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${PROD_DATA_ENCRYPTION_ENABLED:-true}
+        
+        # Encryption at Rest
+        encryption_at_rest:
+          enabled: ${PROD_ENCRYPTION_AT_REST_ENABLED:-true}
+          algorithm: "${PROD_ENCRYPTION_ALGORITHM:-AES-256-GCM}"
+          key_management: "${PROD_KEY_MANAGEMENT:-aws-kms}"
+          
+        # Encryption in Transit
+        encryption_in_transit:
+          enabled: ${PROD_ENCRYPTION_IN_TRANSIT_ENABLED:-true}
+          min_tls_version: "${PROD_MIN_TLS_VERSION:-1.3}"
+          
+      # TLS Settings
+      tls:
+        enabled: ${PROD_TLS_ENABLED:-true}
+        version: "${PROD_TLS_VERSION:-TLSv1.3}"
+        verify: ${PROD_TLS_VERIFY:-true}
+        
+        # Certificate Management
+        certificates:
+          auto_renewal: ${PROD_CERT_AUTO_RENEWAL:-true}
+          renewal_threshold: ${PROD_CERT_RENEWAL_THRESHOLD:-30}  # days
+          issuer: "${PROD_CERT_ISSUER:-letsencrypt-prod}"
+          
+      # Key Management
+      key_management:
+        # AWS KMS
+        aws_kms:
+          enabled: ${PROD_AWS_KMS_ENABLED:-true}
+          key_id: "${PROD_AWS_KMS_KEY_ID:-}"
+          region: "${PROD_AWS_KMS_REGION:-us-east-1}"
+          
+        # HashiCorp Vault
+        vault:
+          enabled: ${PROD_VAULT_ENABLED:-false}
+          endpoint: "${PROD_VAULT_ENDPOINT:-}"
+          auth_method: "${PROD_VAULT_AUTH_METHOD:-kubernetes}"
+    
+    # Security Monitoring
+    security_monitoring:
+      enabled: ${PROD_SECURITY_MONITORING_ENABLED:-true}
+      
+      # SIEM Integration
+      siem:
+        enabled: ${PROD_SIEM_ENABLED:-true}
+        provider: "${PROD_SIEM_PROVIDER:-splunk}"
+        endpoint: "${PROD_SIEM_ENDPOINT:-}"
+        
+      # Threat Detection
+      threat_detection:
+        enabled: ${PROD_THREAT_DETECTION_ENABLED:-true}
+        
+        # ML-based Detection
+        ml_detection:
+          enabled: ${PROD_ML_THREAT_DETECTION_ENABLED:-true}
+          model_update_frequency: ${PROD_ML_MODEL_UPDATE_FREQUENCY:-24}  # hours
+          
+      # Incident Response
+      incident_response:
+        enabled: ${PROD_INCIDENT_RESPONSE_ENABLED:-true}
+        
+        # Automated Response
+        automated_response:
+          enabled: ${PROD_AUTOMATED_RESPONSE_ENABLED:-true}
+          actions:
+            - "block_ip"
+            - "disable_user"
+            - "alert_security_team"
+    
+    # Compliance
+    compliance:
+      # Frameworks
+      frameworks:
+        gdpr:
+          enabled: ${PROD_GDPR_ENABLED:-true}
+          data_retention_days: ${PROD_GDPR_DATA_RETENTION:-2555}  # 7 years
+          
+        hipaa:
+          enabled: ${PROD_HIPAA_ENABLED:-false}
+          
+        sox:
+          enabled: ${PROD_SOX_ENABLED:-true}
+          
+        pci_dss:
+          enabled: ${PROD_PCI_DSS_ENABLED:-false}
+      
+      # Audit Logging
+      audit_logging:
+        enabled: ${PROD_AUDIT_LOGGING_ENABLED:-true}
+        
+        # Log Configuration
+        configuration:
+          retention_days: ${PROD_AUDIT_LOG_RETENTION:-2555}  # 7 years
+          encryption: ${PROD_AUDIT_LOG_ENCRYPTION:-true}
+          tamper_protection: ${PROD_AUDIT_LOG_TAMPER_PROTECTION:-true}
+          
+        # Audit Events
+        events:
+          authentication: ${PROD_AUDIT_AUTH_EVENTS:-true}
+          authorization: ${PROD_AUDIT_AUTHZ_EVENTS:-true}
+          data_access: ${PROD_AUDIT_DATA_ACCESS_EVENTS:-true}
+          administrative: ${PROD_AUDIT_ADMIN_EVENTS:-true}
+
+  # Monitoring and Observability
+  observability:
+    # Metrics
+    metrics:
+      enabled: ${PROD_METRICS_ENABLED:-true}
+      
+      # Prometheus
+      prometheus:
+        enabled: ${PROD_PROMETHEUS_ENABLED:-true}
+        port: ${PROD_PROMETHEUS_PORT:-9090}
+        path: "${PROD_PROMETHEUS_PATH:-/metrics}"
+        retention: "${PROD_PROMETHEUS_RETENTION:-30d}"
+        
+        # High Availability
+        high_availability:
+          enabled: ${PROD_PROMETHEUS_HA_ENABLED:-true}
+          replicas: ${PROD_PROMETHEUS_REPLICAS:-3}
+          
+        # Federation
+        federation:
+          enabled: ${PROD_PROMETHEUS_FEDERATION_ENABLED:-true}
+          global_prometheus: "${PROD_GLOBAL_PROMETHEUS_ENDPOINT:-}"
+          
+        # Storage
+        storage:
+          enabled: ${PROD_PROMETHEUS_STORAGE_ENABLED:-true}
+          size: "${PROD_PROMETHEUS_STORAGE_SIZE:-100Gi}"
+          storage_class: "${PROD_PROMETHEUS_STORAGE_CLASS:-fast-ssd}"
+          
+        # Alerting
+        alerting:
+          enabled: ${PROD_PROMETHEUS_ALERTING_ENABLED:-true}
+          alertmanager_url: "${PROD_ALERTMANAGER_URL:-http://alertmanager:9093}"
+          
+          # Alert Rules
+          alert_rules:
+            - name: "high_error_rate"
+              expression: "rate(http_requests_total{status=~'5..'}[5m]) > 0.1"
+              for: "5m"
+              severity: "critical"
+              
+            - name: "high_response_time"
+              expression: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1"
+              for: "10m"
+              severity: "warning"
+              
+            - name: "database_connection_failures"
+              expression: "rate(database_connection_errors_total[5m]) > 0.01"
+              for: "5m"
+              severity: "critical"
+        
+        # Custom Metrics
+        custom_metrics:
+          enabled: ${PROD_CUSTOM_METRICS_ENABLED:-true}
+          business_metrics: ${PROD_BUSINESS_METRICS:-true}
+          performance_metrics: ${PROD_PERFORMANCE_METRICS:-true}
+          security_metrics: ${PROD_SECURITY_METRICS:-true}
+    
+    # Logging
+    logging:
+      level: "${PROD_LOG_LEVEL:-WARNING}"
+      format: "${PROD_LOG_FORMAT:-json}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${PROD_LOG_CONSOLE:-false}
+          colorize: ${PROD_LOG_COLORIZE:-false}
+        
+        file:
+          enabled: ${PROD_LOG_FILE:-true}
+          path: "${PROD_LOG_FILE_PATH:-/var/log/app/prod.log}"
+          rotation: ${PROD_LOG_ROTATION:-true}
+          max_size: "${PROD_LOG_MAX_SIZE:-500MB}"
+          retention: ${PROD_LOG_RETENTION:-90}  # days
+          compression: ${PROD_LOG_COMPRESSION:-true}
+        
+        elasticsearch:
+          enabled: ${PROD_LOG_ELASTICSEARCH:-true}
+          hosts:
+            - "${PROD_ELASTICSEARCH_HOST_1:-elasticsearch-1:9200}"
+            - "${PROD_ELASTICSEARCH_HOST_2:-elasticsearch-2:9200}"
+            - "${PROD_ELASTICSEARCH_HOST_3:-elasticsearch-3:9200}"
+          index: "${PROD_LOG_INDEX:-production-logs}"
+          
+          # Index Management
+          index_management:
+            enabled: ${PROD_LOG_INDEX_MANAGEMENT_ENABLED:-true}
+            rollover_size: "${PROD_LOG_ROLLOVER_SIZE:-5GB}"
+            retention_days: ${PROD_LOG_INDEX_RETENTION:-90}
+        
+        # External Log Management
+        external_logging:
+          enabled: ${PROD_EXTERNAL_LOGGING_ENABLED:-true}
+          provider: "${PROD_LOG_PROVIDER:-datadog}"
+          endpoint: "${PROD_LOG_ENDPOINT:-}"
+      
+      # Logger Configuration
+      loggers:
+        root:
+          level: "WARNING"
+        
+        sqlalchemy:
+          level: "ERROR"
+        
+        uvicorn:
+          level: "WARNING"
+        
+        security:
+          level: "INFO"
+          
+        audit:
+          level: "INFO"
+          
+        performance:
+          level: "INFO"
+    
+    # Tracing
+    tracing:
+      enabled: ${PROD_TRACING_ENABLED:-true}
+      
+      # Jaeger
+      jaeger:
+        enabled: ${PROD_JAEGER_ENABLED:-true}
+        endpoint: "${PROD_JAEGER_ENDPOINT:-http://jaeger-collector:14268/api/traces}"
+        sampling_rate: ${PROD_JAEGER_SAMPLING_RATE:-0.01}  # 1% sampling
+        
+        # Jaeger Configuration
+        configuration:
+          max_packet_size: ${PROD_JAEGER_MAX_PACKET_SIZE:-65000}
+          queue_size: ${PROD_JAEGER_QUEUE_SIZE:-100}
+          
+      # OpenTelemetry
+      opentelemetry:
+        enabled: ${PROD_OPENTELEMETRY_ENABLED:-true}
+        endpoint: "${PROD_OTEL_ENDPOINT:-http://otel-collector:4317}"
+        
+        # Sampling
+        sampling:
+          rate: ${PROD_OTEL_SAMPLING_RATE:-0.01}  # 1% sampling
+          
+      # Distributed Tracing
+      distributed_tracing:
+        enabled: ${PROD_DISTRIBUTED_TRACING_ENABLED:-true}
+        
+        # Cross-service Correlation
+        correlation:
+          enabled: ${PROD_TRACE_CORRELATION_ENABLED:-true}
+          correlation_id_header: "X-Correlation-ID"
+    
+    # Health Checks
+    health_checks:
+      enabled: ${PROD_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Check Configuration
+      checks:
+        database:
+          enabled: ${PROD_HEALTH_CHECK_DB:-true}
+          timeout: ${PROD_HEALTH_CHECK_DB_TIMEOUT:-5}
+          interval: ${PROD_HEALTH_CHECK_DB_INTERVAL:-30}
+          failure_threshold: ${PROD_HEALTH_CHECK_DB_FAILURE_THRESHOLD:-3}
+        
+        redis:
+          enabled: ${PROD_HEALTH_CHECK_REDIS:-true}
+          timeout: ${PROD_HEALTH_CHECK_REDIS_TIMEOUT:-3}
+          interval: ${PROD_HEALTH_CHECK_REDIS_INTERVAL:-30}
+          failure_threshold: ${PROD_HEALTH_CHECK_REDIS_FAILURE_THRESHOLD:-3}
+        
+        external_apis:
+          enabled: ${PROD_HEALTH_CHECK_EXTERNAL_APIS:-true}
+          timeout: ${PROD_HEALTH_CHECK_EXTERNAL_TIMEOUT:-10}
+          interval: ${PROD_HEALTH_CHECK_EXTERNAL_INTERVAL:-60}
+          failure_threshold: ${PROD_HEALTH_CHECK_EXTERNAL_FAILURE_THRESHOLD:-5}
+        
+        dependencies:
+          enabled: ${PROD_HEALTH_CHECK_DEPENDENCIES:-true}
+          timeout: ${PROD_HEALTH_CHECK_DEPENDENCIES_TIMEOUT:-15}
+          interval: ${PROD_HEALTH_CHECK_DEPENDENCIES_INTERVAL:-120}
+          failure_threshold: ${PROD_HEALTH_CHECK_DEPENDENCIES_FAILURE_THRESHOLD:-3}
+        
+        # Deep Health Checks
+        deep_health_checks:
+          enabled: ${PROD_DEEP_HEALTH_CHECKS_ENABLED:-true}
+          interval: ${PROD_DEEP_HEALTH_CHECK_INTERVAL:-300}  # 5 minutes
+          
+          # Checks
+          checks:
+            - name: "database_write_test"
+              description: "Test database write operations"
+              timeout: 10
+              
+            - name: "cache_performance_test"
+              description: "Test cache performance"
+              timeout: 5
+              
+            - name: "ml_model_health_test"
+              description: "Test ML model health"
+              timeout: 30
+
+  # Performance Configuration
+  performance:
+    # Application Performance
+    application_performance:
+      # Caching
+      caching:
+        enabled: ${PROD_CACHING_ENABLED:-true}
+        
+        # Redis Caching
+        redis_cache:
+          enabled: ${PROD_REDIS_CACHE_ENABLED:-true}
+          ttl: ${PROD_REDIS_CACHE_TTL:-1800}  # 30 minutes
+          max_connections: ${PROD_REDIS_CACHE_MAX_CONNECTIONS:-50}
+          
+        # Memory Caching
+        memory_cache:
+          enabled: ${PROD_MEMORY_CACHE_ENABLED:-true}
+          size: "${PROD_MEMORY_CACHE_SIZE:-512MB}"
+          
+        # CDN Caching
+        cdn_cache:
+          enabled: ${PROD_CDN_CACHE_ENABLED:-true}
+          provider: "${PROD_CDN_PROVIDER:-cloudflare}"
+          ttl: ${PROD_CDN_CACHE_TTL:-86400}  # 24 hours
+          
+          # Cache Headers
+          cache_headers:
+            enabled: ${PROD_CDN_CACHE_HEADERS_ENABLED:-true}
+            public_assets_ttl: ${PROD_CDN_PUBLIC_ASSETS_TTL:-31536000}  # 1 year
+            api_responses_ttl: ${PROD_CDN_API_RESPONSES_TTL:-300}  # 5 minutes
+      
+      # Connection Pooling
+      connection_pooling:
+        enabled: ${PROD_CONNECTION_POOLING_ENABLED:-true}
+        
+        # Database Connection Pool
+        database_pool:
+          min_connections: ${PROD_DB_POOL_MIN:-10}
+          max_connections: ${PROD_DB_POOL_MAX:-50}
+          acquire_timeout: ${PROD_DB_POOL_ACQUIRE_TIMEOUT:-30}
+          idle_timeout: ${PROD_DB_POOL_IDLE_TIMEOUT:-300}
+          
+        # HTTP Connection Pool
+        http_pool:
+          max_connections: ${PROD_HTTP_POOL_MAX:-200}
+          max_connections_per_host: ${PROD_HTTP_POOL_MAX_PER_HOST:-50}
+          keepalive_timeout: ${PROD_HTTP_POOL_KEEPALIVE_TIMEOUT:-30}
+      
+      # Optimization
+      optimization:
+        # Compression
+        compression:
+          enabled: ${PROD_COMPRESSION_ENABLED:-true}
+          algorithm: "${PROD_COMPRESSION_ALGORITHM:-gzip}"
+          level: ${PROD_COMPRESSION_LEVEL:-6}
+          
+        # Minification
+        minification:
+          enabled: ${PROD_MINIFICATION_ENABLED:-true}
+          css: ${PROD_CSS_MINIFICATION:-true}
+          js: ${PROD_JS_MINIFICATION:-true}
+          html: ${PROD_HTML_MINIFICATION:-true}
+    
+    # Auto-scaling
+    auto_scaling:
+      enabled: ${PROD_AUTO_SCALING_ENABLED:-true}
+      
+      # Horizontal Pod Autoscaler
+      hpa:
+        min_replicas: ${PROD_HPA_MIN_REPLICAS:-5}
+        max_replicas: ${PROD_HPA_MAX_REPLICAS:-50}
+        target_cpu_utilization: ${PROD_HPA_CPU_TARGET:-60}
+        target_memory_utilization: ${PROD_HPA_MEMORY_TARGET:-70}
+        
+        # Custom Metrics
+        custom_metrics:
+          enabled: ${PROD_HPA_CUSTOM_METRICS_ENABLED:-true}
+          
+          # Request Rate Scaling
+          request_rate:
+            enabled: ${PROD_HPA_REQUEST_RATE_ENABLED:-true}
+            target_requests_per_second: ${PROD_HPA_TARGET_RPS:-100}
+            
+          # Queue Length Scaling
+          queue_length:
+            enabled: ${PROD_HPA_QUEUE_LENGTH_ENABLED:-true}
+            target_queue_length: ${PROD_HPA_TARGET_QUEUE_LENGTH:-10}
+        
+      # Vertical Pod Autoscaler
+      vpa:
+        enabled: ${PROD_VPA_ENABLED:-true}
+        update_mode: "${PROD_VPA_UPDATE_MODE:-Auto}"
+        
+        # Resource Recommendations
+        resource_recommendations:
+          enabled: ${PROD_VPA_RECOMMENDATIONS_ENABLED:-true}
+          min_cpu_millicores: ${PROD_VPA_MIN_CPU:-100}
+          max_cpu_millicores: ${PROD_VPA_MAX_CPU:-4000}
+          min_memory_mb: ${PROD_VPA_MIN_MEMORY:-256}
+          max_memory_mb: ${PROD_VPA_MAX_MEMORY:-8192}
+      
+      # Cluster Autoscaler
+      cluster_autoscaler:
+        enabled: ${PROD_CLUSTER_AUTOSCALER_ENABLED:-true}
+        
+        # Node Groups
+        node_groups:
+          - name: "general-purpose"
+            min_size: ${PROD_CLUSTER_MIN_NODES:-3}
+            max_size: ${PROD_CLUSTER_MAX_NODES:-20}
+            instance_type: "${PROD_CLUSTER_INSTANCE_TYPE:-m5.large}"
+            
+          - name: "compute-optimized"
+            min_size: ${PROD_CLUSTER_COMPUTE_MIN_NODES:-0}
+            max_size: ${PROD_CLUSTER_COMPUTE_MAX_NODES:-10}
+            instance_type: "${PROD_CLUSTER_COMPUTE_INSTANCE_TYPE:-c5.xlarge}"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # CPU Configuration
+      cpu:
+        requests: "${PROD_CPU_REQUESTS:-1000m}"
+        limits: "${PROD_CPU_LIMITS:-4000m}"
+        
+      # Memory Configuration
+      memory:
+        requests: "${PROD_MEMORY_REQUESTS:-2Gi}"
+        limits: "${PROD_MEMORY_LIMITS:-8Gi}"
+      
+      # Node Configuration
+      node_selection:
+        enabled: ${PROD_NODE_SELECTION_ENABLED:-true}
+        
+        # Node Selectors
+        node_selector:
+          node_type: "production"
+          performance_tier: "high"
+          availability_zone: "multi-az"
+        
+        # Node Affinity
+        node_affinity:
+          required:
+            - key: "node-type"
+              operator: "In"
+              values: ["production"]
+              
+        # Pod Anti-affinity
+        pod_anti_affinity:
+          enabled: ${PROD_POD_ANTI_AFFINITY_ENABLED:-true}
+          scope: "zone"
+          strict: ${PROD_POD_ANTI_AFFINITY_STRICT:-true}
+      
+      # Quality of Service
+      qos:
+        class: "${PROD_QOS_CLASS:-Guaranteed}"
+        
+        # Priority Class
+        priority_class:
+          enabled: ${PROD_PRIORITY_CLASS_ENABLED:-true}
+          name: "${PROD_PRIORITY_CLASS_NAME:-high-priority}"
+          priority: ${PROD_PRIORITY_CLASS_PRIORITY:-1000}
+    
+    # Storage Resources
+    storage:
+      # Persistent Volume
+      persistent_volume:
+        enabled: ${PROD_PV_ENABLED:-true}
+        size: "${PROD_PV_SIZE:-100Gi}"
+        storage_class: "${PROD_STORAGE_CLASS:-fast-ssd}"
+        access_mode: "${PROD_ACCESS_MODE:-ReadWriteOnce}"
+        
+        # Backup Configuration
+        backup:
+          enabled: ${PROD_PV_BACKUP_ENABLED:-true}
+          schedule: "${PROD_PV_BACKUP_SCHEDULE:-0 2 * * *}"  # Daily at 2 AM
+          retention: ${PROD_PV_BACKUP_RETENTION:-30}  # days
+          
+      # Shared Storage
+      shared_storage:
+        enabled: ${PROD_SHARED_STORAGE_ENABLED:-true}
+        size: "${PROD_SHARED_STORAGE_SIZE:-500Gi}"
+        storage_class: "${PROD_SHARED_STORAGE_CLASS:-shared-ssd}"
+        access_mode: "${PROD_SHARED_ACCESS_MODE:-ReadWriteMany}"
+
+  # Environment Variables
+  environment_variables:
+    # Application Variables
+    application:
+      ENVIRONMENT: "production"
+      DEBUG: "false"
+      LOG_LEVEL: "WARNING"
+      
+      # API Variables
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "8"
+      
+      # Database Variables
+      DATABASE_URL: "postgresql://${PROD_DB_USER}:${PROD_DB_PASSWORD}@${PROD_DB_PRIMARY_HOST}:${PROD_DB_PRIMARY_PORT}/${PROD_DB_NAME}?sslmode=require"
+      DATABASE_READ_URL: "postgresql://${PROD_DB_USER}:${PROD_DB_PASSWORD}@${PROD_DB_REPLICA_1_HOST}:${PROD_DB_REPLICA_1_PORT}/${PROD_DB_NAME}?sslmode=require"
+      REDIS_URL: "redis://${PROD_REDIS_PRIMARY_HOST}:${PROD_REDIS_PRIMARY_PORT}/${PROD_REDIS_DB}"
+      
+      # Security Variables
+      SECRET_KEY: "${PROD_SECRET_KEY}"
+      JWT_SECRET_KEY: "${PROD_JWT_SECRET}"
+      ENCRYPTION_KEY: "${PROD_ENCRYPTION_KEY}"
+      
+      # Feature Flags
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      ENABLE_SECURITY_MONITORING: "true"
+      ENABLE_COMPLIANCE_ENFORCEMENT: "true"
+      ENABLE_HIGH_AVAILABILITY: "true"
+    
+    # Production-specific Variables
+    production_specific:
+      # Performance Variables
+      PERFORMANCE_MONITORING: "true"
+      AUTO_SCALING: "true"
+      CACHING_ENABLED: "true"
+      
+      # Security Variables
+      SECURITY_HARDENING: "true"
+      AUDIT_LOGGING: "true"
+      THREAT_DETECTION: "true"
+      
+      # Compliance Variables
+      COMPLIANCE_MODE: "enforcing"
+      GDPR_ENABLED: "true"
+      SOX_ENABLED: "true"
+      
+      # Deployment Variables
+      DEPLOYMENT_STRATEGY: "rolling"
+      BLUE_GREEN_ENABLED: "true"
+      CANARY_ENABLED: "true"
+      ROLLBACK_ENABLED: "true"
+      
+      # Disaster Recovery Variables
+      DISASTER_RECOVERY: "true"
+      BACKUP_ENABLED: "true"
+      CROSS_REGION_REPLICATION: "true"

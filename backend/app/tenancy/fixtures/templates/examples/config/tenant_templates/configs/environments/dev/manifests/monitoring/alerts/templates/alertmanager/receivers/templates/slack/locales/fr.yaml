@@ -1,0 +1,284 @@
+# Localisation française pour le système de templates Spotify AI Agent
+# Version: 2.0.0
+# Développé par: Fahed Mlaiel (Lead Dev + AI Architect)
+
+# Termes communs
+common:
+  alert: "Alerte"
+  critical: "Critique"
+  warning: "Avertissement"
+  info: "Information"
+  resolved: "Résolu"
+  environment: "Environnement"
+  service: "Service"
+  timestamp: "Horodatage"
+  duration: "Durée"
+  status: "Statut"
+  severity: "Gravité"
+  dashboard: "Tableau de bord"
+  metrics: "Métriques"
+  logs: "Journaux"
+  runbook: "Manuel d'intervention"
+  oncall: "Astreinte"
+  escalate: "Escalader"
+  acknowledge: "Acquitter"
+  silence: "Silence"
+  details: "Détails"
+  summary: "Résumé"
+  description: "Description"
+  actions: "Actions"
+  recommendations: "Recommandations"
+  impact: "Impact"
+  affected_users: "Utilisateurs affectés"
+  estimated_cost: "Coût estimé"
+  sla_impact: "Impact SLA"
+  priority: "Priorité"
+  tags: "Étiquettes"
+  labels: "Labels"
+  source: "Source"
+  target: "Cible"
+  threshold: "Seuil"
+  current_value: "Valeur actuelle"
+  trend: "Tendance"
+  forecast: "Prévision"
+
+# Gravités d'alerte
+severity:
+  critical: "🔴 Critique"
+  warning: "🟡 Avertissement"
+  info: "🔵 Info"
+  resolved: "✅ Résolu"
+  emergency: "🚨 Urgence"
+
+# Labels d'environnement
+environments:
+  production: "🏭 Production"
+  staging: "🧪 Staging"
+  development: "🔧 Développement"
+  testing: "🧾 Test"
+
+# Expressions temporelles
+time:
+  just_now: "à l'instant"
+  minutes_ago: "il y a {minutes} minutes"
+  hours_ago: "il y a {hours} heures"
+  days_ago: "il y a {days} jours"
+  seconds: "secondes"
+  minutes: "minutes"
+  hours: "heures"
+  days: "jours"
+  weeks: "semaines"
+  months: "mois"
+
+# États d'alerte
+states:
+  firing: "🔥 Active"
+  pending: "⏳ En attente"
+  resolved: "✅ Résolu"
+  silenced: "🔇 Silencé"
+  acknowledged: "👀 Acquitté"
+  escalated: "⬆️ Escaladé"
+  auto_resolved: "🤖 Auto-résolu"
+
+# Actions
+actions:
+  view_dashboard: "📊 Voir le tableau de bord"
+  view_metrics: "📈 Voir les métriques"
+  view_logs: "📋 Voir les journaux"
+  view_traces: "🔍 Voir les traces"
+  check_runbook: "📖 Consulter le manuel"
+  contact_oncall: "📞 Contacter l'astreinte"
+  escalate_alert: "⬆️ Escalader"
+  acknowledge_alert: "👀 Acquitter"
+  silence_alert: "🔇 Silencer"
+  resolve_alert: "✅ Résoudre"
+  create_incident: "🎫 Créer un incident"
+  join_war_room: "🏪 Rejoindre la war room"
+
+# Impact business
+business_impact:
+  revenue_impact: "💰 Impact revenus"
+  user_impact: "👥 Impact utilisateurs"
+  sla_breach: "⚠️ Violation SLA"
+  compliance_risk: "⚖️ Risque conformité"
+  security_risk: "🔒 Risque sécurité"
+  data_loss_risk: "💾 Risque perte données"
+  reputation_risk: "🏢 Risque réputation"
+
+# Insights IA
+ai_insights:
+  root_cause: "🧠 Analyse cause racine IA"
+  prediction: "🔮 Prédiction IA"
+  recommendation: "💡 Recommandation IA"
+  correlation: "🔗 Corrélation IA"
+  anomaly: "📊 Détection anomalie IA"
+  pattern: "🔄 Reconnaissance motifs IA"
+  confidence: "📊 Confiance"
+  high_confidence: "Confiance élevée"
+  medium_confidence: "Confiance moyenne"
+  low_confidence: "Confiance faible"
+
+# Infrastructure
+infrastructure:
+  cpu_usage: "Utilisation CPU"
+  memory_usage: "Utilisation mémoire"
+  disk_usage: "Utilisation disque"
+  network_io: "E/S réseau"
+  load_average: "Charge moyenne"
+  response_time: "Temps de réponse"
+  throughput: "Débit"
+  error_rate: "Taux d'erreur"
+  availability: "Disponibilité"
+  latency: "Latence"
+  queue_size: "Taille de la file"
+  connection_count: "Nombre de connexions"
+
+# Templates d'alerte
+templates:
+  critical_alert:
+    title: "🔴 Alerte critique: {alert_name}"
+    message: "Un problème critique a été détecté dans l'environnement {environment}"
+    action_required: "Action immédiate requise"
+    
+  warning_alert:
+    title: "🟡 Avertissement: {alert_name}"
+    message: "Une condition d'avertissement a été détectée dans l'environnement {environment}"
+    action_recommended: "Investigation recommandée"
+    
+  resolved_alert:
+    title: "✅ Résolu: {alert_name}"
+    message: "L'alerte a été résolue"
+    resolution_time: "Temps de résolution: {duration}"
+    
+  digest:
+    title: "📊 Résumé des alertes - {period}"
+    summary: "Résumé des alertes des dernières {period}"
+    total_alerts: "Total alertes: {count}"
+    critical_alerts: "Critiques: {count}"
+    warning_alerts: "Avertissements: {count}"
+    resolved_alerts: "Résolues: {count}"
+
+# Messages d'erreur
+errors:
+  template_not_found: "Template non trouvé"
+  invalid_data: "Données d'alerte invalides"
+  rendering_failed: "Échec du rendu du template"
+  network_error: "Erreur réseau"
+  authentication_failed: "Échec de l'authentification"
+  rate_limit_exceeded: "Limite de taux dépassée"
+  service_unavailable: "Service temporairement indisponible"
+  configuration_error: "Erreur de configuration"
+
+# Messages de succès
+success:
+  alert_sent: "Alerte envoyée avec succès"
+  template_rendered: "Template rendu avec succès"
+  configuration_updated: "Configuration mise à jour avec succès"
+  service_healthy: "Service en bonne santé"
+  connection_established: "Connexion établie"
+
+# Notifications
+notifications:
+  new_alert: "Nouvelle alerte reçue"
+  alert_updated: "Alerte mise à jour"
+  alert_resolved: "Alerte résolue"
+  system_maintenance: "Maintenance système programmée"
+  service_degradation: "Dégradation du service détectée"
+  recovery_in_progress: "Récupération en cours"
+
+# Texte d'aide
+help:
+  dashboard_help: "Cliquez pour voir le tableau de bord de surveillance avec des métriques et graphiques détaillés"
+  metrics_help: "Voir les métriques historiques et les données de performance"
+  logs_help: "Accéder aux journaux d'application et système pour le dépannage"
+  runbook_help: "Suivre le manuel d'intervention pour les procédures de résolution étape par étape"
+  oncall_help: "Contacter l'ingénieur d'astreinte pour une assistance immédiate"
+  escalation_help: "Escalader cette alerte vers un support de niveau supérieur"
+
+# Formatage
+formatting:
+  percentage: "{value}%"
+  currency_usd: "{value}$"
+  currency_eur: "{value}€"
+  bytes: "{value} octets"
+  kilobytes: "{value} Ko"
+  megabytes: "{value} Mo"
+  gigabytes: "{value} Go"
+  terabytes: "{value} To"
+  requests_per_second: "{value} req/s"
+  milliseconds: "{value}ms"
+  seconds_format: "{value}s"
+  minutes_format: "{value}m"
+  hours_format: "{value}h"
+
+# Tendances
+trends:
+  increasing: "📈 En augmentation"
+  decreasing: "📉 En diminution"
+  stable: "➡️ Stable"
+  volatile: "📊 Volatile"
+  trending_up: "⬆️ Tendance hausse"
+  trending_down: "⬇️ Tendance baisse"
+
+# Types de service
+services:
+  web_service: "🌐 Service Web"
+  api_service: "🔌 Service API"
+  database: "🗄️ Base de données"
+  cache: "⚡ Cache"
+  queue: "📬 File d'attente"
+  worker: "⚙️ Worker"
+  scheduler: "⏰ Planificateur"
+  load_balancer: "⚖️ Répartiteur de charge"
+  proxy: "🔀 Proxy"
+  cdn: "🌍 CDN"
+  storage: "💾 Stockage"
+  backup: "💿 Sauvegarde"
+
+# Conformité
+compliance:
+  gdpr: "RGPD"
+  hipaa: "HIPAA"
+  sox: "SOX"
+  pci_dss: "PCI DSS"
+  iso_27001: "ISO 27001"
+  compliance_check: "Vérification conformité"
+  audit_trail: "Piste d'audit"
+  data_retention: "Rétention des données"
+  privacy_policy: "Politique de confidentialité"
+
+# Sécurité
+security:
+  security_alert: "🔒 Alerte sécurité"
+  vulnerability: "🔓 Vulnérabilité"
+  threat_detected: "⚠️ Menace détectée"
+  access_denied: "🚫 Accès refusé"
+  authentication_failure: "🔐 Échec authentification"
+  suspicious_activity: "👁️ Activité suspecte"
+  malware_detected: "🦠 Malware détecté"
+  data_breach: "💥 Violation de données"
+  security_scan: "🔍 Scan sécurité"
+
+# Performance
+performance:
+  performance_alert: "⚡ Alerte performance"
+  slow_query: "🐌 Requête lente"
+  high_cpu: "🔥 CPU élevé"
+  memory_leak: "🔴 Fuite mémoire"
+  disk_full: "💾 Disque plein"
+  network_congestion: "🌐 Congestion réseau"
+  timeout: "⏰ Timeout"
+  bottleneck: "🍾 Goulot d'étranglement"
+  optimization: "🚀 Optimisation"
+
+# Machine Learning
+ml:
+  ml_alert: "🤖 Alerte ML"
+  model_drift: "📊 Dérive du modèle"
+  data_drift: "📈 Dérive des données"
+  accuracy_drop: "📉 Chute de précision"
+  prediction_error: "❌ Erreur de prédiction"
+  training_failed: "🏋️ Échec d'entraînement"
+  inference_slow: "🐌 Inférence lente"
+  feature_importance: "🎯 Importance des features"
+  bias_detected: "⚖️ Biais détecté"

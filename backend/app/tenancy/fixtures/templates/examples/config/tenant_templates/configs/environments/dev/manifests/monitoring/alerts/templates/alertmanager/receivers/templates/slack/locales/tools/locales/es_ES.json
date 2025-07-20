@@ -1,0 +1,144 @@
+{
+  "alerts": {
+    "critical_detected": "🚨 Alerta Crítica Detectada",
+    "warning_detected": "⚠️ Alerta de Advertencia Detectada",
+    "info_detected": "ℹ️ Alerta Informativa",
+    "resolved": "✅ Alerta Resuelta",
+    "multiple_detected": "📊 Múltiples Alertas Detectadas",
+    "aggregated": "📈 Agregación de Alertas"
+  },
+  "fields": {
+    "severity": "Severidad",
+    "tenant": "Inquilino",
+    "environment": "Entorno",
+    "timestamp": "Marca de Tiempo",
+    "duration": "Duración",
+    "service": "Servicio",
+    "instance": "Instancia",
+    "description": "Descripción",
+    "summary": "Resumen",
+    "fingerprint": "Huella Digital",
+    "status": "Estado",
+    "count": "Recuento",
+    "first_seen": "Visto por Primera Vez",
+    "last_seen": "Visto por Última Vez"
+  },
+  "actions": {
+    "view_runbook": "📖 Ver Manual",
+    "acknowledge": "✓ Reconocer",
+    "escalate": "⬆️ Escalar",
+    "silence": "🔇 Silenciar",
+    "view_dashboard": "📊 Panel de Control",
+    "view_logs": "📋 Ver Registros",
+    "view_metrics": "📈 Ver Métricas",
+    "contact_support": "📞 Contactar Soporte"
+  },
+  "status": {
+    "firing": "🔥 Activo",
+    "resolved": "✅ Resuelto",
+    "pending": "⏳ Pendiente",
+    "silenced": "🔇 Silenciado",
+    "acknowledged": "✓ Reconocido"
+  },
+  "severity": {
+    "critical": "🚨 Crítico",
+    "warning": "⚠️ Advertencia",
+    "info": "ℹ️ Información",
+    "unknown": "❓ Desconocido"
+  },
+  "tenant_types": {
+    "free": "Gratuito",
+    "premium": "Premium",
+    "enterprise": "Empresarial"
+  },
+  "environments": {
+    "production": "Producción",
+    "staging": "Ensayo",
+    "development": "Desarrollo",
+    "testing": "Pruebas"
+  },
+  "time": {
+    "now": "ahora",
+    "seconds_ago": "hace {{count}} segundo{{count|plural(,s)}}",
+    "minutes_ago": "hace {{count}} minuto{{count|plural(,s)}}",
+    "hours_ago": "hace {{count}} hora{{count|plural(,s)}}",
+    "days_ago": "hace {{count}} día{{count|plural(,s)}}",
+    "duration_seconds": "{{count}} segundo{{count|plural(,s)}}",
+    "duration_minutes": "{{count}} minuto{{count|plural(,s)}}",
+    "duration_hours": "{{count}} hora{{count|plural(,s)}}",
+    "duration_days": "{{count}} día{{count|plural(,s)}}"
+  },
+  "messages": {
+    "system_healthy": "Sistema funcionando normalmente",
+    "system_degraded": "Rendimiento del sistema degradado",
+    "system_down": "Sistema no disponible",
+    "multiple_services_affected": "Múltiples servicios afectados",
+    "escalation_required": "Escalamiento requerido",
+    "auto_resolved": "Resuelto automáticamente",
+    "manual_intervention": "Intervención manual requerida",
+    "monitoring_alert": "Alerta de monitoreo",
+    "business_impact": "Impacto potencial en el negocio",
+    "sla_breach": "Violación de SLA detectada"
+  },
+  "notifications": {
+    "sent_successfully": "Notificación enviada exitosamente",
+    "send_failed": "Error al enviar notificación",
+    "rate_limited": "Límite de velocidad aplicado",
+    "queued": "Notificación en cola",
+    "duplicate_suppressed": "Duplicado suprimido",
+    "aggregated_with_others": "Agregado con otras alertas"
+  },
+  "errors": {
+    "template_not_found": "Plantilla no encontrada",
+    "localization_failed": "Localización fallida",
+    "invalid_format": "Formato inválido",
+    "tenant_not_found": "Inquilino no encontrado",
+    "permission_denied": "Permiso denegado",
+    "rate_limit_exceeded": "Límite de velocidad excedido",
+    "service_unavailable": "Servicio no disponible",
+    "timeout_occurred": "Tiempo de espera agotado"
+  },
+  "health": {
+    "healthy": "Saludable",
+    "unhealthy": "No Saludable",
+    "degraded": "Degradado",
+    "unknown": "Desconocido",
+    "recovering": "Recuperándose",
+    "maintenance": "Mantenimiento"
+  },
+  "system": {
+    "cpu_usage": "Uso de CPU",
+    "memory_usage": "Uso de Memoria",
+    "disk_usage": "Uso de Disco",
+    "network_traffic": "Tráfico de Red",
+    "response_time": "Tiempo de Respuesta",
+    "error_rate": "Tasa de Error",
+    "throughput": "Rendimiento",
+    "availability": "Disponibilidad"
+  },
+  "components": {
+    "localization_engine": "Motor de Localización",
+    "template_renderer": "Renderizador de Plantillas",
+    "cache_manager": "Gestor de Caché",
+    "tenant_context": "Contexto de Inquilino",
+    "alert_formatter": "Formateador de Alertas",
+    "metrics_collector": "Recolector de Métricas",
+    "slack_webhook": "Webhook de Slack",
+    "security_manager": "Gestor de Seguridad"
+  },
+  "aggregation": {
+    "similar_alerts": "{{count}} alerta{{count|plural(,s)}} similar{{count|plural(,es)}}",
+    "time_window": "Ventana de tiempo de {{duration}}",
+    "grouped_by": "Agrupado por {{criteria}}",
+    "total_affected": "{{count}} servicio{{count|plural(,s)}} afectado{{count|plural(,s)}}",
+    "first_occurrence": "Primera ocurrencia: {{time}}",
+    "latest_occurrence": "Última ocurrencia: {{time}}"
+  },
+  "performance": {
+    "response_time_ms": "{{value}}ms",
+    "cache_hit_ratio": "{{ratio}}% aciertos",
+    "throughput_per_second": "{{value}}/seg",
+    "error_percentage": "{{percentage}}% errores",
+    "uptime_percentage": "{{percentage}}% disponibilidad"
+  }
+}

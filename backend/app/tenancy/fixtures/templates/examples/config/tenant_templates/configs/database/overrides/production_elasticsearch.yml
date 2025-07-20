@@ -1,0 +1,507 @@
+# Elasticsearch Production Environment Overrides
+# ============================================
+# Configuration avancée Elasticsearch pour recherche et découverte de contenu
+# Optimisé pour indexation massive et recherche en temps réel
+
+elasticsearch:
+  # Configuration cluster de production
+  cluster:
+    name: "spotify-search-prod"
+    
+    # Nœuds du cluster
+    nodes:
+      # Master nodes (découverte et coordination)
+      masters:
+        - host: es-prod-master-01.internal
+          port: 9200
+          roles: ["master"]
+          heap_size: "4g"
+        - host: es-prod-master-02.internal
+          port: 9200
+          roles: ["master"]
+          heap_size: "4g"
+        - host: es-prod-master-03.internal
+          port: 9200
+          roles: ["master"]
+          heap_size: "4g"
+          
+      # Data nodes (stockage et recherche)
+      data_nodes:
+        - host: es-prod-data-01.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+        - host: es-prod-data-02.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+        - host: es-prod-data-03.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+        - host: es-prod-data-04.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+        - host: es-prod-data-05.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+        - host: es-prod-data-06.internal
+          port: 9200
+          roles: ["data", "data_content"]
+          heap_size: "16g"
+          storage: "2TB SSD"
+          
+      # Coordinating nodes (load balancing)
+      coordinators:
+        - host: es-prod-coord-01.internal
+          port: 9200
+          roles: [""]
+          heap_size: "8g"
+        - host: es-prod-coord-02.internal
+          port: 9200
+          roles: [""]
+          heap_size: "8g"
+          
+      # Ingest nodes (preprocessing)
+      ingest_nodes:
+        - host: es-prod-ingest-01.internal
+          port: 9200
+          roles: ["ingest"]
+          heap_size: "8g"
+        - host: es-prod-ingest-02.internal
+          port: 9200
+          roles: ["ingest"]
+          heap_size: "8g"
+
+  # Configuration des connexions
+  connection:
+    # Load balancer pour distribution
+    hosts:
+      - es-prod-lb.internal:9200
+      
+    # Connexions spécialisées
+    endpoints:
+      search: es-prod-search-lb.internal:9200
+      ingest: es-prod-ingest-lb.internal:9200
+      admin: es-prod-admin-lb.internal:9200
+      
+    # Configuration SSL/TLS
+    ssl:
+      enabled: true
+      verify_certs: true
+      ca_cert_file: "/etc/ssl/elasticsearch/prod-ca.crt"
+      client_cert_file: "/etc/ssl/elasticsearch/prod-client.crt"
+      client_key_file: "/etc/ssl/elasticsearch/prod-client.key"
+      
+    # Authentication
+    auth:
+      username: "${TENANT_ID}_search_user"
+      password: "${ELASTICSEARCH_PASSWORD}"
+      
+    # Timeouts et retry
+    timeout: 30
+    max_retries: 3
+    retry_on_status: [429, 502, 503, 504]
+    retry_on_timeout: true
+
+  # Configuration des index pour Spotify
+  indices:
+    # Index principal des tracks
+    tracks:
+      name: "${TENANT_ID}_tracks"
+      settings:
+        number_of_shards: 6
+        number_of_replicas: 1
+        refresh_interval: "5s"
+        max_result_window: 100000
+        
+        # Optimisations pour recherche
+        analysis:
+          analyzer:
+            spotify_track_analyzer:
+              type: custom
+              tokenizer: standard
+              filter:
+                - lowercase
+                - asciifolding
+                - spotify_synonym
+                - spotify_stemmer
+                
+            spotify_artist_analyzer:
+              type: custom
+              tokenizer: keyword
+              filter:
+                - lowercase
+                - asciifolding
+                
+          filter:
+            spotify_synonym:
+              type: synonym
+              synonyms_path: "synonyms/music_synonyms.txt"
+              
+            spotify_stemmer:
+              type: stemmer
+              language: multiple
+              
+        # Mapping optimisé pour tracks
+        mappings:
+          properties:
+            track_id:
+              type: keyword
+              index: true
+            title:
+              type: text
+              analyzer: spotify_track_analyzer
+              fields:
+                keyword:
+                  type: keyword
+                autocomplete:
+                  type: search_as_you_type
+            artist:
+              type: text
+              analyzer: spotify_artist_analyzer
+              fields:
+                keyword:
+                  type: keyword
+            album:
+              type: text
+              analyzer: spotify_track_analyzer
+              fields:
+                keyword:
+                  type: keyword
+            genre:
+              type: keyword
+            duration_ms:
+              type: integer
+            popularity:
+              type: float
+            audio_features:
+              type: object
+              properties:
+                danceability:
+                  type: float
+                energy:
+                  type: float
+                valence:
+                  type: float
+                tempo:
+                  type: float
+            release_date:
+              type: date
+            created_at:
+              type: date
+            updated_at:
+              type: date
+              
+    # Index des playlists
+    playlists:
+      name: "${TENANT_ID}_playlists"
+      settings:
+        number_of_shards: 3
+        number_of_replicas: 1
+        refresh_interval: "10s"
+        
+        analysis:
+          analyzer:
+            playlist_analyzer:
+              type: custom
+              tokenizer: standard
+              filter:
+                - lowercase
+                - asciifolding
+                - stop
+                
+        mappings:
+          properties:
+            playlist_id:
+              type: keyword
+            name:
+              type: text
+              analyzer: playlist_analyzer
+              fields:
+                keyword:
+                  type: keyword
+                autocomplete:
+                  type: search_as_you_type
+            description:
+              type: text
+              analyzer: playlist_analyzer
+            owner:
+              type: keyword
+            is_public:
+              type: boolean
+            follower_count:
+              type: integer
+            track_count:
+              type: integer
+            tracks:
+              type: nested
+              properties:
+                track_id:
+                  type: keyword
+                added_at:
+                  type: date
+            tags:
+              type: keyword
+            created_at:
+              type: date
+            updated_at:
+              type: date
+              
+    # Index des utilisateurs
+    users:
+      name: "${TENANT_ID}_users"
+      settings:
+        number_of_shards: 2
+        number_of_replicas: 1
+        refresh_interval: "30s"
+        
+        mappings:
+          properties:
+            user_id:
+              type: keyword
+            username:
+              type: text
+              fields:
+                keyword:
+                  type: keyword
+                autocomplete:
+                  type: search_as_you_type
+            display_name:
+              type: text
+            email:
+              type: keyword
+            profile:
+              type: object
+              properties:
+                country:
+                  type: keyword
+                birth_year:
+                  type: integer
+                gender:
+                  type: keyword
+            preferences:
+              type: object
+              properties:
+                favorite_genres:
+                  type: keyword
+                listening_history_days:
+                  type: integer
+            subscription_type:
+              type: keyword
+            created_at:
+              type: date
+            last_active:
+              type: date
+
+  # Configuration de performance
+  performance:
+    # JVM settings
+    jvm:
+      heap_size: "16g"
+      gc_settings:
+        - "-XX:+UseG1GC"
+        - "-XX:G1HeapRegionSize=32m"
+        - "-XX:+UseG1OldGCMixedGCCount=16"
+        - "-XX:+DisableExplicitGC"
+        
+    # Thread pools
+    thread_pools:
+      search:
+        size: 32
+        queue_size: 1000
+      index:
+        size: 16
+        queue_size: 200
+      bulk:
+        size: 16
+        queue_size: 50
+        
+    # Circuit breakers
+    circuit_breakers:
+      total:
+        limit: "85%"
+      fielddata:
+        limit: "40%"
+      request:
+        limit: "60%"
+        
+    # Query cache
+    query_cache:
+      enabled: true
+      size: "20%"
+      
+    # Indexing performance
+    indexing:
+      buffer_size: "40%"
+      translog:
+        flush_threshold_size: "1gb"
+        sync_interval: "30s"
+
+  # Sécurité et contrôle d'accès
+  security:
+    # X-Pack Security
+    xpack_security:
+      enabled: true
+      
+    # Users et rôles
+    users:
+      "${TENANT_ID}_search_admin":
+        password: "${ELASTICSEARCH_ADMIN_PASSWORD}"
+        roles: ["${TENANT_ID}_admin_role"]
+        
+      "${TENANT_ID}_search_user":
+        password: "${ELASTICSEARCH_USER_PASSWORD}"
+        roles: ["${TENANT_ID}_user_role"]
+        
+      "${TENANT_ID}_ingest_user":
+        password: "${ELASTICSEARCH_INGEST_PASSWORD}"
+        roles: ["${TENANT_ID}_ingest_role"]
+        
+    # Définition des rôles
+    roles:
+      "${TENANT_ID}_admin_role":
+        cluster: ["all"]
+        indices:
+          - names: ["${TENANT_ID}_*"]
+            privileges: ["all"]
+            
+      "${TENANT_ID}_user_role":
+        cluster: ["monitor"]
+        indices:
+          - names: ["${TENANT_ID}_tracks", "${TENANT_ID}_playlists", "${TENANT_ID}_users"]
+            privileges: ["read", "view_index_metadata"]
+            
+      "${TENANT_ID}_ingest_role":
+        cluster: ["monitor"]
+        indices:
+          - names: ["${TENANT_ID}_*"]
+            privileges: ["create_index", "index", "create"]
+            
+    # IP filtering
+    ip_filtering:
+      enabled: true
+      allow:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
+
+  # Monitoring et observabilité
+  monitoring:
+    # X-Pack Monitoring
+    xpack_monitoring:
+      enabled: true
+      collection:
+        enabled: true
+        interval: "30s"
+        
+    # Métriques exportées
+    metrics:
+      enabled: true
+      port: 9308
+      
+    # Alerting
+    watcher:
+      enabled: true
+      
+    # Alertes configurées
+    alerts:
+      cluster_health:
+        condition: "cluster.status != 'green'"
+        actions:
+          - email: "sre-team@spotify.com"
+          - slack: "#alerts-elasticsearch"
+          
+      high_jvm_memory:
+        condition: "nodes.jvm.mem.heap_used_percent > 85"
+        actions:
+          - email: "sre-team@spotify.com"
+          
+      slow_queries:
+        condition: "search.query_time_in_millis > 5000"
+        actions:
+          - log: "slow_queries.log"
+
+  # Snapshots et backup
+  snapshots:
+    # Repository S3
+    repositories:
+      s3_backup:
+        type: s3
+        settings:
+          bucket: "${ELASTICSEARCH_BACKUP_BUCKET}"
+          region: "${AWS_REGION}"
+          base_path: "snapshots/${TENANT_ID}"
+          compress: true
+          storage_class: "standard_ia"
+          
+    # Politique de snapshots
+    policies:
+      daily_snapshots:
+        schedule: "0 2 * * *"    # Quotidien à 2h
+        name: "<daily-snap-{now/d}>"
+        repository: "s3_backup"
+        config:
+          indices: ["${TENANT_ID}_*"]
+          include_global_state: false
+          partial: false
+        retention:
+          expire_after: "30d"
+          min_count: 7
+          max_count: 100
+
+  # Machine Learning (X-Pack ML)
+  machine_learning:
+    enabled: true
+    
+    # Jobs d'anomaly detection
+    anomaly_detection_jobs:
+      search_latency_anomaly:
+        description: "Détection d'anomalies dans la latence de recherche"
+        analysis_config:
+          bucket_span: "15m"
+          detectors:
+            - function: "mean"
+              field_name: "search_latency"
+              
+      user_behavior_anomaly:
+        description: "Détection d'anomalies dans le comportement utilisateur"
+        analysis_config:
+          bucket_span: "1h"
+          detectors:
+            - function: "count"
+              by_field_name: "user_id"
+
+# Variables d'environnement
+environment_variables:
+  ELASTICSEARCH_PASSWORD: "${ELASTICSEARCH_PROD_PASSWORD}"
+  ELASTICSEARCH_ADMIN_PASSWORD: "${ELASTICSEARCH_PROD_ADMIN_PASSWORD}"
+  ELASTICSEARCH_USER_PASSWORD: "${ELASTICSEARCH_PROD_USER_PASSWORD}"
+  ELASTICSEARCH_INGEST_PASSWORD: "${ELASTICSEARCH_PROD_INGEST_PASSWORD}"
+  ELASTICSEARCH_BACKUP_BUCKET: "spotify-ai-elasticsearch-backups-prod"
+  AWS_REGION: "us-east-1"
+
+# Métadonnées de configuration
+metadata:
+  environment: production
+  purpose: "Recherche et découverte de contenu musical"
+  maintainer: "Search & Discovery Team"
+  last_updated: "2025-07-16"
+  version: "2.1.0"
+  notes: |
+    Configuration Elasticsearch optimisée pour:
+    - Recherche instantanée de tracks, artistes, albums
+    - Autocomplétion et suggestions intelligentes
+    - Filtrage et faceting avancés
+    - Analytics de recherche et ML
+    - Scalabilité pour millions de documents
+    
+    Sécurité enterprise avec RBAC, chiffrement et audit.
+    Monitoring complet avec détection d'anomalies ML.

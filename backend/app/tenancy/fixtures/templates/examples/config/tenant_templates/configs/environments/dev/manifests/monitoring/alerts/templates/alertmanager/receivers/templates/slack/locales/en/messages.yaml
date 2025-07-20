@@ -1,0 +1,124 @@
+# Alert messages in English for Slack templates
+# Author: Fahed Mlaiel
+# Date: 2025-07-19
+
+# Critical alert messages
+critical:
+  title: "🚨 CRITICAL ALERT - Spotify AI Agent"
+  subtitle: "Immediate intervention required"
+  priority: "CRITICAL"
+  urgency: "HIGH"
+  
+  # Specific messages by alert type
+  api_down: "Spotify AI Agent API unavailable"
+  database_connection: "Database connection lost"
+  memory_high: "Critical memory usage"
+  disk_full: "Disk space saturated"
+  security_breach: "Security breach attempt detected"
+  
+  # Recommended actions
+  actions:
+    immediate: "Immediate action required"
+    escalation: "Escalate to on-call team"
+    investigation: "Deep investigation needed"
+
+# Warning alert messages
+warning:
+  title: "⚠️ WARNING - Spotify AI Agent"
+  subtitle: "Enhanced monitoring recommended"
+  priority: "MEDIUM"
+  urgency: "MODERATE"
+  
+  # Specific messages
+  performance_degradation: "Performance degradation detected"
+  queue_backlog: "Queue backlog accumulation"
+  rate_limit_approaching: "Rate limit approaching"
+  ssl_expiring: "SSL certificate expiring soon"
+  
+  # Recommended actions
+  actions:
+    monitor: "Continuous monitoring recommended"
+    optimization: "Optimization suggested"
+    maintenance: "Preventive maintenance advised"
+
+# Information alert messages
+info:
+  title: "ℹ️ INFORMATION - Spotify AI Agent"
+  subtitle: "System notification"
+  priority: "LOW"
+  urgency: "LOW"
+  
+  # Specific messages
+  deployment_success: "Deployment successful"
+  backup_completed: "Backup completed"
+  maintenance_scheduled: "Scheduled maintenance"
+  feature_enabled: "New feature enabled"
+  
+  # Recommended actions
+  actions:
+    acknowledge: "Acknowledgment required"
+    review: "Review recommended"
+    documentation: "Documentation update"
+
+# Recovery messages
+resolved:
+  title: "✅ RESOLVED - Spotify AI Agent"
+  subtitle: "Back to normal"
+  priority: "INFORMATION"
+  urgency: "LOW"
+  
+  message: "The reported issue has been resolved"
+  duration: "Incident duration"
+  impact: "Assessed impact"
+  
+  actions:
+    post_mortem: "Post-mortem recommended"
+    lessons_learned: "Lessons learned"
+    documentation_update: "Procedure update"
+
+# System status
+status:
+  healthy: "System healthy"
+  degraded: "Performance degraded"
+  critical: "Critical state"
+  maintenance: "Under maintenance"
+  recovering: "Recovering"
+
+# Service levels
+sla:
+  p1: "P1 Incident - 15 minutes SLA"
+  p2: "P2 Incident - 1 hour SLA"
+  p3: "P3 Incident - 4 hours SLA"
+  p4: "P4 Incident - 24 hours SLA"
+
+# Escalation messages
+escalation:
+  level1: "Level 1 escalation - Technical team"
+  level2: "Level 2 escalation - Technical manager"
+  level3: "Level 3 escalation - Technical director"
+  emergency: "Emergency escalation - On-call"
+
+# Tenant specific
+tenant:
+  identification: "Tenant ID"
+  environment: "Environment"
+  region: "Region"
+  cluster: "Cluster"
+
+# Metrics and thresholds
+metrics:
+  cpu_usage: "CPU Usage"
+  memory_usage: "Memory Usage"
+  disk_usage: "Disk Usage"
+  network_latency: "Network Latency"
+  error_rate: "Error Rate"
+  throughput: "Throughput"
+  response_time: "Response Time"
+
+# URLs and links
+links:
+  dashboard: "Dashboard"
+  logs: "System Logs"
+  metrics: "Detailed Metrics"
+  runbook: "Runbook"
+  escalation_guide: "Escalation Guide"

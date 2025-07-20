@@ -1,0 +1,921 @@
+# =============================================================================
+# Enhanced Testing Environment Configuration Overrides
+# =============================================================================
+# Ultra-advanced configuration for automated testing environments
+# Optimized for CI/CD pipelines, unit tests, integration tests, and performance testing
+# =============================================================================
+
+_metadata:
+  priority: 4
+  author: "Expert Development Team"
+  description: "Comprehensive testing configuration with parallel execution and advanced mocking"
+  tags: ["testing", "ci_cd", "automation", "performance"]
+  dependencies: ["base_development"]
+  conditions:
+    environment:
+      TESTING: "true"
+    context: ["test", "ci", "cd", "automation"]
+
+development_testing:
+  # Advanced Application Configuration for Testing
+  application:
+    # Test-Optimized API Configuration
+    api:
+      fastapi:
+        # Testing server configuration
+        host: "${TEST_API_HOST:-127.0.0.1}"
+        port: ${TEST_API_PORT:-8099}  # Unique port for test isolation
+        workers: ${TEST_API_WORKERS:-1}  # Single worker for predictable testing
+        worker_class: "uvicorn.workers.UvicornWorker"
+        
+        # Performance optimizations for testing
+        performance:
+          keepalive_timeout: 5
+          max_requests: 1000
+          max_requests_jitter: 0
+          preload_app: false
+          worker_connections: 50
+          
+        # Testing-specific features
+        features:
+          auto_reload: false  # Disabled for test stability
+          debug: ${TEST_DEBUG:-true}
+          testing: true
+          fast_startup: true
+          
+        # Testing-optimized logging
+        logging:
+          level: ${TEST_LOG_LEVEL:-WARNING}  # Reduce noise in tests
+          format: "minimal"
+          handlers:
+            - type: "stream"
+              stream: "stdout"
+              formatter: "test"
+            - type: "file"
+              filename: "./logs/test.log"
+              max_bytes: 10485760  # 10MB
+              backup_count: 2
+              formatter: "detailed"
+          
+        # CORS configuration for testing
+        cors:
+          allow_origins:
+            - "http://localhost:${TEST_API_PORT:-8099}"
+            - "http://127.0.0.1:${TEST_API_PORT:-8099}"
+            - "http://localhost:3000"  # Frontend test server
+            - "http://localhost:3001"  # Alternative frontend
+          allow_credentials: true
+          allow_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+          allow_headers: ["*"]
+          max_age: 300  # Short cache for testing
+          
+        # Health check configuration for testing
+        health:
+          endpoint: "/health"
+          detailed: false  # Minimal response for faster tests
+          startup_probe:
+            enabled: false
+          liveness_probe:
+            enabled: false
+          readiness_probe:
+            enabled: false
+            
+    # General application configuration for testing
+    general:
+      name: "${TEST_APP_NAME:-spotify-ai-agent-test}"
+      version: "${TEST_APP_VERSION:-1.0.0-test}"
+      environment: "development_testing"
+      timezone: "UTC"  # Fixed timezone for consistent tests
+      
+      # Testing-specific settings
+      testing:
+        mode: true
+        isolation: true
+        cleanup: true
+        reset_between_tests: ${TEST_RESET_BETWEEN:-false}
+        
+      # Performance settings for testing
+      performance:
+        fast_startup: true
+        minimal_logging: true
+        reduced_features: true
+        
+      # Feature flags for testing
+      features:
+        hot_reload: false
+        debug_mode: ${TEST_DEBUG_MODE:-true}
+        profiling: ${TEST_PROFILING:-false}
+        metrics_collection: ${TEST_METRICS:-false}
+        distributed_tracing: false  # Disabled for test performance
+
+  # Advanced Database Configuration for Testing
+  database:
+    # PostgreSQL optimized for testing
+    postgresql:
+      # Test database connection
+      host: "${TEST_DB_HOST:-localhost}"
+      port: ${TEST_DB_PORT:-5432}
+      database: "${TEST_DB_NAME:-spotify_ai_agent_test}"
+      username: "${TEST_DB_USER:-test_user}"
+      password: "${TEST_DB_PASSWORD:-test_password}"
+      
+      # Optimized connection pool for testing
+      pool:
+        min_size: ${TEST_DB_POOL_MIN:-1}
+        max_size: ${TEST_DB_POOL_MAX:-5}
+        timeout: ${TEST_DB_TIMEOUT:-10}
+        recycle_timeout: 300
+        pool_pre_ping: false  # Skip for test performance
+        pool_reset_on_return: "rollback"
+        
+      # SSL configuration (disabled for testing)
+      ssl:
+        enabled: false
+        
+      # Enhanced features for testing
+      features:
+        echo_queries: ${TEST_DB_ECHO:-false}  # Disable SQL logging by default
+        auto_migrate: ${TEST_DB_AUTO_MIGRATE:-true}
+        reset_on_start: ${TEST_DB_RESET:-true}  # Clean state for each test run
+        seed_data: ${TEST_DB_SEED:-true}
+        create_test_data: ${TEST_DB_CREATE_TEST_DATA:-true}
+        wait_for_connection: false
+        connection_retry: 1  # Fail fast in tests
+        retry_delay: 0.1
+        health_check_interval: 0  # Disabled for tests
+        transaction_isolation: "READ_COMMITTED"
+        
+      # Test-specific database extensions
+      extensions:
+        - "uuid-ossp"
+        - "pgcrypto"
+        - "pg_trgm"
+        
+      # Test database management
+      test_management:
+        parallel_databases: ${TEST_PARALLEL_DBS:-1}
+        database_template: "template_test"
+        cleanup_policy: "after_suite"
+        isolation_level: "per_test_class"
+        
+    # Redis configuration for testing
+    redis:
+      # Test Redis connection
+      host: "${TEST_REDIS_HOST:-localhost}"
+      port: ${TEST_REDIS_PORT:-6379}
+      password: "${TEST_REDIS_PASSWORD:-}"
+      database: ${TEST_REDIS_DB:-15}  # High number to avoid conflicts
+      
+      # Connection pool for testing
+      pool:
+        max_connections: ${TEST_REDIS_POOL_MAX:-5}
+        retry_on_timeout: false  # Fail fast in tests
+        socket_keepalive: false
+        socket_connect_timeout: 1
+        socket_timeout: 1
+        
+      # Testing-specific Redis features
+      features:
+        compression: false  # Disabled for test performance
+        serialization: "json"
+        key_prefix: "${TEST_REDIS_PREFIX:-test:}"
+        flush_on_start: ${TEST_REDIS_FLUSH:-true}
+        
+      # Cache configuration for testing
+      cache:
+        default_timeout: 60  # Short timeout for tests
+        key_prefix: "test_cache:"
+        version: 1
+        
+      # Session storage for testing
+      sessions:
+        timeout: 300  # Short session for tests
+        key_prefix: "test_session:"
+        
+    # In-memory database for ultra-fast testing
+    memory_database:
+      enabled: ${TEST_MEMORY_DB_ENABLED:-false}
+      type: "sqlite"
+      database: ":memory:"
+      
+    # Test-specific database fixtures
+    fixtures:
+      enabled: ${TEST_FIXTURES_ENABLED:-true}
+      auto_load: true
+      cleanup_after_test: true
+      fixtures_path: "./tests/fixtures"
+
+  # Advanced Security Configuration for Testing
+  security:
+    # Authentication configuration for testing
+    authentication:
+      jwt:
+        secret_key: "test-secret-key-not-for-production-use-only"
+        algorithm: "HS256"
+        access_token_expire_minutes: 5  # Short expiry for testing
+        refresh_token_expire_days: 1
+        
+      oauth2:
+        enabled: false  # Disabled for most tests
+        mock_enabled: ${TEST_OAUTH_MOCK:-true}
+        
+    # Encryption settings for testing
+    encryption:
+      key: "test-encryption-key-32-characters"
+      algorithm: "AES-256-GCM"
+      
+    # Rate limiting for testing
+    rate_limiting:
+      enabled: false  # Disabled for test performance
+      
+    # HTTPS configuration for testing
+    https:
+      enabled: false  # HTTP only for tests
+      
+    # Security headers for testing
+    headers:
+      x_frame_options: "SAMEORIGIN"
+      x_content_type_options: "nosniff"
+
+  # Machine Learning Configuration for Testing
+  ml:
+    # TensorFlow configuration for testing
+    tensorflow:
+      enabled: ${TEST_TF_ENABLED:-false}  # Disabled by default for speed
+      gpu_enabled: false  # No GPU in test environments
+      memory_growth: true
+      mock_enabled: ${TEST_TF_MOCK:-true}
+      
+    # PyTorch configuration for testing
+    pytorch:
+      enabled: ${TEST_PYTORCH_ENABLED:-false}
+      cuda_enabled: false
+      num_threads: 1  # Single thread for testing
+      mock_enabled: ${TEST_PYTORCH_MOCK:-true}
+      
+    # Hugging Face configuration for testing
+    huggingface:
+      cache_dir: "./tests/models/huggingface"
+      offline_mode: true  # No internet access in tests
+      mock_enabled: ${TEST_HF_MOCK:-true}
+      
+    # Model serving configuration for testing
+    serving:
+      enabled: false  # Disabled for test performance
+      mock_enabled: true
+      
+    # Spleeter configuration for testing
+    spleeter:
+      enabled: ${TEST_SPLEETER_ENABLED:-false}
+      mock_enabled: ${TEST_SPLEETER_MOCK:-true}
+      model_path: "./tests/models/spleeter"
+      
+  # Comprehensive Testing Framework Configuration
+  testing:
+    # Pytest configuration
+    pytest:
+      enabled: true
+      parallel: ${TEST_PARALLEL:-true}
+      workers: ${TEST_WORKERS:-auto}
+      addopts: >-
+        -v 
+        --tb=short 
+        --strict-markers 
+        --strict-config
+        --durations=10
+        --cov=app
+        --cov-report=html
+        --cov-report=xml
+        --cov-report=term-missing
+        --cov-fail-under=80
+      markers:
+        - "unit: Unit tests"
+        - "integration: Integration tests"
+        - "functional: Functional tests"
+        - "performance: Performance tests"
+        - "slow: Slow tests"
+        - "fast: Fast tests"
+        - "api: API tests"
+        - "database: Database tests"
+        - "ml: Machine learning tests"
+        - "security: Security tests"
+        
+    # Test coverage configuration
+    coverage:
+      enabled: true
+      min_percentage: ${TEST_COVERAGE_MIN:-80}
+      source: ["app", "services", "models"]
+      omit:
+        - "*/tests/*"
+        - "*/migrations/*"
+        - "*/venv/*"
+        - "*/__pycache__/*"
+      exclude_lines:
+        - "pragma: no cover"
+        - "def __repr__"
+        - "raise AssertionError"
+        - "raise NotImplementedError"
+        - "if __name__ == .__main__.:"
+        
+    # Test categories
+    categories:
+      unit_tests:
+        enabled: true
+        path: "./tests/unit"
+        pattern: "test_*.py"
+        
+      integration_tests:
+        enabled: true
+        path: "./tests/integration"
+        pattern: "test_*.py"
+        
+      functional_tests:
+        enabled: ${TEST_FUNCTIONAL:-true}
+        path: "./tests/functional"
+        pattern: "test_*.py"
+        
+      performance_tests:
+        enabled: ${TEST_PERFORMANCE:-false}
+        path: "./tests/performance"
+        pattern: "test_*.py"
+        
+      security_tests:
+        enabled: ${TEST_SECURITY:-false}
+        path: "./tests/security"
+        pattern: "test_*.py"
+        
+    # Test data management
+    test_data:
+      fixtures_path: "./tests/fixtures"
+      factories_path: "./tests/factories"
+      mock_data_path: "./tests/mock_data"
+      auto_cleanup: true
+      
+    # Test isolation
+    isolation:
+      database: "per_test_class"
+      redis: "per_test"
+      files: "per_test"
+      environment: "per_test_suite"
+      
+  # Mock Services Configuration
+  mocking:
+    # External API mocking
+    external_apis:
+      spotify_api:
+        enabled: ${TEST_MOCK_SPOTIFY:-true}
+        mock_data_path: "./tests/mock_data/spotify_responses.json"
+        response_delay: 0  # No delay for tests
+        
+      ml_services:
+        enabled: ${TEST_MOCK_ML:-true}
+        mock_data_path: "./tests/mock_data/ml_responses.json"
+        
+    # Database mocking
+    database_mocking:
+      enabled: ${TEST_MOCK_DATABASE:-false}
+      mock_responses_path: "./tests/mock_data/database_responses.json"
+      
+    # File system mocking
+    filesystem_mocking:
+      enabled: ${TEST_MOCK_FILESYSTEM:-false}
+      temp_directory: "./tests/tmp"
+      
+  # Performance Testing Configuration
+  performance:
+    # Load testing
+    load_testing:
+      enabled: ${TEST_LOAD_TESTING:-false}
+      tool: "locust"
+      users: ${TEST_LOAD_USERS:-10}
+      spawn_rate: ${TEST_LOAD_SPAWN_RATE:-1}
+      duration: ${TEST_LOAD_DURATION:-60}
+      
+    # Stress testing
+    stress_testing:
+      enabled: ${TEST_STRESS_TESTING:-false}
+      max_users: ${TEST_STRESS_MAX_USERS:-100}
+      ramp_up_time: ${TEST_STRESS_RAMP_UP:-300}
+      
+    # Memory profiling
+    memory_profiling:
+      enabled: ${TEST_MEMORY_PROFILING:-false}
+      profiler: "memory_profiler"
+      
+    # Performance benchmarks
+    benchmarks:
+      enabled: ${TEST_BENCHMARKS:-false}
+      benchmark_path: "./tests/benchmarks"
+      
+  # CI/CD Integration Configuration
+  ci_cd:
+    # GitHub Actions
+    github_actions:
+      enabled: ${CI:-false}
+      matrix_testing: ${TEST_MATRIX:-false}
+      
+    # GitLab CI
+    gitlab_ci:
+      enabled: ${GITLAB_CI:-false}
+      
+    # Jenkins
+    jenkins:
+      enabled: ${JENKINS:-false}
+      
+    # Test reporting
+    reporting:
+      junit_xml: ${TEST_JUNIT_XML:-true}
+      html_report: ${TEST_HTML_REPORT:-true}
+      allure_report: ${TEST_ALLURE_REPORT:-false}
+      
+  # Monitoring and Observability for Testing
+  monitoring:
+    # Test metrics
+    test_metrics:
+      enabled: ${TEST_METRICS_ENABLED:-true}
+      prometheus_enabled: false  # Disabled for test performance
+      
+    # Test logging
+    test_logging:
+      enabled: true
+      level: ${TEST_LOG_LEVEL:-WARNING}
+      capture_stdout: true
+      capture_stderr: true
+      
+    # Health checks (minimal for testing)
+    health_checks:
+      enabled: false
+      
+  # Storage Configuration for Testing
+  storage:
+    # Temporary file storage
+    files:
+      backend: "local"
+      base_path: "./tests/tmp/files"
+      max_file_size: 10485760  # 10MB
+      cleanup_after_test: true
+      
+    # Test artifacts storage
+    artifacts:
+      enabled: ${TEST_ARTIFACTS_ENABLED:-true}
+      base_path: "./tests/artifacts"
+      retention_days: 7
+      
+  # External Services Configuration for Testing
+  external_services:
+    # All external services mocked by default
+    spotify_api:
+      enabled: false
+      mock_enabled: true
+      mock_data_path: "./tests/mock_data/spotify_api.json"
+      
+    ml_services:
+      enabled: false
+      mock_enabled: true
+      
+  # Test Environment Variables
+  environment_variables:
+    # Application variables
+    ENVIRONMENT: "development_testing"
+    TESTING: "true"
+    DEBUG: "${TEST_DEBUG:-false}"
+    LOG_LEVEL: "${TEST_LOG_LEVEL:-WARNING}"
+    
+    # Database variables
+    TEST_DATABASE_URL: "postgresql://${TEST_DB_USER:-test_user}:${TEST_DB_PASSWORD:-test_password}@${TEST_DB_HOST:-localhost}:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-spotify_ai_agent_test}"
+    
+    # Redis variables
+    TEST_REDIS_URL: "redis://${TEST_REDIS_HOST:-localhost}:${TEST_REDIS_PORT:-6379}/${TEST_REDIS_DB:-15}"
+    
+    # Python variables
+    PYTHONPATH: "${PWD}/app:${PWD}/tests:${PYTHONPATH:-}"
+    PYTHONDONTWRITEBYTECODE: "1"
+    PYTHONUNBUFFERED: "1"
+    PYTHONHASHSEED: "0"  # Deterministic hashing for tests
+    
+    # Testing variables
+    PYTEST_CURRENT_TEST: ""
+    PYTEST_XDIST_WORKER: ""
+    
+  # Test Execution Configuration
+  execution:
+    # Parallel execution
+    parallel:
+      enabled: ${TEST_PARALLEL_ENABLED:-true}
+      workers: ${TEST_PARALLEL_WORKERS:-auto}
+      strategy: "loadscope"
+      
+    # Test ordering
+    ordering:
+      strategy: "alphabetical"  # or "random", "definition"
+      seed: ${TEST_ORDER_SEED:-42}
+      
+    # Test retries
+    retries:
+      enabled: ${TEST_RETRIES_ENABLED:-false}
+      max_retries: ${TEST_MAX_RETRIES:-3}
+      delay: ${TEST_RETRY_DELAY:-1}
+      
+    # Test timeouts
+    timeouts:
+      default: ${TEST_DEFAULT_TIMEOUT:-30}
+      slow_test: ${TEST_SLOW_TIMEOUT:-300}
+      integration: ${TEST_INTEGRATION_TIMEOUT:-60}
+      
+  # Quality Assurance Configuration
+  quality_assurance:
+    # Code quality checks
+    code_quality:
+      enabled: ${TEST_CODE_QUALITY:-true}
+      
+      pylint:
+        enabled: ${TEST_PYLINT:-false}
+        min_score: 8.0
+        
+      flake8:
+        enabled: ${TEST_FLAKE8:-true}
+        max_line_length: 88
+        
+      mypy:
+        enabled: ${TEST_MYPY:-true}
+        strict: false
+        
+      bandit:
+        enabled: ${TEST_BANDIT:-true}
+        security_level: "medium"
+        
+    # Test quality metrics
+    test_quality:
+      mutation_testing:
+        enabled: ${TEST_MUTATION:-false}
+        tool: "mutpy"
+        
+      test_complexity:
+        enabled: ${TEST_COMPLEXITY:-false}
+        max_complexity: 10
+        reset_on_start: true  # Reset de la DB avant chaque session de test
+        seed_data: false  # Pas de seed data par défaut
+        create_test_data: true
+        transaction_per_test: true  # Chaque test dans sa propre transaction
+        fast_reset: true
+    
+    # Redis de test
+    redis:
+      host: "${TEST_REDIS_HOST:-localhost}"
+      port: ${TEST_REDIS_PORT:-6379}
+      database: ${TEST_REDIS_DB:-15}  # DB différente pour tests
+      password: "${TEST_REDIS_PASSWORD:-}"
+      
+      # Configuration de test
+      configuration:
+        decode_responses: true
+        max_connections: 3
+        socket_timeout: 5
+        flush_on_start: true  # Vide le cache Redis au démarrage
+
+  # Sécurité simplifiée pour tests
+  security:
+    authentication:
+      jwt:
+        # Secrets de test fixes pour reproductibilité
+        secret_key: "test-secret-key-fixed-for-reproducible-tests-12345678"
+        algorithm: "HS256"
+        access_token_expire: 300  # 5 minutes pour tests
+        refresh_token_expire: 3600  # 1 heure pour tests
+        
+        # Features de test
+        features:
+          debug_tokens: true
+          fast_expiry: true
+          test_tokens: true
+    
+    # Chiffrement désactivé pour tests
+    encryption:
+      data_encryption:
+        enabled: false
+        key: "test-encryption-key-fixed"
+      
+      tls:
+        enabled: false
+        verify: false
+
+  # Monitoring minimal pour tests
+  observability:
+    metrics:
+      enabled: false  # Pas de métriques en test pour performance
+      
+      prometheus:
+        enabled: false
+    
+    logging:
+      level: "WARNING"  # Logs minimaux pour performance des tests
+      format: "%(name)s - %(levelname)s - %(message)s"
+      
+      outputs:
+        console:
+          enabled: false  # Pas de logs console en test
+          
+        file:
+          enabled: true
+          path: "tests/logs/test.log"
+          rotation: false
+      
+      # Loggers pour tests
+      loggers:
+        root:
+          level: "WARNING"
+        
+        sqlalchemy:
+          level: "ERROR"  # Seulement les erreurs SQL
+        
+        uvicorn:
+          level: "ERROR"
+        
+        fastapi:
+          level: "WARNING"
+        
+        # Logger de test
+        "tests":
+          level: "DEBUG"
+    
+    # Pas de tracing en test
+    tracing:
+      enabled: false
+    
+    # Health checks simplifiés
+    health_checks:
+      enabled: true
+      
+      checks:
+        database:
+          enabled: true
+          timeout: 2
+          
+        redis:
+          enabled: true
+          timeout: 1
+
+  # Configuration de test spécialisée
+  testing:
+    # Framework de test
+    framework:
+      pytest:
+        # Configuration pytest
+        addopts: [
+          "--strict-markers",
+          "--strict-config",
+          "--disable-warnings",
+          "--tb=short"
+        ]
+        
+        # Markers personnalisés
+        markers:
+          - "unit: Unit tests"
+          - "integration: Integration tests"
+          - "e2e: End-to-end tests"
+          - "slow: Slow running tests"
+          - "fast: Fast running tests"
+          - "api: API tests"
+          - "database: Database tests"
+          - "security: Security tests"
+        
+        # Configuration de test
+        testpaths: ["tests"]
+        python_files: ["test_*.py", "*_test.py"]
+        python_classes: ["Test*"]
+        python_functions: ["test_*"]
+        
+        # Plugins
+        plugins: [
+          "pytest-asyncio",
+          "pytest-cov",
+          "pytest-mock",
+          "pytest-xdist",
+          "pytest-env"
+        ]
+    
+    # Base de données de test
+    database:
+      # Stratégies de test de base de données
+      strategy: "transaction_rollback"  # transaction_rollback, truncate, drop_create
+      
+      # Configuration par stratégie
+      transaction_rollback:
+        enabled: true
+        savepoints: true
+        nested_transactions: true
+        
+      truncate:
+        enabled: false
+        tables_to_exclude: ["alembic_version"]
+        
+      drop_create:
+        enabled: false
+        fast_drop: true
+      
+      # Fixtures de données
+      fixtures:
+        enabled: true
+        path: "tests/fixtures/data"
+        auto_load: false  # Chargement manuel par test
+        
+        # Types de fixtures
+        types:
+          minimal: "minimal dataset for basic tests"
+          standard: "standard dataset for most tests"
+          full: "full dataset for comprehensive tests"
+          custom: "custom datasets for specific test scenarios"
+    
+    # Mocking et stubbing
+    mocking:
+      # Services externes automatiquement mockés
+      auto_mock_external_services: true
+      
+      # Configuration des mocks
+      external_services:
+        spotify_api:
+          mock: true
+          response_delay: 0.001  # 1ms pour simulation rapide
+          
+        ml_services:
+          mock: true
+          processing_delay: 0.1  # 100ms pour simulation
+          
+        email_service:
+          mock: true
+          
+        payment_service:
+          mock: true
+      
+      # Mock de base de données
+      database_mocking:
+        enabled: false  # On utilise une vraie DB de test
+        
+      # Mock Redis
+      redis_mocking:
+        enabled: false  # On utilise un vrai Redis de test
+    
+    # Performance de test
+    performance:
+      # Timeouts
+      default_timeout: 5  # 5 secondes par test
+      slow_test_timeout: 30  # 30 secondes pour tests lents
+      
+      # Parallélisation
+      parallel_execution:
+        enabled: true
+        workers: "auto"  # Détection automatique
+        
+      # Optimisations
+      optimizations:
+        lazy_imports: true
+        cache_compiled_regexes: true
+        reuse_event_loop: true
+    
+    # Coverage
+    coverage:
+      enabled: true
+      
+      # Configuration coverage
+      config:
+        source: ["app"]
+        omit: [
+          "*/tests/*",
+          "*/migrations/*",
+          "*/__pycache__/*",
+          "*/venv/*",
+          "*/virtualenv/*"
+        ]
+        
+      # Rapports
+      reports:
+        - "term-missing"
+        - "html"
+        - "xml"
+        
+      # Seuils
+      thresholds:
+        total: 80  # 80% minimum
+        individual: 70  # 70% par fichier
+
+  # Services externes pour tests
+  external_services:
+    # Tous les services sont mockés par défaut
+    spotify_api:
+      enabled: true
+      
+      configuration:
+        mock_enabled: true
+        mock_data_path: "tests/fixtures/spotify_api_responses.json"
+        mock_response_time: 0.01  # 10ms
+        
+        # Simulation d'erreurs
+        error_simulation:
+          enabled: true
+          error_rate: 0.0  # Pas d'erreurs par défaut
+          timeout_simulation: false
+    
+    ml_services:
+      enabled: true
+      
+      spleeter:
+        enabled: true
+        mock_enabled: true
+        mock_data_path: "tests/fixtures/spleeter_responses.json"
+        mock_processing_time: 0.1
+        
+        # Simulation de différents scénarios
+        scenarios:
+          success: "normal processing"
+          error: "processing error"
+          timeout: "processing timeout"
+          invalid_input: "invalid input file"
+
+  # Données de test
+  data_management:
+    test_data:
+      enabled: true
+      
+      # Sources de données de test
+      data_sources:
+        fixtures:
+          enabled: true
+          path: "tests/fixtures/data"
+          
+          # Types de fixtures
+          user_fixtures: "tests/fixtures/users.json"
+          spotify_fixtures: "tests/fixtures/spotify_data.json"
+          ml_fixtures: "tests/fixtures/ml_data.json"
+          
+        factories:
+          enabled: true
+          path: "tests/factories"
+          
+          # Factory classes
+          user_factory: "tests.factories.UserFactory"
+          playlist_factory: "tests.factories.PlaylistFactory"
+          track_factory: "tests.factories.TrackFactory"
+        
+        generators:
+          enabled: true
+          
+          # Générateurs de données aléatoires
+          fake_data: true
+          realistic_data: true
+          edge_cases: true
+
+  # Variables d'environnement de test
+  environment_variables:
+    application:
+      ENVIRONMENT: "development_testing"
+      TESTING: "true"
+      DEBUG: "true"
+      LOG_LEVEL: "WARNING"
+      
+      # Configuration de test
+      TEST_MODE: "true"
+      PYTEST_CURRENT_TEST: "${PYTEST_CURRENT_TEST:-unknown}"
+      
+      # API de test
+      API_HOST: "127.0.0.1"
+      API_PORT: "${TEST_API_PORT:-8099}"
+      API_WORKERS: "1"
+      
+      # Base de données de test
+      DATABASE_URL: "postgresql://${TEST_DB_USER:-test_user}:${TEST_DB_PASSWORD:-test_password}@${TEST_DB_HOST:-localhost}:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-spotify_ai_agent_test}"
+      REDIS_URL: "redis://${TEST_REDIS_HOST:-localhost}:${TEST_REDIS_PORT:-6379}/${TEST_REDIS_DB:-15}"
+      
+      # Sécurité de test
+      SECRET_KEY: "test-secret-key-fixed-for-reproducible-tests"
+      JWT_SECRET_KEY: "test-jwt-secret-key-fixed"
+      
+      # Features de test
+      ENABLE_MOCKING: "true"
+      ENABLE_FIXTURES: "true"
+      ENABLE_FAST_TESTS: "true"
+      DISABLE_EXTERNAL_CALLS: "true"
+    
+    # Variables spécifiques aux tests
+    testing_specific:
+      # Configuration pytest
+      PYTEST_TIMEOUT: "300"  # 5 minutes timeout global
+      PYTEST_WORKERS: "auto"
+      PYTEST_VERBOSE: "false"
+      
+      # Paths de test
+      TEST_DATA_PATH: "tests/data"
+      TEST_FIXTURES_PATH: "tests/fixtures"
+      TEST_OUTPUT_PATH: "tests/output"
+      TEST_REPORTS_PATH: "tests/reports"
+      
+      # Configuration Python pour tests
+      PYTHONPATH: "./app:./tests:./config"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"  # Seed fixe pour reproductibilité
+      
+      # Configuration de performance
+      ASYNC_TEST_TIMEOUT: "10"
+      DATABASE_TIMEOUT: "5"
+      REDIS_TIMEOUT: "2"
+      HTTP_TIMEOUT: "5"

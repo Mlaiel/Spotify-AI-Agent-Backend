@@ -1,0 +1,29 @@
+# Dockerfile.prod – Production
+# ---------------------------
+# Rollen: Lead Dev, Architecte IA, Backend Senior, ML Engineer, DBA/Data Engineer, Security Specialist, Microservices Architect
+# Multi-Stage, Security, Caching, Healthcheck, Non-Root, Best Practices
+
+FROM python:3.11-slim AS base
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# System-Dependencies
+RUN apt-get update && apt-get install -y build-essential libpq-dev curl && rm -rf /var/lib/apt/lists/*
+
+# Python-Dependencies
+COPY ../requirements/ /app/requirements/
+RUN pip install --upgrade pip && pip install -r requirements/production.txt
+
+# App-Code
+COPY .. /app
+
+# User für Security
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:8000/health || exit 1
+
+# Entrypoint (Gunicorn/Uvicorn)
+CMD ["gunicorn", "-c", "/app/docker/configs/gunicorn.conf.py", "app.asgi:app"]

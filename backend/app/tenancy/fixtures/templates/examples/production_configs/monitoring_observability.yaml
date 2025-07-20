@@ -1,0 +1,1022 @@
+# Monitoring and Observability Configuration
+# Enterprise Production-Ready Monitoring Stack with Advanced Features
+# Architecture: Full Stack Observability with Metrics, Logs, Traces, and Alerting
+
+_metadata:
+  template_type: "monitoring_observability"
+  template_version: "4.1.0"
+  schema_version: "2024.2"
+  created_at: "{{ current_timestamp() }}"
+  generator: "MonitoringObservabilityGenerator"
+  tags: ["monitoring", "observability", "metrics", "logging", "tracing", "alerting", "enterprise"]
+  description: "Complete observability stack with Prometheus, Grafana, ELK, Jaeger, and advanced analytics"
+  
+cluster_id: "{{ cluster_id }}"
+tenant_id: "{{ tenant_id }}"
+environment: "{{ environment | default('production') }}"
+
+# Configuration monitoring et observabilité
+monitoring_observability:
+  cluster_name: "{{ cluster_name | default('spotify-ai-agent-monitoring') }}"
+  observability_version: "{{ observability_version | default('2024.2') }}"
+  
+  # Stack de métriques (Prometheus + Grafana)
+  metrics_stack:
+    # Configuration Prometheus
+    prometheus:
+      enabled: true
+      version: "{{ prometheus_version | default('v2.48.1') }}"
+      
+      # Configuration serveur Prometheus
+      server_config:
+        retention_time: "{{ prometheus_retention | default('90d') }}"
+        retention_size: "{{ prometheus_retention_size | default('100GB') }}"
+        
+        # Configuration stockage
+        storage:
+          storage_class: "{{ prometheus_storage_class | default('fast-ssd') }}"
+          volume_size: "{{ prometheus_volume_size | default('500Gi') }}"
+          
+        # Configuration performance
+        performance:
+          cpu_request: "{{ prometheus_cpu_request | default('2000m') }}"
+          cpu_limit: "{{ prometheus_cpu_limit | default('4000m') }}"
+          memory_request: "{{ prometheus_memory_request | default('8Gi') }}"
+          memory_limit: "{{ prometheus_memory_limit | default('16Gi') }}"
+          
+        # Configuration réseau
+        networking:
+          port: "{{ prometheus_port | default(9090) }}"
+          external_url: "{{ prometheus_external_url | default('https://prometheus.spotify-ai-agent.com') }}"
+          
+      # Configuration des collecteurs
+      data_collection:
+        # Intervalle de scraping
+        scrape_interval: "{{ scrape_interval | default('15s') }}"
+        evaluation_interval: "{{ evaluation_interval | default('15s') }}"
+        
+        # Targets de monitoring
+        scrape_configs:
+          # Kubernetes API Server
+          - job_name: "kubernetes-apiserver"
+            kubernetes_sd_configs:
+              - role: "endpoints"
+            scheme: "https"
+            tls_config:
+              ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            relabel_configs:
+              - source_labels: ["__meta_kubernetes_namespace", "__meta_kubernetes_service_name", "__meta_kubernetes_endpoint_port_name"]
+                action: "keep"
+                regex: "default;kubernetes;https"
+                
+          # Kubernetes Nodes
+          - job_name: "kubernetes-nodes"
+            kubernetes_sd_configs:
+              - role: "node"
+            relabel_configs:
+              - action: "labelmap"
+                regex: "__meta_kubernetes_node_label_(.+)"
+                
+          # Kubernetes Pods
+          - job_name: "kubernetes-pods"
+            kubernetes_sd_configs:
+              - role: "pod"
+            relabel_configs:
+              - source_labels: ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+                action: "keep"
+                regex: "true"
+              - source_labels: ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+                action: "replace"
+                target_label: "__metrics_path__"
+                regex: "(.+)"
+                
+          # Applications Spotify AI Agent
+          - job_name: "spotify-ai-agent-backend"
+            static_configs:
+              - targets: ["backend-service:8080"]
+            metrics_path: "/metrics"
+            scrape_interval: "10s"
+            
+          - job_name: "spotify-ai-agent-ml"
+            static_configs:
+              - targets: ["ml-service:8081"]
+            metrics_path: "/metrics"
+            scrape_interval: "30s"
+            
+          # Bases de données
+          - job_name: "postgresql-exporter"
+            static_configs:
+              - targets: ["postgres-exporter:9187"]
+            scrape_interval: "30s"
+            
+          - job_name: "mongodb-exporter"
+            static_configs:
+              - targets: ["mongodb-exporter:9216"]
+            scrape_interval: "30s"
+            
+          - job_name: "redis-exporter"
+            static_configs:
+              - targets: ["redis-exporter:9121"]
+            scrape_interval: "15s"
+            
+          # Infrastructure
+          - job_name: "node-exporter"
+            kubernetes_sd_configs:
+              - role: "node"
+            relabel_configs:
+              - source_labels: ["__address__"]
+                regex: "([^:]+):(.+)"
+                target_label: "__address__"
+                replacement: "${1}:9100"
+                
+          - job_name: "kube-state-metrics"
+            static_configs:
+              - targets: ["kube-state-metrics:8080"]
+            scrape_interval: "30s"
+            
+      # Configuration haute disponibilité
+      high_availability:
+        enabled: true
+        replicas: "{{ prometheus_replicas | default(2) }}"
+        
+        # Configuration Thanos pour long-term storage
+        thanos:
+          enabled: true
+          
+          # Thanos Sidecar
+          sidecar:
+            enabled: true
+            
+            # Configuration object storage
+            object_storage:
+              type: "s3"
+              config:
+                bucket: "{{ thanos_s3_bucket | default('spotify-ai-agent-thanos') }}"
+                endpoint: "{{ thanos_s3_endpoint | default('s3.amazonaws.com') }}"
+                region: "{{ thanos_s3_region | default('us-west-2') }}"
+                
+          # Thanos Query
+          query:
+            enabled: true
+            replicas: "{{ thanos_query_replicas | default(2) }}"
+            
+          # Thanos Store Gateway
+          store_gateway:
+            enabled: true
+            replicas: "{{ thanos_store_replicas | default(2) }}"
+            
+          # Thanos Compactor
+          compactor:
+            enabled: true
+            retention_raw: "{{ thanos_retention_raw | default('30d') }}"
+            retention_5m: "{{ thanos_retention_5m | default('90d') }}"
+            retention_1h: "{{ thanos_retention_1h | default('365d') }}"
+            
+    # Configuration Grafana
+    grafana:
+      enabled: true
+      version: "{{ grafana_version | default('10.2.2') }}"
+      
+      # Configuration serveur
+      server_config:
+        # Configuration réseau
+        networking:
+          port: "{{ grafana_port | default(3000) }}"
+          external_url: "{{ grafana_external_url | default('https://grafana.spotify-ai-agent.com') }}"
+          
+        # Configuration stockage
+        storage:
+          storage_class: "{{ grafana_storage_class | default('fast-ssd') }}"
+          volume_size: "{{ grafana_volume_size | default('50Gi') }}"
+          
+        # Configuration performance
+        performance:
+          cpu_request: "{{ grafana_cpu_request | default('500m') }}"
+          cpu_limit: "{{ grafana_cpu_limit | default('1000m') }}"
+          memory_request: "{{ grafana_memory_request | default('2Gi') }}"
+          memory_limit: "{{ grafana_memory_limit | default('4Gi') }}"
+          
+      # Configuration authentification
+      authentication:
+        # OAuth2 avec provider externe
+        oauth2:
+          enabled: true
+          provider: "{{ oauth_provider | default('google') }}"
+          client_id: "{{ oauth_client_id | default('') }}"
+          client_secret: "{{ oauth_client_secret | default('') }}"
+          allowed_domains: "{{ oauth_allowed_domains | default(['spotify-ai-agent.com']) }}"
+          
+        # LDAP integration
+        ldap:
+          enabled: "{{ ldap_enabled | default(false) }}"
+          servers: "{{ ldap_servers | default([]) }}"
+          
+      # Sources de données
+      datasources:
+        # Prometheus principal
+        - name: "Prometheus"
+          type: "prometheus"
+          url: "http://prometheus:9090"
+          access: "proxy"
+          is_default: true
+          
+        # Thanos Query
+        - name: "Thanos"
+          type: "prometheus"
+          url: "http://thanos-query:9090"
+          access: "proxy"
+          
+        # Elasticsearch pour logs
+        - name: "Elasticsearch"
+          type: "elasticsearch"
+          url: "http://elasticsearch:9200"
+          database: "logstash-*"
+          time_field: "@timestamp"
+          
+        # Jaeger pour tracing
+        - name: "Jaeger"
+          type: "jaeger"
+          url: "http://jaeger-query:16686"
+          
+      # Dashboards prédéfinis
+      dashboards:
+        # Dashboard système
+        system_overview:
+          title: "Spotify AI Agent - System Overview"
+          panels:
+            - title: "CPU Usage"
+              type: "graph"
+              targets:
+                - expr: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+                  legend: "CPU Usage %"
+                  
+            - title: "Memory Usage"
+              type: "graph"
+              targets:
+                - expr: "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100"
+                  legend: "Memory Usage %"
+                  
+            - title: "Disk Usage"
+              type: "graph"
+              targets:
+                - expr: "100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes * 100)"
+                  legend: "Disk Usage %"
+                  
+        # Dashboard application
+        application_metrics:
+          title: "Spotify AI Agent - Application Metrics"
+          panels:
+            - title: "Request Rate"
+              type: "graph"
+              targets:
+                - expr: "rate(http_requests_total[5m])"
+                  legend: "Requests/sec"
+                  
+            - title: "Response Time"
+              type: "graph"
+              targets:
+                - expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+                  legend: "95th Percentile"
+                - expr: "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))"
+                  legend: "99th Percentile"
+                  
+            - title: "Error Rate"
+              type: "graph"
+              targets:
+                - expr: "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100"
+                  legend: "Error Rate %"
+                  
+        # Dashboard base de données
+        database_metrics:
+          title: "Spotify AI Agent - Database Metrics"
+          panels:
+            - title: "PostgreSQL Connections"
+              type: "graph"
+              targets:
+                - expr: "pg_stat_database_numbackends"
+                  legend: "Active Connections"
+                  
+            - title: "MongoDB Operations"
+              type: "graph"
+              targets:
+                - expr: "rate(mongodb_opcounters_total[5m])"
+                  legend: "Operations/sec"
+                  
+            - title: "Redis Hit Rate"
+              type: "graph"
+              targets:
+                - expr: "redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) * 100"
+                  legend: "Cache Hit Rate %"
+                  
+        # Dashboard ML/AI
+        ml_metrics:
+          title: "Spotify AI Agent - ML/AI Metrics"
+          panels:
+            - title: "Model Inference Time"
+              type: "graph"
+              targets:
+                - expr: "histogram_quantile(0.95, rate(ml_inference_duration_seconds_bucket[5m]))"
+                  legend: "95th Percentile"
+                  
+            - title: "Model Accuracy"
+              type: "stat"
+              targets:
+                - expr: "ml_model_accuracy"
+                  legend: "Current Accuracy"
+                  
+            - title: "Training Jobs"
+              type: "graph"
+              targets:
+                - expr: "ml_training_jobs_total"
+                  legend: "Training Jobs"
+                  
+  # Stack de logging (ELK Stack)
+  logging_stack:
+    # Configuration Elasticsearch
+    elasticsearch:
+      enabled: true
+      version: "{{ elasticsearch_version | default('8.11.3') }}"
+      
+      # Configuration cluster
+      cluster_config:
+        cluster_name: "{{ elasticsearch_cluster_name | default('spotify-ai-agent-logs') }}"
+        node_count: "{{ elasticsearch_node_count | default(3) }}"
+        
+        # Configuration rôles des nœuds
+        node_roles:
+          master_nodes: "{{ elasticsearch_master_nodes | default(3) }}"
+          data_nodes: "{{ elasticsearch_data_nodes | default(3) }}"
+          ingest_nodes: "{{ elasticsearch_ingest_nodes | default(2) }}"
+          
+      # Configuration stockage
+      storage:
+        storage_class: "{{ elasticsearch_storage_class | default('fast-ssd') }}"
+        volume_size_per_node: "{{ elasticsearch_volume_size | default('1Ti') }}"
+        
+        # Configuration index
+        index_management:
+          # Politique de rotation
+          index_lifecycle_policy:
+            hot_phase_days: "{{ elasticsearch_hot_phase | default(7) }}"
+            warm_phase_days: "{{ elasticsearch_warm_phase | default(30) }}"
+            cold_phase_days: "{{ elasticsearch_cold_phase | default(90) }}"
+            delete_phase_days: "{{ elasticsearch_delete_phase | default(365) }}"
+            
+          # Templates d'index
+          index_templates:
+            - name: "application-logs"
+              pattern: "application-logs-*"
+              settings:
+                number_of_shards: "{{ app_logs_shards | default(3) }}"
+                number_of_replicas: "{{ app_logs_replicas | default(1) }}"
+                
+            - name: "system-logs"
+              pattern: "system-logs-*"
+              settings:
+                number_of_shards: "{{ system_logs_shards | default(2) }}"
+                number_of_replicas: "{{ system_logs_replicas | default(1) }}"
+                
+            - name: "security-logs"
+              pattern: "security-logs-*"
+              settings:
+                number_of_shards: "{{ security_logs_shards | default(1) }}"
+                number_of_replicas: "{{ security_logs_replicas | default(2) }}"
+                
+      # Configuration performance
+      performance:
+        cpu_request: "{{ elasticsearch_cpu_request | default('2000m') }}"
+        cpu_limit: "{{ elasticsearch_cpu_limit | default('4000m') }}"
+        memory_request: "{{ elasticsearch_memory_request | default('8Gi') }}"
+        memory_limit: "{{ elasticsearch_memory_limit | default('16Gi') }}"
+        
+        # Configuration JVM
+        jvm_options:
+          heap_size: "{{ elasticsearch_heap_size | default('8g') }}"
+          gc_collector: "{{ elasticsearch_gc | default('G1GC') }}"
+          
+    # Configuration Logstash
+    logstash:
+      enabled: true
+      version: "{{ logstash_version | default('8.11.3') }}"
+      
+      # Configuration pipeline
+      pipeline_config:
+        # Input plugins
+        inputs:
+          # Logs Kubernetes
+          - plugin: "beats"
+            port: "{{ beats_input_port | default(5044) }}"
+            
+          # Logs application via HTTP
+          - plugin: "http"
+            port: "{{ http_input_port | default(8080) }}"
+            
+          # Logs syslog
+          - plugin: "syslog"
+            port: "{{ syslog_input_port | default(514) }}"
+            
+        # Filter plugins
+        filters:
+          # Parsing JSON
+          - plugin: "json"
+            source: "message"
+            
+          # Parsing dates
+          - plugin: "date"
+            match: ["timestamp", "ISO8601"]
+            
+          # Enrichissement avec GeoIP
+          - plugin: "geoip"
+            source: "client_ip"
+            
+          # Mutation et nettoyage
+          - plugin: "mutate"
+            remove_field: ["@version", "host"]
+            
+        # Output plugins
+        outputs:
+          # Sortie vers Elasticsearch
+          - plugin: "elasticsearch"
+            hosts: ["elasticsearch:9200"]
+            index: "%{[@metadata][index]}-%{+YYYY.MM.dd}"
+            
+          # Sortie vers S3 pour archivage
+          - plugin: "s3"
+            bucket: "{{ logs_archive_bucket | default('spotify-ai-agent-logs-archive') }}"
+            region: "{{ logs_archive_region | default('us-west-2') }}"
+            
+      # Configuration performance
+      performance:
+        replicas: "{{ logstash_replicas | default(3) }}"
+        cpu_request: "{{ logstash_cpu_request | default('1000m') }}"
+        cpu_limit: "{{ logstash_cpu_limit | default('2000m') }}"
+        memory_request: "{{ logstash_memory_request | default('4Gi') }}"
+        memory_limit: "{{ logstash_memory_limit | default('8Gi') }}"
+        
+    # Configuration Kibana
+    kibana:
+      enabled: true
+      version: "{{ kibana_version | default('8.11.3') }}"
+      
+      # Configuration serveur
+      server_config:
+        port: "{{ kibana_port | default(5601) }}"
+        external_url: "{{ kibana_external_url | default('https://kibana.spotify-ai-agent.com') }}"
+        
+      # Configuration performance
+      performance:
+        cpu_request: "{{ kibana_cpu_request | default('500m') }}"
+        cpu_limit: "{{ kibana_cpu_limit | default('1000m') }}"
+        memory_request: "{{ kibana_memory_request | default('2Gi') }}"
+        memory_limit: "{{ kibana_memory_limit | default('4Gi') }}"
+        
+      # Dashboards et visualisations
+      dashboards:
+        # Dashboard logs application
+        application_logs:
+          title: "Application Logs Dashboard"
+          visualizations:
+            - type: "line_chart"
+              title: "Log Volume Over Time"
+              query: "*"
+              
+            - type: "pie_chart"
+              title: "Log Levels Distribution"
+              field: "level.keyword"
+              
+            - type: "data_table"
+              title: "Recent Errors"
+              query: "level:ERROR"
+              
+        # Dashboard sécurité
+        security_logs:
+          title: "Security Logs Dashboard"
+          visualizations:
+            - type: "line_chart"
+              title: "Security Events Over Time"
+              query: "category:security"
+              
+            - type: "heat_map"
+              title: "Failed Login Attempts by IP"
+              field: "source_ip"
+              
+    # Configuration Filebeat/Fluentd
+    log_shippers:
+      # Filebeat pour logs de containers
+      filebeat:
+        enabled: true
+        version: "{{ filebeat_version | default('8.11.3') }}"
+        
+        # Configuration collecte
+        inputs:
+          - type: "container"
+            paths: ["/var/log/containers/*.log"]
+            
+          - type: "kubernetes"
+            add_metadata: true
+            
+        # Configuration output
+        output:
+          logstash:
+            hosts: ["logstash:5044"]
+            
+      # Fluentd comme alternative
+      fluentd:
+        enabled: "{{ fluentd_enabled | default(false) }}"
+        version: "{{ fluentd_version | default('v1.16') }}"
+        
+  # Stack de tracing (Jaeger)
+  tracing_stack:
+    # Configuration Jaeger
+    jaeger:
+      enabled: true
+      version: "{{ jaeger_version | default('1.52.0') }}"
+      
+      # Architecture de déploiement
+      deployment_strategy: "{{ jaeger_deployment | default('production') }}"  # all-in-one, production
+      
+      # Configuration collecteur
+      collector:
+        replicas: "{{ jaeger_collector_replicas | default(3) }}"
+        
+        # Configuration performance
+        performance:
+          cpu_request: "{{ jaeger_collector_cpu_request | default('500m') }}"
+          cpu_limit: "{{ jaeger_collector_cpu_limit | default('1000m') }}"
+          memory_request: "{{ jaeger_collector_memory_request | default('1Gi') }}"
+          memory_limit: "{{ jaeger_collector_memory_limit | default('2Gi') }}"
+          
+        # Configuration sampling
+        sampling:
+          default_strategy: "{{ jaeger_sampling_strategy | default('probabilistic') }}"
+          default_param: "{{ jaeger_sampling_param | default(0.1) }}"  # 10% des traces
+          
+          # Stratégies par service
+          per_service_strategies:
+            - service: "spotify-ai-agent-backend"
+              type: "probabilistic"
+              param: 0.2
+              
+            - service: "spotify-ai-agent-ml"
+              type: "probabilistic"
+              param: 0.5
+              
+      # Configuration agent
+      agent:
+        # Configuration daemonset
+        daemonset: true
+        
+        # Configuration performance
+        performance:
+          cpu_request: "{{ jaeger_agent_cpu_request | default('100m') }}"
+          cpu_limit: "{{ jaeger_agent_cpu_limit | default('200m') }}"
+          memory_request: "{{ jaeger_agent_memory_request | default('128Mi') }}"
+          memory_limit: "{{ jaeger_agent_memory_limit | default('256Mi') }}"
+          
+      # Configuration query service
+      query:
+        replicas: "{{ jaeger_query_replicas | default(2) }}"
+        
+        # Configuration UI
+        ui_config:
+          external_url: "{{ jaeger_external_url | default('https://jaeger.spotify-ai-agent.com') }}"
+          
+      # Configuration stockage
+      storage:
+        type: "{{ jaeger_storage_type | default('elasticsearch') }}"
+        
+        # Configuration Elasticsearch pour Jaeger
+        elasticsearch:
+          server_urls: ["http://elasticsearch:9200"]
+          index_prefix: "{{ jaeger_index_prefix | default('jaeger') }}"
+          
+          # Gestion du cycle de vie des index
+          index_rollover:
+            enabled: true
+            max_size: "{{ jaeger_index_max_size | default('5GB') }}"
+            max_age: "{{ jaeger_index_max_age | default('7d') }}"
+            
+  # Configuration alerting
+  alerting_stack:
+    # Configuration Alertmanager
+    alertmanager:
+      enabled: true
+      version: "{{ alertmanager_version | default('v0.26.0') }}"
+      
+      # Configuration haute disponibilité
+      high_availability:
+        replicas: "{{ alertmanager_replicas | default(3) }}"
+        
+      # Configuration routage des alertes
+      routing:
+        # Configuration par défaut
+        default_receiver: "default-notifications"
+        group_wait: "{{ alert_group_wait | default('10s') }}"
+        group_interval: "{{ alert_group_interval | default('5m') }}"
+        repeat_interval: "{{ alert_repeat_interval | default('4h') }}"
+        
+        # Routes spécialisées
+        routes:
+          # Alertes critiques
+          - match:
+              severity: "critical"
+            receiver: "critical-alerts"
+            group_wait: "0s"
+            repeat_interval: "1h"
+            
+          # Alertes sécurité
+          - match:
+              category: "security"
+            receiver: "security-team"
+            group_wait: "0s"
+            repeat_interval: "30m"
+            
+          # Alertes infrastructure
+          - match:
+              component: "infrastructure"
+            receiver: "devops-team"
+            repeat_interval: "2h"
+            
+      # Configuration des receivers
+      receivers:
+        # Notifications par défaut
+        - name: "default-notifications"
+          slack_configs:
+            - api_url: "{{ default_slack_webhook | default('') }}"
+              channel: "#alerts"
+              title: "{{ alert_title_template | default('Alert: {{ .GroupLabels.alertname }}') }}"
+              
+        # Alertes critiques
+        - name: "critical-alerts"
+          slack_configs:
+            - api_url: "{{ critical_slack_webhook | default('') }}"
+              channel: "#critical-alerts"
+          email_configs:
+            - to: "{{ critical_email_list | default(['oncall@company.com']) }}"
+              subject: "CRITICAL ALERT: {{ .GroupLabels.alertname }}"
+          pagerduty_configs:
+            - routing_key: "{{ pagerduty_routing_key | default('') }}"
+              
+        # Équipe sécurité
+        - name: "security-team"
+          slack_configs:
+            - api_url: "{{ security_slack_webhook | default('') }}"
+              channel: "#security-alerts"
+          email_configs:
+            - to: "{{ security_email_list | default(['security@company.com']) }}"
+              
+        # Équipe DevOps
+        - name: "devops-team"
+          slack_configs:
+            - api_url: "{{ devops_slack_webhook | default('') }}"
+              channel: "#devops-alerts"
+              
+    # Règles d'alerte Prometheus
+    prometheus_rules:
+      # Règles système
+      system_rules:
+        - name: "system.rules"
+          rules:
+            # CPU élevé
+            - alert: "HighCPUUsage"
+              expr: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100) > {{ cpu_alert_threshold | default(80) }}"
+              for: "{{ cpu_alert_duration | default('5m') }}"
+              labels:
+                severity: "warning"
+                component: "infrastructure"
+              annotations:
+                summary: "High CPU usage detected"
+                description: "CPU usage is above {{ cpu_alert_threshold | default(80) }}% for more than {{ cpu_alert_duration | default('5m') }}"
+                
+            # Mémoire élevée
+            - alert: "HighMemoryUsage"
+              expr: "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > {{ memory_alert_threshold | default(85) }}"
+              for: "{{ memory_alert_duration | default('5m') }}"
+              labels:
+                severity: "warning"
+                component: "infrastructure"
+              annotations:
+                summary: "High memory usage detected"
+                description: "Memory usage is above {{ memory_alert_threshold | default(85) }}%"
+                
+            # Espace disque faible
+            - alert: "LowDiskSpace"
+              expr: "100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes * 100) > {{ disk_alert_threshold | default(90) }}"
+              for: "{{ disk_alert_duration | default('1m') }}"
+              labels:
+                severity: "critical"
+                component: "infrastructure"
+              annotations:
+                summary: "Low disk space"
+                description: "Disk usage is above {{ disk_alert_threshold | default(90) }}%"
+                
+      # Règles application
+      application_rules:
+        - name: "application.rules"
+          rules:
+            # Taux d'erreur élevé
+            - alert: "HighErrorRate"
+              expr: "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100 > {{ error_rate_threshold | default(5) }}"
+              for: "{{ error_rate_duration | default('2m') }}"
+              labels:
+                severity: "warning"
+                component: "application"
+              annotations:
+                summary: "High error rate detected"
+                description: "Error rate is above {{ error_rate_threshold | default(5) }}%"
+                
+            # Temps de réponse élevé
+            - alert: "HighResponseTime"
+              expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > {{ response_time_threshold | default(1) }}"
+              for: "{{ response_time_duration | default('5m') }}"
+              labels:
+                severity: "warning"
+                component: "application"
+              annotations:
+                summary: "High response time detected"
+                description: "95th percentile response time is above {{ response_time_threshold | default(1) }}s"
+                
+            # Service indisponible
+            - alert: "ServiceDown"
+              expr: "up == 0"
+              for: "{{ service_down_duration | default('1m') }}"
+              labels:
+                severity: "critical"
+                component: "application"
+              annotations:
+                summary: "Service is down"
+                description: "Service {{ $labels.job }} is down"
+                
+      # Règles base de données
+      database_rules:
+        - name: "database.rules"
+          rules:
+            # PostgreSQL connections élevées
+            - alert: "HighPostgreSQLConnections"
+              expr: "pg_stat_database_numbackends / pg_settings_max_connections * 100 > {{ pg_connections_threshold | default(80) }}"
+              for: "{{ pg_connections_duration | default('5m') }}"
+              labels:
+                severity: "warning"
+                component: "database"
+              annotations:
+                summary: "High PostgreSQL connections"
+                description: "PostgreSQL connections usage is above {{ pg_connections_threshold | default(80) }}%"
+                
+            # Redis memory élevée
+            - alert: "HighRedisMemoryUsage"
+              expr: "redis_memory_used_bytes / redis_memory_max_bytes * 100 > {{ redis_memory_threshold | default(85) }}"
+              for: "{{ redis_memory_duration | default('5m') }}"
+              labels:
+                severity: "warning"
+                component: "database"
+              annotations:
+                summary: "High Redis memory usage"
+                description: "Redis memory usage is above {{ redis_memory_threshold | default(85) }}%"
+                
+            # MongoDB replica lag
+            - alert: "MongoDBReplicationLag"
+              expr: "mongodb_replset_member_replication_lag > {{ mongodb_lag_threshold | default(10) }}"
+              for: "{{ mongodb_lag_duration | default('2m') }}"
+              labels:
+                severity: "warning"
+                component: "database"
+              annotations:
+                summary: "MongoDB replication lag detected"
+                description: "MongoDB replication lag is above {{ mongodb_lag_threshold | default(10) }} seconds"
+
+# Configuration Kubernetes pour monitoring
+kubernetes_monitoring:
+  namespace: "{{ monitoring_namespace | default('monitoring') }}"
+  
+  # Configuration RBAC
+  rbac:
+    enabled: true
+    
+    # ServiceAccount pour Prometheus
+    prometheus_service_account:
+      name: "prometheus"
+      
+      # ClusterRole pour accès aux métriques
+      cluster_role:
+        name: "prometheus"
+        rules:
+          - api_groups: [""]
+            resources: ["nodes", "nodes/proxy", "services", "endpoints", "pods"]
+            verbs: ["get", "list", "watch"]
+          - api_groups: ["extensions"]
+            resources: ["ingresses"]
+            verbs: ["get", "list", "watch"]
+          - non_resource_urls: ["/metrics"]
+            verbs: ["get"]
+            
+  # Configuration stockage persistant
+  persistent_storage:
+    # Prometheus storage
+    prometheus_storage:
+      storage_class: "{{ prometheus_storage_class | default('fast-ssd') }}"
+      access_mode: "ReadWriteOnce"
+      size: "{{ prometheus_volume_size | default('500Gi') }}"
+      
+    # Grafana storage
+    grafana_storage:
+      storage_class: "{{ grafana_storage_class | default('standard') }}"
+      access_mode: "ReadWriteOnce"
+      size: "{{ grafana_volume_size | default('50Gi') }}"
+      
+    # Elasticsearch storage
+    elasticsearch_storage:
+      storage_class: "{{ elasticsearch_storage_class | default('fast-ssd') }}"
+      access_mode: "ReadWriteOnce"
+      size_per_node: "{{ elasticsearch_volume_size | default('1Ti') }}"
+      
+  # Configuration réseau
+  networking:
+    # Services
+    services:
+      # Service Prometheus
+      prometheus_service:
+        type: "{{ prometheus_service_type | default('ClusterIP') }}"
+        port: 9090
+        
+      # Service Grafana
+      grafana_service:
+        type: "{{ grafana_service_type | default('LoadBalancer') }}"
+        port: 3000
+        
+      # Service Elasticsearch
+      elasticsearch_service:
+        type: "ClusterIP"
+        port: 9200
+        
+      # Service Kibana
+      kibana_service:
+        type: "{{ kibana_service_type | default('LoadBalancer') }}"
+        port: 5601
+        
+    # Ingress
+    ingress:
+      enabled: true
+      
+      # Ingress Grafana
+      grafana_ingress:
+        enabled: true
+        host: "{{ grafana_host | default('grafana.spotify-ai-agent.com') }}"
+        tls_enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          
+      # Ingress Kibana
+      kibana_ingress:
+        enabled: true
+        host: "{{ kibana_host | default('kibana.spotify-ai-agent.com') }}"
+        tls_enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+# Scripts d'automatisation monitoring
+monitoring_automation_scripts:
+  # Script de déploiement stack monitoring
+  deploy_monitoring_stack: |
+    #!/bin/bash
+    # Script de déploiement stack monitoring
+    set -euo pipefail
+    
+    NAMESPACE="{{ monitoring_namespace | default('monitoring') }}"
+    
+    echo "Déploiement du stack monitoring..."
+    
+    # Créer le namespace
+    kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+    
+    # Déployer Prometheus Operator
+    echo "Déploiement de Prometheus Operator..."
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo update
+    
+    helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+      --namespace $NAMESPACE \
+      --set prometheus.prometheusSpec.retention="{{ prometheus_retention | default('90d') }}" \
+      --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage="{{ prometheus_volume_size | default('500Gi') }}" \
+      --set grafana.persistence.enabled=true \
+      --set grafana.persistence.size="{{ grafana_volume_size | default('50Gi') }}"
+    
+    # Déployer ELK Stack
+    echo "Déploiement d'Elasticsearch..."
+    helm repo add elastic https://helm.elastic.co
+    helm repo update
+    
+    helm upgrade --install elasticsearch elastic/elasticsearch \
+      --namespace $NAMESPACE \
+      --set replicas="{{ elasticsearch_node_count | default(3) }}" \
+      --set volumeClaimTemplate.resources.requests.storage="{{ elasticsearch_volume_size | default('1Ti') }}"
+    
+    echo "Déploiement de Kibana..."
+    helm upgrade --install kibana elastic/kibana \
+      --namespace $NAMESPACE \
+      --set service.type="{{ kibana_service_type | default('LoadBalancer') }}"
+    
+    echo "Déploiement de Logstash..."
+    helm upgrade --install logstash elastic/logstash \
+      --namespace $NAMESPACE \
+      --set replicas="{{ logstash_replicas | default(3) }}"
+    
+    # Déployer Jaeger
+    echo "Déploiement de Jaeger..."
+    helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+    helm repo update
+    
+    helm upgrade --install jaeger jaegertracing/jaeger \
+      --namespace $NAMESPACE \
+      --set storage.type="{{ jaeger_storage_type | default('elasticsearch') }}"
+    
+    echo "Stack monitoring déployé avec succès"
+    
+  # Script de vérification de santé
+  health_check: |
+    #!/bin/bash
+    # Script de vérification de santé du monitoring
+    set -euo pipefail
+    
+    NAMESPACE="{{ monitoring_namespace | default('monitoring') }}"
+    
+    echo "=== Vérification de santé du monitoring ==="
+    
+    # Vérifier Prometheus
+    echo "Vérification de Prometheus..."
+    kubectl get pods -l app.kubernetes.io/name=prometheus -n $NAMESPACE
+    
+    # Vérifier que Prometheus collecte des métriques
+    PROMETHEUS_POD=$(kubectl get pods -l app.kubernetes.io/name=prometheus -n $NAMESPACE -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec $PROMETHEUS_POD -n $NAMESPACE -- wget -qO- http://localhost:9090/api/v1/targets | jq '.data.activeTargets | length'
+    
+    # Vérifier Grafana
+    echo "Vérification de Grafana..."
+    kubectl get pods -l app.kubernetes.io/name=grafana -n $NAMESPACE
+    
+    # Vérifier Elasticsearch
+    echo "Vérification d'Elasticsearch..."
+    kubectl get pods -l app=elasticsearch-master -n $NAMESPACE
+    
+    # Vérifier la santé du cluster Elasticsearch
+    ES_POD=$(kubectl get pods -l app=elasticsearch-master -n $NAMESPACE -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec $ES_POD -n $NAMESPACE -- curl -s http://localhost:9200/_cluster/health | jq '.status'
+    
+    # Vérifier Kibana
+    echo "Vérification de Kibana..."
+    kubectl get pods -l app=kibana -n $NAMESPACE
+    
+    # Vérifier Jaeger
+    echo "Vérification de Jaeger..."
+    kubectl get pods -l app.kubernetes.io/name=jaeger -n $NAMESPACE
+    
+    echo "Vérification terminée"
+    
+  # Script de backup des configurations
+  backup_configs: |
+    #!/bin/bash
+    # Script de backup des configurations monitoring
+    set -euo pipefail
+    
+    BACKUP_DATE=$(date +%Y%m%d-%H%M%S)
+    BACKUP_DIR="/tmp/monitoring-backup-$BACKUP_DATE"
+    NAMESPACE="{{ monitoring_namespace | default('monitoring') }}"
+    S3_BUCKET="{{ monitoring_backup_bucket | default('spotify-ai-agent-monitoring-backups') }}"
+    
+    echo "Sauvegarde des configurations monitoring..."
+    
+    mkdir -p $BACKUP_DIR
+    
+    # Backup Grafana dashboards
+    echo "Sauvegarde des dashboards Grafana..."
+    GRAFANA_POD=$(kubectl get pods -l app.kubernetes.io/name=grafana -n $NAMESPACE -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec $GRAFANA_POD -n $NAMESPACE -- curl -s http://admin:password@localhost:3000/api/search | jq '.[] | .uid' | xargs -I {} kubectl exec $GRAFANA_POD -n $NAMESPACE -- curl -s http://admin:password@localhost:3000/api/dashboards/uid/{} > $BACKUP_DIR/dashboard-{}.json
+    
+    # Backup Prometheus configuration
+    echo "Sauvegarde de la configuration Prometheus..."
+    kubectl get configmap prometheus-config -n $NAMESPACE -o yaml > $BACKUP_DIR/prometheus-config.yaml
+    
+    # Backup Alertmanager configuration
+    echo "Sauvegarde de la configuration Alertmanager..."
+    kubectl get configmap alertmanager-config -n $NAMESPACE -o yaml > $BACKUP_DIR/alertmanager-config.yaml
+    
+    # Upload vers S3
+    echo "Upload vers S3..."
+    tar -czf $BACKUP_DIR.tar.gz -C $BACKUP_DIR .
+    aws s3 cp $BACKUP_DIR.tar.gz s3://$S3_BUCKET/
+    
+    # Nettoyage
+    rm -rf $BACKUP_DIR $BACKUP_DIR.tar.gz
+    
+    echo "Sauvegarde terminée: monitoring-backup-$BACKUP_DATE.tar.gz"
+
+# Métriques SLA monitoring
+monitoring_sla_objectives:
+  # Objectifs de monitoring
+  monitoring_targets:
+    metrics_ingestion_rate: "{{ metrics_ingestion_target | default('99.9%') }}"
+    log_ingestion_latency_p99_seconds: "{{ log_ingestion_latency_target | default(5) }}"
+    alert_notification_time_seconds: "{{ alert_notification_target | default(30) }}"
+    dashboard_load_time_seconds: "{{ dashboard_load_time_target | default(3) }}"
+    monitoring_system_uptime: "{{ monitoring_uptime_target | default('99.95%') }}"
+    trace_sampling_accuracy: "{{ trace_sampling_accuracy_target | default('95%') }}"
+    storage_retention_compliance: "{{ storage_retention_target | default('100%') }}"

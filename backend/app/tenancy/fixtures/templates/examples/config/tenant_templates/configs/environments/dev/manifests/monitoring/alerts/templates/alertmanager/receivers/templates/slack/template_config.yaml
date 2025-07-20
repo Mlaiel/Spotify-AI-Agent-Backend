@@ -1,0 +1,419 @@
+# Spotify AI Agent - Enterprise Template Configuration
+# Developed by: Fahed Mlaiel (Lead Dev + AI Architect)
+# Advanced Industrial Grade Configuration for Slack Alert Templates
+
+# Template Engine Configuration
+template_engine:
+  type: "jinja2"
+  version: "3.1.0"
+  cache_enabled: true
+  cache_ttl: 300  # seconds
+  max_render_time_ms: 100
+  sandbox_mode: true
+  auto_reload: true
+  strict_mode: true
+  debug_mode: false
+
+# Template Directories (in order of priority)
+template_directories:
+  - "/app/tenancy/fixtures/templates/examples/config/tenant_templates/configs/environments/dev/manifests/monitoring/alerts/templates/alertmanager/receivers/templates/slack/templates"
+  - "/app/tenancy/fixtures/templates/examples/config/tenant_templates/configs/environments/dev/manifests/monitoring/alerts/templates/alertmanager/receivers/templates/slack/custom"
+  - "/app/tenancy/fixtures/templates/examples/config/tenant_templates/configs/environments/dev/manifests/monitoring/alerts/templates/alertmanager/receivers/templates/slack/tenant_overrides"
+
+# Security Settings
+security:
+  escape_html: true
+  allow_raw_blocks: false
+  max_template_size: 50000  # bytes
+  max_output_size: 40000   # bytes (Slack limit)
+  max_variables: 1000
+  max_loops: 100
+  max_recursion_depth: 10
+  dangerous_filters:
+    - "safe"
+    - "raw"
+    - "xmlattr"
+  dangerous_functions:
+    - "eval"
+    - "exec"
+    - "compile"
+    - "open"
+    - "file"
+  sanitize_input: true
+  validate_urls: true
+  csrf_protection: true
+
+# Performance Settings
+performance:
+  max_render_time_ms: 100
+  cache_size: 1000
+  max_concurrent_renders: 50
+  template_preload: true
+  lazy_loading: false
+  compression_enabled: true
+  minify_output: false
+  async_rendering: true
+  memory_limit_mb: 256
+  cpu_limit_percent: 80
+
+# Localization Configuration
+localization:
+  default_language: "en"
+  supported_languages: 
+    - "en"  # English
+    - "fr"  # French
+    - "de"  # German
+  fallback_language: "en"
+  timezone: "UTC"
+  date_format: "iso"
+  time_format: "24h"
+  currency_format: "USD"
+  number_format: "en_US"
+  rtl_languages: []
+  
+# Environment-specific URLs
+environments:
+  production:
+    dashboard_url: "https://monitoring.spotify-ai-agent.com"
+    metrics_url: "https://grafana.spotify-ai-agent.com"
+    logs_url: "https://kibana.spotify-ai-agent.com"
+    tracing_url: "https://jaeger.spotify-ai-agent.com"
+    runbook_url: "https://runbooks.spotify-ai-agent.com"
+    status_url: "https://status.spotify-ai-agent.com"
+    aws_console_url: "https://console.aws.amazon.com"
+    k8s_dashboard_url: "https://k8s.spotify-ai-agent.com"
+    
+  staging:
+    dashboard_url: "https://monitoring-staging.spotify-ai-agent.com"
+    metrics_url: "https://grafana-staging.spotify-ai-agent.com"
+    logs_url: "https://kibana-staging.spotify-ai-agent.com"
+    tracing_url: "https://jaeger-staging.spotify-ai-agent.com"
+    runbook_url: "https://runbooks-staging.spotify-ai-agent.com"
+    status_url: "https://status-staging.spotify-ai-agent.com"
+    aws_console_url: "https://console.aws.amazon.com"
+    k8s_dashboard_url: "https://k8s-staging.spotify-ai-agent.com"
+    
+  development:
+    dashboard_url: "https://monitoring-dev.spotify-ai-agent.com"
+    metrics_url: "https://grafana-dev.spotify-ai-agent.com"
+    logs_url: "https://kibana-dev.spotify-ai-agent.com"
+    tracing_url: "https://jaeger-dev.spotify-ai-agent.com"
+    runbook_url: "https://runbooks-dev.spotify-ai-agent.com"
+    status_url: "https://status-dev.spotify-ai-agent.com"
+    aws_console_url: "https://console.aws.amazon.com"
+    k8s_dashboard_url: "https://k8s-dev.spotify-ai-agent.com"
+
+# A/B Testing Configuration
+ab_testing:
+  enabled: true
+  default_variant: "control"
+  variants:
+    - name: "control"
+      weight: 50
+      description: "Standard template format"
+    - name: "enhanced"
+      weight: 30
+      description: "Enhanced AI insights template"
+    - name: "minimal"
+      weight: 20
+      description: "Minimal information template"
+  traffic_allocation:
+    production: 100
+    staging: 100
+    development: 100
+  experiment_duration_days: 30
+  statistical_significance: 0.95
+
+# Template Categories and Mappings
+template_mappings:
+  critical:
+    text: "critical_{language}_text.j2"
+    blocks: "critical_{language}_blocks.j2"
+    digest: "critical_digest_{language}.j2"
+  warning:
+    text: "warning_{language}_text.j2"
+    blocks: "warning_{language}_blocks.j2"
+    digest: "warning_digest_{language}.j2"
+  resolved:
+    text: "resolved_{language}_text.j2"
+    blocks: "resolved_{language}_blocks.j2"
+    digest: "resolved_digest_{language}.j2"
+  ml_alert:
+    text: "ml_alert_{language}_text.j2"
+    blocks: "ml_alert_{language}_blocks.j2"
+    digest: "ml_digest_{language}.j2"
+  security_alert:
+    text: "security_alert_{language}_text.j2"
+    blocks: "security_alert_{language}_blocks.j2"
+    digest: "security_digest_{language}.j2"
+  performance_alert:
+    text: "performance_alert_{language}_text.j2"
+    blocks: "performance_alert_{language}_blocks.j2"
+    digest: "performance_digest_{language}.j2"
+  infrastructure_alert:
+    text: "infrastructure_alert_{language}_text.j2"
+    blocks: "infrastructure_alert_{language}_blocks.j2"
+    digest: "infrastructure_digest_{language}.j2"
+  incident:
+    text: "incident_{language}_text.j2"
+    blocks: "incident_blocks_{language}.j2"
+    digest: "incident_digest_{language}.j2"
+  digest:
+    text: "digest_{language}_text.j2"
+    blocks: "digest_{language}_blocks.j2"
+
+# Metrics Collection Configuration
+metrics:
+  enabled: true
+  collector_endpoint: "https://metrics.spotify-ai-agent.com/templates"
+  batch_size: 100
+  flush_interval: 60  # seconds
+  retention_days: 90
+  track_engagement: true
+  track_performance: true
+  track_errors: true
+  track_user_feedback: true
+  anonymize_data: true
+  
+  metrics_to_collect:
+    - "render_time_ms"
+    - "template_cache_hits"
+    - "template_cache_misses"
+    - "error_rate"
+    - "user_engagement_score"
+    - "click_through_rate"
+    - "resolution_correlation"
+    - "template_effectiveness"
+
+# Caching Configuration
+caching:
+  enabled: true
+  backend: "redis"
+  redis:
+    host: "redis.spotify-ai-agent.com"
+    port: 6379
+    db: 5
+    password: "${REDIS_PASSWORD}"
+    ssl: true
+    cluster_mode: true
+  cache_keys:
+    template_content: "template:content:{hash}"
+    rendered_output: "template:rendered:{hash}"
+    validation_result: "template:validation:{hash}"
+  ttl:
+    template_content: 3600     # 1 hour
+    rendered_output: 300       # 5 minutes
+    validation_result: 1800    # 30 minutes
+  compression: true
+  serialization: "json"
+
+# Validation Configuration
+validation:
+  enabled: true
+  strict_mode: true
+  auto_validate: true
+  validation_cache_ttl: 1800  # 30 minutes
+  
+  syntax_validation:
+    enabled: true
+    check_undefined_variables: true
+    check_complex_expressions: true
+    max_complexity_score: 10
+    
+  content_validation:
+    enabled: true
+    required_fields:
+      - "alert.alert_id"
+      - "alert.title"
+      - "alert.severity"
+      - "environment"
+    recommended_fields:
+      - "alert.created_at"
+      - "alert.context.service_name"
+      - "dashboard_url"
+      - "metrics_url"
+    check_hardcoded_values: true
+    check_accessibility: true
+    
+  performance_validation:
+    enabled: true
+    max_render_time_ms: 100
+    max_output_size: 40000
+    max_memory_usage_mb: 64
+    
+  security_validation:
+    enabled: true
+    check_xss_vulnerabilities: true
+    check_injection_attacks: true
+    check_dangerous_patterns: true
+    scan_external_links: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    - type: "file"
+      filename: "/var/log/spotify-ai-agent/template-manager.log"
+      max_size_mb: 100
+      backup_count: 5
+      rotation: "time"
+    - type: "console"
+      stream: "stdout"
+    - type: "syslog"
+      facility: "local0"
+      address: ["syslog.spotify-ai-agent.com", 514]
+  
+  loggers:
+    template_manager:
+      level: "INFO"
+    template_validator:
+      level: "WARNING"
+    jinja2:
+      level: "ERROR"
+
+# Feature Flags
+feature_flags:
+  ai_insights_enabled: true
+  performance_optimization: true
+  real_time_validation: true
+  template_precompilation: true
+  dynamic_template_selection: true
+  user_personalization: true
+  advanced_analytics: true
+  multi_tenant_support: true
+  custom_filters: true
+  template_versioning: true
+
+# Rate Limiting
+rate_limiting:
+  enabled: true
+  max_renders_per_minute: 1000
+  max_renders_per_hour: 50000
+  burst_limit: 100
+  backoff_strategy: "exponential"
+  queue_size: 10000
+
+# Alert Context Enrichment
+context_enrichment:
+  enabled: true
+  ai_insights:
+    enabled: true
+    confidence_threshold: 0.7
+    max_recommendations: 5
+    timeout_ms: 500
+  business_impact:
+    enabled: true
+    cost_calculation: true
+    user_impact_estimation: true
+    sla_tracking: true
+  infrastructure_context:
+    enabled: true
+    resource_utilization: true
+    capacity_prediction: true
+    dependency_mapping: true
+
+# Custom Filters and Functions
+custom_extensions:
+  filters:
+    - name: "format_currency"
+      module: "custom_filters.currency"
+      function: "format_currency"
+    - name: "humanize_duration"
+      module: "custom_filters.time"
+      function: "humanize_duration"
+    - name: "severity_color"
+      module: "custom_filters.colors" 
+      function: "get_severity_color"
+      
+  functions:
+    - name: "get_oncall_contact"
+      module: "custom_functions.contacts"
+      function: "get_oncall_contact"
+    - name: "calculate_sla_impact"
+      module: "custom_functions.sla"
+      function: "calculate_sla_impact"
+
+# Tenant Configuration
+multi_tenancy:
+  enabled: true
+  tenant_isolation: true
+  tenant_specific_templates: true
+  tenant_branding: true
+  tenant_config_override: true
+  
+  default_tenant:
+    tenant_id: "default"
+    branding:
+      primary_color: "#1DB954"
+      logo_url: "https://cdn.spotify-ai-agent.com/logo.png"
+      brand_name: "Spotify AI Agent"
+    preferences:
+      language: "en"
+      timezone: "UTC"
+      date_format: "iso"
+
+# Integration Configuration
+integrations:
+  slack:
+    api_base_url: "https://slack.com/api"
+    webhook_timeout: 30
+    retry_attempts: 3
+    retry_backoff: "exponential"
+    rate_limit_respect: true
+    
+  prometheus:
+    enabled: true
+    metrics_port: 9090
+    metrics_path: "/metrics"
+    push_gateway: "https://prometheus-pushgateway.spotify-ai-agent.com"
+    
+  elasticsearch:
+    enabled: true
+    hosts: ["https://elasticsearch.spotify-ai-agent.com:9200"]
+    index_template: "spotify-ai-agent-templates"
+    retention_days: 30
+
+# Development and Testing
+development:
+  mock_mode: false
+  debug_templates: false
+  hot_reload: true
+  validation_on_save: true
+  test_data_generation: true
+  performance_profiling: false
+
+# Backup and Recovery
+backup:
+  enabled: true
+  frequency: "daily"
+  retention_days: 30
+  storage_backend: "s3"
+  s3:
+    bucket: "spotify-ai-agent-template-backups"
+    region: "us-east-1"
+    encryption: "AES256"
+  
+# Health Checks
+health_checks:
+  enabled: true
+  interval_seconds: 30
+  timeout_seconds: 10
+  endpoints:
+    - name: "template_engine"
+      check: "template_engine_health"
+    - name: "cache_backend"
+      check: "cache_health"
+    - name: "validation_service"
+      check: "validation_health"
+
+# System Information
+system:
+  name: "Spotify AI Agent Template System"
+  version: "2.0.0"
+  environment: "development"
+  deployment_date: "2025-07-18"
+  maintainer: "Fahed Mlaiel"
+  contact: "fahed.mlaiel@spotify-ai-agent.com"
+  documentation_url: "https://docs.spotify-ai-agent.com/templates"
+  repository_url: "https://github.com/spotify-ai-agent/templates"

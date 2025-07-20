@@ -1,0 +1,217 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  evaluation_interval: 30s
+  external_labels:
+    cluster: 'spotify-ai-agent-dev'
+    environment: 'dev'
+    datacenter: 'eu-west-1'
+
+rule_files:
+  - "rules/*.yml"
+  - "tenant_rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      path_prefix: /
+      scheme: http
+      timeout: 10s
+      api_version: v2
+
+scrape_configs:
+  # Prometheus auto-découverte
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Node Exporter pour métriques système
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # FastAPI Application Metrics par Tenant
+  - job_name: 'spotify-ai-agent-api'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - spotify-ai-agent-dev
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: spotify-ai-agent-api
+      - source_labels: [__meta_kubernetes_pod_label_tenant_id]
+        target_label: tenant_id
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'tenant_.*'
+        action: keep
+
+  # Redis Metrics par Tenant
+  - job_name: 'redis-per-tenant'
+    kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+            - spotify-ai-agent-dev
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_label_app]
+        action: keep
+        regex: redis
+      - source_labels: [__meta_kubernetes_service_label_tenant_id]
+        target_label: tenant_id
+      - source_labels: [__address__]
+        action: replace
+        regex: (.+):(.+)
+        replacement: $1:6379
+        target_label: __address__
+    metrics_path: /metrics
+
+  # PostgreSQL Metrics par Tenant
+  - job_name: 'postgres-per-tenant'
+    kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+            - spotify-ai-agent-dev
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_label_app]
+        action: keep
+        regex: postgres
+      - source_labels: [__meta_kubernetes_service_label_tenant_id]
+        target_label: tenant_id
+    metrics_path: /metrics
+
+  # AI/ML Model Metrics
+  - job_name: 'ml-models'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - spotify-ai-agent-dev
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: ml-model
+      - source_labels: [__meta_kubernetes_pod_label_tenant_id]
+        target_label: tenant_id
+      - source_labels: [__meta_kubernetes_pod_label_model_name]
+        target_label: model_name
+      - source_labels: [__meta_kubernetes_pod_label_model_version]
+        target_label: model_version
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Nginx Ingress Controller
+  - job_name: 'nginx-ingress'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ingress-nginx
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: ingress-nginx
+    scrape_interval: 30s
+
+  # Kubernetes API Server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  # Kubernetes Node Metrics
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # Tenant-specific scrape configs (dynamically generated)
+  - job_name: 'tenant-custom-metrics'
+    file_sd_configs:
+      - files:
+        - 'tenant_configs/*.json'
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [tenant_id]
+        target_label: __param_tenant_id
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: prometheus-tenant-proxy:8080
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __metrics_path__
+        replacement: /proxy/metrics
+
+# Configuration du stockage TSDB
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 90d
+    retention.size: 50GB
+    wal-compression: true
+    min-block-duration: 2h
+    max-block-duration: 25h
+
+# Gestion des remote storage pour archivage long terme
+remote_write:
+  - url: "http://cortex:9009/api/prom/push"
+    queue_config:
+      capacity: 10000
+      max_samples_per_send: 5000
+      batch_send_deadline: 5s
+      min_shards: 1
+      max_shards: 200
+    metadata_config:
+      send: true
+      send_interval: 30s
+    write_relabel_configs:
+      - source_labels: [tenant_id]
+        target_label: __tenant_id__
+        
+remote_read:
+  - url: "http://cortex:9009/api/prom/read"
+    read_recent: true

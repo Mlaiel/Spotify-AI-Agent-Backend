@@ -1,0 +1,452 @@
+# Example Enterprise Configuration
+# This demonstrates a complete enterprise-grade configuration for the Spotify AI Agent
+
+name: "spotify-ai-production-config"
+version: "2.1.0"
+description: "Production configuration for Spotify AI Agent with full enterprise features"
+environment: "production"
+tenant_id: "spotify-premium-001"
+
+# Configuration source tracking
+source:
+  source_type: "git_repository"
+  source_id: "spotify-ai-configs"
+  source_url: "https://github.com/spotify/ai-configs.git"
+  version: "v2.1.0"
+  checksum: "sha256:abc123def456..."
+
+# Enterprise security settings
+encryption:
+  enabled: true
+  algorithm: "aes_256_gcm"
+  key_rotation_days: 90
+  at_rest_encryption: true
+  in_transit_encryption: true
+  key_management_service: "vault"
+
+# Compliance and governance
+compliance:
+  standards:
+    - "soc2_type_ii"
+    - "gdpr"
+    - "iso_27001"
+  audit_retention_days: 2555  # 7 years for HIPAA compliance
+  data_classification: "confidential"
+  geographic_restrictions:
+    - "EU"
+    - "US"
+  privacy_controls:
+    right_to_be_forgotten: true
+    data_portability: true
+    consent_management: true
+    data_minimization: true
+
+# Backup and disaster recovery
+backup:
+  enabled: true
+  frequency_hours: 6
+  retention_days: 90
+  compression_enabled: true
+  encryption_enabled: true
+  remote_storage:
+    provider: "aws_s3"
+    bucket: "spotify-ai-backups"
+    region: "us-west-2"
+    cross_region_replication: true
+  verification_enabled: true
+  automated_restore_testing: true
+
+# Advanced validation settings
+validation:
+  strict_mode: true
+  schema_validation: true
+  business_rule_validation: true
+  cross_reference_validation: true
+  performance_validation: true
+  security_validation: true
+  custom_validators:
+    - "tenant_isolation_validator"
+    - "resource_limit_validator"
+    - "security_policy_validator"
+    - "performance_threshold_validator"
+
+# Deployment configuration
+deployment:
+  strategy: "blue_green"
+  rollback_enabled: true
+  canary_percentage: 10
+  health_check_timeout: 300
+  deployment_timeout: 1800
+  notification_channels:
+    - "#ops-deployments"
+    - "ops-team@spotify.com"
+  approval_required: true
+  automated_rollback: true
+  rollback_triggers:
+    - "error_rate_threshold_exceeded"
+    - "response_time_degradation"
+    - "health_check_failures"
+
+# Multi-tenant configuration
+tenants:
+  - tenant_id: "spotify-premium-001"
+    name: "Spotify Premium Tier"
+    environment: "production"
+    resources:
+      cpu_limit: "8.0"
+      memory_limit: "16Gi"
+      storage_limit: "1Ti"
+      gpu_limit: "2"
+    quotas:
+      max_requests_per_second: 10000
+      max_concurrent_users: 100000
+      max_data_transfer_gb: 10000
+    security:
+      encryption_required: true
+      mfa_required: true
+      audit_logging: true
+      network_isolation: true
+    monitoring:
+      metrics_retention_days: 90
+      alert_escalation: true
+      custom_dashboards: true
+      ai_insights: true
+
+# Monitoring and observability
+monitoring:
+  prometheus:
+    enabled: true
+    scrape_interval: "15s"
+    retention: "90d"
+    storage:
+      size: "100Gi"
+      class: "fast-ssd"
+  grafana:
+    enabled: true
+    dashboards:
+      - "api-performance"
+      - "system-health" 
+      - "business-metrics"
+      - "ml-model-performance"
+    alerting: true
+  tracing:
+    enabled: true
+    backend: "jaeger"
+    sampling_rate: 0.1
+    retention_days: 7
+  logging:
+    level: "INFO"
+    structured: true
+    retention_days: 30
+    remote_shipping: true
+    sensitive_data_masking: true
+
+# AI and machine learning configuration
+ml:
+  models:
+    - name: "spotify-recommendation-v2"
+      version: "2.1.0"
+      framework: "pytorch"
+      hardware_requirements:
+        min_gpu_memory: "8GB"
+        preferred_gpu: "Tesla V100"
+        cpu_cores: 8
+      auto_scaling:
+        enabled: true
+        min_replicas: 2
+        max_replicas: 10
+        target_cpu_utilization: 70
+      monitoring:
+        performance_metrics: true
+        drift_detection: true
+        explainability: true
+  
+  inference:
+    max_batch_size: 64
+    timeout_seconds: 5.0
+    retry_policy:
+      max_retries: 3
+      backoff_strategy: "exponential"
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      timeout_seconds: 60
+
+# Alerting configuration
+alerting:
+  channels:
+    slack:
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channels:
+        critical: "#ops-critical"
+        warning: "#ops-alerts"
+        info: "#ops-info"
+      templates:
+        critical: "🚨 CRITICAL: {alert_name}\n{description}\nTenant: {tenant_id}"
+        warning: "⚠️ WARNING: {alert_name}\n{description}"
+        resolved: "✅ RESOLVED: {alert_name}"
+    email:
+      smtp_server: "smtp.spotify.com"
+      recipients:
+        - "ops-team@spotify.com"
+        - "platform-team@spotify.com"
+    pagerduty:
+      service_key: "${PAGERDUTY_SERVICE_KEY}"
+      escalation_policy: "critical-alerts"
+  
+  rules:
+    - name: "High API Response Time"
+      metric: "api_request_duration_p95"
+      threshold: 2.0
+      operator: ">"
+      severity: "warning"
+      for_duration: "5m"
+      channels: ["slack", "email"]
+    
+    - name: "Critical API Response Time"
+      metric: "api_request_duration_p95"
+      threshold: 5.0
+      operator: ">"
+      severity: "critical"
+      for_duration: "2m"
+      channels: ["slack", "email", "pagerduty"]
+    
+    - name: "High Error Rate"
+      metric: "api_error_rate"
+      threshold: 0.01
+      operator: ">"
+      severity: "warning"
+      for_duration: "3m"
+      channels: ["slack"]
+    
+    - name: "Critical Error Rate"
+      metric: "api_error_rate"
+      threshold: 0.05
+      operator: ">"
+      severity: "critical"
+      for_duration: "1m"
+      channels: ["slack", "email", "pagerduty"]
+
+# Internationalization and localization
+localization:
+  supported_locales:
+    - "en_US"
+    - "en_GB"
+    - "fr_FR"
+    - "de_DE"
+    - "es_ES"
+    - "it_IT"
+    - "ja_JP"
+    - "ko_KR"
+    - "zh_CN"
+  default_locale: "en_US"
+  fallback_strategy: "cascade"
+  ai_translation:
+    enabled: true
+    model: "gpt-4"
+    confidence_threshold: 0.8
+    human_review_threshold: 0.9
+  cultural_adaptation:
+    enabled: true
+    business_hours_localization: true
+    currency_formatting: true
+    date_time_formatting: true
+
+# Automation and workflows
+automation:
+  workflows:
+    - name: "Daily Backup"
+      schedule: "0 2 * * *"
+      timezone: "UTC"
+      steps:
+        - name: "Database Backup"
+          tool: "pg_dump"
+          timeout: 3600
+        - name: "Upload to S3"
+          tool: "aws_s3_sync"
+          timeout: 1800
+        - name: "Verify Backup"
+          tool: "backup_verifier"
+          timeout: 600
+      notifications:
+        on_success: ["#ops-info"]
+        on_failure: ["#ops-critical", "ops-team@spotify.com"]
+    
+    - name: "Security Scan"
+      schedule: "0 6 * * 1"  # Monday 6 AM
+      steps:
+        - name: "Vulnerability Scan"
+          tool: "security_scanner"
+          timeout: 7200
+        - name: "Compliance Check"
+          tool: "compliance_checker"
+          timeout: 1800
+        - name: "Generate Report"
+          tool: "report_generator"
+          timeout: 600
+      approvals:
+        required: false
+        auto_approve: true
+
+# Performance and optimization
+performance:
+  caching:
+    redis:
+      enabled: true
+      max_memory: "2Gi"
+      eviction_policy: "allkeys-lru"
+      persistence: true
+    application:
+      enabled: true
+      ttl_seconds: 300
+      max_size_mb: 100
+  
+  connection_pooling:
+    database:
+      min_connections: 5
+      max_connections: 20
+      idle_timeout: 300
+    redis:
+      min_connections: 2
+      max_connections: 10
+  
+  rate_limiting:
+    global_rate_limit: 100000  # requests per minute
+    per_tenant_rate_limit: 10000
+    burst_limit: 1000
+  
+  auto_scaling:
+    enabled: true
+    min_replicas: 3
+    max_replicas: 50
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+    scale_up_stabilization: 60
+    scale_down_stabilization: 300
+
+# Security policies
+security:
+  authentication:
+    methods: ["oauth2", "jwt", "api_key"]
+    mfa_required: true
+    session_timeout: 3600
+    max_failed_attempts: 5
+    lockout_duration: 300
+  
+  authorization:
+    rbac_enabled: true
+    abac_enabled: true
+    policy_engine: "opa"
+    default_deny: true
+  
+  network:
+    tls_version: "1.3"
+    cipher_suites: ["TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256"]
+    hsts_enabled: true
+    csrf_protection: true
+  
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    field_level_encryption: ["pii", "financial", "health"]
+    tokenization: ["credit_card", "ssn"]
+  
+  audit:
+    enabled: true
+    events: ["authentication", "authorization", "data_access", "configuration_changes"]
+    retention_days: 2555
+    real_time_monitoring: true
+    anomaly_detection: true
+
+# Metadata and governance
+metadata:
+  tags:
+    environment: "production"
+    team: "platform"
+    service: "spotify-ai-agent"
+    criticality: "high"
+    compliance: "soc2"
+    cost_center: "engineering"
+  
+  ownership:
+    primary_owner: "platform-team@spotify.com"
+    technical_lead: "fahed.mlaiel@spotify.com"
+    product_owner: "product-team@spotify.com"
+    security_contact: "security-team@spotify.com"
+  
+  lifecycle:
+    created_at: "2025-01-19T10:00:00Z"
+    updated_at: "2025-01-19T10:00:00Z"
+    next_review_date: "2025-04-19T10:00:00Z"
+    deprecation_policy: "6_months_notice"
+    end_of_life_policy: "12_months_support"
+
+# Feature flags and experimentation
+feature_flags:
+  ai_recommendations_v2: true
+  advanced_analytics: true
+  real_time_personalization: true
+  experimental_ui: false
+  beta_features: false
+  
+  rollout_strategy: "percentage"
+  rollout_percentage: 100
+  sticky_sessions: true
+  override_rules:
+    - condition: "user.tier == 'premium'"
+      flags:
+        beta_features: true
+
+# Integration endpoints
+integrations:
+  external_apis:
+    spotify_web_api:
+      base_url: "https://api.spotify.com/v1"
+      timeout: 5000
+      retry_policy:
+        max_retries: 3
+        backoff_multiplier: 2
+      rate_limit: 100  # per second
+    
+    recommendation_service:
+      base_url: "https://recommendations.internal.spotify.com"
+      timeout: 3000
+      circuit_breaker:
+        failure_threshold: 10
+        timeout: 30000
+  
+  internal_services:
+    user_service:
+      endpoint: "user-service.internal:8080"
+      protocol: "grpc"
+      tls_enabled: true
+    
+    analytics_service:
+      endpoint: "analytics-service.internal:8080"
+      protocol: "http"
+      health_check: "/health"
+
+# Disaster recovery and business continuity
+disaster_recovery:
+  rpo_minutes: 15  # Recovery Point Objective
+  rto_minutes: 60  # Recovery Time Objective
+  
+  backup_strategy:
+    full_backup_frequency: "daily"
+    incremental_backup_frequency: "hourly"
+    cross_region_replication: true
+    backup_testing_frequency: "weekly"
+  
+  failover:
+    automatic_failover: true
+    failover_threshold: "3_consecutive_health_check_failures"
+    rollback_strategy: "automatic"
+    notification_required: true
+  
+  recovery_procedures:
+    documented: true
+    tested_frequency: "monthly"
+    responsible_team: "ops-team@spotify.com"
+    escalation_contacts:
+      - "cto@spotify.com"
+      - "vp-engineering@spotify.com"

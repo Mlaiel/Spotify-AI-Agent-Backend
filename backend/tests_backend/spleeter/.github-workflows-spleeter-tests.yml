@@ -1,0 +1,585 @@
+# 🎵 Spotify AI Agent - Configuration GitHub Actions
+# ===============================================
+# 
+# Workflow CI/CD pour les tests automatisés
+# du module Spleeter avec GitHub Actions.
+#
+# 🎖️ Développé par l'équipe d'experts enterprise
+
+name: 🎵 Spleeter Tests CI/CD
+
+# Déclencheurs
+on:
+  push:
+    branches: [ main, develop, feature/*, hotfix/* ]
+    paths:
+      - 'backend/spleeter/**'
+      - 'backend/tests_backend/spleeter/**'
+      - '.github/workflows/spleeter-tests.yml'
+  
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/spleeter/**'
+      - 'backend/tests_backend/spleeter/**'
+  
+  schedule:
+    # Tests quotidiens à 02:00 UTC
+    - cron: '0 2 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type de tests à exécuter'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - integration
+          - performance
+          - stress
+          - smoke
+      
+      coverage_threshold:
+        description: 'Seuil de couverture minimal (%)'
+        required: false
+        default: '85'
+        type: string
+
+# Variables globales
+env:
+  PYTHON_VERSION: '3.11'
+  COVERAGE_MIN: ${{ github.event.inputs.coverage_threshold || '85' }}
+  SPLEETER_TEST_MODE: 'true'
+  SPLEETER_LOG_LEVEL: 'DEBUG'
+  SPLEETER_CACHE_DISABLED: 'true'
+
+# Jobs principaux
+jobs:
+  # Job 1: Tests de smoke (vérification rapide)
+  smoke-tests:
+    name: 🚀 Tests de Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    outputs:
+      smoke-passed: ${{ steps.smoke.outputs.passed }}
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Installation des dépendances de base
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout
+      
+      - name: 🔥 Tests de smoke
+        id: smoke
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest -k "test_initialization or test_basic" \
+            --maxfail=1 --timeout=10 -v
+          echo "passed=true" >> $GITHUB_OUTPUT
+        continue-on-error: false
+
+  # Job 2: Tests unitaires matrix
+  unit-tests:
+    name: 🧪 Tests Unitaires
+    needs: smoke-tests
+    if: needs.smoke-tests.outputs.smoke-passed == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+        exclude:
+          # Exclusions pour optimiser
+          - os: windows-latest
+            python-version: '3.8'
+          - os: macos-latest
+            python-version: '3.8'
+    
+    outputs:
+      unit-coverage: ${{ steps.coverage.outputs.percentage }}
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: 🖥️ Configuration système (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+      
+      - name: 🖥️ Configuration système (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ffmpeg libsndfile
+      
+      - name: 🖥️ Configuration système (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ffmpeg
+      
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r backend/requirements/testing.txt
+          pip install pytest-cov coverage[toml]
+      
+      - name: 🧪 Exécution des tests unitaires
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest \
+            test_core.py test_models.py test_processor.py \
+            test_cache.py test_utils.py test_monitoring.py test_exceptions.py \
+            -v --tb=short --timeout=30 \
+            -m "not slow and not performance and not stress" \
+            --cov=../../spleeter \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing
+      
+      - name: 📊 Extraction du pourcentage de couverture
+        id: coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        run: |
+          cd backend/tests_backend/spleeter
+          coverage_pct=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          rate = root.get('line-rate')
+          print(f'{float(rate)*100:.1f}')
+          ")
+          echo "percentage=$coverage_pct" >> $GITHUB_OUTPUT
+          echo "Couverture: $coverage_pct%"
+      
+      - name: 📤 Upload couverture vers Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/tests_backend/spleeter/coverage.xml
+          flags: unittests
+          name: spleeter-unit-tests
+          fail_ci_if_error: false
+      
+      - name: 💾 Sauvegarde artifacts de test
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.python-version }}
+          path: |
+            backend/tests_backend/spleeter/coverage.xml
+            backend/tests_backend/spleeter/tests.log
+
+  # Job 3: Tests d'intégration
+  integration-tests:
+    name: 🔗 Tests d'Intégration
+    needs: [smoke-tests, unit-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 🖥️ Configuration système
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+      
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/testing.txt
+          pip install redis pytest-redis
+      
+      - name: 🧪 Tests d'intégration
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest test_integration.py \
+            -v --tb=short --timeout=120 \
+            -m "integration"
+      
+      - name: 📊 Rapport d'intégration
+        if: always()
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest test_integration.py \
+            --html=integration_report.html \
+            --self-contained-html \
+            -m "integration" || true
+      
+      - name: 📤 Upload rapport d'intégration
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-report
+          path: backend/tests_backend/spleeter/integration_report.html
+
+  # Job 4: Tests de performance
+  performance-tests:
+    name: ⚡ Tests de Performance
+    needs: [unit-tests]
+    if: |
+      github.event.inputs.test_type == 'all' || 
+      github.event.inputs.test_type == 'performance' ||
+      github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 🖥️ Configuration système haute performance
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+          # Configuration CPU pour performance
+          echo 'performance' | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+      
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/testing.txt
+          pip install pytest-benchmark psutil
+      
+      - name: ⚡ Tests de performance
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest test_performance.py \
+            -v --tb=short --timeout=300 \
+            -m "performance and not stress" \
+            --benchmark-only \
+            --benchmark-sort=mean \
+            --benchmark-json=benchmark_results.json
+      
+      - name: 📊 Analyse des résultats de performance
+        run: |
+          cd backend/tests_backend/spleeter
+          python -c "
+          import json
+          import sys
+          
+          with open('benchmark_results.json') as f:
+              data = json.load(f)
+          
+          print('🏆 Résultats de Performance:')
+          for benchmark in data['benchmarks']:
+              name = benchmark['name']
+              mean = benchmark['stats']['mean']
+              print(f'  {name}: {mean:.3f}s')
+          
+          # Vérification des seuils
+          failed = []
+          for benchmark in data['benchmarks']:
+              if 'separation' in benchmark['name'] and benchmark['stats']['mean'] > 5.0:
+                  failed.append(benchmark['name'])
+          
+          if failed:
+              print(f'❌ Tests dépassant les seuils: {failed}')
+              sys.exit(1)
+          else:
+              print('✅ Tous les tests de performance sont dans les seuils')
+          "
+      
+      - name: 📤 Upload résultats de performance
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: backend/tests_backend/spleeter/benchmark_results.json
+
+  # Job 5: Tests de stress
+  stress-tests:
+    name: 💪 Tests de Stress
+    needs: [performance-tests]
+    if: |
+      github.event.inputs.test_type == 'all' || 
+      github.event.inputs.test_type == 'stress' ||
+      github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 🖥️ Configuration système
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+      
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/testing.txt
+          pip install psutil pytest-timeout
+      
+      - name: 💪 Tests de stress
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest test_performance.py \
+            -v --tb=short --timeout=600 \
+            -m "stress" \
+            --capture=no
+      
+      - name: 📊 Rapport de stress
+        if: always()
+        run: |
+          echo "Tests de stress terminés"
+          free -h
+          df -h
+
+  # Job 6: Tests de sécurité
+  security-tests:
+    name: 🛡️ Tests de Sécurité
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/testing.txt
+          pip install bandit safety
+      
+      - name: 🔍 Analyse de sécurité avec Bandit
+        run: |
+          bandit -r backend/spleeter/ -f json -o bandit_report.json || true
+          bandit -r backend/spleeter/ || true
+      
+      - name: 🔍 Vérification des vulnérabilités avec Safety
+        run: |
+          safety check --json --output safety_report.json || true
+          safety check || true
+      
+      - name: 🧪 Tests de sécurité spécifiques
+        run: |
+          cd backend/tests_backend/spleeter
+          python -m pytest \
+            -k "security or validation or sanitize" \
+            test_utils.py test_exceptions.py \
+            -v
+      
+      - name: 📤 Upload rapports de sécurité
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit_report.json
+            safety_report.json
+
+  # Job 7: Qualité de code
+  code-quality:
+    name: 📋 Qualité de Code
+    needs: [smoke-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 Installation des outils de qualité
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort flake8 mypy
+      
+      - name: ✨ Vérification formatage (Black)
+        run: |
+          black --check --line-length=100 backend/spleeter/ backend/tests_backend/spleeter/
+      
+      - name: 📋 Vérification imports (isort)
+        run: |
+          isort --check-only --profile=black backend/spleeter/ backend/tests_backend/spleeter/
+      
+      - name: 🔍 Linting (Flake8)
+        run: |
+          flake8 --max-line-length=100 --ignore=E203,W503 backend/spleeter/ backend/tests_backend/spleeter/
+      
+      - name: 🔬 Vérification types (MyPy)
+        run: |
+          mypy --ignore-missing-imports backend/spleeter/ || true
+
+  # Job 8: Rapport final
+  final-report:
+    name: 📊 Rapport Final
+    needs: [
+      smoke-tests, 
+      unit-tests, 
+      integration-tests, 
+      performance-tests, 
+      stress-tests, 
+      security-tests, 
+      code-quality
+    ]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Téléchargement des artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+      
+      - name: 📊 Génération du rapport final
+        run: |
+          echo "# 🎵 Rapport Final - Tests Spleeter" > final_report.md
+          echo "" >> final_report.md
+          echo "## 📋 Résumé des Tests" >> final_report.md
+          echo "" >> final_report.md
+          
+          # Status des jobs
+          echo "| Job | Statut |" >> final_report.md
+          echo "|-----|--------|" >> final_report.md
+          echo "| Tests de Smoke | ${{ needs.smoke-tests.result }} |" >> final_report.md
+          echo "| Tests Unitaires | ${{ needs.unit-tests.result }} |" >> final_report.md
+          echo "| Tests d'Intégration | ${{ needs.integration-tests.result }} |" >> final_report.md
+          echo "| Tests de Performance | ${{ needs.performance-tests.result }} |" >> final_report.md
+          echo "| Tests de Stress | ${{ needs.stress-tests.result }} |" >> final_report.md
+          echo "| Tests de Sécurité | ${{ needs.security-tests.result }} |" >> final_report.md
+          echo "| Qualité de Code | ${{ needs.code-quality.result }} |" >> final_report.md
+          echo "" >> final_report.md
+          
+          # Couverture
+          if [[ "${{ needs.unit-tests.outputs.unit-coverage }}" != "" ]]; then
+            echo "## 📊 Couverture de Code" >> final_report.md
+            echo "Couverture actuelle: ${{ needs.unit-tests.outputs.unit-coverage }}%" >> final_report.md
+            echo "Seuil minimal: ${{ env.COVERAGE_MIN }}%" >> final_report.md
+            echo "" >> final_report.md
+          fi
+          
+          # Artifacts disponibles
+          echo "## 📁 Artifacts Disponibles" >> final_report.md
+          if [[ -d "./artifacts" ]]; then
+            find ./artifacts -name "*.html" -o -name "*.json" -o -name "*.xml" | while read file; do
+              echo "- $(basename "$file")" >> final_report.md
+            done
+          fi
+          
+          cat final_report.md
+      
+      - name: 📤 Upload rapport final
+        uses: actions/upload-artifact@v3
+        with:
+          name: final-report
+          path: final_report.md
+      
+      - name: 💬 Commentaire sur PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('final_report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  # Job 9: Nettoyage (optionnel)
+  cleanup:
+    name: 🧹 Nettoyage
+    needs: [final-report]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 🧹 Nettoyage des artifacts anciens
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const oldArtifacts = artifacts.data.artifacts.filter(artifact => {
+              const cutoff = new Date();
+              cutoff.setDate(cutoff.getDate() - 7); // 7 jours
+              return new Date(artifact.created_at) < cutoff;
+            });
+            
+            for (const artifact of oldArtifacts) {
+              console.log(`Suppression artifact: ${artifact.name}`);
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+            }

@@ -1,0 +1,344 @@
+# Ultra-Advanced Prometheus Alert Rules for Spotify AI Agent
+# Multi-Tenant Architecture with Intelligent Monitoring
+# Version: 1.0.0
+# Environment: Development
+
+groups:
+  # ====================================================================
+  # API PERFORMANCE & RELIABILITY RULES
+  # ====================================================================
+  - name: spotify_ai_agent_api_critical_alerts
+    interval: 15s
+    rules:
+      - alert: CriticalAPILatency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job="spotify-ai-agent"}[2m])) > 0.5
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+          category: performance
+          team: platform
+          escalation_level: "L2"
+        annotations:
+          summary: "Critical API latency detected (P99 > 500ms)"
+          description: "API P99 latency is {{ $value }}s, which is above the critical threshold of 500ms"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/critical-latency"
+          dashboard_url: "https://grafana.spotify-ai-agent.com/d/api-performance"
+          auto_remediation: "scale_up_api_instances"
+          impact: "User experience severely degraded"
+          estimated_affected_users: "{{ query \"count(up{job='spotify-ai-agent'}) * 1000\" | first | value }}"
+
+      - alert: APIErrorRateSpike
+        expr: rate(http_requests_total{job="spotify-ai-agent",status=~"5.."}[5m]) / rate(http_requests_total{job="spotify-ai-agent"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+          category: reliability
+          team: platform
+          escalation_level: "L1"
+        annotations:
+          summary: "High API error rate detected ({{ printf \"%.2f\" $value }}%)"
+          description: "API 5xx error rate is {{ printf \"%.2f\" $value }}%, above critical threshold of 5%"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/high-error-rate"
+          auto_remediation: "restart_unhealthy_pods"
+          correlation_queries: |
+            - Database connection errors: rate(db_connection_errors_total[5m])
+            - Memory pressure: avg(memory_usage_percent) by (instance)
+            - Recent deployments: changes(deployment_timestamp[30m])
+
+      - alert: APIThroughputDrop
+        expr: rate(http_requests_total{job="spotify-ai-agent"}[5m]) < 0.7 * rate(http_requests_total{job="spotify-ai-agent"}[5m] offset 15m)
+        for: 3m
+        labels:
+          severity: warning
+          service: api
+          category: performance
+          team: platform
+        annotations:
+          summary: "Significant API throughput drop detected"
+          description: "Current throughput ({{ $value }} RPS) is 30% lower than 15 minutes ago"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/throughput-drop"
+          possible_causes: "Resource exhaustion, database issues, external dependencies"
+
+  # ====================================================================
+  # MACHINE LEARNING & AI SPECIFIC RULES
+  # ====================================================================
+  - name: spotify_ai_agent_ml_intelligence
+    interval: 30s
+    rules:
+      - alert: MLModelDriftDetected
+        expr: ml_model_drift_score > 0.15
+        for: 5m
+        labels:
+          severity: warning
+          service: ml_pipeline
+          category: model_quality
+          team: ml_engineering
+        annotations:
+          summary: "ML model drift detected (score: {{ printf \"%.3f\" $value }})"
+          description: "Model performance has degraded significantly from baseline"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/model-drift"
+          auto_remediation: "trigger_model_retraining_pipeline"
+          model_metrics: |
+            - Accuracy drop: {{ query "ml_model_accuracy_drop" | first | value }}%
+            - Feature drift: {{ query "ml_feature_drift_score" | first | value }}
+            - Prediction confidence: {{ query "avg(ml_prediction_confidence)" | first | value }}
+
+      - alert: AIRecommendationQualityDrop
+        expr: avg_over_time(recommendation_quality_score[10m]) < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: recommendation_engine
+          category: ai_quality
+          team: ml_engineering
+        annotations:
+          summary: "AI recommendation quality has dropped below threshold"
+          description: "Average recommendation quality score is {{ printf \"%.3f\" $value }}, below threshold of 0.8"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/recommendation-quality"
+          business_impact: "Reduced user engagement and satisfaction"
+
+      - alert: MLInferenceLatencyHigh
+        expr: histogram_quantile(0.95, rate(ml_inference_duration_seconds_bucket[5m])) > 2.0
+        for: 3m
+        labels:
+          severity: critical
+          service: ml_inference
+          category: performance
+          team: ml_engineering
+          escalation_level: "L2"
+        annotations:
+          summary: "ML inference latency is critically high"
+          description: "P95 inference latency is {{ $value }}s, above critical threshold of 2s"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/ml-latency"
+          auto_remediation: "scale_ml_workers,optimize_model_serving"
+
+  # ====================================================================
+  # MULTI-TENANT SECURITY & COMPLIANCE
+  # ====================================================================
+  - name: spotify_ai_agent_security_monitoring
+    interval: 10s
+    rules:
+      - alert: SuspiciousAuthenticationActivity
+        expr: rate(failed_authentication_attempts_total[2m]) > 50
+        for: 30s
+        labels:
+          severity: critical
+          service: authentication
+          category: security
+          team: security
+          escalation_level: "L1"
+        annotations:
+          summary: "Suspicious authentication activity detected"
+          description: "High rate of failed authentication attempts: {{ $value }} per second"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/auth-attack"
+          auto_remediation: "enable_rate_limiting,block_suspicious_ips"
+          threat_indicators: |
+            - Source IPs: {{ query "topk(5, count by (source_ip) (failed_authentication_attempts_total))" }}
+            - User agents: {{ query "topk(3, count by (user_agent) (failed_authentication_attempts_total))" }}
+            - Geographic distribution: {{ query "count by (country) (failed_authentication_attempts_total)" }}
+
+      - alert: DataPrivacyViolation
+        expr: gdpr_violation_events_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: data_privacy
+          category: compliance
+          team: security
+          escalation_level: "L0"
+          pager_duty: "true"
+        annotations:
+          summary: "GDPR data privacy violation detected"
+          description: "{{ $value }} GDPR violation event(s) detected - immediate action required"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/gdpr-violation"
+          auto_remediation: "lock_affected_data,notify_dpo"
+          legal_requirements: "72-hour breach notification to supervisory authority"
+
+      - alert: TenantDataLeakage
+        expr: cross_tenant_data_access_attempts_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: multi_tenancy
+          category: security
+          team: security
+          escalation_level: "L1"
+        annotations:
+          summary: "Cross-tenant data access attempt detected"
+          description: "{{ $value }} unauthorized cross-tenant data access attempts"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/tenant-isolation-breach"
+          auto_remediation: "revoke_tokens,audit_permissions"
+
+  # ====================================================================
+  # BUSINESS INTELLIGENCE & KPI MONITORING
+  # ====================================================================
+  - name: spotify_ai_agent_business_metrics
+    interval: 60s
+    rules:
+      - alert: UserEngagementDrop
+        expr: avg_over_time(daily_active_users[1h]) < 0.85 * avg_over_time(daily_active_users[1h] offset 1d)
+        for: 30m
+        labels:
+          severity: warning
+          service: analytics
+          category: business
+          team: product
+        annotations:
+          summary: "Significant drop in user engagement"
+          description: "DAU is {{ printf \"%.0f\" $value }}, down {{ printf \"%.1f\" (100 * (1 - ($value / (avg_over_time(daily_active_users[1h] offset 1d))))) }}% from yesterday"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/engagement-drop"
+          business_impact: "Revenue and growth metrics affected"
+
+      - alert: ConversionRateAnomaly
+        expr: abs(conversion_rate - conversion_rate offset 1w) > 0.1 * conversion_rate offset 1w
+        for: 2h
+        labels:
+          severity: warning
+          service: analytics
+          category: business
+          team: product
+        annotations:
+          summary: "Conversion rate anomaly detected"
+          description: "Current conversion rate ({{ printf \"%.2f\" $value }}%) differs significantly from last week"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/conversion-anomaly"
+
+      - alert: ChurnRiskHigh
+        expr: predicted_churn_rate_7d > 0.15
+        for: 1h
+        labels:
+          severity: warning
+          service: ml_analytics
+          category: business
+          team: product
+        annotations:
+          summary: "High churn risk predicted by ML model"
+          description: "ML model predicts {{ printf \"%.1f\" ($value * 100) }}% churn rate in next 7 days"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/churn-prediction"
+          auto_remediation: "trigger_retention_campaigns"
+
+  # ====================================================================
+  # INFRASTRUCTURE & RESOURCE MONITORING
+  # ====================================================================
+  - name: spotify_ai_agent_infrastructure_health
+    interval: 30s
+    rules:
+      - alert: NodeResourceExhaustion
+        expr: |
+          (
+            (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) > 0.9
+          ) or (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.95
+          ) or (
+            (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) > 0.95
+          )
+        for: 5m
+        labels:
+          severity: critical
+          service: infrastructure
+          category: resources
+          team: platform
+          escalation_level: "L2"
+        annotations:
+          summary: "Node resource exhaustion detected"
+          description: "Node {{ $labels.instance }} has critically high resource usage"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/node-exhaustion"
+          auto_remediation: "node_maintenance_mode,workload_migration"
+
+      - alert: DatabasePerformanceDegradation
+        expr: |
+          (
+            avg(postgresql_stat_database_tup_returned_rate) / avg(postgresql_stat_database_tup_fetched_rate) < 0.8
+          ) or (
+            histogram_quantile(0.95, rate(postgresql_query_duration_seconds_bucket[5m])) > 1.0
+          ) or (
+            rate(postgresql_deadlocks_total[5m]) > 0.1
+          )
+        for: 3m
+        labels:
+          severity: warning
+          service: database
+          category: performance
+          team: platform
+        annotations:
+          summary: "Database performance degradation detected"
+          description: "PostgreSQL performance metrics indicate degradation"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/db-performance"
+          auto_remediation: "analyze_slow_queries,optimize_indexes"
+
+  # ====================================================================
+  # PREDICTIVE & INTELLIGENT ALERTING
+  # ====================================================================
+  - name: spotify_ai_agent_predictive_alerts
+    interval: 60s
+    rules:
+      - alert: PredictiveCapacityAlert
+        expr: predicted_resource_exhaustion_time_hours < 2
+        for: 5m
+        labels:
+          severity: warning
+          service: capacity_planning
+          category: predictive
+          team: platform
+        annotations:
+          summary: "Predictive capacity alert - resources will be exhausted soon"
+          description: "ML model predicts resource exhaustion in {{ $value }} hours"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/predictive-capacity"
+          auto_remediation: "preemptive_scaling,capacity_optimization"
+
+      - alert: AnomalyDetectionTrigger
+        expr: system_anomaly_score > 0.8
+        for: 2m
+        labels:
+          severity: info
+          service: anomaly_detection
+          category: intelligence
+          team: platform
+        annotations:
+          summary: "System anomaly detected by ML models"
+          description: "Anomaly score: {{ printf \"%.3f\" $value }} indicates unusual system behavior"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/anomaly-investigation"
+          investigation_dashboard: "https://grafana.spotify-ai-agent.com/d/anomaly-analysis"
+
+  # ====================================================================
+  # SLA & UPTIME MONITORING
+  # ====================================================================
+  - name: spotify_ai_agent_sla_monitoring
+    interval: 15s
+    rules:
+      - alert: SLAViolationRisk
+        expr: |
+          (
+            (1 - (rate(http_requests_total{status!~"5.."}[5m]) / rate(http_requests_total[5m]))) * 100 > 0.1
+          ) or (
+            histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.2
+          )
+        for: 1m
+        labels:
+          severity: warning
+          service: sla_monitoring
+          category: availability
+          team: platform
+        annotations:
+          summary: "SLA violation risk detected"
+          description: "Current metrics indicate risk of SLA violation"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/sla-risk"
+          sla_target: "99.9% availability, 200ms P95 latency"
+          current_availability: "{{ printf \"%.3f\" (100 * (1 - $value)) }}%"
+
+      - alert: ServiceDowntime
+        expr: up{job="spotify-ai-agent"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: availability
+          category: downtime
+          team: platform
+          escalation_level: "L0"
+          pager_duty: "true"
+        annotations:
+          summary: "Service instance down"
+          description: "Service instance {{ $labels.instance }} is down"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/service-down"
+          auto_remediation: "restart_service,health_check_investigation"

@@ -1,0 +1,1125 @@
+# Large Profile Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Large tenant profile architecture for enterprise organizations
+# - Senior DevOps Engineer: Enterprise-scale infrastructure and deployment automation
+# - Platform Engineer: High-performance infrastructure design and optimization
+# - Security Engineer: Advanced security controls and enterprise compliance
+# - Product Manager: Enterprise feature management and business requirements
+# - SRE Specialist: Reliability engineering and performance optimization
+
+# ==========================================
+# LARGE PROFILE CONFIGURATION
+# ==========================================
+
+large:
+  # Profile Metadata
+  metadata:
+    name: "large"
+    description: "Large profile for enterprises and large organizations (500-5000 users)"
+    version: "1.0.0"
+    profile_type: "large"
+    tier: "enterprise"
+    
+    # Profile Labels
+    labels:
+      profile: "large"
+      tier: "enterprise"
+      target_users: "500-5000"
+      deployment_scale: "multi-cluster"
+      cost_tier: "enterprise"
+      managed_by: "tenant-templates"
+    
+    # Profile Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Enterprise-grade profile for large organizations and high-scale deployments"
+      recommended_for: "Large enterprises, multinational corporations, high-traffic applications"
+      max_concurrent_users: "5000"
+      max_data_storage: "1TB"
+      sla_tier: "99.9%"
+      support_tier: "enterprise"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # API Service
+      api_service:
+        replicas: ${LARGE_API_REPLICAS:-5}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${LARGE_API_CPU_REQUEST:-1000m}"
+            memory: "${LARGE_API_MEMORY_REQUEST:-2Gi}"
+          limits:
+            cpu: "${LARGE_API_CPU_LIMIT:-4000m}"
+            memory: "${LARGE_API_MEMORY_LIMIT:-8Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${LARGE_API_HPA_ENABLED:-true}
+          min_replicas: ${LARGE_API_HPA_MIN:-5}
+          max_replicas: ${LARGE_API_HPA_MAX:-50}
+          target_cpu_utilization: ${LARGE_API_HPA_CPU_TARGET:-60}
+          target_memory_utilization: ${LARGE_API_HPA_MEMORY_TARGET:-70}
+          
+          # Custom Metrics Scaling
+          custom_metrics:
+            enabled: ${LARGE_API_CUSTOM_METRICS_SCALING:-true}
+            
+            # Request Rate Scaling
+            request_rate:
+              enabled: ${LARGE_API_REQUEST_RATE_SCALING:-true}
+              target_requests_per_second: ${LARGE_API_TARGET_RPS:-500}
+            
+            # Queue Length Scaling
+            queue_length:
+              enabled: ${LARGE_API_QUEUE_LENGTH_SCALING:-true}
+              target_queue_length: ${LARGE_API_TARGET_QUEUE_LENGTH:-100}
+      
+      # Frontend Service
+      frontend_service:
+        replicas: ${LARGE_FRONTEND_REPLICAS:-3}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${LARGE_FRONTEND_CPU_REQUEST:-500m}"
+            memory: "${LARGE_FRONTEND_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${LARGE_FRONTEND_CPU_LIMIT:-2000m}"
+            memory: "${LARGE_FRONTEND_MEMORY_LIMIT:-4Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${LARGE_FRONTEND_HPA_ENABLED:-true}
+          min_replicas: ${LARGE_FRONTEND_HPA_MIN:-3}
+          max_replicas: ${LARGE_FRONTEND_HPA_MAX:-20}
+          target_cpu_utilization: ${LARGE_FRONTEND_HPA_CPU_TARGET:-60}
+      
+      # ML Service
+      ml_service:
+        enabled: ${LARGE_ML_SERVICE_ENABLED:-true}
+        replicas: ${LARGE_ML_REPLICAS:-3}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${LARGE_ML_CPU_REQUEST:-2000m}"
+            memory: "${LARGE_ML_MEMORY_REQUEST:-4Gi}"
+          limits:
+            cpu: "${LARGE_ML_CPU_LIMIT:-8000m}"
+            memory: "${LARGE_ML_MEMORY_LIMIT:-16Gi}"
+        
+        # GPU Support
+        gpu:
+          enabled: ${LARGE_ML_GPU_ENABLED:-true}
+          type: "${LARGE_ML_GPU_TYPE:-nvidia.com/gpu}"
+          count: ${LARGE_ML_GPU_COUNT:-1}
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${LARGE_ML_HPA_ENABLED:-true}
+          min_replicas: ${LARGE_ML_HPA_MIN:-3}
+          max_replicas: ${LARGE_ML_HPA_MAX:-10}
+          target_cpu_utilization: ${LARGE_ML_HPA_CPU_TARGET:-70}
+      
+      # Background Workers
+      background_workers:
+        enabled: ${LARGE_WORKERS_ENABLED:-true}
+        replicas: ${LARGE_WORKERS_REPLICAS:-10}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${LARGE_WORKERS_CPU_REQUEST:-500m}"
+            memory: "${LARGE_WORKERS_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${LARGE_WORKERS_CPU_LIMIT:-2000m}"
+            memory: "${LARGE_WORKERS_MEMORY_LIMIT:-4Gi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${LARGE_WORKERS_HPA_ENABLED:-true}
+          min_replicas: ${LARGE_WORKERS_HPA_MIN:-10}
+          max_replicas: ${LARGE_WORKERS_HPA_MAX:-50}
+          target_cpu_utilization: ${LARGE_WORKERS_HPA_CPU_TARGET:-70}
+      
+      # Analytics Service
+      analytics_service:
+        enabled: ${LARGE_ANALYTICS_SERVICE_ENABLED:-true}
+        replicas: ${LARGE_ANALYTICS_REPLICAS:-3}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${LARGE_ANALYTICS_CPU_REQUEST:-1000m}"
+            memory: "${LARGE_ANALYTICS_MEMORY_REQUEST:-2Gi}"
+          limits:
+            cpu: "${LARGE_ANALYTICS_CPU_LIMIT:-4000m}"
+            memory: "${LARGE_ANALYTICS_MEMORY_LIMIT:-8Gi}"
+    
+    # Storage Resources
+    storage:
+      # Database Storage
+      database:
+        enabled: ${LARGE_DB_STORAGE_ENABLED:-true}
+        size: "${LARGE_DB_STORAGE_SIZE:-500Gi}"
+        storage_class: "${LARGE_DB_STORAGE_CLASS:-fast-ssd}"
+        
+        # Multi-zone Storage
+        multi_zone:
+          enabled: ${LARGE_DB_MULTI_ZONE_ENABLED:-true}
+          zones: ${LARGE_DB_ZONES:-3}
+        
+        # Backup Configuration
+        backup:
+          enabled: ${LARGE_DB_BACKUP_ENABLED:-true}
+          retention_days: ${LARGE_DB_BACKUP_RETENTION:-90}
+          schedule: "${LARGE_DB_BACKUP_SCHEDULE:-0 2 * * *}"  # Daily at 2 AM
+          cross_region: ${LARGE_DB_CROSS_REGION_BACKUP:-true}
+          
+          # Point-in-time Recovery
+          pitr:
+            enabled: ${LARGE_DB_PITR_ENABLED:-true}
+            retention_hours: ${LARGE_DB_PITR_RETENTION:-168}  # 7 days
+      
+      # Application Storage
+      application:
+        enabled: ${LARGE_APP_STORAGE_ENABLED:-true}
+        size: "${LARGE_APP_STORAGE_SIZE:-200Gi}"
+        storage_class: "${LARGE_APP_STORAGE_CLASS:-fast-ssd}"
+        
+        # Distributed Storage
+        distributed:
+          enabled: ${LARGE_APP_DISTRIBUTED_STORAGE:-true}
+          replicas: ${LARGE_APP_STORAGE_REPLICAS:-3}
+      
+      # Log Storage
+      logs:
+        enabled: ${LARGE_LOG_STORAGE_ENABLED:-true}
+        size: "${LARGE_LOG_STORAGE_SIZE:-100Gi}"
+        retention_days: ${LARGE_LOG_RETENTION:-90}
+        storage_class: "${LARGE_LOG_STORAGE_CLASS:-standard}"
+        
+        # Log Archival
+        archival:
+          enabled: ${LARGE_LOG_ARCHIVAL_ENABLED:-true}
+          archive_after_days: ${LARGE_LOG_ARCHIVE_AFTER:-30}
+          archive_storage_class: "${LARGE_LOG_ARCHIVE_STORAGE_CLASS:-cold}"
+      
+      # Cache Storage
+      cache:
+        enabled: ${LARGE_CACHE_STORAGE_ENABLED:-true}
+        size: "${LARGE_CACHE_STORAGE_SIZE:-50Gi}"
+        storage_class: "${LARGE_CACHE_STORAGE_CLASS:-fast-ssd}"
+      
+      # Analytics Storage
+      analytics:
+        enabled: ${LARGE_ANALYTICS_STORAGE_ENABLED:-true}
+        size: "${LARGE_ANALYTICS_STORAGE_SIZE:-1Ti}"
+        storage_class: "${LARGE_ANALYTICS_STORAGE_CLASS:-standard}"
+        
+        # Data Warehouse
+        data_warehouse:
+          enabled: ${LARGE_DATA_WAREHOUSE_ENABLED:-true}
+          size: "${LARGE_DATA_WAREHOUSE_SIZE:-5Ti}"
+          storage_class: "${LARGE_DATA_WAREHOUSE_STORAGE_CLASS:-cold}"
+
+  # Database Configuration
+  database:
+    # PostgreSQL Configuration
+    postgresql:
+      # High Availability
+      high_availability:
+        enabled: ${LARGE_DB_HA_ENABLED:-true}
+        primary_replicas: ${LARGE_DB_PRIMARY_REPLICAS:-1}
+        read_replicas: ${LARGE_DB_READ_REPLICAS:-5}
+        
+        # Multi-region Setup
+        multi_region:
+          enabled: ${LARGE_DB_MULTI_REGION_ENABLED:-true}
+          regions:
+            - name: "${LARGE_DB_REGION_1:-us-east-1}"
+              replicas: ${LARGE_DB_REGION_1_REPLICAS:-2}
+            - name: "${LARGE_DB_REGION_2:-us-west-2}"
+              replicas: ${LARGE_DB_REGION_2_REPLICAS:-2}
+            - name: "${LARGE_DB_REGION_3:-eu-west-1}"
+              replicas: ${LARGE_DB_REGION_3_REPLICAS:-1}
+        
+        # Failover Configuration
+        failover:
+          automatic: ${LARGE_DB_AUTO_FAILOVER:-true}
+          timeout: ${LARGE_DB_FAILOVER_TIMEOUT:-30}
+          cross_region: ${LARGE_DB_CROSS_REGION_FAILOVER:-true}
+      
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${LARGE_DB_CPU_REQUEST:-2000m}"
+          memory: "${LARGE_DB_MEMORY_REQUEST:-8Gi}"
+        limits:
+          cpu: "${LARGE_DB_CPU_LIMIT:-8000m}"
+          memory: "${LARGE_DB_MEMORY_LIMIT:-32Gi}"
+      
+      # Connection Pool
+      connection_pool:
+        min_connections: ${LARGE_DB_POOL_MIN:-20}
+        max_connections: ${LARGE_DB_POOL_MAX:-200}
+        idle_timeout: ${LARGE_DB_POOL_IDLE_TIMEOUT:-300}
+        acquire_timeout: ${LARGE_DB_POOL_ACQUIRE_TIMEOUT:-30}
+        
+        # Connection Pool Per Service
+        per_service_pools:
+          api_service:
+            min_connections: ${LARGE_DB_API_POOL_MIN:-10}
+            max_connections: ${LARGE_DB_API_POOL_MAX:-100}
+          
+          analytics_service:
+            min_connections: ${LARGE_DB_ANALYTICS_POOL_MIN:-5}
+            max_connections: ${LARGE_DB_ANALYTICS_POOL_MAX:-50}
+          
+          ml_service:
+            min_connections: ${LARGE_DB_ML_POOL_MIN:-5}
+            max_connections: ${LARGE_DB_ML_POOL_MAX:-50}
+      
+      # Storage Configuration
+      storage:
+        size: "${LARGE_DB_STORAGE_SIZE:-500Gi}"
+        storage_class: "${LARGE_DB_STORAGE_CLASS:-fast-ssd}"
+        
+        # IOPS Configuration
+        iops:
+          provisioned: ${LARGE_DB_PROVISIONED_IOPS:-10000}
+          burst: ${LARGE_DB_BURST_IOPS:-20000}
+      
+      # Performance Tuning
+      performance:
+        shared_buffers: "${LARGE_DB_SHARED_BUFFERS:-2GB}"
+        effective_cache_size: "${LARGE_DB_EFFECTIVE_CACHE_SIZE:-8GB}"
+        work_mem: "${LARGE_DB_WORK_MEM:-16MB}"
+        maintenance_work_mem: "${LARGE_DB_MAINTENANCE_WORK_MEM:-256MB}"
+        
+        # Query Optimization
+        query_optimization:
+          random_page_cost: ${LARGE_DB_RANDOM_PAGE_COST:-1.1}
+          seq_page_cost: ${LARGE_DB_SEQ_PAGE_COST:-1.0}
+          cpu_tuple_cost: ${LARGE_DB_CPU_TUPLE_COST:-0.01}
+          
+        # WAL Configuration
+        wal:
+          wal_buffers: "${LARGE_DB_WAL_BUFFERS:-64MB}"
+          checkpoint_completion_target: ${LARGE_DB_CHECKPOINT_COMPLETION_TARGET:-0.7}
+          max_wal_size: "${LARGE_DB_MAX_WAL_SIZE:-4GB}"
+          
+        # Parallel Processing
+        parallel:
+          max_worker_processes: ${LARGE_DB_MAX_WORKER_PROCESSES:-16}
+          max_parallel_workers: ${LARGE_DB_MAX_PARALLEL_WORKERS:-8}
+          max_parallel_workers_per_gather: ${LARGE_DB_MAX_PARALLEL_WORKERS_PER_GATHER:-4}
+      
+      # Partitioning
+      partitioning:
+        enabled: ${LARGE_DB_PARTITIONING_ENABLED:-true}
+        
+        # Table Partitioning
+        tables:
+          - table: "user_activities"
+            partition_type: "range"
+            partition_key: "created_at"
+            partition_interval: "monthly"
+          
+          - table: "analytics_events"
+            partition_type: "range"
+            partition_key: "event_date"
+            partition_interval: "daily"
+    
+    # Redis Configuration
+    redis:
+      enabled: ${LARGE_REDIS_ENABLED:-true}
+      
+      # High Availability
+      high_availability:
+        enabled: ${LARGE_REDIS_HA_ENABLED:-true}
+        mode: "${LARGE_REDIS_HA_MODE:-cluster}"  # sentinel, cluster
+        
+        # Redis Cluster Configuration
+        cluster:
+          enabled: ${LARGE_REDIS_CLUSTER_ENABLED:-true}
+          nodes: ${LARGE_REDIS_CLUSTER_NODES:-6}
+          replicas_per_master: ${LARGE_REDIS_REPLICAS_PER_MASTER:-2}
+          
+          # Cross-region Cluster
+          cross_region:
+            enabled: ${LARGE_REDIS_CROSS_REGION_CLUSTER:-true}
+            regions:
+              - "${LARGE_REDIS_REGION_1:-us-east-1}"
+              - "${LARGE_REDIS_REGION_2:-us-west-2}"
+        
+        # Sentinel Configuration
+        sentinel:
+          enabled: ${LARGE_REDIS_SENTINEL_ENABLED:-false}
+          replicas: ${LARGE_REDIS_SENTINEL_REPLICAS:-5}
+          quorum: ${LARGE_REDIS_SENTINEL_QUORUM:-3}
+      
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${LARGE_REDIS_CPU_REQUEST:-500m}"
+          memory: "${LARGE_REDIS_MEMORY_REQUEST:-2Gi}"
+        limits:
+          cpu: "${LARGE_REDIS_CPU_LIMIT:-2000m}"
+          memory: "${LARGE_REDIS_MEMORY_LIMIT:-8Gi}"
+      
+      # Memory Configuration
+      memory:
+        maxmemory: "${LARGE_REDIS_MAXMEMORY:-4GB}"
+        maxmemory_policy: "${LARGE_REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+      
+      # Persistence
+      persistence:
+        enabled: ${LARGE_REDIS_PERSISTENCE_ENABLED:-true}
+        
+        # AOF Configuration
+        aof:
+          enabled: ${LARGE_REDIS_AOF_ENABLED:-true}
+          appendfsync: "${LARGE_REDIS_AOF_APPENDFSYNC:-everysec}"
+          auto_aof_rewrite_percentage: ${LARGE_REDIS_AUTO_AOF_REWRITE_PERCENTAGE:-100}
+          auto_aof_rewrite_min_size: "${LARGE_REDIS_AUTO_AOF_REWRITE_MIN_SIZE:-64MB}"
+          
+        # RDB Configuration
+        rdb:
+          enabled: ${LARGE_REDIS_RDB_ENABLED:-true}
+          save_points:
+            - "900 1"    # save after 900 sec if at least 1 key changed
+            - "300 10"   # save after 300 sec if at least 10 keys changed
+            - "60 10000" # save after 60 sec if at least 10000 keys changed
+            - "10 100000" # save after 10 sec if at least 100000 keys changed
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # Advanced JWT Configuration
+      jwt:
+        algorithm: "${LARGE_JWT_ALGORITHM:-RS256}"
+        access_token_expire: ${LARGE_JWT_ACCESS_TOKEN_EXPIRE:-900}  # 15 minutes
+        refresh_token_expire: ${LARGE_JWT_REFRESH_TOKEN_EXPIRE:-7200}  # 2 hours
+        
+        # Security Features
+        features:
+          token_blacklist: ${LARGE_JWT_TOKEN_BLACKLIST:-true}
+          token_rotation: ${LARGE_JWT_TOKEN_ROTATION:-true}
+          secure_cookies: ${LARGE_JWT_SECURE_COOKIES:-true}
+          httponly_cookies: ${LARGE_JWT_HTTPONLY_COOKIES:-true}
+          samesite_cookies: "${LARGE_JWT_SAMESITE_COOKIES:-strict}"
+        
+        # Key Management
+        key_management:
+          rotation_enabled: ${LARGE_JWT_KEY_ROTATION_ENABLED:-true}
+          rotation_interval: ${LARGE_JWT_KEY_ROTATION_INTERVAL:-86400}  # 24 hours
+          key_versions: ${LARGE_JWT_KEY_VERSIONS:-5}
+          
+          # Hardware Security Module
+          hsm:
+            enabled: ${LARGE_JWT_HSM_ENABLED:-true}
+            provider: "${LARGE_JWT_HSM_PROVIDER:-aws-cloudhsm}"
+      
+      # OAuth2 Configuration
+      oauth2:
+        enabled: ${LARGE_OAUTH2_ENABLED:-true}
+        
+        # Enterprise OAuth2 Settings
+        enterprise:
+          spotify:
+            enabled: ${LARGE_SPOTIFY_OAUTH_ENABLED:-true}
+          google:
+            enabled: ${LARGE_GOOGLE_OAUTH_ENABLED:-true}
+          microsoft:
+            enabled: ${LARGE_MICROSOFT_OAUTH_ENABLED:-true}
+          github:
+            enabled: ${LARGE_GITHUB_OAUTH_ENABLED:-true}
+          okta:
+            enabled: ${LARGE_OKTA_OAUTH_ENABLED:-true}
+          ping_identity:
+            enabled: ${LARGE_PING_IDENTITY_OAUTH_ENABLED:-false}
+        
+        # Multi-factor Authentication
+        mfa:
+          enabled: ${LARGE_MFA_ENABLED:-true}
+          enforcement: "${LARGE_MFA_ENFORCEMENT:-required}"
+          methods:
+            - "totp"
+            - "sms"
+            - "email"
+            - "hardware_token"
+            - "biometric"
+          
+          # Backup Codes
+          backup_codes:
+            enabled: ${LARGE_MFA_BACKUP_CODES_ENABLED:-true}
+            count: ${LARGE_MFA_BACKUP_CODES_COUNT:-10}
+          
+          # Risk-based Authentication
+          risk_based:
+            enabled: ${LARGE_MFA_RISK_BASED_ENABLED:-true}
+            factors:
+              - "device_fingerprint"
+              - "location"
+              - "behavior_analysis"
+      
+      # Single Sign-On
+      sso:
+        enabled: ${LARGE_SSO_ENABLED:-true}
+        
+        # SAML Configuration
+        saml:
+          enabled: ${LARGE_SAML_ENABLED:-true}
+          providers:
+            - name: "active_directory"
+              enabled: ${LARGE_SAML_AD_ENABLED:-true}
+            - name: "okta"
+              enabled: ${LARGE_SAML_OKTA_ENABLED:-true}
+        
+        # LDAP Configuration
+        ldap:
+          enabled: ${LARGE_LDAP_ENABLED:-true}
+          server: "${LARGE_LDAP_SERVER:-ldap.company.com}"
+          port: ${LARGE_LDAP_PORT:-389}
+          use_tls: ${LARGE_LDAP_USE_TLS:-true}
+    
+    # Authorization
+    authorization:
+      # Advanced RBAC
+      rbac:
+        enabled: ${LARGE_RBAC_ENABLED:-true}
+        strict_mode: ${LARGE_RBAC_STRICT_MODE:-true}
+        
+        # Enterprise Roles
+        roles:
+          - name: "super_admin"
+            permissions: ["*"]
+          - name: "admin"
+            permissions: ["admin:*"]
+          - name: "manager"
+            permissions: ["user:*", "team:*", "analytics:read"]
+          - name: "team_lead"
+            permissions: ["user:read", "user:write", "team:read", "team:write"]
+          - name: "user"
+            permissions: ["user:read", "user:write"]
+          - name: "readonly"
+            permissions: ["user:read"]
+          - name: "api_user"
+            permissions: ["api:read", "api:write"]
+          - name: "service_account"
+            permissions: ["service:*"]
+        
+        # Role Hierarchies
+        role_hierarchies:
+          enabled: ${LARGE_RBAC_HIERARCHIES_ENABLED:-true}
+          
+        # Dynamic Roles
+        dynamic_roles:
+          enabled: ${LARGE_RBAC_DYNAMIC_ROLES_ENABLED:-true}
+          
+      # Attribute-based Access Control (ABAC)
+      abac:
+        enabled: ${LARGE_ABAC_ENABLED:-true}
+        
+        # Policy Engine
+        policy_engine:
+          enabled: ${LARGE_ABAC_POLICY_ENGINE_ENABLED:-true}
+          engine: "${LARGE_ABAC_ENGINE:-opa}"  # opa, cedar
+          
+      # Policy Enforcement
+      policy_enforcement:
+        enabled: ${LARGE_POLICY_ENFORCEMENT_ENABLED:-true}
+        audit_logs: ${LARGE_POLICY_AUDIT_LOGS:-true}
+        real_time_enforcement: ${LARGE_REAL_TIME_ENFORCEMENT:-true}
+        
+        # Policy as Code
+        policy_as_code:
+          enabled: ${LARGE_POLICY_AS_CODE_ENABLED:-true}
+          repository: "${LARGE_POLICY_REPOSITORY:-}"
+          
+        # OPA (Open Policy Agent)
+        opa:
+          enabled: ${LARGE_OPA_ENABLED:-true}
+          endpoint: "${LARGE_OPA_ENDPOINT:-http://opa:8181}"
+          high_availability: ${LARGE_OPA_HA_ENABLED:-true}
+    
+    # Advanced Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${LARGE_DATA_ENCRYPTION_ENABLED:-true}
+        algorithm: "${LARGE_ENCRYPTION_ALGORITHM:-AES-256-GCM}"
+        
+        # Encryption at Rest
+        encryption_at_rest:
+          enabled: ${LARGE_ENCRYPTION_AT_REST_ENABLED:-true}
+          key_management: "${LARGE_KEY_MANAGEMENT:-aws-kms}"
+          
+        # Field-level Encryption
+        field_level:
+          enabled: ${LARGE_FIELD_LEVEL_ENCRYPTION_ENABLED:-true}
+          fields:
+            - "email"
+            - "phone"
+            - "address"
+            - "payment_info"
+            - "personal_data"
+        
+        # Application-level Encryption
+        application_level:
+          enabled: ${LARGE_APPLICATION_LEVEL_ENCRYPTION_ENABLED:-true}
+          
+      # TLS Configuration
+      tls:
+        enabled: ${LARGE_TLS_ENABLED:-true}
+        version: "${LARGE_TLS_VERSION:-TLSv1.3}"
+        verify: ${LARGE_TLS_VERIFY:-true}
+        
+        # Certificate Management
+        certificates:
+          auto_renewal: ${LARGE_CERT_AUTO_RENEWAL:-true}
+          renewal_threshold: ${LARGE_CERT_RENEWAL_THRESHOLD:-30}
+          issuer: "${LARGE_CERT_ISSUER:-internal-ca}"
+          
+        # Mutual TLS
+        mutual_tls:
+          enabled: ${LARGE_MUTUAL_TLS_ENABLED:-true}
+          
+      # Key Management
+      key_management:
+        # AWS KMS
+        aws_kms:
+          enabled: ${LARGE_AWS_KMS_ENABLED:-true}
+          key_id: "${LARGE_AWS_KMS_KEY_ID:-}"
+          region: "${LARGE_AWS_KMS_REGION:-us-east-1}"
+          
+        # HashiCorp Vault
+        vault:
+          enabled: ${LARGE_VAULT_ENABLED:-true}
+          endpoint: "${LARGE_VAULT_ENDPOINT:-https://vault.company.com}"
+          auth_method: "${LARGE_VAULT_AUTH_METHOD:-kubernetes}"
+          
+        # Hardware Security Module
+        hsm:
+          enabled: ${LARGE_HSM_ENABLED:-true}
+          provider: "${LARGE_HSM_PROVIDER:-aws-cloudhsm}"
+    
+    # Security Monitoring
+    security_monitoring:
+      enabled: ${LARGE_SECURITY_MONITORING_ENABLED:-true}
+      
+      # SIEM Integration
+      siem:
+        enabled: ${LARGE_SIEM_ENABLED:-true}
+        provider: "${LARGE_SIEM_PROVIDER:-splunk}"
+        endpoint: "${LARGE_SIEM_ENDPOINT:-}"
+        
+        # Real-time Integration
+        real_time:
+          enabled: ${LARGE_SIEM_REAL_TIME_ENABLED:-true}
+          
+      # Threat Detection
+      threat_detection:
+        enabled: ${LARGE_THREAT_DETECTION_ENABLED:-true}
+        
+        # ML-based Detection
+        ml_detection:
+          enabled: ${LARGE_ML_THREAT_DETECTION_ENABLED:-true}
+          model_update_frequency: ${LARGE_ML_MODEL_UPDATE_FREQUENCY:-6}  # hours
+          
+        # Behavioral Analysis
+        behavioral_analysis:
+          enabled: ${LARGE_BEHAVIORAL_ANALYSIS_ENABLED:-true}
+          
+        # Network Anomaly Detection
+        network_anomaly:
+          enabled: ${LARGE_NETWORK_ANOMALY_DETECTION_ENABLED:-true}
+          
+      # Incident Response
+      incident_response:
+        enabled: ${LARGE_INCIDENT_RESPONSE_ENABLED:-true}
+        
+        # Automated Response
+        automated_response:
+          enabled: ${LARGE_AUTOMATED_RESPONSE_ENABLED:-true}
+          actions:
+            - "block_ip"
+            - "disable_user"
+            - "isolate_system"
+            - "alert_security_team"
+            - "create_incident_ticket"
+            
+        # Security Orchestration
+        security_orchestration:
+          enabled: ${LARGE_SECURITY_ORCHESTRATION_ENABLED:-true}
+          platform: "${LARGE_SECURITY_ORCHESTRATION_PLATFORM:-phantom}"
+    
+    # Compliance
+    compliance:
+      # Enterprise Frameworks
+      frameworks:
+        gdpr:
+          enabled: ${LARGE_GDPR_ENABLED:-true}
+          data_retention_days: ${LARGE_GDPR_DATA_RETENTION:-2555}  # 7 years
+          
+        hipaa:
+          enabled: ${LARGE_HIPAA_ENABLED:-true}
+          
+        sox:
+          enabled: ${LARGE_SOX_ENABLED:-true}
+          
+        pci_dss:
+          enabled: ${LARGE_PCI_DSS_ENABLED:-true}
+          
+        iso_27001:
+          enabled: ${LARGE_ISO_27001_ENABLED:-true}
+          
+        nist:
+          enabled: ${LARGE_NIST_ENABLED:-true}
+          framework: "${LARGE_NIST_FRAMEWORK:-cybersecurity}"
+      
+      # Audit Logging
+      audit_logging:
+        enabled: ${LARGE_AUDIT_LOGGING_ENABLED:-true}
+        
+        # Log Configuration
+        configuration:
+          retention_days: ${LARGE_AUDIT_LOG_RETENTION:-2555}  # 7 years
+          encryption: ${LARGE_AUDIT_LOG_ENCRYPTION:-true}
+          tamper_protection: ${LARGE_AUDIT_LOG_TAMPER_PROTECTION:-true}
+          real_time_streaming: ${LARGE_AUDIT_LOG_REAL_TIME_STREAMING:-true}
+          
+        # Audit Events
+        events:
+          authentication: ${LARGE_AUDIT_AUTH_EVENTS:-true}
+          authorization: ${LARGE_AUDIT_AUTHZ_EVENTS:-true}
+          data_access: ${LARGE_AUDIT_DATA_ACCESS_EVENTS:-true}
+          administrative: ${LARGE_AUDIT_ADMIN_EVENTS:-true}
+          configuration_changes: ${LARGE_AUDIT_CONFIG_CHANGES:-true}
+          
+        # Compliance Reporting
+        compliance_reporting:
+          enabled: ${LARGE_COMPLIANCE_REPORTING_ENABLED:-true}
+          automated_reports: ${LARGE_AUTOMATED_COMPLIANCE_REPORTS:-true}
+          report_frequency: "${LARGE_COMPLIANCE_REPORT_FREQUENCY:-monthly}"
+
+  # Monitoring Configuration
+  monitoring:
+    # Enterprise Metrics
+    metrics:
+      enabled: ${LARGE_METRICS_ENABLED:-true}
+      
+      # Prometheus Configuration
+      prometheus:
+        enabled: ${LARGE_PROMETHEUS_ENABLED:-true}
+        retention: "${LARGE_PROMETHEUS_RETENTION:-90d}"
+        
+        # High Availability
+        high_availability:
+          enabled: ${LARGE_PROMETHEUS_HA_ENABLED:-true}
+          replicas: ${LARGE_PROMETHEUS_REPLICAS:-3}
+          cross_region: ${LARGE_PROMETHEUS_CROSS_REGION_HA:-true}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${LARGE_PROMETHEUS_CPU_REQUEST:-1000m}"
+            memory: "${LARGE_PROMETHEUS_MEMORY_REQUEST:-4Gi}"
+          limits:
+            cpu: "${LARGE_PROMETHEUS_CPU_LIMIT:-4000m}"
+            memory: "${LARGE_PROMETHEUS_MEMORY_LIMIT:-16Gi}"
+        
+        # Storage
+        storage:
+          enabled: ${LARGE_PROMETHEUS_STORAGE_ENABLED:-true}
+          size: "${LARGE_PROMETHEUS_STORAGE_SIZE:-500Gi}"
+          storage_class: "${LARGE_PROMETHEUS_STORAGE_CLASS:-fast-ssd}"
+          
+          # Multi-zone Storage
+          multi_zone:
+            enabled: ${LARGE_PROMETHEUS_MULTI_ZONE_STORAGE:-true}
+            
+        # Federation
+        federation:
+          enabled: ${LARGE_PROMETHEUS_FEDERATION_ENABLED:-true}
+          global_prometheus: "${LARGE_GLOBAL_PROMETHEUS_ENDPOINT:-}"
+          
+        # Remote Storage
+        remote_storage:
+          enabled: ${LARGE_PROMETHEUS_REMOTE_STORAGE_ENABLED:-true}
+          provider: "${LARGE_PROMETHEUS_REMOTE_STORAGE_PROVIDER:-cortex}"
+          endpoint: "${LARGE_PROMETHEUS_REMOTE_STORAGE_ENDPOINT:-}"
+        
+        # Advanced Alerting
+        alerting:
+          enabled: ${LARGE_PROMETHEUS_ALERTING_ENABLED:-true}
+          alertmanager_url: "${LARGE_ALERTMANAGER_URL:-http://alertmanager:9093}"
+          
+          # High Availability Alertmanager
+          alertmanager_ha:
+            enabled: ${LARGE_ALERTMANAGER_HA_ENABLED:-true}
+            replicas: ${LARGE_ALERTMANAGER_REPLICAS:-3}
+          
+          # Alert Rules
+          alert_rules:
+            - name: "critical_error_rate"
+              expression: "rate(http_requests_total{status=~'5..'}[5m]) > 0.01"
+              for: "2m"
+              severity: "critical"
+              
+            - name: "high_latency"
+              expression: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5"
+              for: "5m"
+              severity: "warning"
+              
+            - name: "database_connection_failures"
+              expression: "rate(database_connection_errors_total[5m]) > 0.001"
+              for: "2m"
+              severity: "critical"
+              
+            - name: "memory_usage_high"
+              expression: "memory_usage_percent > 90"
+              for: "5m"
+              severity: "warning"
+              
+            - name: "disk_space_low"
+              expression: "disk_free_percent < 10"
+              for: "10m"
+              severity: "critical"
+        
+        # Custom Metrics
+        custom_metrics:
+          enabled: ${LARGE_CUSTOM_METRICS_ENABLED:-true}
+          business_metrics: ${LARGE_BUSINESS_METRICS:-true}
+          performance_metrics: ${LARGE_PERFORMANCE_METRICS:-true}
+          security_metrics: ${LARGE_SECURITY_METRICS:-true}
+          compliance_metrics: ${LARGE_COMPLIANCE_METRICS:-true}
+      
+      # Grafana Configuration
+      grafana:
+        enabled: ${LARGE_GRAFANA_ENABLED:-true}
+        
+        # High Availability
+        high_availability:
+          enabled: ${LARGE_GRAFANA_HA_ENABLED:-true}
+          replicas: ${LARGE_GRAFANA_REPLICAS:-3}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${LARGE_GRAFANA_CPU_REQUEST:-500m}"
+            memory: "${LARGE_GRAFANA_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${LARGE_GRAFANA_CPU_LIMIT:-2000m}"
+            memory: "${LARGE_GRAFANA_MEMORY_LIMIT:-4Gi}"
+        
+        # Enterprise Features
+        enterprise_features:
+          enabled: ${LARGE_GRAFANA_ENTERPRISE_ENABLED:-true}
+          
+          # SSO Integration
+          sso:
+            enabled: ${LARGE_GRAFANA_SSO_ENABLED:-true}
+            providers:
+              - "saml"
+              - "oauth2"
+              - "ldap"
+          
+          # RBAC
+          rbac:
+            enabled: ${LARGE_GRAFANA_RBAC_ENABLED:-true}
+            
+          # Audit Logging
+          audit_logging:
+            enabled: ${LARGE_GRAFANA_AUDIT_LOGGING_ENABLED:-true}
+    
+    # Enterprise Logging
+    logging:
+      level: "${LARGE_LOG_LEVEL:-INFO}"
+      format: "${LARGE_LOG_FORMAT:-json}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${LARGE_LOG_CONSOLE:-false}
+          colorize: ${LARGE_LOG_COLORIZE:-false}
+        
+        file:
+          enabled: ${LARGE_LOG_FILE:-true}
+          path: "${LARGE_LOG_FILE_PATH:-/var/log/app/large.log}"
+          rotation: ${LARGE_LOG_ROTATION:-true}
+          max_size: "${LARGE_LOG_MAX_SIZE:-1GB}"
+          retention: ${LARGE_LOG_RETENTION:-90}
+          compression: ${LARGE_LOG_COMPRESSION:-true}
+        
+        elasticsearch:
+          enabled: ${LARGE_LOG_ELASTICSEARCH:-true}
+          
+          # Elasticsearch Cluster
+          cluster:
+            enabled: ${LARGE_ELASTICSEARCH_CLUSTER_ENABLED:-true}
+            nodes: ${LARGE_ELASTICSEARCH_CLUSTER_NODES:-5}
+            
+          hosts:
+            - "${LARGE_ELASTICSEARCH_HOST_1:-elasticsearch-1:9200}"
+            - "${LARGE_ELASTICSEARCH_HOST_2:-elasticsearch-2:9200}"
+            - "${LARGE_ELASTICSEARCH_HOST_3:-elasticsearch-3:9200}"
+            - "${LARGE_ELASTICSEARCH_HOST_4:-elasticsearch-4:9200}"
+            - "${LARGE_ELASTICSEARCH_HOST_5:-elasticsearch-5:9200}"
+          index: "${LARGE_LOG_INDEX:-large-logs}"
+          
+          # Index Management
+          index_management:
+            enabled: ${LARGE_LOG_INDEX_MANAGEMENT_ENABLED:-true}
+            rollover_size: "${LARGE_LOG_ROLLOVER_SIZE:-10GB}"
+            retention_days: ${LARGE_LOG_INDEX_RETENTION:-90}
+            
+            # Hot-Warm-Cold Architecture
+            hot_warm_cold:
+              enabled: ${LARGE_LOG_HOT_WARM_COLD_ENABLED:-true}
+              hot_phase_days: ${LARGE_LOG_HOT_PHASE_DAYS:-7}
+              warm_phase_days: ${LARGE_LOG_WARM_PHASE_DAYS:-30}
+              cold_phase_days: ${LARGE_LOG_COLD_PHASE_DAYS:-90}
+        
+        # External Log Management
+        external_logging:
+          enabled: ${LARGE_EXTERNAL_LOGGING_ENABLED:-true}
+          provider: "${LARGE_LOG_PROVIDER:-splunk}"
+          endpoint: "${LARGE_LOG_ENDPOINT:-}"
+          
+          # Log Aggregation
+          log_aggregation:
+            enabled: ${LARGE_LOG_AGGREGATION_ENABLED:-true}
+            
+          # Real-time Streaming
+          real_time_streaming:
+            enabled: ${LARGE_LOG_REAL_TIME_STREAMING_ENABLED:-true}
+            platform: "${LARGE_LOG_STREAMING_PLATFORM:-kafka}"
+      
+      # Logger Configuration
+      loggers:
+        root:
+          level: "INFO"
+        
+        sqlalchemy:
+          level: "WARNING"
+        
+        uvicorn:
+          level: "WARNING"
+        
+        security:
+          level: "INFO"
+          
+        audit:
+          level: "INFO"
+          
+        performance:
+          level: "INFO"
+          
+        compliance:
+          level: "INFO"
+    
+    # Distributed Tracing
+    tracing:
+      enabled: ${LARGE_TRACING_ENABLED:-true}
+      
+      # Jaeger Configuration
+      jaeger:
+        enabled: ${LARGE_JAEGER_ENABLED:-true}
+        endpoint: "${LARGE_JAEGER_ENDPOINT:-http://jaeger-collector:14268/api/traces}"
+        sampling_rate: ${LARGE_JAEGER_SAMPLING_RATE:-0.01}  # 1% sampling
+        
+        # Jaeger High Availability
+        high_availability:
+          enabled: ${LARGE_JAEGER_HA_ENABLED:-true}
+          
+        # Jaeger Configuration
+        configuration:
+          max_packet_size: ${LARGE_JAEGER_MAX_PACKET_SIZE:-65000}
+          queue_size: ${LARGE_JAEGER_QUEUE_SIZE:-1000}
+          
+      # OpenTelemetry
+      opentelemetry:
+        enabled: ${LARGE_OPENTELEMETRY_ENABLED:-true}
+        endpoint: "${LARGE_OTEL_ENDPOINT:-http://otel-collector:4317}"
+        
+        # Sampling
+        sampling:
+          rate: ${LARGE_OTEL_SAMPLING_RATE:-0.01}  # 1% sampling
+          
+        # Exporters
+        exporters:
+          jaeger:
+            enabled: ${LARGE_OTEL_JAEGER_EXPORTER:-true}
+          prometheus:
+            enabled: ${LARGE_OTEL_PROMETHEUS_EXPORTER:-true}
+          elasticsearch:
+            enabled: ${LARGE_OTEL_ELASTICSEARCH_EXPORTER:-true}
+          
+      # Distributed Tracing
+      distributed_tracing:
+        enabled: ${LARGE_DISTRIBUTED_TRACING_ENABLED:-true}
+        
+        # Cross-service Correlation
+        correlation:
+          enabled: ${LARGE_TRACE_CORRELATION_ENABLED:-true}
+          correlation_id_header: "X-Correlation-ID"
+          
+        # Service Mesh Integration
+        service_mesh_integration:
+          enabled: ${LARGE_SERVICE_MESH_TRACING_ENABLED:-true}
+          service_mesh: "${LARGE_SERVICE_MESH:-istio}"
+    
+    # Advanced Health Checks
+    health_checks:
+      enabled: ${LARGE_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Health Check Configuration
+      checks:
+        database:
+          enabled: ${LARGE_HEALTH_CHECK_DB:-true}
+          timeout: ${LARGE_HEALTH_CHECK_DB_TIMEOUT:-5}
+          interval: ${LARGE_HEALTH_CHECK_DB_INTERVAL:-30}
+          failure_threshold: ${LARGE_HEALTH_CHECK_DB_FAILURE_THRESHOLD:-3}
+          
+          # Read Replica Health Checks
+          read_replicas:
+            enabled: ${LARGE_HEALTH_CHECK_DB_REPLICAS:-true}
+            lag_threshold: ${LARGE_HEALTH_CHECK_DB_LAG_THRESHOLD:-1000}  # ms
+        
+        redis:
+          enabled: ${LARGE_HEALTH_CHECK_REDIS:-true}
+          timeout: ${LARGE_HEALTH_CHECK_REDIS_TIMEOUT:-3}
+          interval: ${LARGE_HEALTH_CHECK_REDIS_INTERVAL:-30}
+          failure_threshold: ${LARGE_HEALTH_CHECK_REDIS_FAILURE_THRESHOLD:-3}
+          
+          # Cluster Health Checks
+          cluster:
+            enabled: ${LARGE_HEALTH_CHECK_REDIS_CLUSTER:-true}
+        
+        external_apis:
+          enabled: ${LARGE_HEALTH_CHECK_EXTERNAL_APIS:-true}
+          timeout: ${LARGE_HEALTH_CHECK_EXTERNAL_TIMEOUT:-10}
+          interval: ${LARGE_HEALTH_CHECK_EXTERNAL_INTERVAL:-60}
+          failure_threshold: ${LARGE_HEALTH_CHECK_EXTERNAL_FAILURE_THRESHOLD:-5}
+        
+        dependencies:
+          enabled: ${LARGE_HEALTH_CHECK_DEPENDENCIES:-true}
+          timeout: ${LARGE_HEALTH_CHECK_DEPENDENCIES_TIMEOUT:-15}
+          interval: ${LARGE_HEALTH_CHECK_DEPENDENCIES_INTERVAL:-120}
+          failure_threshold: ${LARGE_HEALTH_CHECK_DEPENDENCIES_FAILURE_THRESHOLD:-3}
+        
+        # Deep Health Checks
+        deep_health_checks:
+          enabled: ${LARGE_DEEP_HEALTH_CHECKS_ENABLED:-true}
+          interval: ${LARGE_DEEP_HEALTH_CHECK_INTERVAL:-300}  # 5 minutes
+          
+          # Comprehensive Checks
+          checks:
+            - name: "database_write_test"
+              description: "Test database write operations"
+              timeout: 10
+              
+            - name: "cache_performance_test"
+              description: "Test cache performance"
+              timeout: 5
+              
+            - name: "ml_model_health_test"
+              description: "Test ML model health"
+              timeout: 30
+              
+            - name: "analytics_pipeline_test"
+              description: "Test analytics pipeline"
+              timeout: 60
+              
+            - name: "backup_system_test"
+              description: "Test backup system"
+              timeout: 120
+
+  # Scaling Thresholds
+  scaling_thresholds:
+    # Upgrade Recommendations
+    upgrade_recommendations:
+      # To Enterprise Profile
+      to_enterprise:
+        triggers:
+          concurrent_users: ${LARGE_TO_ENTERPRISE_USERS_THRESHOLD:-4000}
+          storage_usage: ${LARGE_TO_ENTERPRISE_STORAGE_THRESHOLD:-800}  # GB
+          compliance_requirements: ${LARGE_TO_ENTERPRISE_COMPLIANCE_THRESHOLD:-true}
+          custom_integrations: ${LARGE_TO_ENTERPRISE_CUSTOM_INTEGRATIONS_THRESHOLD:-10}
+          sla_requirements: "${LARGE_TO_ENTERPRISE_SLA_THRESHOLD:-99.99%}"
+          
+        recommendations:
+          - "Enterprise profile recommended for mission-critical deployments"
+          - "Dedicated infrastructure and white-glove support"
+          - "Custom SLA agreements and service guarantees"
+          - "Advanced compliance and regulatory features"
+          - "Custom development and integration services"
+
+  # Support and Documentation
+  support:
+    # Enterprise Documentation
+    documentation:
+      enabled: ${LARGE_DOCUMENTATION_ENABLED:-true}
+      
+      # Documentation Types
+      types:
+        getting_started: ${LARGE_GETTING_STARTED_DOCS:-true}
+        api_documentation: ${LARGE_API_DOCS:-true}
+        troubleshooting: ${LARGE_TROUBLESHOOTING_DOCS:-true}
+        best_practices: ${LARGE_BEST_PRACTICES_DOCS:-true}
+        integration_guides: ${LARGE_INTEGRATION_GUIDES_DOCS:-true}
+        advanced_tutorials: ${LARGE_ADVANCED_TUTORIALS_DOCS:-true}
+        enterprise_guides: ${LARGE_ENTERPRISE_GUIDES_DOCS:-true}
+        compliance_documentation: ${LARGE_COMPLIANCE_DOCS:-true}
+    
+    # Enterprise Support Channels
+    support_channels:
+      # Community Support
+      community:
+        enabled: ${LARGE_COMMUNITY_SUPPORT_ENABLED:-true}
+        channels:
+          - "forum"
+          - "documentation"
+          - "tutorials"
+          - "webinars"
+          - "user_groups"
+      
+      # Email Support
+      email:
+        enabled: ${LARGE_EMAIL_SUPPORT_ENABLED:-true}
+        tier: "${LARGE_EMAIL_SUPPORT_TIER:-enterprise}"
+        response_time: "${LARGE_EMAIL_RESPONSE_TIME:-4h}"
+        
+      # Priority Support
+      priority:
+        enabled: ${LARGE_PRIORITY_SUPPORT_ENABLED:-true}
+        tier: "${LARGE_PRIORITY_SUPPORT_TIER:-enterprise}"
+        response_time: "${LARGE_PRIORITY_RESPONSE_TIME:-1h}"
+        
+      # Phone Support
+      phone:
+        enabled: ${LARGE_PHONE_SUPPORT_ENABLED:-true}
+        hours: "${LARGE_PHONE_SUPPORT_HOURS:-24/7}"
+        
+      # Dedicated Support
+      dedicated:
+        enabled: ${LARGE_DEDICATED_SUPPORT_ENABLED:-true}
+        
+        # Customer Success Manager
+        csm:
+          enabled: ${LARGE_CSM_ENABLED:-true}
+          
+        # Technical Account Manager
+        tam:
+          enabled: ${LARGE_TAM_ENABLED:-true}

@@ -1,0 +1,944 @@
+# Istio Service Mesh Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Istio service mesh architecture with enterprise microservices
+# - Senior DevOps Engineer: Kubernetes/Istio enterprise deployment patterns
+# - Service Mesh Specialist: Istio configuration, traffic management, and security
+# - Platform Engineer: Service mesh observability, monitoring, and performance optimization
+# - Security Engineer: mTLS, RBAC, and service mesh security hardening
+
+# ==========================================
+# ISTIO SERVICE MESH CONFIGURATION
+# ==========================================
+
+istio:
+  # General Settings
+  general:
+    enabled: ${ISTIO_ENABLED:-true}
+    version: "${ISTIO_VERSION:-1.19.0}"
+    profile: "${ISTIO_PROFILE:-default}"  # minimal, demo, default, remote, empty, preview
+    
+    # Installation Configuration
+    installation:
+      namespace: "${ISTIO_NAMESPACE:-istio-system}"
+      revision: "${ISTIO_REVISION:-default}"
+      
+      # Components
+      components:
+        pilot: ${ISTIO_PILOT_ENABLED:-true}
+        proxy: ${ISTIO_PROXY_ENABLED:-true}
+        gateways: ${ISTIO_GATEWAYS_ENABLED:-true}
+        istiod: ${ISTIO_ISTIOD_ENABLED:-true}
+        
+        # Optional Components
+        optional_components:
+          jaeger: ${ISTIO_JAEGER_ENABLED:-true}
+          kiali: ${ISTIO_KIALI_ENABLED:-true}
+          grafana: ${ISTIO_GRAFANA_ENABLED:-true}
+          prometheus: ${ISTIO_PROMETHEUS_ENABLED:-true}
+    
+    # Mesh Configuration
+    mesh_config:
+      # Default Configuration
+      default_config:
+        proxy_metadata:
+          ISTIO_META_DNS_CAPTURE: "${ISTIO_DNS_CAPTURE:-true}"
+          ISTIO_META_PROXY_XDS_VIA_AGENT: "${ISTIO_PROXY_XDS_VIA_AGENT:-true}"
+        
+        # Proxy Configuration
+        proxy_config:
+          concurrency: ${ISTIO_PROXY_CONCURRENCY:-2}
+          service_cluster: "${ISTIO_SERVICE_CLUSTER:-istio-proxy}"
+          drain_duration: "${ISTIO_DRAIN_DURATION:-45s}"
+          parent_shutdown_duration: "${ISTIO_PARENT_SHUTDOWN_DURATION:-60s}"
+          termination_drain_duration: "${ISTIO_TERMINATION_DRAIN_DURATION:-5s}"
+          
+          # Resource Configuration
+          proxy_cpu_limit: "${ISTIO_PROXY_CPU_LIMIT:-2000m}"
+          proxy_memory_limit: "${ISTIO_PROXY_MEMORY_LIMIT:-1Gi}"
+          proxy_cpu_request: "${ISTIO_PROXY_CPU_REQUEST:-100m}"
+          proxy_memory_request: "${ISTIO_PROXY_MEMORY_REQUEST:-128Mi}"
+
+  # Traffic Management
+  traffic_management:
+    # Virtual Services
+    virtual_services:
+      enabled: ${ISTIO_VIRTUAL_SERVICES_ENABLED:-true}
+      
+      # Default Virtual Service Configuration
+      default_config:
+        # HTTP Route Configuration
+        http_routes:
+          retry_policy:
+            attempts: ${ISTIO_DEFAULT_RETRY_ATTEMPTS:-3}
+            per_try_timeout: "${ISTIO_DEFAULT_PER_TRY_TIMEOUT:-10s}"
+            retry_on: "gateway-error,connect-failure,refused-stream"
+            retry_remote_localities: ${ISTIO_RETRY_REMOTE_LOCALITIES:-false}
+          
+          timeout: "${ISTIO_DEFAULT_HTTP_TIMEOUT:-30s}"
+          
+          # Fault Injection
+          fault_injection:
+            enabled: ${ISTIO_FAULT_INJECTION_ENABLED:-false}
+            delay:
+              percentage: ${ISTIO_FAULT_DELAY_PERCENTAGE:-0}
+              fixed_delay: "${ISTIO_FAULT_DELAY_DURATION:-5s}"
+            
+            abort:
+              percentage: ${ISTIO_FAULT_ABORT_PERCENTAGE:-0}
+              http_status: ${ISTIO_FAULT_ABORT_STATUS:-500}
+      
+      # Service-specific Virtual Services
+      service_configs:
+        # API Gateway Virtual Service
+        api_gateway:
+          enabled: ${ISTIO_API_GATEWAY_VS_ENABLED:-true}
+          hosts: ["api.spotify-ai-agent.com"]
+          gateways: ["api-gateway"]
+          
+          # Route Configuration
+          routes:
+            - match:
+                prefix: "/api/v1/"
+              route:
+                destination:
+                  host: "api-service"
+                  port: 8000
+              
+              # Advanced Routing
+              headers:
+                request:
+                  add:
+                    x-forwarded-proto: "https"
+                  remove: ["x-internal-header"]
+              
+              cors_policy:
+                allow_origins: ["*"]
+                allow_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+                allow_headers: ["authorization", "content-type"]
+                max_age: "24h"
+        
+        # ML Service Virtual Service
+        ml_service:
+          enabled: ${ISTIO_ML_SERVICE_VS_ENABLED:-true}
+          hosts: ["ml.spotify-ai-agent.com"]
+          gateways: ["ml-gateway"]
+          
+          # Load Balancing Configuration
+          routes:
+            - match:
+                prefix: "/predict"
+              route:
+                destination:
+                  host: "ml-service"
+                  port: 8080
+                
+                # Traffic Splitting
+                weight: 100
+              
+              # ML-specific Timeouts
+              timeout: "${ISTIO_ML_TIMEOUT:-60s}"
+              retry:
+                attempts: ${ISTIO_ML_RETRY_ATTEMPTS:-2}
+                per_try_timeout: "${ISTIO_ML_PER_TRY_TIMEOUT:-30s}"
+    
+    # Destination Rules
+    destination_rules:
+      enabled: ${ISTIO_DESTINATION_RULES_ENABLED:-true}
+      
+      # Default Destination Rule Configuration
+      default_config:
+        # Traffic Policy
+        traffic_policy:
+          # Load Balancer Configuration
+          load_balancer:
+            simple: "${ISTIO_DEFAULT_LB_POLICY:-LEAST_CONN}"  # ROUND_ROBIN, LEAST_CONN, RANDOM, PASSTHROUGH
+          
+          # Connection Pool Settings
+          connection_pool:
+            tcp:
+              max_connections: ${ISTIO_TCP_MAX_CONNECTIONS:-100}
+              connect_timeout: "${ISTIO_TCP_CONNECT_TIMEOUT:-10s}"
+              tcp_no_delay: ${ISTIO_TCP_NO_DELAY:-true}
+            
+            http:
+              http1_max_pending_requests: ${ISTIO_HTTP1_MAX_PENDING:-1024}
+              http2_max_requests: ${ISTIO_HTTP2_MAX_REQUESTS:-1000}
+              max_requests_per_connection: ${ISTIO_MAX_REQUESTS_PER_CONNECTION:-10}
+              max_retries: ${ISTIO_HTTP_MAX_RETRIES:-3}
+              idle_timeout: "${ISTIO_HTTP_IDLE_TIMEOUT:-60s}"
+              h2_upgrade_policy: "${ISTIO_H2_UPGRADE_POLICY:-UPGRADE}"  # UPGRADE, DO_NOT_UPGRADE
+          
+          # Circuit Breaker
+          outlier_detection:
+            consecutive_5xx_errors: ${ISTIO_OUTLIER_CONSECUTIVE_5XX:-5}
+            consecutive_gateway_errors: ${ISTIO_OUTLIER_CONSECUTIVE_GATEWAY:-5}
+            interval: "${ISTIO_OUTLIER_INTERVAL:-30s}"
+            base_ejection_time: "${ISTIO_OUTLIER_BASE_EJECTION_TIME:-30s}"
+            max_ejection_percent: ${ISTIO_OUTLIER_MAX_EJECTION_PERCENT:-50}
+            min_health_percent: ${ISTIO_OUTLIER_MIN_HEALTH_PERCENT:-30}
+      
+      # Service-specific Destination Rules
+      service_configs:
+        # Database Service Destination Rule
+        database_service:
+          enabled: ${ISTIO_DATABASE_DR_ENABLED:-true}
+          host: "database-service"
+          
+          # Database-specific Traffic Policy
+          traffic_policy:
+            connection_pool:
+              tcp:
+                max_connections: ${ISTIO_DB_MAX_CONNECTIONS:-50}
+                connect_timeout: "${ISTIO_DB_CONNECT_TIMEOUT:-5s}"
+              
+              http:
+                http1_max_pending_requests: ${ISTIO_DB_HTTP1_MAX_PENDING:-256}
+                max_requests_per_connection: ${ISTIO_DB_MAX_REQUESTS_PER_CONNECTION:-1}
+            
+            # Database Circuit Breaker
+            outlier_detection:
+              consecutive_5xx_errors: ${ISTIO_DB_OUTLIER_CONSECUTIVE_5XX:-3}
+              interval: "${ISTIO_DB_OUTLIER_INTERVAL:-10s}"
+              base_ejection_time: "${ISTIO_DB_OUTLIER_BASE_EJECTION_TIME:-60s}"
+        
+        # Redis Service Destination Rule
+        redis_service:
+          enabled: ${ISTIO_REDIS_DR_ENABLED:-true}
+          host: "redis-service"
+          
+          # Redis-specific Traffic Policy
+          traffic_policy:
+            connection_pool:
+              tcp:
+                max_connections: ${ISTIO_REDIS_MAX_CONNECTIONS:-20}
+                connect_timeout: "${ISTIO_REDIS_CONNECT_TIMEOUT:-2s}"
+            
+            outlier_detection:
+              consecutive_5xx_errors: ${ISTIO_REDIS_OUTLIER_CONSECUTIVE_5XX:-2}
+              interval: "${ISTIO_REDIS_OUTLIER_INTERVAL:-5s}"
+              base_ejection_time: "${ISTIO_REDIS_OUTLIER_BASE_EJECTION_TIME:-30s}"
+    
+    # Gateways
+    gateways:
+      enabled: ${ISTIO_GATEWAYS_ENABLED:-true}
+      
+      # Gateway Configuration
+      gateway_configs:
+        # Main API Gateway
+        api_gateway:
+          enabled: ${ISTIO_API_GATEWAY_ENABLED:-true}
+          name: "api-gateway"
+          namespace: "${ISTIO_API_GATEWAY_NAMESPACE:-istio-system}"
+          
+          # Selector
+          selector:
+            istio: "ingressgateway"
+          
+          # Server Configuration
+          servers:
+            - port:
+                number: 80
+                name: "http"
+                protocol: "HTTP"
+              hosts: ["api.spotify-ai-agent.com"]
+              tls:
+                https_redirect: ${ISTIO_API_HTTPS_REDIRECT:-true}
+            
+            - port:
+                number: 443
+                name: "https"
+                protocol: "HTTPS"
+              hosts: ["api.spotify-ai-agent.com"]
+              tls:
+                mode: "SIMPLE"
+                credential_name: "api-gateway-cert"
+        
+        # ML Gateway
+        ml_gateway:
+          enabled: ${ISTIO_ML_GATEWAY_ENABLED:-true}
+          name: "ml-gateway"
+          namespace: "${ISTIO_ML_GATEWAY_NAMESPACE:-istio-system}"
+          
+          # Selector
+          selector:
+            istio: "ingressgateway"
+          
+          # Server Configuration
+          servers:
+            - port:
+                number: 443
+                name: "https"
+                protocol: "HTTPS"
+              hosts: ["ml.spotify-ai-agent.com"]
+              tls:
+                mode: "SIMPLE"
+                credential_name: "ml-gateway-cert"
+    
+    # Service Entries
+    service_entries:
+      enabled: ${ISTIO_SERVICE_ENTRIES_ENABLED:-true}
+      
+      # External Service Configuration
+      external_services:
+        # External API Service
+        external_api:
+          enabled: ${ISTIO_EXTERNAL_API_SE_ENABLED:-true}
+          hosts: ["external-api.example.com"]
+          ports:
+            - number: 443
+              name: "https"
+              protocol: "HTTPS"
+          location: "MESH_EXTERNAL"
+          resolution: "DNS"
+        
+        # Database Service (if external)
+        external_database:
+          enabled: ${ISTIO_EXTERNAL_DB_SE_ENABLED:-false}
+          hosts: ["database.external.com"]
+          ports:
+            - number: 5432
+              name: "postgresql"
+              protocol: "TCP"
+          location: "MESH_EXTERNAL"
+          resolution: "DNS"
+
+  # Security
+  security:
+    # mTLS Configuration
+    mtls:
+      enabled: ${ISTIO_MTLS_ENABLED:-true}
+      mode: "${ISTIO_MTLS_MODE:-STRICT}"  # DISABLE, PERMISSIVE, STRICT
+      
+      # Peer Authentication
+      peer_authentication:
+        default_policy:
+          enabled: ${ISTIO_DEFAULT_PEER_AUTH_ENABLED:-true}
+          namespace: "default"
+          mtls_mode: "${ISTIO_DEFAULT_MTLS_MODE:-STRICT}"
+        
+        # Service-specific Peer Authentication
+        service_policies:
+          database_service:
+            enabled: ${ISTIO_DB_PEER_AUTH_ENABLED:-true}
+            namespace: "default"
+            selector:
+              matchLabels:
+                app: "database"
+            mtls_mode: "${ISTIO_DB_MTLS_MODE:-STRICT}"
+          
+          external_service:
+            enabled: ${ISTIO_EXTERNAL_PEER_AUTH_ENABLED:-true}
+            namespace: "default"
+            selector:
+              matchLabels:
+                app: "external-api"
+            mtls_mode: "${ISTIO_EXTERNAL_MTLS_MODE:-DISABLE}"
+      
+      # Destination Rule mTLS
+      destination_rule_mtls:
+        default_policy:
+          enabled: ${ISTIO_DEFAULT_DR_MTLS_ENABLED:-true}
+          tls_mode: "${ISTIO_DEFAULT_DR_TLS_MODE:-ISTIO_MUTUAL}"  # DISABLE, SIMPLE, MUTUAL, ISTIO_MUTUAL
+        
+        # Service-specific mTLS
+        service_policies:
+          external_service:
+            enabled: ${ISTIO_EXTERNAL_DR_MTLS_ENABLED:-true}
+            tls_mode: "${ISTIO_EXTERNAL_DR_TLS_MODE:-SIMPLE}"
+    
+    # Authorization Policies
+    authorization:
+      enabled: ${ISTIO_AUTHORIZATION_ENABLED:-true}
+      
+      # Default Deny Policy
+      default_deny:
+        enabled: ${ISTIO_DEFAULT_DENY_ENABLED:-false}
+        namespace: "default"
+      
+      # Service-specific Authorization Policies
+      service_policies:
+        # API Service Authorization
+        api_service:
+          enabled: ${ISTIO_API_SERVICE_AUTHZ_ENABLED:-true}
+          namespace: "default"
+          selector:
+            matchLabels:
+              app: "api-service"
+          
+          # Rules
+          rules:
+            - from:
+                - source:
+                    principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+              to:
+                - operation:
+                    methods: ["GET", "POST", "PUT", "DELETE"]
+                    paths: ["/api/v1/*"]
+              
+              when:
+                - key: "source.ip"
+                  values: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+        
+        # ML Service Authorization
+        ml_service:
+          enabled: ${ISTIO_ML_SERVICE_AUTHZ_ENABLED:-true}
+          namespace: "default"
+          selector:
+            matchLabels:
+              app: "ml-service"
+          
+          # Rules for ML Service
+          rules:
+            - from:
+                - source:
+                    principals: ["cluster.local/ns/default/sa/api-service"]
+              to:
+                - operation:
+                    methods: ["POST"]
+                    paths: ["/predict", "/predict/*"]
+        
+        # Database Service Authorization
+        database_service:
+          enabled: ${ISTIO_DATABASE_SERVICE_AUTHZ_ENABLED:-true}
+          namespace: "default"
+          selector:
+            matchLabels:
+              app: "database"
+          
+          # Database Access Rules
+          rules:
+            - from:
+                - source:
+                    principals: ["cluster.local/ns/default/sa/api-service"]
+                - source:
+                    principals: ["cluster.local/ns/default/sa/ml-service"]
+              to:
+                - operation:
+                    ports: ["5432"]
+    
+    # Request Authentication
+    request_authentication:
+      enabled: ${ISTIO_REQUEST_AUTH_ENABLED:-true}
+      
+      # JWT Authentication
+      jwt_policies:
+        # API Gateway JWT
+        api_gateway_jwt:
+          enabled: ${ISTIO_API_JWT_ENABLED:-true}
+          namespace: "default"
+          selector:
+            matchLabels:
+              app: "api-service"
+          
+          # JWT Rules
+          jwt_rules:
+            - issuer: "${ISTIO_JWT_ISSUER:-https://auth.spotify-ai-agent.com}"
+              jwks_uri: "${ISTIO_JWT_JWKS_URI:-https://auth.spotify-ai-agent.com/.well-known/jwks.json}"
+              audiences: ["spotify-ai-agent-api"]
+              forward_original_token: ${ISTIO_JWT_FORWARD_TOKEN:-true}
+              
+              # JWT Locations
+              from_headers:
+                - name: "Authorization"
+                  prefix: "Bearer "
+              
+              from_params: ["token"]
+        
+        # ML Service JWT
+        ml_service_jwt:
+          enabled: ${ISTIO_ML_JWT_ENABLED:-true}
+          namespace: "default"
+          selector:
+            matchLabels:
+              app: "ml-service"
+          
+          # ML JWT Rules
+          jwt_rules:
+            - issuer: "${ISTIO_ML_JWT_ISSUER:-https://ml-auth.spotify-ai-agent.com}"
+              jwks_uri: "${ISTIO_ML_JWT_JWKS_URI:-https://ml-auth.spotify-ai-agent.com/.well-known/jwks.json}"
+              audiences: ["spotify-ai-agent-ml"]
+
+  # Observability
+  observability:
+    # Telemetry Configuration
+    telemetry:
+      enabled: ${ISTIO_TELEMETRY_ENABLED:-true}
+      
+      # Metrics Configuration
+      metrics:
+        enabled: ${ISTIO_METRICS_ENABLED:-true}
+        
+        # Prometheus Metrics
+        prometheus:
+          enabled: ${ISTIO_PROMETHEUS_METRICS_ENABLED:-true}
+          configOverride:
+            metric_relabeling_configs:
+              - source_labels: [__name__]
+                regex: "istio_request_duration_milliseconds.*"
+                target_label: "__tmp_histogram_interval"
+                replacement: "30s"
+          
+          # Custom Metrics
+          custom_metrics:
+            - name: "requests_total"
+              dimensions:
+                source_service: "source.workload.name | 'unknown'"
+                destination_service: "destination.service.name | 'unknown'"
+                request_protocol: "request.protocol | 'unknown'"
+              tags:
+                request_protocol: "request.protocol | 'unknown'"
+            
+            - name: "request_duration"
+              dimensions:
+                source_service: "source.workload.name | 'unknown'"
+                destination_service: "destination.service.name | 'unknown'"
+              value: "response.duration | 0"
+              unit: "MILLISECONDS"
+        
+        # Custom Dashboards Configuration
+        dashboards:
+          enabled: ${ISTIO_CUSTOM_DASHBOARDS_ENABLED:-true}
+          grafana_url: "${ISTIO_GRAFANA_URL:-http://grafana:3000}"
+      
+      # Distributed Tracing
+      tracing:
+        enabled: ${ISTIO_TRACING_ENABLED:-true}
+        
+        # Jaeger Configuration
+        jaeger:
+          enabled: ${ISTIO_JAEGER_ENABLED:-true}
+          sampling_rate: ${ISTIO_JAEGER_SAMPLING_RATE:-1.0}
+          
+          # Jaeger Settings
+          jaeger_settings:
+            collector_endpoint: "${ISTIO_JAEGER_COLLECTOR:-http://jaeger-collector:14268/api/traces}"
+            trace_id_header: "${ISTIO_TRACE_ID_HEADER:-x-trace-id}"
+            span_id_header: "${ISTIO_SPAN_ID_HEADER:-x-span-id}"
+        
+        # Zipkin Configuration
+        zipkin:
+          enabled: ${ISTIO_ZIPKIN_ENABLED:-false}
+          address: "${ISTIO_ZIPKIN_ADDRESS:-zipkin:9411}"
+      
+      # Access Logging
+      access_logs:
+        enabled: ${ISTIO_ACCESS_LOGS_ENABLED:-true}
+        
+        # Log Configuration
+        log_config:
+          providers:
+            envoy:
+              service: "envoy.access_loggers.file"
+              config:
+                "@type": "type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog"
+                path: "/dev/stdout"
+                format: |
+                  [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%"
+                  %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT%
+                  %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%"
+                  "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
+        
+        # Log Sampling
+        sampling:
+          enabled: ${ISTIO_ACCESS_LOG_SAMPLING_ENABLED:-true}
+          percentage: ${ISTIO_ACCESS_LOG_SAMPLING_PERCENTAGE:-100}
+    
+    # Kiali Configuration
+    kiali:
+      enabled: ${ISTIO_KIALI_ENABLED:-true}
+      
+      # Kiali Server Configuration
+      server:
+        port: ${ISTIO_KIALI_SERVER_PORT:-20001}
+        web_root: "${ISTIO_KIALI_WEB_ROOT:-/kiali}"
+        
+        # CORS Configuration
+        cors_allow_all: ${ISTIO_KIALI_CORS_ALLOW_ALL:-false}
+        
+        # Metrics Configuration
+        metrics_enabled: ${ISTIO_KIALI_METRICS_ENABLED:-true}
+        metrics_port: ${ISTIO_KIALI_METRICS_PORT:-9090}
+      
+      # External Services Configuration
+      external_services:
+        prometheus:
+          url: "${ISTIO_KIALI_PROMETHEUS_URL:-http://prometheus:9090}"
+        
+        grafana:
+          enabled: ${ISTIO_KIALI_GRAFANA_ENABLED:-true}
+          url: "${ISTIO_KIALI_GRAFANA_URL:-http://grafana:3000}"
+          in_cluster_url: "${ISTIO_KIALI_GRAFANA_IN_CLUSTER_URL:-http://grafana:3000}"
+        
+        jaeger:
+          enabled: ${ISTIO_KIALI_JAEGER_ENABLED:-true}
+          url: "${ISTIO_KIALI_JAEGER_URL:-http://jaeger-query:16686}"
+          in_cluster_url: "${ISTIO_KIALI_JAEGER_IN_CLUSTER_URL:-http://jaeger-query:16686}"
+      
+      # Authentication Configuration
+      auth:
+        strategy: "${ISTIO_KIALI_AUTH_STRATEGY:-anonymous}"  # anonymous, token, openshift, openid, header
+        
+        # OpenID Configuration
+        openid:
+          client_id: "${ISTIO_KIALI_OPENID_CLIENT_ID:-}"
+          issuer_uri: "${ISTIO_KIALI_OPENID_ISSUER_URI:-}"
+          username_claim: "${ISTIO_KIALI_OPENID_USERNAME_CLAIM:-sub}"
+
+  # Performance and Scaling
+  performance:
+    # Proxy Performance
+    proxy_performance:
+      # CPU and Memory Configuration
+      resources:
+        requests:
+          cpu: "${ISTIO_PROXY_CPU_REQUEST:-100m}"
+          memory: "${ISTIO_PROXY_MEMORY_REQUEST:-128Mi}"
+        limits:
+          cpu: "${ISTIO_PROXY_CPU_LIMIT:-2000m}"
+          memory: "${ISTIO_PROXY_MEMORY_LIMIT:-1Gi}"
+      
+      # Concurrency Configuration
+      concurrency: ${ISTIO_PROXY_CONCURRENCY:-2}
+      
+      # Buffer Sizes
+      buffer_sizes:
+        cluster_manager_cluster_stats_config_buffer_size: ${ISTIO_CLUSTER_STATS_BUFFER_SIZE:-1048576}
+        
+      # Statistics Configuration
+      stats_config:
+        disable_host_header_fallback: ${ISTIO_DISABLE_HOST_HEADER_FALLBACK:-true}
+        stats_tags:
+          - tag_name: "request_protocol"
+            regex: "^request_protocol=(.+)$"
+          - tag_name: "response_code"
+            regex: "^response_code=(.+)$"
+    
+    # Pilot Performance
+    pilot_performance:
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${ISTIO_PILOT_CPU_REQUEST:-500m}"
+          memory: "${ISTIO_PILOT_MEMORY_REQUEST:-2Gi}"
+        limits:
+          cpu: "${ISTIO_PILOT_CPU_LIMIT:-2000m}"
+          memory: "${ISTIO_PILOT_MEMORY_LIMIT:-4Gi}"
+      
+      # Environment Variables
+      env:
+        PILOT_ENABLE_WORKLOAD_ENTRY_AUTOREGISTRATION: "${ISTIO_PILOT_WORKLOAD_ENTRY_AUTOREGISTRATION:-true}"
+        PILOT_ENABLE_STATUS: "${ISTIO_PILOT_ENABLE_STATUS:-true}"
+        PILOT_ENABLE_CONFIG_DISTRIBUTION_TRACKING: "${ISTIO_PILOT_CONFIG_DISTRIBUTION_TRACKING:-true}"
+        
+        # Performance Tuning
+        PILOT_PUSH_THROTTLE: ${ISTIO_PILOT_PUSH_THROTTLE:-100}
+        PILOT_MAX_REQUESTS_PER_SECOND: ${ISTIO_PILOT_MAX_REQUESTS_PER_SECOND:-25}
+    
+    # Gateway Performance
+    gateway_performance:
+      # Ingress Gateway
+      ingress_gateway:
+        replicas: ${ISTIO_INGRESS_GATEWAY_REPLICAS:-3}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${ISTIO_INGRESS_GATEWAY_CPU_REQUEST:-1000m}"
+            memory: "${ISTIO_INGRESS_GATEWAY_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${ISTIO_INGRESS_GATEWAY_CPU_LIMIT:-2000m}"
+            memory: "${ISTIO_INGRESS_GATEWAY_MEMORY_LIMIT:-2Gi}"
+        
+        # Horizontal Pod Autoscaler
+        hpa:
+          enabled: ${ISTIO_INGRESS_GATEWAY_HPA_ENABLED:-true}
+          min_replicas: ${ISTIO_INGRESS_GATEWAY_HPA_MIN_REPLICAS:-3}
+          max_replicas: ${ISTIO_INGRESS_GATEWAY_HPA_MAX_REPLICAS:-10}
+          target_cpu_utilization: ${ISTIO_INGRESS_GATEWAY_HPA_CPU_TARGET:-70}
+      
+      # Egress Gateway
+      egress_gateway:
+        enabled: ${ISTIO_EGRESS_GATEWAY_ENABLED:-true}
+        replicas: ${ISTIO_EGRESS_GATEWAY_REPLICAS:-2}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${ISTIO_EGRESS_GATEWAY_CPU_REQUEST:-500m}"
+            memory: "${ISTIO_EGRESS_GATEWAY_MEMORY_REQUEST:-512Mi}"
+          limits:
+            cpu: "${ISTIO_EGRESS_GATEWAY_CPU_LIMIT:-1000m}"
+            memory: "${ISTIO_EGRESS_GATEWAY_MEMORY_LIMIT:-1Gi}"
+
+  # Multicluster Configuration
+  multicluster:
+    enabled: ${ISTIO_MULTICLUSTER_ENABLED:-false}
+    
+    # Primary Cluster Configuration
+    primary_cluster:
+      enabled: ${ISTIO_PRIMARY_CLUSTER_ENABLED:-false}
+      cluster_name: "${ISTIO_PRIMARY_CLUSTER_NAME:-primary}"
+      network: "${ISTIO_PRIMARY_NETWORK:-network1}"
+      
+      # Cross-cluster Discovery
+      cross_cluster_discovery:
+        enabled: ${ISTIO_CROSS_CLUSTER_DISCOVERY_ENABLED:-true}
+    
+    # Remote Cluster Configuration
+    remote_clusters:
+      enabled: ${ISTIO_REMOTE_CLUSTERS_ENABLED:-false}
+      
+      # Remote Cluster List
+      clusters:
+        - name: "${ISTIO_REMOTE_CLUSTER_1_NAME:-remote1}"
+          network: "${ISTIO_REMOTE_CLUSTER_1_NETWORK:-network2}"
+          endpoint: "${ISTIO_REMOTE_CLUSTER_1_ENDPOINT:-}"
+          
+        - name: "${ISTIO_REMOTE_CLUSTER_2_NAME:-remote2}"
+          network: "${ISTIO_REMOTE_CLUSTER_2_NETWORK:-network3}"
+          endpoint: "${ISTIO_REMOTE_CLUSTER_2_ENDPOINT:-}"
+
+  # Advanced Features
+  advanced:
+    # Wasm Extensions
+    wasm:
+      enabled: ${ISTIO_WASM_ENABLED:-false}
+      
+      # Wasm Filters
+      filters:
+        # Rate Limiting Filter
+        rate_limiting:
+          enabled: ${ISTIO_WASM_RATE_LIMITING_ENABLED:-false}
+          image: "${ISTIO_WASM_RATE_LIMITING_IMAGE:-}"
+          config:
+            max_requests_per_second: ${ISTIO_RATE_LIMIT_RPS:-100}
+            burst_size: ${ISTIO_RATE_LIMIT_BURST:-200}
+        
+        # Custom Authentication Filter
+        custom_auth:
+          enabled: ${ISTIO_WASM_CUSTOM_AUTH_ENABLED:-false}
+          image: "${ISTIO_WASM_CUSTOM_AUTH_IMAGE:-}"
+          config:
+            auth_endpoint: "${ISTIO_CUSTOM_AUTH_ENDPOINT:-}"
+            cache_ttl: ${ISTIO_CUSTOM_AUTH_CACHE_TTL:-300}
+    
+    # Ambient Mesh
+    ambient:
+      enabled: ${ISTIO_AMBIENT_ENABLED:-false}
+      
+      # Ambient Configuration
+      configuration:
+        ztunnel:
+          enabled: ${ISTIO_ZTUNNEL_ENABLED:-false}
+          image: "${ISTIO_ZTUNNEL_IMAGE:-}"
+        
+        waypoint_proxy:
+          enabled: ${ISTIO_WAYPOINT_PROXY_ENABLED:-false}
+          image: "${ISTIO_WAYPOINT_PROXY_IMAGE:-}"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: true
+        profile: "demo"
+      
+      traffic_management:
+        virtual_services:
+          default_config:
+            http_routes:
+              timeout: "60s"
+              retry_policy:
+                attempts: 1
+        
+        destination_rules:
+          default_config:
+            traffic_policy:
+              connection_pool:
+                tcp:
+                  max_connections: 10
+                http:
+                  http1_max_pending_requests: 100
+      
+      security:
+        mtls:
+          enabled: true
+          mode: "PERMISSIVE"
+        
+        authorization:
+          enabled: false
+      
+      observability:
+        telemetry:
+          enabled: true
+        
+        tracing:
+          jaeger:
+            sampling_rate: 0.1
+        
+        access_logs:
+          enabled: true
+          sampling:
+            percentage: 10
+      
+      performance:
+        proxy_performance:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+    
+    testing:
+      general:
+        enabled: true
+        profile: "default"
+      
+      security:
+        mtls:
+          enabled: true
+          mode: "STRICT"
+        
+        authorization:
+          enabled: true
+      
+      observability:
+        tracing:
+          jaeger:
+            sampling_rate: 0.5
+        
+        access_logs:
+          sampling:
+            percentage: 50
+      
+      performance:
+        gateway_performance:
+          ingress_gateway:
+            replicas: 2
+            hpa:
+              enabled: true
+              min_replicas: 2
+              max_replicas: 5
+    
+    production:
+      general:
+        enabled: true
+        profile: "default"
+      
+      traffic_management:
+        virtual_services:
+          enabled: true
+          default_config:
+            http_routes:
+              retry_policy:
+                attempts: 3
+                per_try_timeout: "10s"
+              timeout: "30s"
+        
+        destination_rules:
+          enabled: true
+          default_config:
+            traffic_policy:
+              load_balancer:
+                simple: "LEAST_CONN"
+              connection_pool:
+                tcp:
+                  max_connections: 100
+                http:
+                  http1_max_pending_requests: 1024
+                  http2_max_requests: 1000
+              outlier_detection:
+                consecutive_5xx_errors: 5
+                interval: "30s"
+                base_ejection_time: "30s"
+      
+      security:
+        mtls:
+          enabled: true
+          mode: "STRICT"
+        
+        authorization:
+          enabled: true
+          default_deny:
+            enabled: true
+        
+        request_authentication:
+          enabled: true
+      
+      observability:
+        telemetry:
+          enabled: true
+          metrics:
+            enabled: true
+        
+        tracing:
+          enabled: true
+          jaeger:
+            enabled: true
+            sampling_rate: 1.0
+        
+        access_logs:
+          enabled: true
+          sampling:
+            enabled: true
+            percentage: 100
+        
+        kiali:
+          enabled: true
+          auth:
+            strategy: "openid"
+      
+      performance:
+        proxy_performance:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "2000m"
+              memory: "1Gi"
+          concurrency: 4
+        
+        pilot_performance:
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+        
+        gateway_performance:
+          ingress_gateway:
+            replicas: 3
+            resources:
+              requests:
+                cpu: "1000m"
+                memory: "1Gi"
+              limits:
+                cpu: "2000m"
+                memory: "2Gi"
+            hpa:
+              enabled: true
+              min_replicas: 3
+              max_replicas: 10
+              target_cpu_utilization: 70
+          
+          egress_gateway:
+            enabled: true
+            replicas: 2
+      
+      multicluster:
+        enabled: false
+      
+      advanced:
+        wasm:
+          enabled: false
+        
+        ambient:
+          enabled: false

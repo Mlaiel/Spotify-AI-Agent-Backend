@@ -1,0 +1,715 @@
+# Small Profile Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Small tenant profile architecture for startups and small teams
+# - Senior DevOps Engineer: Resource optimization and cost-effective deployment patterns
+# - Platform Engineer: Small-scale infrastructure design and performance tuning
+# - Security Engineer: Essential security controls for small deployments
+# - Product Manager: Feature prioritization for small business requirements
+
+# ==========================================
+# SMALL PROFILE CONFIGURATION
+# ==========================================
+
+small:
+  # Profile Metadata
+  metadata:
+    name: "small"
+    description: "Small profile for startups and small teams (1-50 users)"
+    version: "1.0.0"
+    profile_type: "small"
+    tier: "starter"
+    
+    # Profile Labels
+    labels:
+      profile: "small"
+      tier: "starter"
+      target_users: "1-50"
+      deployment_scale: "single-node"
+      cost_tier: "minimal"
+      managed_by: "tenant-templates"
+    
+    # Profile Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Cost-effective profile for small teams and startups"
+      recommended_for: "Development teams, small businesses, proof of concepts"
+      max_concurrent_users: "50"
+      max_data_storage: "10GB"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # API Service
+      api_service:
+        replicas: ${SMALL_API_REPLICAS:-1}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${SMALL_API_CPU_REQUEST:-100m}"
+            memory: "${SMALL_API_MEMORY_REQUEST:-128Mi}"
+          limits:
+            cpu: "${SMALL_API_CPU_LIMIT:-500m}"
+            memory: "${SMALL_API_MEMORY_LIMIT:-512Mi}"
+        
+        # Auto-scaling
+        auto_scaling:
+          enabled: ${SMALL_API_HPA_ENABLED:-false}
+          min_replicas: ${SMALL_API_HPA_MIN:-1}
+          max_replicas: ${SMALL_API_HPA_MAX:-3}
+          target_cpu_utilization: ${SMALL_API_HPA_CPU_TARGET:-80}
+      
+      # Frontend Service
+      frontend_service:
+        replicas: ${SMALL_FRONTEND_REPLICAS:-1}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${SMALL_FRONTEND_CPU_REQUEST:-50m}"
+            memory: "${SMALL_FRONTEND_MEMORY_REQUEST:-64Mi}"
+          limits:
+            cpu: "${SMALL_FRONTEND_CPU_LIMIT:-200m}"
+            memory: "${SMALL_FRONTEND_MEMORY_LIMIT:-256Mi}"
+      
+      # ML Service (Optional)
+      ml_service:
+        enabled: ${SMALL_ML_SERVICE_ENABLED:-false}
+        replicas: ${SMALL_ML_REPLICAS:-0}
+        
+        # Resource Limits
+        resources:
+          requests:
+            cpu: "${SMALL_ML_CPU_REQUEST:-200m}"
+            memory: "${SMALL_ML_MEMORY_REQUEST:-512Mi}"
+          limits:
+            cpu: "${SMALL_ML_CPU_LIMIT:-1000m}"
+            memory: "${SMALL_ML_MEMORY_LIMIT:-2Gi}"
+    
+    # Storage Resources
+    storage:
+      # Database Storage
+      database:
+        enabled: ${SMALL_DB_STORAGE_ENABLED:-true}
+        size: "${SMALL_DB_STORAGE_SIZE:-5Gi}"
+        storage_class: "${SMALL_DB_STORAGE_CLASS:-standard}"
+        
+        # Backup Configuration
+        backup:
+          enabled: ${SMALL_DB_BACKUP_ENABLED:-true}
+          retention_days: ${SMALL_DB_BACKUP_RETENTION:-7}
+          schedule: "${SMALL_DB_BACKUP_SCHEDULE:-0 2 * * 0}"  # Weekly on Sunday at 2 AM
+      
+      # Application Storage
+      application:
+        enabled: ${SMALL_APP_STORAGE_ENABLED:-true}
+        size: "${SMALL_APP_STORAGE_SIZE:-2Gi}"
+        storage_class: "${SMALL_APP_STORAGE_CLASS:-standard}"
+      
+      # Log Storage
+      logs:
+        enabled: ${SMALL_LOG_STORAGE_ENABLED:-false}
+        size: "${SMALL_LOG_STORAGE_SIZE:-1Gi}"
+        retention_days: ${SMALL_LOG_RETENTION:-7}
+
+  # Database Configuration
+  database:
+    # PostgreSQL Configuration
+    postgresql:
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${SMALL_DB_CPU_REQUEST:-100m}"
+          memory: "${SMALL_DB_MEMORY_REQUEST:-256Mi}"
+        limits:
+          cpu: "${SMALL_DB_CPU_LIMIT:-500m}"
+          memory: "${SMALL_DB_MEMORY_LIMIT:-1Gi}"
+      
+      # Connection Pool
+      connection_pool:
+        min_connections: ${SMALL_DB_POOL_MIN:-1}
+        max_connections: ${SMALL_DB_POOL_MAX:-10}
+        idle_timeout: ${SMALL_DB_POOL_IDLE_TIMEOUT:-300}
+      
+      # Storage Configuration
+      storage:
+        size: "${SMALL_DB_STORAGE_SIZE:-5Gi}"
+        storage_class: "${SMALL_DB_STORAGE_CLASS:-standard}"
+      
+      # Performance Tuning
+      performance:
+        shared_buffers: "${SMALL_DB_SHARED_BUFFERS:-32MB}"
+        effective_cache_size: "${SMALL_DB_EFFECTIVE_CACHE_SIZE:-128MB}"
+        work_mem: "${SMALL_DB_WORK_MEM:-1MB}"
+        maintenance_work_mem: "${SMALL_DB_MAINTENANCE_WORK_MEM:-16MB}"
+        
+        # Query Optimization
+        query_optimization:
+          random_page_cost: ${SMALL_DB_RANDOM_PAGE_COST:-4.0}
+          seq_page_cost: ${SMALL_DB_SEQ_PAGE_COST:-1.0}
+          cpu_tuple_cost: ${SMALL_DB_CPU_TUPLE_COST:-0.01}
+    
+    # Redis Configuration (Optional)
+    redis:
+      enabled: ${SMALL_REDIS_ENABLED:-false}
+      
+      # Resource Configuration
+      resources:
+        requests:
+          cpu: "${SMALL_REDIS_CPU_REQUEST:-50m}"
+          memory: "${SMALL_REDIS_MEMORY_REQUEST:-64Mi}"
+        limits:
+          cpu: "${SMALL_REDIS_CPU_LIMIT:-200m}"
+          memory: "${SMALL_REDIS_MEMORY_LIMIT:-256Mi}"
+      
+      # Memory Configuration
+      memory:
+        maxmemory: "${SMALL_REDIS_MAXMEMORY:-128MB}"
+        maxmemory_policy: "${SMALL_REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+      
+      # Persistence
+      persistence:
+        enabled: ${SMALL_REDIS_PERSISTENCE_ENABLED:-false}
+        
+        # AOF Configuration
+        aof:
+          enabled: ${SMALL_REDIS_AOF_ENABLED:-false}
+          
+        # RDB Configuration
+        rdb:
+          enabled: ${SMALL_REDIS_RDB_ENABLED:-true}
+          save_points:
+            - "900 1"    # save after 900 sec if at least 1 key changed
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # JWT Configuration
+      jwt:
+        algorithm: "${SMALL_JWT_ALGORITHM:-HS256}"
+        access_token_expire: ${SMALL_JWT_ACCESS_TOKEN_EXPIRE:-3600}  # 1 hour
+        refresh_token_expire: ${SMALL_JWT_REFRESH_TOKEN_EXPIRE:-86400}  # 24 hours
+        
+        # Security Features
+        features:
+          token_blacklist: ${SMALL_JWT_TOKEN_BLACKLIST:-false}
+          token_rotation: ${SMALL_JWT_TOKEN_ROTATION:-false}
+          secure_cookies: ${SMALL_JWT_SECURE_COOKIES:-true}
+      
+      # OAuth2 Configuration
+      oauth2:
+        enabled: ${SMALL_OAUTH2_ENABLED:-true}
+        
+        # Basic OAuth2 Settings
+        basic:
+          spotify:
+            enabled: ${SMALL_SPOTIFY_OAUTH_ENABLED:-true}
+        
+        # Multi-factor Authentication
+        mfa:
+          enabled: ${SMALL_MFA_ENABLED:-false}
+          enforcement: "${SMALL_MFA_ENFORCEMENT:-optional}"
+          methods:
+            - "email"
+    
+    # Authorization
+    authorization:
+      # Basic RBAC
+      rbac:
+        enabled: ${SMALL_RBAC_ENABLED:-true}
+        strict_mode: ${SMALL_RBAC_STRICT_MODE:-false}
+        
+        # Basic Roles
+        roles:
+          - name: "admin"
+            permissions: ["*"]
+          - name: "user"
+            permissions: ["read", "write"]
+          - name: "readonly"
+            permissions: ["read"]
+    
+    # Basic Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${SMALL_DATA_ENCRYPTION_ENABLED:-false}
+        
+      # TLS Configuration
+      tls:
+        enabled: ${SMALL_TLS_ENABLED:-true}
+        version: "${SMALL_TLS_VERSION:-TLSv1.2}"
+        verify: ${SMALL_TLS_VERIFY:-true}
+        
+        # Certificate Management
+        certificates:
+          auto_renewal: ${SMALL_CERT_AUTO_RENEWAL:-true}
+          issuer: "${SMALL_CERT_ISSUER:-letsencrypt}"
+
+  # Monitoring Configuration
+  monitoring:
+    # Basic Metrics
+    metrics:
+      enabled: ${SMALL_METRICS_ENABLED:-true}
+      
+      # Prometheus (Lightweight)
+      prometheus:
+        enabled: ${SMALL_PROMETHEUS_ENABLED:-true}
+        retention: "${SMALL_PROMETHEUS_RETENTION:-3d}"
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${SMALL_PROMETHEUS_CPU_REQUEST:-50m}"
+            memory: "${SMALL_PROMETHEUS_MEMORY_REQUEST:-128Mi}"
+          limits:
+            cpu: "${SMALL_PROMETHEUS_CPU_LIMIT:-200m}"
+            memory: "${SMALL_PROMETHEUS_MEMORY_LIMIT:-512Mi}"
+        
+        # Storage
+        storage:
+          enabled: ${SMALL_PROMETHEUS_STORAGE_ENABLED:-false}
+          size: "${SMALL_PROMETHEUS_STORAGE_SIZE:-2Gi}"
+        
+        # Basic Alerting
+        alerting:
+          enabled: ${SMALL_PROMETHEUS_ALERTING_ENABLED:-false}
+    
+    # Basic Logging
+    logging:
+      level: "${SMALL_LOG_LEVEL:-INFO}"
+      format: "${SMALL_LOG_FORMAT:-simple}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${SMALL_LOG_CONSOLE:-true}
+          colorize: ${SMALL_LOG_COLORIZE:-true}
+        
+        file:
+          enabled: ${SMALL_LOG_FILE:-false}
+          
+        # External logging (disabled for cost)
+        external:
+          enabled: ${SMALL_EXTERNAL_LOGGING_ENABLED:-false}
+    
+    # Basic Health Checks
+    health_checks:
+      enabled: ${SMALL_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Simple Health Checks
+      checks:
+        database:
+          enabled: ${SMALL_HEALTH_CHECK_DB:-true}
+          timeout: ${SMALL_HEALTH_CHECK_DB_TIMEOUT:-5}
+          interval: ${SMALL_HEALTH_CHECK_DB_INTERVAL:-60}
+        
+        redis:
+          enabled: ${SMALL_HEALTH_CHECK_REDIS:-false}
+        
+        # Simplified external checks
+        external_apis:
+          enabled: ${SMALL_HEALTH_CHECK_EXTERNAL_APIS:-false}
+
+  # Application Features
+  application_features:
+    # Core Features
+    core:
+      # User Management
+      user_management:
+        enabled: ${SMALL_USER_MANAGEMENT_ENABLED:-true}
+        max_users: ${SMALL_MAX_USERS:-50}
+        
+        # Basic User Features
+        features:
+          profile_management: ${SMALL_USER_PROFILE_MANAGEMENT:-true}
+          password_reset: ${SMALL_USER_PASSWORD_RESET:-true}
+          email_verification: ${SMALL_USER_EMAIL_VERIFICATION:-true}
+      
+      # Spotify Integration
+      spotify_integration:
+        enabled: ${SMALL_SPOTIFY_INTEGRATION_ENABLED:-true}
+        
+        # Basic Spotify Features
+        features:
+          playlist_access: ${SMALL_SPOTIFY_PLAYLIST_ACCESS:-true}
+          track_analysis: ${SMALL_SPOTIFY_TRACK_ANALYSIS:-true}
+          recommendations: ${SMALL_SPOTIFY_RECOMMENDATIONS:-false}  # Limited for small profile
+      
+      # File Processing
+      file_processing:
+        enabled: ${SMALL_FILE_PROCESSING_ENABLED:-true}
+        
+        # Processing Limits
+        limits:
+          max_file_size: "${SMALL_MAX_FILE_SIZE:-10MB}"
+          max_files_per_user: ${SMALL_MAX_FILES_PER_USER:-10}
+          max_processing_time: ${SMALL_MAX_PROCESSING_TIME:-60}  # seconds
+    
+    # Advanced Features (Limited)
+    advanced:
+      # AI/ML Features
+      ai_ml:
+        enabled: ${SMALL_AI_ML_ENABLED:-false}
+        
+        # Basic AI Features
+        features:
+          audio_analysis: ${SMALL_AUDIO_ANALYSIS:-false}
+          music_generation: ${SMALL_MUSIC_GENERATION:-false}
+          recommendation_engine: ${SMALL_RECOMMENDATION_ENGINE:-false}
+      
+      # Analytics
+      analytics:
+        enabled: ${SMALL_ANALYTICS_ENABLED:-false}
+        
+        # Basic Analytics
+        features:
+          usage_tracking: ${SMALL_USAGE_TRACKING:-true}
+          performance_metrics: ${SMALL_PERFORMANCE_METRICS:-false}
+          business_intelligence: ${SMALL_BUSINESS_INTELLIGENCE:-false}
+      
+      # Collaboration
+      collaboration:
+        enabled: ${SMALL_COLLABORATION_ENABLED:-false}
+        
+        # Basic Collaboration
+        features:
+          team_workspaces: ${SMALL_TEAM_WORKSPACES:-false}
+          sharing: ${SMALL_SHARING:-true}
+          comments: ${SMALL_COMMENTS:-false}
+
+  # Networking Configuration
+  networking:
+    # Service Configuration
+    services:
+      # API Service
+      api_service:
+        type: "ClusterIP"
+        port: 8000
+        target_port: 8000
+        
+        # Basic Load Balancing
+        load_balancer:
+          enabled: ${SMALL_API_LB_ENABLED:-false}
+      
+      # Frontend Service
+      frontend_service:
+        type: "ClusterIP"
+        port: 3000
+        target_port: 3000
+    
+    # Ingress Configuration
+    ingress:
+      enabled: ${SMALL_INGRESS_ENABLED:-true}
+      
+      # Basic Ingress
+      configuration:
+        class: "${SMALL_INGRESS_CLASS:-nginx}"
+        
+        # TLS Configuration
+        tls:
+          enabled: ${SMALL_INGRESS_TLS_ENABLED:-true}
+          
+        # Basic Rules
+        rules:
+          - host: "${SMALL_HOST:-small.spotify-ai-agent.com}"
+            paths:
+              - path: "/api"
+                service: "api-service"
+                port: 8000
+              - path: "/"
+                service: "frontend-service"
+                port: 3000
+    
+    # Network Policies (Basic)
+    network_policies:
+      enabled: ${SMALL_NETWORK_POLICIES_ENABLED:-false}
+
+  # Performance Configuration
+  performance:
+    # Basic Caching
+    caching:
+      enabled: ${SMALL_CACHING_ENABLED:-false}
+      
+      # Memory Caching
+      memory_cache:
+        enabled: ${SMALL_MEMORY_CACHE_ENABLED:-true}
+        size: "${SMALL_MEMORY_CACHE_SIZE:-32MB}"
+      
+      # CDN (Basic)
+      cdn:
+        enabled: ${SMALL_CDN_ENABLED:-false}
+    
+    # Connection Pooling
+    connection_pooling:
+      # Database Pool
+      database_pool:
+        min_connections: ${SMALL_DB_POOL_MIN:-1}
+        max_connections: ${SMALL_DB_POOL_MAX:-10}
+      
+      # HTTP Pool
+      http_pool:
+        max_connections: ${SMALL_HTTP_POOL_MAX:-20}
+        max_connections_per_host: ${SMALL_HTTP_POOL_MAX_PER_HOST:-5}
+    
+    # Basic Optimization
+    optimization:
+      # Compression
+      compression:
+        enabled: ${SMALL_COMPRESSION_ENABLED:-true}
+        algorithm: "${SMALL_COMPRESSION_ALGORITHM:-gzip}"
+        level: ${SMALL_COMPRESSION_LEVEL:-3}
+
+  # External Services Configuration
+  external_services:
+    # Spotify API
+    spotify_api:
+      enabled: ${SMALL_SPOTIFY_API_ENABLED:-true}
+      
+      # Basic Configuration
+      configuration:
+        timeout: ${SMALL_SPOTIFY_TIMEOUT:-30}
+        rate_limit: ${SMALL_SPOTIFY_RATE_LIMIT:-10}  # Lower rate limit for small profile
+        
+        # Circuit Breaker (Simple)
+        circuit_breaker:
+          enabled: ${SMALL_SPOTIFY_CIRCUIT_BREAKER_ENABLED:-false}
+    
+    # ML Services (Disabled)
+    ml_services:
+      enabled: ${SMALL_ML_SERVICES_ENABLED:-false}
+    
+    # Third-party Integrations (Limited)
+    third_party:
+      enabled: ${SMALL_THIRD_PARTY_ENABLED:-false}
+
+  # Backup and Recovery
+  backup_recovery:
+    # Basic Backup
+    backup:
+      enabled: ${SMALL_BACKUP_ENABLED:-true}
+      
+      # Backup Configuration
+      configuration:
+        frequency: "${SMALL_BACKUP_FREQUENCY:-weekly}"
+        retention: ${SMALL_BACKUP_RETENTION:-4}  # 4 weeks
+        storage_type: "${SMALL_BACKUP_STORAGE_TYPE:-local}"
+        
+        # Backup Types
+        types:
+          database: ${SMALL_BACKUP_DATABASE:-true}
+          application_data: ${SMALL_BACKUP_APP_DATA:-false}
+          configuration: ${SMALL_BACKUP_CONFIG:-true}
+    
+    # Recovery
+    recovery:
+      enabled: ${SMALL_RECOVERY_ENABLED:-true}
+      
+      # Recovery Options
+      options:
+        point_in_time_recovery: ${SMALL_PITR_ENABLED:-false}
+        full_recovery: ${SMALL_FULL_RECOVERY_ENABLED:-true}
+        partial_recovery: ${SMALL_PARTIAL_RECOVERY_ENABLED:-false}
+
+  # Cost Optimization
+  cost_optimization:
+    # Resource Optimization
+    resource_optimization:
+      enabled: ${SMALL_RESOURCE_OPTIMIZATION_ENABLED:-true}
+      
+      # Optimization Strategies
+      strategies:
+        # Right-sizing
+        right_sizing:
+          enabled: ${SMALL_RIGHT_SIZING_ENABLED:-true}
+          
+        # Spot Instances
+        spot_instances:
+          enabled: ${SMALL_SPOT_INSTANCES_ENABLED:-false}
+          
+        # Auto-shutdown
+        auto_shutdown:
+          enabled: ${SMALL_AUTO_SHUTDOWN_ENABLED:-false}
+          schedule: "${SMALL_AUTO_SHUTDOWN_SCHEDULE:-0 22 * * *}"  # 10 PM daily
+          
+        # Resource Scheduling
+        resource_scheduling:
+          enabled: ${SMALL_RESOURCE_SCHEDULING_ENABLED:-false}
+    
+    # Cost Monitoring
+    cost_monitoring:
+      enabled: ${SMALL_COST_MONITORING_ENABLED:-false}
+      
+      # Budget Alerts
+      budget_alerts:
+        enabled: ${SMALL_BUDGET_ALERTS_ENABLED:-false}
+        monthly_budget: ${SMALL_MONTHLY_BUDGET:-100}  # $100/month
+        alert_thresholds:
+          - 50  # 50%
+          - 80  # 80%
+          - 100 # 100%
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      resources:
+        compute:
+          api_service:
+            replicas: 1
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "64Mi"
+              limits:
+                cpu: "200m"
+                memory: "256Mi"
+      
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "1d"
+        
+        logging:
+          level: "DEBUG"
+          outputs:
+            console:
+              enabled: true
+      
+      application_features:
+        advanced:
+          ai_ml:
+            enabled: false
+    
+    staging:
+      resources:
+        compute:
+          api_service:
+            replicas: 1
+            
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "3d"
+            alerting:
+              enabled: true
+        
+        logging:
+          level: "INFO"
+      
+      security:
+        authentication:
+          mfa:
+            enabled: true
+            enforcement: "optional"
+    
+    production:
+      resources:
+        compute:
+          api_service:
+            replicas: 2
+            auto_scaling:
+              enabled: true
+              min_replicas: 1
+              max_replicas: 3
+              
+      monitoring:
+        metrics:
+          prometheus:
+            retention: "7d"
+            alerting:
+              enabled: true
+            storage:
+              enabled: true
+        
+        logging:
+          level: "WARNING"
+          outputs:
+            file:
+              enabled: true
+      
+      security:
+        authentication:
+          jwt:
+            token_blacklist: true
+            token_rotation: true
+          mfa:
+            enabled: true
+            enforcement: "required"
+        
+        encryption:
+          data_encryption:
+            enabled: true
+            
+      backup_recovery:
+        backup:
+          configuration:
+            frequency: "daily"
+            retention: 7  # 1 week for production
+
+  # Scaling Thresholds
+  scaling_thresholds:
+    # Upgrade Recommendations
+    upgrade_recommendations:
+      # To Medium Profile
+      to_medium:
+        triggers:
+          concurrent_users: ${SMALL_TO_MEDIUM_USERS_THRESHOLD:-40}
+          storage_usage: ${SMALL_TO_MEDIUM_STORAGE_THRESHOLD:-8}  # GB
+          cpu_utilization: ${SMALL_TO_MEDIUM_CPU_THRESHOLD:-70}  # %
+          memory_utilization: ${SMALL_TO_MEDIUM_MEMORY_THRESHOLD:-80}  # %
+          
+        recommendations:
+          - "Consider upgrading to Medium profile for better performance"
+          - "Medium profile offers enhanced ML features"
+          - "Improved monitoring and alerting capabilities"
+          - "Better resource allocation and auto-scaling"
+      
+      # To Large Profile
+      to_large:
+        triggers:
+          concurrent_users: ${SMALL_TO_LARGE_USERS_THRESHOLD:-45}
+          team_size: ${SMALL_TO_LARGE_TEAM_SIZE_THRESHOLD:-20}
+          api_requests_per_minute: ${SMALL_TO_LARGE_API_RPM_THRESHOLD:-500}
+          
+        recommendations:
+          - "Large profile recommended for enterprise features"
+          - "Advanced security and compliance capabilities"
+          - "Multi-region deployment support"
+          - "Enhanced collaboration features"
+
+  # Support and Documentation
+  support:
+    # Documentation
+    documentation:
+      enabled: ${SMALL_DOCUMENTATION_ENABLED:-true}
+      
+      # Documentation Types
+      types:
+        getting_started: ${SMALL_GETTING_STARTED_DOCS:-true}
+        api_documentation: ${SMALL_API_DOCS:-true}
+        troubleshooting: ${SMALL_TROUBLESHOOTING_DOCS:-true}
+        best_practices: ${SMALL_BEST_PRACTICES_DOCS:-false}
+    
+    # Support Channels
+    support_channels:
+      # Community Support
+      community:
+        enabled: ${SMALL_COMMUNITY_SUPPORT_ENABLED:-true}
+        channels:
+          - "forum"
+          - "documentation"
+          - "tutorials"
+      
+      # Email Support
+      email:
+        enabled: ${SMALL_EMAIL_SUPPORT_ENABLED:-false}
+        tier: "${SMALL_EMAIL_SUPPORT_TIER:-basic}"
+        
+      # Priority Support
+      priority:
+        enabled: ${SMALL_PRIORITY_SUPPORT_ENABLED:-false}

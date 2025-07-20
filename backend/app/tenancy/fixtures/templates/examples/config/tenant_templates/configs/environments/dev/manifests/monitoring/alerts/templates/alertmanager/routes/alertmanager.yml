@@ -1,0 +1,565 @@
+# Ultra-Advanced AlertManager Configuration
+# Multi-Tenant Architecture with Intelligent Routing and Escalation
+# Version: 1.0.0
+# Environment: Development
+
+global:
+  # ================================================================
+  # CONFIGURATION GLOBALE ULTRA-OPTIMISÉE
+  # ================================================================
+  smtp_smarthost: '${SMTP_HOST}:587'
+  smtp_from: 'alerts@spotify-ai-agent.com'
+  smtp_auth_username: '${SMTP_USERNAME}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+  smtp_hello: 'spotify-ai-agent.com'
+  
+  slack_api_url: '${SLACK_API_URL}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  
+  # Timeouts optimisés pour la réactivité
+  resolve_timeout: '5m'
+  http_config:
+    follow_redirects: true
+    enable_http2: true
+    proxy_url: '${HTTP_PROXY}'
+  
+  # Headers personnalisés pour l'authentification
+  headers:
+    X-Scope-OrgID: 'spotify-ai-agent'
+    X-Environment: 'development'
+
+# ================================================================
+# ARBRE DE ROUTAGE INTELLIGENT HIÉRARCHIQUE
+# ================================================================
+route:
+  group_by: ['alertname', 'cluster', 'service', 'tenant_id']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'web.hook.default'
+  
+  routes:
+    # ==============================================================
+    # NIVEAU 0 - URGENCES CRITIQUES SYSTÈME
+    # ==============================================================
+    - match:
+        severity: 'critical'
+        escalation_level: 'L0'
+      group_wait: 0s
+      group_interval: 1s
+      repeat_interval: 15m
+      receiver: 'l0-emergency-response'
+      continue: true
+      routes:
+        - match:
+            pager_duty: 'true'
+          receiver: 'pagerduty-critical'
+          group_wait: 0s
+          repeat_interval: 5m
+        
+        - match:
+            service: 'data_privacy'
+          receiver: 'data-protection-officer'
+          group_wait: 0s
+          repeat_interval: 10m
+    
+    # ==============================================================
+    # NIVEAU 1 - ALERTES CRITIQUES OPÉRATIONNELLES
+    # ==============================================================
+    - match:
+        severity: 'critical'
+        escalation_level: 'L1'
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 30m
+      receiver: 'l1-critical-operations'
+      routes:
+        - match:
+            category: 'security'
+          receiver: 'security-incident-response'
+          group_wait: 0s
+          repeat_interval: 15m
+        
+        - match:
+            category: 'tenant_isolation'
+          receiver: 'multi-tenant-security'
+          group_wait: 0s
+          repeat_interval: 20m
+        
+        - match:
+            service: 'api'
+          receiver: 'api-critical-team'
+          group_wait: 5s
+          repeat_interval: 25m
+    
+    # ==============================================================
+    # NIVEAU 2 - ALERTES HAUTE PRIORITÉ
+    # ==============================================================
+    - match:
+        severity: 'critical'
+        escalation_level: 'L2'
+      group_wait: 30s
+      group_interval: 2m
+      repeat_interval: 1h
+      receiver: 'l2-high-priority'
+      routes:
+        - match:
+            team: 'ml_engineering'
+          receiver: 'ml-critical-alerts'
+        
+        - match:
+            team: 'platform'
+          receiver: 'platform-critical-alerts'
+    
+    # ==============================================================
+    # ALERTES SÉCURITÉ - TRAITEMENT SPÉCIALISÉ
+    # ==============================================================
+    - match:
+        category: 'security'
+      group_wait: 0s
+      group_interval: 30s
+      repeat_interval: 30m
+      receiver: 'security-operations-center'
+      routes:
+        - match_re:
+            alertname: '.*Breach.*|.*Violation.*|.*Intrusion.*|.*Unauthorized.*'
+          receiver: 'security-emergency-response'
+          group_wait: 0s
+          repeat_interval: 10m
+        
+        - match:
+            alertname: 'SuspiciousAuthenticationActivity'
+          receiver: 'auth-security-team'
+          group_wait: 0s
+          repeat_interval: 15m
+        
+        - match:
+            alertname: 'ComplianceViolation'
+          receiver: 'compliance-team'
+          group_wait: 0s
+          repeat_interval: 5m
+    
+    # ==============================================================
+    # ALERTES BUSINESS INTELLIGENCE - ÉQUIPES MÉTIER
+    # ==============================================================
+    - match:
+        category: 'business'
+      group_wait: 5m
+      group_interval: 30m
+      repeat_interval: 4h
+      receiver: 'business-intelligence-team'
+      routes:
+        - match:
+            service: 'billing'
+          receiver: 'finance-operations'
+          repeat_interval: 2h
+        
+        - match:
+            service: 'analytics'
+          receiver: 'product-analytics'
+          repeat_interval: 6h
+        
+        - match:
+            alertname: 'ChurnRiskHigh'
+          receiver: 'customer-success'
+          repeat_interval: 1h
+    
+    # ==============================================================
+    # ALERTES ML/IA - ÉQUIPE DATA SCIENCE
+    # ==============================================================
+    - match_re:
+        service: 'ml_.*|.*_ml|ai_.*|.*_ai|recommendation.*|model_.*'
+      group_wait: 2m
+      group_interval: 15m
+      repeat_interval: 2h
+      receiver: 'ml-engineering-team'
+      routes:
+        - match:
+            category: 'model_quality'
+          receiver: 'ml-model-operations'
+          repeat_interval: 1h
+        
+        - match:
+            category: 'data_quality'
+          receiver: 'data-engineering-team'
+          repeat_interval: 3h
+        
+        - match:
+            alertname: 'MLModelDrift'
+          receiver: 'ml-model-monitoring'
+          repeat_interval: 30m
+        
+        - match:
+            alertname: 'DataQualityIssue'
+          receiver: 'data-quality-team'
+          repeat_interval: 45m
+    
+    # ==============================================================
+    # ALERTES TENANT-SPÉCIFIQUES AVEC SLA
+    # ==============================================================
+    - match_re:
+        tenant_id: '.+'
+      group_by: ['tenant_id', 'severity', 'service', 'sla_tier']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      receiver: 'tenant-support-routing'
+      routes:
+        # Clients Enterprise - Support prioritaire
+        - match:
+            sla_tier: 'enterprise'
+          receiver: 'enterprise-support-team'
+          group_wait: 10s
+          repeat_interval: 30m
+        
+        # Clients Premium - Support amélioré
+        - match:
+            sla_tier: 'premium'
+          receiver: 'premium-support-team'
+          group_wait: 1m
+          repeat_interval: 1h
+        
+        # Clients Standard
+        - match:
+            sla_tier: 'standard'
+          receiver: 'standard-support-team'
+          group_wait: 5m
+          repeat_interval: 4h
+        
+        # Violations SLA
+        - match:
+            alertname: 'TenantSLAViolation'
+          receiver: 'sla-management-team'
+          group_wait: 0s
+          repeat_interval: 15m
+    
+    # ==============================================================
+    # ALERTES INFRASTRUCTURE - ÉQUIPE PLATFORM
+    # ==============================================================
+    - match:
+        team: 'platform'
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 3h
+      receiver: 'platform-engineering-team'
+      routes:
+        - match:
+            category: 'resources'
+          receiver: 'infrastructure-monitoring'
+        
+        - match:
+            service: 'database'
+          receiver: 'database-operations'
+          repeat_interval: 1h
+        
+        - match:
+            alertname: 'NodeResourceExhaustion'
+          receiver: 'infrastructure-emergency'
+          group_wait: 30s
+          repeat_interval: 45m
+    
+    # ==============================================================
+    # ALERTES PRÉDICTIVES - MONITORING PROACTIF
+    # ==============================================================
+    - match:
+        category: 'predictive'
+      group_wait: 5m
+      group_interval: 1h
+      repeat_interval: 24h
+      receiver: 'predictive-monitoring-team'
+      routes:
+        - match:
+            alertname: 'PredictiveCapacityAlert'
+          receiver: 'capacity-planning-team'
+          repeat_interval: 12h
+        
+        - match:
+            alertname: 'AnomalyDetectionTrigger'
+          receiver: 'anomaly-investigation-team'
+          repeat_interval: 6h
+    
+    # ==============================================================
+    # ALERTES PERFORMANCE - OPTIMISATION CONTINUE
+    # ==============================================================
+    - match:
+        category: 'performance'
+      group_wait: 2m
+      group_interval: 20m
+      repeat_interval: 6h
+      receiver: 'performance-optimization-team'
+    
+    # ==============================================================
+    # ALERTES SLA & DISPONIBILITÉ
+    # ==============================================================
+    - match:
+        category: 'availability'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'availability-monitoring-team'
+
+# ================================================================
+# RÉCEPTEURS MULTI-CANAUX ULTRA-SOPHISTIQUÉS
+# ================================================================
+receivers:
+  # ==============================================================
+  # URGENCE L0 - RÉPONSE IMMÉDIATE
+  # ==============================================================
+  - name: 'l0-emergency-response'
+    pagerduty_configs:
+      - routing_key: '${PAGERDUTY_L0_EMERGENCY_KEY}'
+        description: '🚨 L0 EMERGENCY: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        severity: 'critical'
+        class: 'emergency'
+        component: 'spotify-ai-agent'
+        group: 'platform'
+        custom_details:
+          alert_count: '{{ len .Alerts }}'
+          affected_tenants: '{{ range .Alerts }}{{ .Labels.tenant_id }}{{ end }}'
+          business_impact: '{{ range .Alerts }}{{ .Annotations.business_impact }}{{ end }}'
+          estimated_downtime: '{{ range .Alerts }}{{ .Annotations.estimated_downtime }}{{ end }}'
+          auto_remediation_status: '{{ range .Alerts }}{{ .Annotations.auto_remediation }}{{ end }}'
+    
+    slack_configs:
+      - api_url: '${SLACK_EMERGENCY_WEBHOOK}'
+        channel: '#emergency-response'
+        username: 'Emergency AlertManager'
+        icon_emoji: ':rotating_light:'
+        title: '🚨 URGENCE L0 - ACTION IMMÉDIATE REQUISE 🚨'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        color: 'danger'
+        fields:
+          - title: 'Niveau de Criticité'
+            value: '{{ .CommonLabels.severity | toUpper }}'
+            short: true
+          - title: 'Service Affecté'
+            value: '{{ .CommonLabels.service }}'
+            short: true
+          - title: 'Tenant(s) Impacté(s)'
+            value: '{{ range .Alerts }}{{ .Labels.tenant_id | default "SYSTÈME GLOBAL" }}{{ end }}'
+            short: true
+          - title: 'Temps d\'Arrêt Estimé'
+            value: '{{ range .Alerts }}{{ .Annotations.estimated_downtime | default "En évaluation" }}{{ end }}'
+            short: true
+          - title: 'Utilisateurs Affectés'
+            value: '{{ range .Alerts }}{{ .Annotations.estimated_affected_users | default "En calcul..." }}{{ end }}'
+            short: true
+          - title: 'Auto-Remédiation'
+            value: '{{ range .Alerts }}{{ .Annotations.auto_remediation | default "Intervention manuelle requise" }}{{ end }}'
+            short: false
+          - title: 'Impact Business'
+            value: '{{ range .Alerts }}{{ .Annotations.business_impact | default "Impact critique sur les opérations" }}{{ end }}'
+            short: false
+        actions:
+          - type: 'button'
+            text: '📖 Runbook Urgence'
+            url: '{{ range .Alerts }}{{ .Annotations.runbook_url }}{{ end }}'
+            style: 'danger'
+          - type: 'button'
+            text: '📊 Dashboard Temps Réel'
+            url: '{{ range .Alerts }}{{ .Annotations.dashboard_url }}{{ end }}'
+            style: 'primary'
+          - type: 'button'
+            text: '🔧 Auto-Remédiation'
+            url: '{{ range .Alerts }}{{ .Annotations.remediation_url }}{{ end }}'
+            style: 'primary'
+    
+    email_configs:
+      - to: 'emergency@spotify-ai-agent.com,cto@spotify-ai-agent.com'
+        cc: 'platform-leads@spotify-ai-agent.com'
+        subject: '🚨 URGENCE L0 - {{ .CommonLabels.alertname }} - {{ .CommonLabels.service }}'
+        html: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <style>
+                  .emergency { color: #FF0000; font-weight: bold; }
+                  .critical-info { background: #FFE6E6; padding: 10px; margin: 10px 0; }
+                  .action-required { background: #FF4444; color: white; padding: 15px; text-align: center; }
+              </style>
+          </head>
+          <body>
+              <div class="action-required">
+                  <h1>🚨 URGENCE L0 - ACTION IMMÉDIATE REQUISE 🚨</h1>
+              </div>
+              
+              <div class="critical-info">
+                  <h2>Informations Critiques</h2>
+                  <p><strong>Alerte:</strong> {{ .CommonLabels.alertname }}</p>
+                  <p><strong>Service:</strong> {{ .CommonLabels.service }}</p>
+                  <p><strong>Tenant(s):</strong> {{ range .Alerts }}{{ .Labels.tenant_id }}{{ end }}</p>
+                  <p><strong>Heure:</strong> {{ .CommonAnnotations.timestamp }}</p>
+              </div>
+              
+              <h3>Description</h3>
+              <p>{{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+              
+              <h3>Impact Business</h3>
+              <p>{{ range .Alerts }}{{ .Annotations.business_impact }}{{ end }}</p>
+              
+              <h3>Actions Immédiates</h3>
+              <ol>
+                  <li>Consulter le runbook: <a href="{{ range .Alerts }}{{ .Annotations.runbook_url }}{{ end }}">Lien Runbook</a></li>
+                  <li>Vérifier le dashboard: <a href="{{ range .Alerts }}{{ .Annotations.dashboard_url }}{{ end }}">Dashboard Temps Réel</a></li>
+                  <li>Status auto-remédiation: {{ range .Alerts }}{{ .Annotations.auto_remediation }}{{ end }}</li>
+              </ol>
+              
+              <p><em>Cette alerte nécessite une réponse immédiate de l'équipe d'astreinte.</em></p>
+          </body>
+          </html>
+    
+    webhook_configs:
+      - url: '${INCIDENT_MANAGEMENT_WEBHOOK}'
+        send_resolved: true
+        http_config:
+          bearer_token: '${INCIDENT_API_TOKEN}'
+        max_alerts: 0
+
+  # ==============================================================
+  # SÉCURITÉ - CENTRE OPÉRATIONNEL DE SÉCURITÉ
+  # ==============================================================
+  - name: 'security-emergency-response'
+    slack_configs:
+      - api_url: '${SLACK_SECURITY_WEBHOOK}'
+        channel: '#security-incidents'
+        username: 'Security AlertManager'
+        icon_emoji: ':shield:'
+        title: '🛡️ INCIDENT DE SÉCURITÉ DÉTECTÉ'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        color: '{{ if eq .CommonLabels.severity "critical" }}danger{{ else }}warning{{ end }}'
+        fields:
+          - title: 'Type de Menace'
+            value: '{{ .CommonLabels.alertname }}'
+            short: true
+          - title: 'Niveau de Menace'
+            value: '{{ .CommonLabels.severity | toUpper }}'
+            short: true
+          - title: 'Service Ciblé'
+            value: '{{ .CommonLabels.service }}'
+            short: true
+          - title: 'Tenant(s) Affecté(s)'
+            value: '{{ range .Alerts }}{{ .Labels.tenant_id | default "SYSTÈME GLOBAL" }}{{ end }}'
+            short: true
+          - title: 'Indicateurs de Menace'
+            value: '{{ range .Alerts }}{{ .Annotations.threat_indicators | default "Analyse en cours..." }}{{ end }}'
+            short: false
+          - title: 'Corrélation d\'Événements'
+            value: '{{ range .Alerts }}{{ .Annotations.correlation_queries | default "Pas de corrélation détectée" }}{{ end }}'
+            short: false
+        actions:
+          - type: 'button'
+            text: '🔍 Analyse Forensique'
+            url: '{{ range .Alerts }}{{ .Annotations.forensic_url }}{{ end }}'
+          - type: 'button'
+            text: '🚫 Blocage Auto'
+            url: '{{ range .Alerts }}{{ .Annotations.block_url }}{{ end }}'
+    
+    email_configs:
+      - to: 'security-team@spotify-ai-agent.com,ciso@spotify-ai-agent.com'
+        subject: '🛡️ Incident Sécurité: {{ .CommonLabels.alertname }}'
+        html: '{{ template "email.security.html" . }}'
+
+  # ==============================================================
+  # ML/IA - ÉQUIPE DATA SCIENCE
+  # ==============================================================
+  - name: 'ml-engineering-team'
+    slack_configs:
+      - api_url: '${SLACK_ML_WEBHOOK}'
+        channel: '#ml-monitoring'
+        username: 'ML AlertManager'
+        icon_emoji: ':robot_face:'
+        title: '🤖 Alerte ML/IA - {{ .CommonLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        color: '{{ if eq .CommonLabels.severity "critical" }}danger{{ else if eq .CommonLabels.severity "warning" }}warning{{ else }}good{{ end }}'
+        fields:
+          - title: 'Modèle/Pipeline'
+            value: '{{ .CommonLabels.service }}'
+            short: true
+          - title: 'Type d\'Alerte'
+            value: '{{ .CommonLabels.category }}'
+            short: true
+          - title: 'Tenant(s)'
+            value: '{{ range .Alerts }}{{ .Labels.tenant_id }}{{ end }}'
+            short: true
+          - title: 'Impact Métier'
+            value: '{{ range .Alerts }}{{ .Annotations.business_impact | default "Performance du modèle affectée" }}{{ end }}'
+            short: false
+          - title: 'Métriques du Modèle'
+            value: '{{ range .Alerts }}{{ .Annotations.model_metrics | default "Pas de métriques disponibles" }}{{ end }}'
+            short: false
+        actions:
+          - type: 'button'
+            text: '📊 Dashboard ML'
+            url: 'https://grafana.spotify-ai-agent.com/d/ml-monitoring'
+          - type: 'button'
+            text: '🔄 Réentraînement'
+            url: '{{ range .Alerts }}{{ .Annotations.retrain_url }}{{ end }}'
+
+  # ==============================================================
+  # SUPPORT MULTI-TENANT
+  # ==============================================================
+  - name: 'enterprise-support-team'
+    email_configs:
+      - to: 'enterprise-support@spotify-ai-agent.com'
+        subject: '🏢 Enterprise Alert: {{ .CommonLabels.alertname }} - Tenant {{ range .Alerts }}{{ .Labels.tenant_id }}{{ end }}'
+        html: '{{ template "email.enterprise.html" . }}'
+    
+    webhook_configs:
+      - url: '${ENTERPRISE_WEBHOOK_URL}'
+        send_resolved: true
+        http_config:
+          bearer_token: '${ENTERPRISE_API_TOKEN}'
+
+  # ==============================================================
+  # RÉCEPTEUR PAR DÉFAUT
+  # ==============================================================
+  - name: 'web.hook.default'
+    slack_configs:
+      - api_url: '${SLACK_DEFAULT_WEBHOOK}'
+        channel: '#general-monitoring'
+        username: 'Monitoring AlertManager'
+        icon_emoji: ':warning:'
+        title: 'Spotify AI Agent - {{ .CommonLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        color: '{{ if eq .CommonLabels.severity "critical" }}danger{{ else if eq .CommonLabels.severity "warning" }}warning{{ else }}good{{ end }}'
+
+# ================================================================
+# RÈGLES D'INHIBITION INTELLIGENTES
+# ================================================================
+inhibit_rules:
+  # Les alertes critiques masquent les alertes de niveau inférieur
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service', 'tenant_id']
+  
+  # Service down masque les alertes de performance
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match_re:
+      alertname: '.*Latency.*|.*ErrorRate.*|.*Throughput.*'
+    equal: ['service', 'instance', 'tenant_id']
+  
+  # Problèmes d'infrastructure masquent les alertes applicatives
+  - source_match:
+      category: 'infrastructure'
+      severity: 'critical'
+    target_match:
+      category: 'performance'
+    equal: ['instance', 'tenant_id']
+  
+  # Alertes de sécurité système masquent les alertes tenant-spécifiques
+  - source_match:
+      category: 'security'
+      service: 'authentication'
+    target_match:
+      category: 'tenant_performance'
+    equal: ['tenant_id']
+
+# ================================================================
+# TEMPLATES PERSONNALISÉS
+# ================================================================
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

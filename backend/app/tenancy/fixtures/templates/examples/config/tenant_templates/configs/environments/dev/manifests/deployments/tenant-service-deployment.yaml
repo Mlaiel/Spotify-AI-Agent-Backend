@@ -1,0 +1,541 @@
+# Tenant Management Service Deployment - Multi-Tenant Architecture
+# Developed by Fahed Mlaiel - Senior Multi-Tenant Architect & Platform Engineer
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-ai-tenant-service
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v2.0.0
+    app.kubernetes.io/component: tenant-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: advanced-deployment-manager
+    service-type: tenant-service
+    tenant-tier: enterprise-plus
+    environment: development
+    tenancy-model: hybrid-isolation
+    scaling-strategy: auto-horizontal-vertical
+    team: spotify-ai-agent-dev
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    created-by: "Fahed Mlaiel - Multi-Tenant Architecture Lead"
+    description: "Advanced tenant management and isolation service"
+    tenancy-patterns: "shared-dedicated-hybrid"
+    isolation-levels: "database-namespace-node"
+    resource-management: "dynamic-allocation"
+    tenant-lifecycle: "automated-provisioning"
+    compliance-management: "gdpr-sox-hipaa"
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: spotify-ai-tenant-service
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-tenant-service
+        app.kubernetes.io/name: spotify-ai-agent
+        app.kubernetes.io/component: tenant-service
+        service-type: tenant-service
+        tenant-tier: enterprise-plus
+        environment: development
+        version: v2.0.0
+        tenancy-model: hybrid
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/metrics"
+        jaeger.io/sampling-type: "probabilistic"
+        jaeger.io/sampling-param: "0.2"
+        fluentd.io/log-format: "json"
+        config-hash: "tenant999isolation"
+        created-at: "2025-07-17T00:00:00Z"
+        tenant-lifecycle: "automated"
+        resource-optimization: "enabled"
+    spec:
+      serviceAccountName: spotify-ai-tenant-sa
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 90
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10005
+        runAsGroup: 10005
+        fsGroup: 10005
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [10005]
+        sysctls:
+        - name: net.core.somaxconn
+          value: "2048"
+        - name: net.ipv4.tcp_keepalive_time
+          value: "300"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values: ["spotify-ai-tenant-service"]
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 80
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values: ["tenant-management"]
+          - weight: 60
+            preference:
+              matchExpressions:
+              - key: instance-type
+                operator: In
+                values: ["m5.2xlarge", "m5.4xlarge"]
+      tolerations:
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: tenant-workload
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      containers:
+      - name: tenant-service
+        image: spotify-ai-agent/tenant-service:dev-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+        - containerPort: 8090
+          name: admin
+          protocol: TCP
+        - containerPort: 8091
+          name: health
+          protocol: TCP
+        - containerPort: 8092
+          name: tenant-api
+          protocol: TCP
+        env:
+        # Base Configuration
+        - name: ENVIRONMENT
+          value: "development"
+        - name: SERVICE_NAME
+          value: "spotify-ai-tenant-service"
+        - name: SERVICE_TYPE
+          value: "tenant-service"
+        - name: TENANT_TIER
+          value: "enterprise-plus"
+        - name: TENANCY_MODEL
+          value: "hybrid-isolation"
+        # Kubernetes Integration
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        # Resource Information
+        - name: CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.cpu
+        - name: MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        # Tenant Management Configuration
+        - name: MAX_TENANTS_PER_NODE
+          value: "100"
+        - name: TENANT_PROVISIONING_TIMEOUT
+          value: "300"
+        - name: TENANT_DEPROVISIONING_TIMEOUT
+          value: "600"
+        - name: ISOLATION_LEVEL
+          value: "database-namespace"
+        - name: AUTO_SCALING_ENABLED
+          value: "true"
+        - name: RESOURCE_OPTIMIZATION_ENABLED
+          value: "true"
+        - name: TENANT_LIFECYCLE_AUTOMATION
+          value: "true"
+        # Resource Quotas and Limits
+        - name: DEFAULT_CPU_QUOTA
+          value: "1000m"
+        - name: DEFAULT_MEMORY_QUOTA
+          value: "2Gi"
+        - name: DEFAULT_STORAGE_QUOTA
+          value: "10Gi"
+        - name: MAX_PODS_PER_TENANT
+          value: "50"
+        - name: MAX_SERVICES_PER_TENANT
+          value: "20"
+        - name: MAX_INGRESS_PER_TENANT
+          value: "10"
+        # Database Connections
+        - name: TENANT_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: tenant-db-credentials
+              key: url
+        - name: METADATA_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: metadata-db-credentials
+              key: url
+        - name: AUDIT_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: audit-db-credentials
+              key: url
+        - name: ANALYTICS_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: analytics-db-credentials
+              key: url
+        # Kubernetes API Configuration
+        - name: KUBERNETES_SERVICE_HOST
+          value: "kubernetes.default.svc"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+        - name: KUBECONFIG_PATH
+          value: "/var/run/secrets/kubernetes.io/serviceaccount"
+        # Redis for Caching and Session Management
+        - name: REDIS_CLUSTER_NODES
+          value: "redis-cluster:6379"
+        - name: REDIS_TENANT_CACHE_DB
+          value: "0"
+        - name: REDIS_SESSION_DB
+          value: "1"
+        - name: REDIS_ANALYTICS_DB
+          value: "2"
+        # Message Queue Integration
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-cluster:9092"
+        - name: TENANT_EVENTS_TOPIC
+          value: "tenant-lifecycle-events"
+        - name: RESOURCE_EVENTS_TOPIC
+          value: "resource-allocation-events"
+        # Security & Encryption
+        - name: TENANT_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: encryption-keys
+              key: tenant_key
+        - name: METADATA_SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: signing-keys
+              key: metadata_signing_key
+        - name: API_AUTHENTICATION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: tenant_api_key
+        # External Service Integration
+        - name: BILLING_SERVICE_URL
+          value: "http://spotify-ai-billing-service:8080"
+        - name: AUTH_SERVICE_URL
+          value: "http://spotify-ai-auth-service:8080"
+        - name: ANALYTICS_SERVICE_URL
+          value: "http://spotify-ai-analytics-service:8080"
+        - name: NOTIFICATION_SERVICE_URL
+          value: "http://spotify-ai-notification-service:8080"
+        # Compliance & Governance
+        - name: GDPR_COMPLIANCE_ENABLED
+          value: "true"
+        - name: DATA_RESIDENCY_ENFORCEMENT
+          value: "true"
+        - name: AUDIT_LOGGING_ENABLED
+          value: "true"
+        - name: COMPLIANCE_REPORTING_ENABLED
+          value: "true"
+        - name: DATA_RETENTION_POLICY_DAYS
+          value: "2555"
+        # Performance & Optimization
+        - name: CACHE_TTL_SECONDS
+          value: "300"
+        - name: BATCH_SIZE_TENANT_OPERATIONS
+          value: "50"
+        - name: CONCURRENT_TENANT_OPERATIONS
+          value: "20"
+        - name: RESOURCE_ALLOCATION_STRATEGY
+          value: "best-fit"
+        # Monitoring & Observability
+        - name: JAEGER_AGENT_HOST
+          value: "localhost"
+        - name: JAEGER_AGENT_PORT
+          value: "6831"
+        - name: PROMETHEUS_GATEWAY
+          value: "pushgateway:9091"
+        - name: ELASTIC_APM_SERVER_URL
+          value: "http://apm-server:8200"
+        - name: METRICS_COLLECTION_INTERVAL
+          value: "30"
+        resources:
+          requests:
+            cpu: "800m"
+            memory: "2Gi"
+            ephemeral-storage: "500Mi"
+          limits:
+            cpu: "3000m"
+            memory: "6Gi"
+            ephemeral-storage: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 45
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 18
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 45; /app/tenant-graceful-shutdown.sh"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10005
+          capabilities:
+            drop: ["ALL"]
+            add: ["NET_BIND_SERVICE"]
+        volumeMounts:
+        - name: tenant-config
+          mountPath: /etc/tenant
+          readOnly: true
+        - name: kubernetes-config
+          mountPath: /etc/kubernetes
+          readOnly: true
+        - name: tenant-certificates
+          mountPath: /etc/ssl/certs/tenant
+          readOnly: true
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/tenant
+        - name: audit-logs
+          mountPath: /var/log/audit
+        - name: tenant-templates
+          mountPath: /templates/tenant
+          readOnly: true
+      # Kubernetes Resource Manager Sidecar
+      - name: k8s-resource-manager
+        image: spotify-ai-agent/k8s-resource-manager:dev-latest
+        ports:
+        - containerPort: 8093
+          name: k8s-api
+          protocol: TCP
+        env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: RESOURCE_MANAGEMENT_MODE
+          value: "dynamic"
+        - name: AUTO_CLEANUP_ENABLED
+          value: "true"
+        - name: RESOURCE_MONITORING_INTERVAL
+          value: "60"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "800m"
+            memory: "1Gi"
+        volumeMounts:
+        - name: kubernetes-config
+          mountPath: /etc/kubernetes
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10005
+      # Tenant Analytics Collector
+      - name: tenant-analytics
+        image: spotify-ai-agent/tenant-analytics:dev-latest
+        env:
+        - name: ANALYTICS_MODE
+          value: "real-time"
+        - name: METRICS_AGGREGATION_INTERVAL
+          value: "30"
+        - name: TENANT_USAGE_TRACKING
+          value: "enabled"
+        - name: COST_OPTIMIZATION_ANALYSIS
+          value: "enabled"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: analytics-config
+          mountPath: /etc/analytics
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10005
+      # Compliance Monitor Sidecar
+      - name: compliance-monitor
+        image: spotify-ai-agent/compliance-monitor:dev-latest
+        env:
+        - name: COMPLIANCE_FRAMEWORKS
+          value: "gdpr,sox,hipaa,pci"
+        - name: MONITORING_INTERVAL
+          value: "300"
+        - name: ALERT_THRESHOLD
+          value: "medium"
+        - name: AUDIT_TRAIL_ENABLED
+          value: "true"
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: compliance-config
+          mountPath: /etc/compliance
+          readOnly: true
+        - name: audit-logs
+          mountPath: /var/log/audit
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10005
+      volumes:
+      - name: tenant-config
+        configMap:
+          name: tenant-service-config
+      - name: kubernetes-config
+        configMap:
+          name: kubernetes-config
+      - name: tenant-certificates
+        secret:
+          secretName: tenant-certificates
+          defaultMode: 0400
+      - name: tmp-storage
+        emptyDir:
+          sizeLimit: "1Gi"
+      - name: logs-storage
+        emptyDir:
+          sizeLimit: "500Mi"
+      - name: audit-logs
+        emptyDir:
+          sizeLimit: "2Gi"
+      - name: tenant-templates
+        configMap:
+          name: tenant-templates-config
+      - name: analytics-config
+        configMap:
+          name: tenant-analytics-config
+      - name: compliance-config
+        configMap:
+          name: compliance-config
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+      initContainers:
+      - name: tenant-init
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Initializing tenant management service..."
+          mkdir -p /tmp/tenant /var/log/tenant /var/log/audit
+          chown -R 10005:10005 /tmp /var/log/tenant /var/log/audit
+          echo "Testing database connectivity..."
+          nc -z tenant-db 5432 && echo "Tenant DB reachable" || echo "Tenant DB not reachable"
+          nc -z metadata-db 5432 && echo "Metadata DB reachable" || echo "Metadata DB not reachable"
+          echo "Testing Kubernetes API connectivity..."
+          nc -z kubernetes.default.svc 443 && echo "K8s API reachable" || echo "K8s API not reachable"
+          echo "Testing Redis connectivity..."
+          nc -z redis-cluster 6379 && echo "Redis reachable" || echo "Redis not reachable"
+          echo "Validating tenant templates..."
+          test -d /templates/tenant && echo "Tenant templates found" || echo "Tenant templates missing"
+          echo "Checking SSL certificates..."
+          test -f /etc/ssl/certs/tenant/cert.pem && echo "Tenant certificates found" || echo "Certificates missing"
+          echo "Tenant management service initialized successfully"
+        volumeMounts:
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/tenant
+        - name: audit-logs
+          mountPath: /var/log/audit
+        - name: tenant-templates
+          mountPath: /templates/tenant
+          readOnly: true
+        - name: tenant-certificates
+          mountPath: /etc/ssl/certs/tenant
+          readOnly: true
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0

@@ -1,0 +1,511 @@
+# Enterprise Template Management System - Environment Configuration
+# Advanced Multi-Environment Setup with Security and Compliance
+
+# Development Environment
+development:
+  template_engine:
+    name: "Development Template Engine"
+    debug: true
+    log_level: "DEBUG"
+    
+    # Database Configuration
+    database:
+      host: "localhost"
+      port: 5432
+      name: "spotify_ai_dev"
+      user: "dev_user"
+      password: "${DEV_DB_PASSWORD}"
+      pool_size: 5
+      pool_timeout: 30
+      ssl_mode: "prefer"
+    
+    # Cache Configuration
+    cache:
+      type: "memory"
+      ttl: 300  # 5 minutes
+      max_size: 100
+      cleanup_interval: 60
+    
+    # Security Configuration
+    security:
+      encryption: false
+      audit_trail: false
+      compliance_frameworks: ["GDPR"]
+      token_expiry: 3600
+      max_login_attempts: 5
+    
+    # Performance Configuration
+    performance:
+      async_processing: false
+      batch_processing: false
+      monitoring: false
+      max_concurrent_operations: 10
+      request_timeout: 30
+    
+    # Template Configuration
+    templates:
+      validation_strict: false
+      auto_reload: true
+      cache_enabled: false
+      dependency_checking: true
+    
+    # Feature Flags
+    features:
+      template_versioning: true
+      dynamic_configuration: true
+      conditional_logic: true
+      variable_substitution: true
+      schema_validation: false
+    
+    # External Services
+    external_services:
+      spotify_api:
+        base_url: "https://api.spotify.com"
+        timeout: 10
+        retry_attempts: 3
+      
+      notification_service:
+        enabled: false
+        webhook_url: ""
+      
+      analytics_service:
+        enabled: false
+        endpoint: ""
+
+# Staging Environment
+staging:
+  template_engine:
+    name: "Staging Template Engine"
+    debug: false
+    log_level: "INFO"
+    
+    # Database Configuration
+    database:
+      host: "${STAGING_DB_HOST}"
+      port: 5432
+      name: "spotify_ai_staging"
+      user: "${STAGING_DB_USER}"
+      password: "${STAGING_DB_PASSWORD}"
+      pool_size: 10
+      pool_timeout: 30
+      ssl_mode: "require"
+      connection_retry: 3
+    
+    # Cache Configuration
+    cache:
+      type: "redis"
+      redis_url: "${STAGING_REDIS_URL}"
+      ttl: 1800  # 30 minutes
+      max_size: 1000
+      cluster_mode: false
+      sentinel_mode: false
+    
+    # Security Configuration
+    security:
+      encryption: true
+      encryption_key: "${STAGING_ENCRYPTION_KEY}"
+      audit_trail: true
+      audit_storage: "database"
+      compliance_frameworks: ["GDPR", "SOC2"]
+      token_expiry: 3600
+      max_login_attempts: 3
+      ip_whitelist: []
+      rate_limiting: true
+    
+    # Performance Configuration
+    performance:
+      async_processing: true
+      batch_processing: true
+      batch_size: 50
+      monitoring: true
+      metrics_endpoint: "/metrics"
+      max_concurrent_operations: 50
+      request_timeout: 45
+      circuit_breaker: true
+    
+    # Template Configuration
+    templates:
+      validation_strict: true
+      auto_reload: false
+      cache_enabled: true
+      dependency_checking: true
+      schema_validation: true
+      backup_enabled: true
+    
+    # Feature Flags
+    features:
+      template_versioning: true
+      dynamic_configuration: true
+      conditional_logic: true
+      variable_substitution: true
+      schema_validation: true
+      migration_support: true
+    
+    # External Services
+    external_services:
+      spotify_api:
+        base_url: "https://api.spotify.com"
+        timeout: 15
+        retry_attempts: 3
+        circuit_breaker: true
+      
+      notification_service:
+        enabled: true
+        webhook_url: "${STAGING_WEBHOOK_URL}"
+        timeout: 10
+      
+      analytics_service:
+        enabled: true
+        endpoint: "${STAGING_ANALYTICS_ENDPOINT}"
+        batch_size: 100
+    
+    # Load Balancing
+    load_balancing:
+      enabled: true
+      strategy: "round_robin"
+      health_check_interval: 30
+      max_failures: 3
+
+# Production Environment
+production:
+  template_engine:
+    name: "Production Template Engine"
+    debug: false
+    log_level: "WARNING"
+    
+    # Database Configuration
+    database:
+      host: "${PROD_DB_HOST}"
+      port: 5432
+      name: "spotify_ai_prod"
+      user: "${PROD_DB_USER}"
+      password: "${PROD_DB_PASSWORD}"
+      pool_size: 20
+      pool_timeout: 60
+      ssl_mode: "require"
+      connection_retry: 5
+      backup_retention_days: 30
+      read_replicas: 
+        - "${PROD_DB_READ_REPLICA_1}"
+        - "${PROD_DB_READ_REPLICA_2}"
+    
+    # Cache Configuration
+    cache:
+      type: "redis"
+      redis_url: "${PROD_REDIS_CLUSTER_URL}"
+      ttl: 3600  # 1 hour
+      max_size: 10000
+      cluster_mode: true
+      sentinel_mode: true
+      backup_enabled: true
+      encryption: true
+    
+    # Security Configuration
+    security:
+      encryption: true
+      encryption_key: "${PROD_ENCRYPTION_KEY}"
+      audit_trail: true
+      audit_storage: "elasticsearch"
+      audit_retention_days: 2555  # 7 years
+      compliance_frameworks: ["GDPR", "SOC2", "ISO27001", "HIPAA"]
+      token_expiry: 1800  # 30 minutes
+      max_login_attempts: 3
+      ip_whitelist: "${PROD_IP_WHITELIST}"
+      rate_limiting: true
+      ddos_protection: true
+      vulnerability_scanning: true
+    
+    # Performance Configuration
+    performance:
+      async_processing: true
+      batch_processing: true
+      batch_size: 100
+      monitoring: true
+      metrics_endpoint: "/metrics"
+      max_concurrent_operations: 200
+      request_timeout: 60
+      circuit_breaker: true
+      auto_scaling: true
+      load_shedding: true
+    
+    # Template Configuration
+    templates:
+      validation_strict: true
+      auto_reload: false
+      cache_enabled: true
+      cache_warming: true
+      dependency_checking: true
+      schema_validation: true
+      backup_enabled: true
+      backup_frequency: "hourly"
+      version_control: true
+    
+    # Feature Flags
+    features:
+      template_versioning: true
+      dynamic_configuration: true
+      conditional_logic: true
+      variable_substitution: true
+      schema_validation: true
+      migration_support: true
+      rollback_support: true
+      canary_deployment: true
+    
+    # External Services
+    external_services:
+      spotify_api:
+        base_url: "https://api.spotify.com"
+        timeout: 20
+        retry_attempts: 5
+        circuit_breaker: true
+        rate_limit: 1000
+      
+      notification_service:
+        enabled: true
+        webhook_url: "${PROD_WEBHOOK_URL}"
+        timeout: 15
+        retry_attempts: 3
+        circuit_breaker: true
+      
+      analytics_service:
+        enabled: true
+        endpoint: "${PROD_ANALYTICS_ENDPOINT}"
+        batch_size: 500
+        compression: true
+        encryption: true
+    
+    # Load Balancing
+    load_balancing:
+      enabled: true
+      strategy: "least_connections"
+      health_check_interval: 15
+      max_failures: 2
+      sticky_sessions: false
+    
+    # Disaster Recovery
+    disaster_recovery:
+      enabled: true
+      backup_regions: ["eu-central-1", "us-west-2"]
+      rpo_minutes: 60  # Recovery Point Objective
+      rto_minutes: 30  # Recovery Time Objective
+      failover_strategy: "automatic"
+    
+    # Compliance
+    compliance:
+      data_residency: "eu"
+      encryption_at_rest: true
+      encryption_in_transit: true
+      key_management: "aws_kms"
+      audit_logging: true
+      privacy_controls: true
+
+# Enterprise Environment
+enterprise:
+  template_engine:
+    name: "Enterprise Template Engine"
+    debug: false
+    log_level: "ERROR"
+    
+    # Database Configuration
+    database:
+      host: "${ENTERPRISE_DB_HOST}"
+      port: 5432
+      name: "spotify_ai_enterprise"
+      user: "${ENTERPRISE_DB_USER}"
+      password: "${ENTERPRISE_DB_PASSWORD}"
+      pool_size: 50
+      pool_timeout: 120
+      ssl_mode: "require"
+      connection_retry: 10
+      backup_retention_days: 2555  # 7 years
+      read_replicas: 
+        - "${ENTERPRISE_DB_READ_REPLICA_1}"
+        - "${ENTERPRISE_DB_READ_REPLICA_2}"
+        - "${ENTERPRISE_DB_READ_REPLICA_3}"
+      multi_region: true
+    
+    # Cache Configuration
+    cache:
+      type: "redis"
+      redis_url: "${ENTERPRISE_REDIS_CLUSTER_URL}"
+      ttl: 7200  # 2 hours
+      max_size: 100000
+      cluster_mode: true
+      sentinel_mode: true
+      backup_enabled: true
+      encryption: true
+      compression: true
+      multi_region_replication: true
+    
+    # Security Configuration
+    security:
+      encryption: true
+      encryption_key: "${ENTERPRISE_ENCRYPTION_KEY}"
+      audit_trail: true
+      audit_storage: "elasticsearch"
+      audit_retention_days: 3650  # 10 years
+      compliance_frameworks: ["GDPR", "SOC2", "ISO27001", "HIPAA", "FedRAMP"]
+      token_expiry: 900  # 15 minutes
+      max_login_attempts: 2
+      ip_whitelist: "${ENTERPRISE_IP_WHITELIST}"
+      rate_limiting: true
+      ddos_protection: true
+      vulnerability_scanning: true
+      penetration_testing: true
+      zero_trust_architecture: true
+    
+    # Performance Configuration
+    performance:
+      async_processing: true
+      batch_processing: true
+      batch_size: 500
+      monitoring: true
+      metrics_endpoint: "/metrics"
+      max_concurrent_operations: 1000
+      request_timeout: 120
+      circuit_breaker: true
+      auto_scaling: true
+      load_shedding: true
+      predictive_scaling: true
+    
+    # Template Configuration
+    templates:
+      validation_strict: true
+      auto_reload: false
+      cache_enabled: true
+      cache_warming: true
+      dependency_checking: true
+      schema_validation: true
+      backup_enabled: true
+      backup_frequency: "continuous"
+      version_control: true
+      immutable_templates: true
+    
+    # Feature Flags
+    features:
+      template_versioning: true
+      dynamic_configuration: true
+      conditional_logic: true
+      variable_substitution: true
+      schema_validation: true
+      migration_support: true
+      rollback_support: true
+      canary_deployment: true
+      blue_green_deployment: true
+      multi_tenancy: true
+    
+    # External Services
+    external_services:
+      spotify_api:
+        base_url: "https://api.spotify.com"
+        timeout: 30
+        retry_attempts: 10
+        circuit_breaker: true
+        rate_limit: 10000
+        dedicated_connection: true
+      
+      notification_service:
+        enabled: true
+        webhook_url: "${ENTERPRISE_WEBHOOK_URL}"
+        timeout: 20
+        retry_attempts: 5
+        circuit_breaker: true
+        encryption: true
+      
+      analytics_service:
+        enabled: true
+        endpoint: "${ENTERPRISE_ANALYTICS_ENDPOINT}"
+        batch_size: 1000
+        compression: true
+        encryption: true
+        real_time_streaming: true
+    
+    # Load Balancing
+    load_balancing:
+      enabled: true
+      strategy: "weighted_round_robin"
+      health_check_interval: 10
+      max_failures: 1
+      sticky_sessions: false
+      global_load_balancing: true
+    
+    # Disaster Recovery
+    disaster_recovery:
+      enabled: true
+      backup_regions: ["eu-central-1", "us-west-2", "ap-southeast-1"]
+      rpo_minutes: 15  # Recovery Point Objective
+      rto_minutes: 10  # Recovery Time Objective
+      failover_strategy: "automatic"
+      multi_region_active: true
+    
+    # Compliance
+    compliance:
+      data_residency: "configurable"
+      encryption_at_rest: true
+      encryption_in_transit: true
+      key_management: "hsm"
+      audit_logging: true
+      privacy_controls: true
+      data_loss_prevention: true
+      rights_management: true
+    
+    # Custom Features
+    custom:
+      on_premise_deployment: true
+      private_cloud_support: true
+      hybrid_cloud_support: true
+      custom_sla: true
+      dedicated_support: true
+      custom_compliance: true
+      white_labeling: true
+      api_customization: true
+
+# Global Configuration
+global:
+  # Logging Configuration
+  logging:
+    format: "json"
+    timestamp_format: "ISO8601"
+    timezone: "UTC"
+    log_rotation: true
+    log_compression: true
+    
+  # Monitoring Configuration
+  monitoring:
+    prometheus:
+      enabled: true
+      endpoint: "/metrics"
+      port: 9090
+    
+    grafana:
+      enabled: true
+      port: 3000
+      dashboards_path: "/dashboards"
+    
+    alertmanager:
+      enabled: true
+      port: 9093
+      alerts_config: "/alerts"
+  
+  # Health Check Configuration
+  health_checks:
+    enabled: true
+    endpoint: "/health"
+    detailed_endpoint: "/health/detailed"
+    interval_seconds: 30
+    timeout_seconds: 10
+  
+  # API Configuration
+  api:
+    version: "v1"
+    base_path: "/api/v1/templates"
+    rate_limiting: true
+    documentation: true
+    swagger_ui: true
+    
+  # Error Handling
+  error_handling:
+    detailed_errors: false
+    error_tracking: true
+    error_reporting: true
+    recovery_strategies: true

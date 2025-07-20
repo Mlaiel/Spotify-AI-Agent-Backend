@@ -1,0 +1,557 @@
+# Authentication & Authorization Service Deployment
+# Developed by Fahed Mlaiel - Senior Security Engineer & IAM Architect
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-ai-auth-service
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v2.0.0
+    app.kubernetes.io/component: auth-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: advanced-deployment-manager
+    service-type: auth-service
+    tenant-tier: enterprise
+    environment: development
+    security-level: high
+    auth-protocols: oauth2-oidc-saml-jwt
+    team: spotify-ai-agent-dev
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    created-by: "Fahed Mlaiel - Security & IAM Architect"
+    description: "Enterprise authentication and authorization service"
+    auth-methods: "oauth2-oidc-saml-mfa-biometric"
+    session-management: "distributed-redis"
+    token-validation: "jwt-rsa256-es256"
+    compliance: "soc2-gdpr-hipaa-pci"
+    security-hardening: "advanced"
+spec:
+  replicas: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: spotify-ai-auth-service
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-auth-service
+        app.kubernetes.io/name: spotify-ai-agent
+        app.kubernetes.io/component: auth-service
+        service-type: auth-service
+        tenant-tier: enterprise
+        environment: development
+        version: v2.0.0
+        security-level: high
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/metrics"
+        jaeger.io/sampling-type: "probabilistic"
+        jaeger.io/sampling-param: "0.3"
+        fluentd.io/log-format: "json"
+        security.io/scan: "true"
+        config-hash: "auth456security"
+        created-at: "2025-07-17T00:00:00Z"
+        audit-logging: "enabled"
+        rate-limiting: "enabled"
+    spec:
+      serviceAccountName: spotify-ai-auth-sa
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 60
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10003
+        runAsGroup: 10003
+        fsGroup: 10003
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [10003]
+        sysctls:
+        - name: net.core.somaxconn
+          value: "1024"
+        - name: net.ipv4.tcp_keepalive_time
+          value: "600"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: ["spotify-ai-auth-service"]
+            topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 90
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values: ["security-optimized"]
+          - weight: 70
+            preference:
+              matchExpressions:
+              - key: instance-type
+                operator: In
+                values: ["m5.2xlarge", "m5.4xlarge"]
+          - weight: 50
+            preference:
+              matchExpressions:
+              - key: security-zone
+                operator: In
+                values: ["high-security"]
+      tolerations:
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: security-workload
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      - key: auth-service
+        operator: Equal
+        value: "dedicated"
+        effect: NoSchedule
+      containers:
+      - name: auth-service
+        image: spotify-ai-agent/auth-service:dev-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+        - containerPort: 8090
+          name: admin
+          protocol: TCP
+        - containerPort: 8091
+          name: health
+          protocol: TCP
+        env:
+        # Base Configuration
+        - name: ENVIRONMENT
+          value: "development"
+        - name: SERVICE_NAME
+          value: "spotify-ai-auth-service"
+        - name: SERVICE_TYPE
+          value: "auth-service"
+        - name: TENANT_TIER
+          value: "enterprise"
+        - name: SECURITY_LEVEL
+          value: "high"
+        # Kubernetes Integration
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        # Resource Information
+        - name: CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.cpu
+        - name: MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        # Authentication Configuration
+        - name: JWT_ALGORITHM
+          value: "RS256"
+        - name: JWT_ACCESS_TOKEN_EXPIRE
+          value: "900"
+        - name: JWT_REFRESH_TOKEN_EXPIRE
+          value: "2592000"
+        - name: SESSION_TIMEOUT
+          value: "3600"
+        - name: MAX_LOGIN_ATTEMPTS
+          value: "5"
+        - name: LOCKOUT_DURATION
+          value: "1800"
+        - name: PASSWORD_MIN_LENGTH
+          value: "12"
+        - name: MFA_REQUIRED
+          value: "true"
+        - name: BIOMETRIC_AUTH_ENABLED
+          value: "true"
+        # OAuth2/OIDC Configuration
+        - name: OAUTH2_AUTHORIZATION_CODE_EXPIRE
+          value: "600"
+        - name: OAUTH2_ACCESS_TOKEN_EXPIRE
+          value: "3600"
+        - name: OAUTH2_REFRESH_TOKEN_EXPIRE
+          value: "2592000"
+        - name: OIDC_ISSUER
+          value: "https://auth.spotify-ai-agent.dev"
+        - name: OIDC_AUDIENCE
+          value: "spotify-ai-agent"
+        # SAML Configuration
+        - name: SAML_ENTITY_ID
+          value: "spotify-ai-agent-auth"
+        - name: SAML_ACS_URL
+          value: "https://auth.spotify-ai-agent.dev/saml/acs"
+        - name: SAML_SLO_URL
+          value: "https://auth.spotify-ai-agent.dev/saml/slo"
+        # Database Connections
+        - name: AUTH_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: auth-db-credentials
+              key: url
+        - name: USER_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: user-db-credentials
+              key: url
+        - name: SESSION_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: session-db-credentials
+              key: url
+        # Redis Session Store
+        - name: REDIS_SESSION_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-session-credentials
+              key: url
+        - name: REDIS_RATE_LIMIT_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-ratelimit-credentials
+              key: url
+        # Cryptographic Keys
+        - name: JWT_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jwt-keys
+              key: private_key
+        - name: JWT_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jwt-keys
+              key: public_key
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: encryption-keys
+              key: auth_key
+        - name: SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: signing-keys
+              key: auth_signing_key
+        # External IdP Integration
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: google-oauth-credentials
+              key: client_id
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: google-oauth-credentials
+              key: client_secret
+        - name: MICROSOFT_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: microsoft-oauth-credentials
+              key: client_id
+        - name: MICROSOFT_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: microsoft-oauth-credentials
+              key: client_secret
+        - name: OKTA_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: domain
+        - name: OKTA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client_id
+        - name: OKTA_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client_secret
+        # MFA & Security
+        - name: TOTP_ISSUER
+          value: "Spotify AI Agent"
+        - name: SMS_PROVIDER
+          value: "twilio"
+        - name: EMAIL_PROVIDER
+          value: "sendgrid"
+        - name: BIOMETRIC_PROVIDER
+          value: "webauthn"
+        # Rate Limiting
+        - name: RATE_LIMIT_LOGIN
+          value: "5/min"
+        - name: RATE_LIMIT_TOKEN
+          value: "100/min"
+        - name: RATE_LIMIT_PASSWORD_RESET
+          value: "3/hour"
+        # Monitoring & Tracing
+        - name: JAEGER_AGENT_HOST
+          value: "localhost"
+        - name: JAEGER_AGENT_PORT
+          value: "6831"
+        - name: PROMETHEUS_GATEWAY
+          value: "pushgateway:9091"
+        - name: ELASTIC_APM_SERVER_URL
+          value: "http://apm-server:8200"
+        # Audit Logging
+        - name: AUDIT_LOG_ENABLED
+          value: "true"
+        - name: AUDIT_LOG_LEVEL
+          value: "INFO"
+        - name: SIEM_INTEGRATION_ENABLED
+          value: "true"
+        resources:
+          requests:
+            cpu: "800m"
+            memory: "2Gi"
+            ephemeral-storage: "300Mi"
+          limits:
+            cpu: "3000m"
+            memory: "6Gi"
+            ephemeral-storage: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 45
+          periodSeconds: 20
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 15
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 30; /app/graceful-shutdown.sh"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10003
+          capabilities:
+            drop: ["ALL"]
+            add: ["NET_BIND_SERVICE"]
+        volumeMounts:
+        - name: auth-config
+          mountPath: /etc/auth
+          readOnly: true
+        - name: jwt-keys
+          mountPath: /etc/jwt
+          readOnly: true
+        - name: ssl-certificates
+          mountPath: /etc/ssl/certs/auth
+          readOnly: true
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/auth
+        - name: audit-logs
+          mountPath: /var/log/audit
+      # HSM Security Module Sidecar
+      - name: hsm-proxy
+        image: spotify-ai-agent/hsm-proxy:dev-latest
+        ports:
+        - containerPort: 8092
+          name: hsm-api
+          protocol: TCP
+        env:
+        - name: HSM_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: hsm-credentials
+              key: endpoint
+        - name: HSM_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hsm-credentials
+              key: auth_token
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10003
+      # Rate Limiting Sidecar
+      - name: rate-limiter
+        image: spotify-ai-agent/rate-limiter:dev-latest
+        ports:
+        - containerPort: 8093
+          name: ratelimit-api
+          protocol: TCP
+        env:
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-ratelimit-credentials
+              key: url
+        - name: RATE_LIMIT_RULES
+          value: "/etc/ratelimit/rules.yaml"
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: ratelimit-config
+          mountPath: /etc/ratelimit
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10003
+      # Audit Logger Sidecar
+      - name: audit-logger
+        image: spotify-ai-agent/audit-logger:dev-latest
+        env:
+        - name: AUDIT_DESTINATION
+          value: "elasticsearch-siem"
+        - name: LOG_FORMAT
+          value: "json"
+        - name: COMPLIANCE_MODE
+          value: "soc2-gdpr"
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+        volumeMounts:
+        - name: audit-logs
+          mountPath: /var/log/audit
+          readOnly: true
+        - name: audit-config
+          mountPath: /etc/audit
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10003
+      volumes:
+      - name: auth-config
+        configMap:
+          name: auth-service-config
+      - name: jwt-keys
+        secret:
+          secretName: jwt-keys
+          defaultMode: 0400
+      - name: ssl-certificates
+        secret:
+          secretName: auth-ssl-certificates
+          defaultMode: 0400
+      - name: tmp-storage
+        emptyDir:
+          sizeLimit: "500Mi"
+      - name: logs-storage
+        emptyDir:
+          sizeLimit: "200Mi"
+      - name: audit-logs
+        emptyDir:
+          sizeLimit: "1Gi"
+      - name: ratelimit-config
+        configMap:
+          name: ratelimit-config
+      - name: audit-config
+        configMap:
+          name: audit-config
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+      initContainers:
+      - name: auth-init
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Initializing authentication service..."
+          mkdir -p /tmp/auth /var/log/auth /var/log/audit
+          chown -R 10003:10003 /tmp /var/log/auth /var/log/audit
+          echo "Testing database connectivity..."
+          nc -z auth-db 5432 && echo "Auth DB reachable" || echo "Auth DB not reachable"
+          nc -z redis-session 6379 && echo "Redis Session reachable" || echo "Redis Session not reachable"
+          echo "Validating JWT keys..."
+          test -f /etc/jwt/private_key && echo "Private key found" || echo "Private key missing"
+          test -f /etc/jwt/public_key && echo "Public key found" || echo "Public key missing"
+          echo "Authentication service initialized successfully"
+        volumeMounts:
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/auth
+        - name: audit-logs
+          mountPath: /var/log/audit
+        - name: jwt-keys
+          mountPath: /etc/jwt
+          readOnly: true
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0

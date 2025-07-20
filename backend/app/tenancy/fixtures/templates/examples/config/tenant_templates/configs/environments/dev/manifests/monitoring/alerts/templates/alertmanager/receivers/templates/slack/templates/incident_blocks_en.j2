@@ -1,0 +1,208 @@
+# Enterprise Incident Management Blocks Template (English) - Advanced Industrial Grade
+{
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "🔥 INCIDENT {{ incident.severity.upper() }} - {{ incident.title }}",
+                "emoji": true
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🚨 Major Incident Declared*\n{{ incident.description | truncate_smart(400) }}"
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🎛️ War Room",
+                    "emoji": true
+                },
+                "style": "danger",
+                "url": "{{ incident.war_room_url }}",
+                "action_id": "join_war_room"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*🎯 Affected Services:*\n{% for service in incident.affected_services %}• `{{ service.name }}` ({{ service.impact_level }})\n{% endfor %}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*⚡ Severity:*\n{{ incident.severity.upper() }} ({{ incident.impact_score }}/10)"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*👥 Users Affected:*\n{{ incident.users_affected | default('Assessing...') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*⏰ Started:*\n{{ format_date(incident.start_time, 'short') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*🌍 Regions:*\n{{ incident.affected_regions | join(', ') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*💰 Business Impact:*\n{{ incident.business_impact.estimated_cost | default('Calculating...') }}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*👨‍💼 Incident Command Structure:*\n• **Incident Commander:** @{{ incident.commander | default('Not assigned') }}\n• **Technical Lead:** @{{ incident.tech_lead | default('Not assigned') }}\n• **Communications Lead:** @{{ incident.comms_lead | default('Not assigned') }}\n• **Customer Success:** @{{ incident.customer_success | default('Not assigned') }}"
+            }
+        },
+        {% if incident.timeline %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*📅 Recent Timeline:*\n{% for event in incident.timeline[-3:] %}• **{{ event.timestamp | format_time }}** - {{ event.description }}\n{% endfor %}"
+            }
+        },
+        {% endif %}
+        {% if incident.current_actions %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🔧 Current Actions:*\n{% for action in incident.current_actions %}• {{ action.description }} ({{ action.owner }})\n{% endfor %}"
+            }
+        },
+        {% endif %}
+        {% if incident.customer_impact %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*📢 Customer Communication:*\n• **Status Page:** {{ incident.customer_impact.status_page_updated | ternary('✅ Updated', '❌ Pending') }}\n• **Support Tickets:** {{ incident.customer_impact.support_tickets_count | default(0) }} new\n• **Social Media:** {{ incident.customer_impact.social_mentions | default(0) }} mentions"
+            }
+        },
+        {% endif %}
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🚨 Join Response",
+                        "emoji": true
+                    },
+                    "style": "danger",
+                    "url": "{{ incident.response_channel_url }}",
+                    "action_id": "join_response"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📊 Live Dashboard",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.dashboard_url }}",
+                    "action_id": "view_dashboard"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📞 Bridge Call",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.bridge_call_url }}",
+                    "action_id": "join_bridge"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📝 Timeline",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.timeline_url }}",
+                    "action_id": "view_timeline"
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📋 Runbooks",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.runbooks_url }}",
+                    "action_id": "view_runbooks"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔍 Logs Analysis",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.logs_analysis_url }}",
+                    "action_id": "view_logs"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📊 Status Page",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.status_page_url }}",
+                    "action_id": "update_status"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔧 Infrastructure",
+                        "emoji": true
+                    },
+                    "url": "{{ incident.infrastructure_url }}",
+                    "action_id": "view_infra"
+                }
+            ]
+        },
+        {% if incident.sla_impact %}
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "⚠️ *SLA Impact:* {{ incident.sla_impact.current_availability }}% availability | *MTD Breach:* {{ incident.sla_impact.mtd_breach | ternary('❌ YES', '✅ No') }} | *Target Recovery:* {{ incident.sla_impact.target_recovery_time }}"
+                }
+            ]
+        },
+        {% endif %}
+        {
+            "type": "divider"
+        },
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "🎵 *Spotify AI Agent Incident Management* | Incident ID: `{{ incident.incident_id }}` | Priority: {{ incident.priority }} | Duration: {{ incident.duration | duration_format }} | Updated: {{ format_date(now, 'iso') }}"
+                }
+            ]
+        }
+    ]
+}

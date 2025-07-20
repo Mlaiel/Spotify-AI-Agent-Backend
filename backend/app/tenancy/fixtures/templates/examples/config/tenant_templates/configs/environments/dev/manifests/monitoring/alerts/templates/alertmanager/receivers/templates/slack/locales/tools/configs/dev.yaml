@@ -1,0 +1,272 @@
+# Configuration Développement - Outils Slack Localisés
+# Environnement: dev
+# Maintenu par: Fahed Mlaiel - Lead Developer & Architecte IA
+# Version: 2.0.0
+# Dernière mise à jour: 2025-01-18
+
+# Configuration Redis Développement
+redis:
+  # Connexion Redis
+  host: "localhost"
+  port: 6379
+  db: 5
+  password: "${REDIS_PASSWORD}"
+  ssl: false
+  timeout: 30
+  max_connections: 20
+  min_connections: 5
+  retry_on_timeout: true
+  retry_attempts: 3
+  retry_backoff: 0.5
+  health_check_interval: 30
+  
+  # Configuration Pool de connexions
+  connection_pool:
+    enabled: true
+    max_idle_connections: 10
+    connection_lifetime: 3600
+    connection_check_interval: 300
+    
+  # Configuration Sentinel (désactivé en dev)
+  sentinel:
+    enabled: false
+    master_name: "slack-tools-dev"
+    hosts: []
+    
+  # Configuration Cluster (désactivé en dev)
+  cluster:
+    enabled: false
+    nodes: []
+    
+  # Monitoring Redis
+  monitoring:
+    enabled: true
+    slow_query_threshold: 100
+    memory_warning_threshold: 512
+    connection_warning_threshold: 15
+
+# Configuration Cache Développement
+cache:
+  enabled: true
+  default_ttl: 300  # 5 minutes
+  max_cache_size: 1000
+  compression_threshold: 1024
+  compression_enabled: true
+  compression_algorithm: "gzip"
+  
+  # Cache L1 (mémoire locale)
+  l1_cache:
+    enabled: true
+    size: 500
+    ttl: 60
+    eviction_policy: "lru"
+    
+  # Cache L2 (Redis)
+  l2_cache:
+    enabled: true
+    ttl: 300
+    max_size: 10000
+    key_prefix: "slack_tools_dev"
+    
+  # Configuration avancée
+  advanced:
+    cache_warmer_enabled: true
+    cache_warmer_interval: 300
+    invalidation_enabled: true
+    metrics_enabled: true
+    
+  # Stratégies de cache
+  strategies:
+    read_through: true
+    write_through: false
+    write_behind: false
+    refresh_ahead: false
+
+# Configuration Slack Développement
+slack:
+  # Configuration de base
+  default_locale: "fr_FR"
+  supported_locales: ["fr_FR", "en_US", "de_DE", "es_ES"]
+  timeout: 30
+  retry_attempts: 3
+  retry_backoff: 1.0
+  
+  # Rate limiting développement
+  rate_limit:
+    requests_per_minute: 60
+    requests_per_hour: 3600
+    burst_limit: 10
+    per_tenant_limit: true
+    
+  # Configuration Webhooks
+  webhooks:
+    enabled: true
+    signature_verification: true
+    signature_algorithm: "sha256"
+    timeout: 10
+    max_payload_size: 1048576  # 1MB
+    allowed_events: ["app_mention", "message", "reaction_added"]
+    
+  # Configuration Bot
+  bot:
+    name: "Spotify AI Dev Bot"
+    icon_emoji: ":robot_face:"
+    username: "spotify-ai-dev"
+    display_name: "Spotify AI Development"
+    
+  # Channels par défaut
+  channels:
+    default: "#alerts-dev"
+    critical: "#critical-alerts-dev" 
+    warning: "#warnings-dev"
+    info: "#info-dev"
+    monitoring: "#monitoring-dev"
+    
+  # Templates de messages
+  message_templates:
+    alert: "slack_alert_dev.j2"
+    notification: "slack_notification_dev.j2"
+    summary: "slack_summary_dev.j2"
+
+# Configuration AlertManager
+alertmanager:
+  template_engine: "jinja2"
+  cache_ttl: 300
+  batch_size: 50
+  compression: true
+  aggregation:
+    enabled: true
+    window_seconds: 300
+    max_size: 10
+  validation:
+    enabled: true
+    strict_mode: false
+
+# Configuration Tenant
+tenant:
+  isolation_level: "strict"
+  context_cache_ttl: 600
+  max_context_size: 1024
+  audit_enabled: true
+  encryption_enabled: false  # Désactivé en dev
+  max_tenants: 100
+
+# Configuration Localisation
+localization:
+  default_locale: "fr_FR"
+  cache_ttl: 3600
+  hot_reload: true
+  validation_enabled: true
+  supported_locales:
+    - code: "fr_FR"
+      name: "Français"
+      fallback: "en_US"
+    - code: "en_US" 
+      name: "English"
+      fallback: null
+    - code: "de_DE"
+      name: "Deutsch"
+      fallback: "en_US"
+    - code: "es_ES"
+      name: "Español"
+      fallback: "en_US"
+
+# Configuration Templates
+templates:
+  auto_reload: true
+  sandbox_enabled: true
+  cache_ttl: 300
+  validation_enabled: true
+  severity_templates:
+    critical: "alert_critical.json.j2"
+    warning: "alert_warning.json.j2"
+    info: "alert_info.json.j2"
+    resolved: "alert_resolved.json.j2"
+
+# Configuration Métriques
+monitoring:
+  metrics_enabled: true
+  collection_interval: 30
+  system_metrics_enabled: true
+  export_enabled: true
+  namespace: "slack_tools_dev"
+  alert_thresholds:
+    cpu_critical: 85
+    memory_critical: 85
+    disk_critical: 90
+  performance_tracking: true
+  max_history_size: 1000
+
+# Configuration Logging
+logging:
+  level: "DEBUG"
+  format: "json"
+  structured: true
+  correlation_id: true
+  components:
+    localization_engine: "DEBUG"
+    template_renderer: "DEBUG"
+    cache_manager: "INFO"
+    tenant_context: "DEBUG"
+    alert_formatter: "DEBUG"
+    metrics_collector: "INFO"
+
+# Configuration Sécurité (Mode Développement)
+security:
+  validation:
+    strict_input: false
+    sanitize_output: true
+  rate_limiting:
+    enabled: true
+    per_tenant: true
+    global_limit: 1000
+  audit:
+    enabled: true
+    detailed_logging: true
+    retention_days: 30
+
+# Configuration Performance
+performance:
+  optimization_enabled: true
+  concurrent_requests: 50
+  request_timeout: 30
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    recovery_timeout: 60
+  connection_pooling:
+    enabled: true
+    max_connections: 100
+
+# Configuration Développement Spécifique
+development:
+  debug_mode: true
+  mock_external_services: false
+  test_data_enabled: true
+  auto_reload_templates: true
+  verbose_errors: true
+  profiling_enabled: false
+  
+# URLs et Endpoints
+urls:
+  base_url: "http://localhost:8000"
+  metrics_endpoint: "/metrics"
+  health_endpoint: "/health"
+  webhook_base: "/webhook/slack"
+  
+# Configuration par défaut des tenants
+default_tenant_config:
+  slack_config:
+    channel: "#alerts-dev"
+    bot_name: "Spotify AI Dev"
+    icon_emoji: ":robot_face:"
+  locale: "fr_FR"
+  timezone: "Europe/Paris"
+  alert_config:
+    max_alerts_per_hour: 100
+    severity_filter: ["info", "warning", "critical"]
+    auto_resolve: true
+  permissions:
+    level: "write"
+    resources: ["alerts", "notifications", "templates"]
+    operations: ["view", "create", "update"]

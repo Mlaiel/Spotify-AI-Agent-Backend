@@ -1,0 +1,114 @@
+# Enterprise Resolution Alert Template (English) - Advanced Industrial Grade
+{% set service_icons = {
+    'api': '🌐',
+    'database': '🗄️',
+    'ml': '🤖',
+    'audio': '🎵',
+    'auth': '🔐',
+    'storage': '💾',
+    'cache': '⚡',
+    'queue': '📬',
+    'monitoring': '📊'
+} %}
+
+✅ **ALERT RESOLVED** ✅
+
+**{{ service_icons.get(alert.context.service_type, '⚙️') }} Service Recovery Confirmed**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Resolution Summary**
+• **Service**: `{{ alert.context.service_name }}` ({{ alert.context.service_version | default('unknown') }})
+• **Component**: `{{ alert.context.component }}`
+• **Environment**: `{{ environment | upper }}`
+• **Original Severity**: `{{ alert.original_severity | default(alert.severity) | upper }}`
+
+✅ **Recovery Details**
+• **Alert**: {{ alert.title }}
+• **Resolution**: {{ alert.resolution_summary | default('Service automatically recovered') }}
+• **Resolved At**: {{ format_date(alert.resolved_at) }}
+• **Total Duration**: {{ alert.total_duration | duration_format }}
+• **Downtime**: {{ alert.actual_downtime | duration_format | default('No downtime detected') }}
+
+{% if alert.resolution_method %}
+🔧 **Resolution Method**
+• **Type**: {{ alert.resolution_method.type | title }}
+• **Triggered By**: {{ alert.resolution_method.triggered_by | default('Auto-recovery') }}
+{% if alert.resolution_method.actions_taken %}
+• **Actions Taken**:
+{% for action in alert.resolution_method.actions_taken %}
+  - {{ action }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if alert.recovery_metrics %}
+📊 **Recovery Metrics**
+{% for metric_name, metric_value in alert.recovery_metrics.items() %}
+• **{{ metric_name | title }}**: {{ metric_value }}
+{% endfor %}
+{% endif %}
+
+{% if alert.business_impact %}
+💼 **Business Impact Summary**
+• **Users Affected**: {{ alert.business_impact.total_affected_users | default('0') }}
+• **Service Degradation**: {{ alert.business_impact.degradation_level | default('None') }}
+• **Estimated Cost**: {{ alert.business_impact.final_cost | default('$0 (no impact)') }}
+• **SLA Impact**: {{ alert.business_impact.sla_impact | default('No breach') }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🤖 **AI Post-Incident Analysis**
+{% if alert.ai_insights.root_cause_confirmed %}
+**🔍 Confirmed Root Cause**: {{ alert.ai_insights.root_cause_confirmed }}
+{% endif %}
+
+{% if alert.ai_insights.prevention_recommendations %}
+**🛡️ Prevention Recommendations**:
+{% for recommendation in alert.ai_insights.prevention_recommendations[:3] %}
+{{ loop.index }}. {{ recommendation }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.pattern_analysis %}
+**📊 Pattern Analysis**: {{ alert.ai_insights.pattern_analysis.summary }}
+**🎯 Confidence**: {{ alert.ai_insights.confidence_score }}%
+{% endif %}
+{% endif %}
+
+{% if alert.lessons_learned %}
+📚 **Lessons Learned**
+{% for lesson in alert.lessons_learned %}
+• {{ lesson }}
+{% endfor %}
+{% endif %}
+
+{% if alert.follow_up_actions %}
+📋 **Follow-up Actions Required**
+{% for action in alert.follow_up_actions %}
+• {{ action.description }} (Due: {{ action.due_date | format_date }}) - @{{ action.assigned_to }}
+{% endfor %}
+{% endif %}
+
+🚀 **Post-Resolution Links**
+• [📊 Incident Report]({{ dashboard_url }}/incidents/{{ alert.incident_id }})
+• [📈 Recovery Analysis]({{ metrics_url }}/d/recovery/{{ alert.alert_id }})
+• [📋 Full Timeline]({{ logs_url }}/timeline/{{ alert.alert_id }})
+{% if alert.postmortem_url %}
+• [📝 Post-mortem]({{ alert.postmortem_url }})
+{% endif %}
+
+{% if alert.performance_impact %}
+⚡ **Performance Recovery**
+• **Service Latency**: Back to {{ alert.performance_impact.baseline_latency }}
+• **Throughput**: Restored to {{ alert.performance_impact.baseline_throughput }}
+• **Error Rate**: {{ alert.performance_impact.current_error_rate }}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Original Alert ID**: `{{ alert.alert_id }}`
+**Incident ID**: `{{ alert.incident_id | default('N/A') }}`
+**Resolution ID**: `{{ alert.resolution_id }}`
+
+*🎵 Spotify AI Agent Monitoring System*
+*Service restored: {{ format_date(now, 'iso') }}*
+*Next review: {{ alert.next_review_date | format_date | default('Not scheduled') }}*

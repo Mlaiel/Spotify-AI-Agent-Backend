@@ -1,0 +1,523 @@
+# Development Environment Configuration Template for Enterprise Tenant Templates
+# ========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Development environment architecture and rapid prototyping
+# - Senior DevOps Engineer: Development environment automation and container orchestration
+# - Platform Engineer: Development environment infrastructure and tooling
+# - Security Engineer: Development environment security and access controls
+# - QA Engineer: Development environment testing and validation frameworks
+
+# ==========================================
+# DEVELOPMENT ENVIRONMENT CONFIGURATION
+# ==========================================
+
+development:
+  # Environment Metadata
+  metadata:
+    name: "development"
+    description: "Development environment for rapid prototyping and testing"
+    version: "1.0.0"
+    environment_type: "development"
+    tier: "dev"
+    
+    # Environment Labels
+    labels:
+      environment: "development"
+      tier: "dev"
+      team: "${DEV_TEAM:-development}"
+      project: "${PROJECT_NAME:-spotify-ai-agent}"
+      managed_by: "tenant-templates"
+    
+    # Environment Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Development and testing environment"
+
+  # Application Configuration
+  application:
+    # General Settings
+    general:
+      debug: ${DEV_DEBUG:-true}
+      log_level: "${DEV_LOG_LEVEL:-DEBUG}"
+      reload: ${DEV_RELOAD:-true}
+      hot_reload: ${DEV_HOT_RELOAD:-true}
+      
+      # Development Features
+      features:
+        auto_reload: ${DEV_AUTO_RELOAD:-true}
+        debug_toolbar: ${DEV_DEBUG_TOOLBAR:-true}
+        profiling: ${DEV_PROFILING:-true}
+        code_coverage: ${DEV_CODE_COVERAGE:-true}
+    
+    # API Configuration
+    api:
+      # FastAPI Settings
+      fastapi:
+        debug: ${DEV_FASTAPI_DEBUG:-true}
+        reload: ${DEV_FASTAPI_RELOAD:-true}
+        host: "${DEV_FASTAPI_HOST:-0.0.0.0}"
+        port: ${DEV_FASTAPI_PORT:-8000}
+        workers: ${DEV_FASTAPI_WORKERS:-1}
+        
+        # Development Features
+        docs_enabled: ${DEV_DOCS_ENABLED:-true}
+        redoc_enabled: ${DEV_REDOC_ENABLED:-true}
+        openapi_enabled: ${DEV_OPENAPI_ENABLED:-true}
+        
+        # CORS Configuration
+        cors:
+          enabled: ${DEV_CORS_ENABLED:-true}
+          allow_origins:
+            - "http://localhost:3000"
+            - "http://localhost:8080"
+            - "http://127.0.0.1:3000"
+            - "http://127.0.0.1:8080"
+          allow_methods:
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "DELETE"
+            - "OPTIONS"
+            - "PATCH"
+          allow_headers:
+            - "*"
+          allow_credentials: ${DEV_CORS_ALLOW_CREDENTIALS:-true}
+      
+      # Rate Limiting
+      rate_limiting:
+        enabled: ${DEV_RATE_LIMITING_ENABLED:-false}
+        requests_per_minute: ${DEV_RATE_LIMIT_RPM:-1000}
+        burst: ${DEV_RATE_LIMIT_BURST:-100}
+    
+    # Frontend Configuration
+    frontend:
+      # React/Next.js Settings
+      react:
+        development_mode: ${DEV_REACT_DEV_MODE:-true}
+        hot_reload: ${DEV_REACT_HOT_RELOAD:-true}
+        source_maps: ${DEV_REACT_SOURCE_MAPS:-true}
+        
+        # Development Server
+        dev_server:
+          host: "${DEV_REACT_HOST:-localhost}"
+          port: ${DEV_REACT_PORT:-3000}
+          proxy_api: "${DEV_REACT_PROXY_API:-http://localhost:8000}"
+
+  # Database Configuration
+  database:
+    # PostgreSQL Development Settings
+    postgresql:
+      host: "${DEV_DB_HOST:-localhost}"
+      port: ${DEV_DB_PORT:-5432}
+      database: "${DEV_DB_NAME:-spotify_ai_agent_dev}"
+      username: "${DEV_DB_USER:-postgres}"
+      password: "${DEV_DB_PASSWORD:-postgres}"
+      
+      # Connection Pool
+      pool:
+        min_size: ${DEV_DB_POOL_MIN:-1}
+        max_size: ${DEV_DB_POOL_MAX:-5}
+        timeout: ${DEV_DB_POOL_TIMEOUT:-30}
+        
+      # Development Features
+      features:
+        echo_queries: ${DEV_DB_ECHO_QUERIES:-true}
+        auto_migrate: ${DEV_DB_AUTO_MIGRATE:-true}
+        reset_on_start: ${DEV_DB_RESET_ON_START:-false}
+        seed_data: ${DEV_DB_SEED_DATA:-true}
+    
+    # Redis Development Settings
+    redis:
+      host: "${DEV_REDIS_HOST:-localhost}"
+      port: ${DEV_REDIS_PORT:-6379}
+      database: ${DEV_REDIS_DB:-0}
+      password: "${DEV_REDIS_PASSWORD:-}"
+      
+      # Configuration
+      configuration:
+        decode_responses: ${DEV_REDIS_DECODE_RESPONSES:-true}
+        max_connections: ${DEV_REDIS_MAX_CONNECTIONS:-10}
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # JWT Settings
+      jwt:
+        secret_key: "${DEV_JWT_SECRET:-dev-secret-key-change-in-production}"
+        algorithm: "${DEV_JWT_ALGORITHM:-HS256}"
+        access_token_expire: ${DEV_JWT_ACCESS_TOKEN_EXPIRE:-3600}  # 1 hour
+        refresh_token_expire: ${DEV_JWT_REFRESH_TOKEN_EXPIRE:-604800}  # 7 days
+        
+        # Development Features
+        features:
+          debug_tokens: ${DEV_JWT_DEBUG_TOKENS:-true}
+          long_expiry: ${DEV_JWT_LONG_EXPIRY:-true}
+      
+      # OAuth2 Settings
+      oauth2:
+        enabled: ${DEV_OAUTH2_ENABLED:-false}
+        
+        # Spotify OAuth2
+        spotify:
+          client_id: "${DEV_SPOTIFY_CLIENT_ID:-}"
+          client_secret: "${DEV_SPOTIFY_CLIENT_SECRET:-}"
+          redirect_uri: "${DEV_SPOTIFY_REDIRECT_URI:-http://localhost:8000/auth/spotify/callback}"
+    
+    # Authorization
+    authorization:
+      # RBAC Settings
+      rbac:
+        enabled: ${DEV_RBAC_ENABLED:-false}
+        strict_mode: ${DEV_RBAC_STRICT_MODE:-false}
+        
+        # Development Roles
+        default_roles:
+          - "developer"
+          - "tester"
+          - "admin"
+    
+    # Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${DEV_DATA_ENCRYPTION_ENABLED:-false}
+        key: "${DEV_ENCRYPTION_KEY:-dev-encryption-key}"
+        
+      # TLS Settings
+      tls:
+        enabled: ${DEV_TLS_ENABLED:-false}
+        verify: ${DEV_TLS_VERIFY:-false}
+
+  # Monitoring and Observability
+  observability:
+    # Metrics
+    metrics:
+      enabled: ${DEV_METRICS_ENABLED:-true}
+      
+      # Prometheus
+      prometheus:
+        enabled: ${DEV_PROMETHEUS_ENABLED:-true}
+        port: ${DEV_PROMETHEUS_PORT:-9090}
+        path: "${DEV_PROMETHEUS_PATH:-/metrics}"
+        
+        # Development Metrics
+        custom_metrics:
+          enabled: ${DEV_CUSTOM_METRICS_ENABLED:-true}
+          include_debug_metrics: ${DEV_DEBUG_METRICS:-true}
+    
+    # Logging
+    logging:
+      level: "${DEV_LOG_LEVEL:-DEBUG}"
+      format: "${DEV_LOG_FORMAT:-%(asctime)s - %(name)s - %(levelname)s - %(message)s}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${DEV_LOG_CONSOLE:-true}
+          colorize: ${DEV_LOG_COLORIZE:-true}
+        
+        file:
+          enabled: ${DEV_LOG_FILE:-false}
+          path: "${DEV_LOG_FILE_PATH:-logs/dev.log}"
+          rotation: ${DEV_LOG_ROTATION:-false}
+      
+      # Logger Configuration
+      loggers:
+        root:
+          level: "DEBUG"
+        
+        sqlalchemy:
+          level: "${DEV_SQLALCHEMY_LOG_LEVEL:-INFO}"
+        
+        uvicorn:
+          level: "${DEV_UVICORN_LOG_LEVEL:-INFO}"
+        
+        fastapi:
+          level: "${DEV_FASTAPI_LOG_LEVEL:-DEBUG}"
+    
+    # Tracing
+    tracing:
+      enabled: ${DEV_TRACING_ENABLED:-false}
+      
+      # Jaeger
+      jaeger:
+        enabled: ${DEV_JAEGER_ENABLED:-false}
+        endpoint: "${DEV_JAEGER_ENDPOINT:-http://localhost:14268/api/traces}"
+        sampling_rate: ${DEV_JAEGER_SAMPLING_RATE:-1.0}
+    
+    # Health Checks
+    health_checks:
+      enabled: ${DEV_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Check Configuration
+      checks:
+        database:
+          enabled: ${DEV_HEALTH_CHECK_DB:-true}
+          timeout: ${DEV_HEALTH_CHECK_DB_TIMEOUT:-5}
+        
+        redis:
+          enabled: ${DEV_HEALTH_CHECK_REDIS:-true}
+          timeout: ${DEV_HEALTH_CHECK_REDIS_TIMEOUT:-3}
+        
+        external_apis:
+          enabled: ${DEV_HEALTH_CHECK_EXTERNAL_APIS:-false}
+          timeout: ${DEV_HEALTH_CHECK_EXTERNAL_TIMEOUT:-10}
+
+  # Development Tools
+  development_tools:
+    # Code Quality
+    code_quality:
+      # Linting
+      linting:
+        enabled: ${DEV_LINTING_ENABLED:-true}
+        
+        # Python Linting
+        python:
+          flake8: ${DEV_FLAKE8_ENABLED:-true}
+          black: ${DEV_BLACK_ENABLED:-true}
+          isort: ${DEV_ISORT_ENABLED:-true}
+          mypy: ${DEV_MYPY_ENABLED:-true}
+        
+        # JavaScript/TypeScript Linting
+        javascript:
+          eslint: ${DEV_ESLINT_ENABLED:-true}
+          prettier: ${DEV_PRETTIER_ENABLED:-true}
+          typescript: ${DEV_TYPESCRIPT_ENABLED:-true}
+      
+      # Testing
+      testing:
+        enabled: ${DEV_TESTING_ENABLED:-true}
+        
+        # Test Configuration
+        configuration:
+          auto_run: ${DEV_TEST_AUTO_RUN:-true}
+          coverage: ${DEV_TEST_COVERAGE:-true}
+          parallel: ${DEV_TEST_PARALLEL:-true}
+          
+        # Test Databases
+        test_databases:
+          enabled: ${DEV_TEST_DB_ENABLED:-true}
+          reset_between_tests: ${DEV_TEST_DB_RESET:-true}
+    
+    # Development Server
+    development_server:
+      # Hot Reload
+      hot_reload:
+        enabled: ${DEV_HOT_RELOAD_ENABLED:-true}
+        watch_dirs:
+          - "app"
+          - "config"
+          - "tests"
+        exclude_patterns:
+          - "*.pyc"
+          - "__pycache__"
+          - ".git"
+      
+      # Auto Migration
+      auto_migration:
+        enabled: ${DEV_AUTO_MIGRATION_ENABLED:-true}
+        create_migration: ${DEV_CREATE_MIGRATION:-false}
+        apply_migration: ${DEV_APPLY_MIGRATION:-true}
+    
+    # Debugging
+    debugging:
+      # Debug Server
+      debug_server:
+        enabled: ${DEV_DEBUG_SERVER_ENABLED:-true}
+        port: ${DEV_DEBUG_PORT:-5678}
+        
+      # Profiling
+      profiling:
+        enabled: ${DEV_PROFILING_ENABLED:-false}
+        profiler: "${DEV_PROFILER:-py-spy}"
+        
+      # Memory Debugging
+      memory_debugging:
+        enabled: ${DEV_MEMORY_DEBUG_ENABLED:-false}
+        tracker: "${DEV_MEMORY_TRACKER:-tracemalloc}"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # CPU Configuration
+      cpu:
+        requests: "${DEV_CPU_REQUESTS:-100m}"
+        limits: "${DEV_CPU_LIMITS:-1000m}"
+        
+      # Memory Configuration
+      memory:
+        requests: "${DEV_MEMORY_REQUESTS:-256Mi}"
+        limits: "${DEV_MEMORY_LIMITS:-1Gi}"
+    
+    # Storage Resources
+    storage:
+      # Persistent Volume
+      persistent_volume:
+        enabled: ${DEV_PV_ENABLED:-false}
+        size: "${DEV_PV_SIZE:-5Gi}"
+        storage_class: "${DEV_STORAGE_CLASS:-standard}"
+        
+      # Temporary Storage
+      temporary_storage:
+        enabled: ${DEV_TEMP_STORAGE_ENABLED:-true}
+        size: "${DEV_TEMP_STORAGE_SIZE:-1Gi}"
+
+  # External Services
+  external_services:
+    # Spotify API
+    spotify_api:
+      enabled: ${DEV_SPOTIFY_API_ENABLED:-true}
+      
+      # Configuration
+      configuration:
+        base_url: "${DEV_SPOTIFY_BASE_URL:-https://api.spotify.com/v1}"
+        timeout: ${DEV_SPOTIFY_TIMEOUT:-30}
+        rate_limit: ${DEV_SPOTIFY_RATE_LIMIT:-100}
+        
+        # Mock Configuration
+        mock_enabled: ${DEV_SPOTIFY_MOCK_ENABLED:-true}
+        mock_data_path: "${DEV_SPOTIFY_MOCK_DATA:-fixtures/spotify_mock_data.json}"
+    
+    # ML Services
+    ml_services:
+      enabled: ${DEV_ML_SERVICES_ENABLED:-true}
+      
+      # TensorFlow Serving
+      tensorflow_serving:
+        enabled: ${DEV_TF_SERVING_ENABLED:-false}
+        endpoint: "${DEV_TF_SERVING_ENDPOINT:-http://localhost:8501}"
+        
+        # Mock Configuration
+        mock_enabled: ${DEV_TF_SERVING_MOCK_ENABLED:-true}
+      
+      # Spleeter Service
+      spleeter:
+        enabled: ${DEV_SPLEETER_ENABLED:-true}
+        endpoint: "${DEV_SPLEETER_ENDPOINT:-http://localhost:8080}"
+        
+        # Mock Configuration
+        mock_enabled: ${DEV_SPLEETER_MOCK_ENABLED:-true}
+
+  # Networking
+  networking:
+    # Service Configuration
+    services:
+      # API Service
+      api_service:
+        type: "ClusterIP"
+        port: 8000
+        target_port: 8000
+        
+        # Development Features
+        features:
+          debug_endpoints: ${DEV_DEBUG_ENDPOINTS_ENABLED:-true}
+          health_check_endpoint: ${DEV_HEALTH_CHECK_ENDPOINT_ENABLED:-true}
+      
+      # Frontend Service
+      frontend_service:
+        type: "ClusterIP"
+        port: 3000
+        target_port: 3000
+    
+    # Ingress Configuration
+    ingress:
+      enabled: ${DEV_INGRESS_ENABLED:-false}
+      
+      # Configuration
+      configuration:
+        class: "${DEV_INGRESS_CLASS:-nginx}"
+        
+        # Rules
+        rules:
+          - host: "${DEV_API_HOST:-api.dev.spotify-ai-agent.local}"
+            paths:
+              - path: "/"
+                service: "api-service"
+                port: 8000
+          
+          - host: "${DEV_FRONTEND_HOST:-app.dev.spotify-ai-agent.local}"
+            paths:
+              - path: "/"
+                service: "frontend-service"
+                port: 3000
+
+  # Data Management
+  data_management:
+    # Test Data
+    test_data:
+      enabled: ${DEV_TEST_DATA_ENABLED:-true}
+      
+      # Data Sources
+      data_sources:
+        # Seed Data
+        seed_data:
+          enabled: ${DEV_SEED_DATA_ENABLED:-true}
+          path: "${DEV_SEED_DATA_PATH:-fixtures/seed_data.sql}"
+          
+        # Sample Data
+        sample_data:
+          enabled: ${DEV_SAMPLE_DATA_ENABLED:-true}
+          path: "${DEV_SAMPLE_DATA_PATH:-fixtures/sample_data}"
+          
+        # Mock Data
+        mock_data:
+          enabled: ${DEV_MOCK_DATA_ENABLED:-true}
+          path: "${DEV_MOCK_DATA_PATH:-fixtures/mock_data}"
+    
+    # Backup Configuration
+    backup:
+      enabled: ${DEV_BACKUP_ENABLED:-false}
+      
+      # Configuration
+      configuration:
+        frequency: "${DEV_BACKUP_FREQUENCY:-daily}"
+        retention: ${DEV_BACKUP_RETENTION:-7}
+        storage_path: "${DEV_BACKUP_STORAGE_PATH:-backups/dev}"
+
+  # Environment Variables
+  environment_variables:
+    # Application Variables
+    application:
+      ENVIRONMENT: "development"
+      DEBUG: "true"
+      LOG_LEVEL: "DEBUG"
+      
+      # API Variables
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "1"
+      
+      # Database Variables
+      DATABASE_URL: "postgresql://${DEV_DB_USER:-postgres}:${DEV_DB_PASSWORD:-postgres}@${DEV_DB_HOST:-localhost}:${DEV_DB_PORT:-5432}/${DEV_DB_NAME:-spotify_ai_agent_dev}"
+      REDIS_URL: "redis://${DEV_REDIS_HOST:-localhost}:${DEV_REDIS_PORT:-6379}/${DEV_REDIS_DB:-0}"
+      
+      # Security Variables
+      SECRET_KEY: "${DEV_SECRET_KEY:-dev-secret-key-change-in-production}"
+      JWT_SECRET_KEY: "${DEV_JWT_SECRET:-dev-jwt-secret-key}"
+      
+      # Feature Flags
+      ENABLE_DEBUG_TOOLBAR: "true"
+      ENABLE_HOT_RELOAD: "true"
+      ENABLE_AUTO_MIGRATION: "true"
+      ENABLE_MOCK_SERVICES: "true"
+    
+    # Development-specific Variables
+    development_specific:
+      # Testing Variables
+      PYTEST_ARGS: "--cov --cov-report=html --cov-report=term"
+      TEST_DATABASE_URL: "postgresql://${DEV_DB_USER:-postgres}:${DEV_DB_PASSWORD:-postgres}@${DEV_DB_HOST:-localhost}:${DEV_DB_PORT:-5432}/${DEV_DB_NAME:-spotify_ai_agent_dev}_test"
+      
+      # Development Tools
+      PYTHONPATH: "./app:./config:./tests"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      
+      # Debug Variables
+      WERKZEUG_DEBUG_PIN: "off"
+      FLASK_DEBUG: "1"
+      DJANGO_DEBUG: "True"

@@ -1,0 +1,16 @@
+# Core dependencies for Spotify AI Agent API
+fastapi
+uvicorn
+python-dotenv
+pydantic
+requests
+PyJWT
+aioredis
+asyncpg
+motor
+prometheus_client
+sentry-sdk
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-requests

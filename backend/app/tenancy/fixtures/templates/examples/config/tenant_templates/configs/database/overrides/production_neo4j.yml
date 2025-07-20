@@ -1,0 +1,443 @@
+# Neo4j Production Environment Overrides
+# =====================================
+# Configuration avancée Neo4j pour graphe de recommandations et relations sociales
+# Optimisé pour traversées de graphe complexes et algorithmes de recommandation ML
+
+neo4j:
+  # Configuration cluster Causal Cluster
+  cluster:
+    name: "spotify-recommendations-prod"
+    
+    # Core servers (consensus et écriture)
+    core_servers:
+      - host: neo4j-prod-core-01.internal
+        port: 7687
+        role: "LEADER"
+        server_id: 1
+        initial_discovery_members:
+          - neo4j-prod-core-01.internal:5000
+          - neo4j-prod-core-02.internal:5000
+          - neo4j-prod-core-03.internal:5000
+      - host: neo4j-prod-core-02.internal
+        port: 7687
+        role: "FOLLOWER"
+        server_id: 2
+      - host: neo4j-prod-core-03.internal
+        port: 7687
+        role: "FOLLOWER"
+        server_id: 3
+        
+    # Read replicas (lecture distribuée)
+    read_replicas:
+      - host: neo4j-prod-replica-01.internal
+        port: 7687
+        server_id: 4
+      - host: neo4j-prod-replica-02.internal
+        port: 7687
+        server_id: 5
+      - host: neo4j-prod-replica-03.internal
+        port: 7687
+        server_id: 6
+        
+    # Configuration cluster
+    cluster_settings:
+      minimum_core_cluster_size_at_formation: 3
+      minimum_core_cluster_size_at_runtime: 3
+      initial_discovery_members:
+        - neo4j-prod-core-01.internal:5000
+        - neo4j-prod-core-02.internal:5000
+        - neo4j-prod-core-03.internal:5000
+      discovery_listen_address: "0.0.0.0:5000"
+      transaction_listen_address: "0.0.0.0:6000"
+      raft_listen_address: "0.0.0.0:7000"
+
+  # Configuration des connexions
+  connection:
+    # URI de connexion avec routing
+    uri: "neo4j+s://neo4j-prod-cluster.internal:7687"
+    
+    # Authentification
+    auth:
+      username: "${TENANT_ID}_graph_user"
+      password: "${NEO4J_PASSWORD}"
+      realm: "native"
+      
+    # Pool de connexions
+    pool:
+      max_connection_pool_size: 100
+      connection_acquisition_timeout: 60000  # 60s
+      connection_timeout: 30000              # 30s
+      max_transaction_retry_time: 30000      # 30s
+      
+    # Configuration SSL/TLS
+    ssl:
+      enabled: true
+      trust_strategy: "TRUST_CUSTOM_CA_SIGNED_CERTIFICATES"
+      cert_file: "/etc/ssl/neo4j/prod-ca.crt"
+      
+    # Routing et load balancing
+    routing:
+      policy: "ROUND_ROBIN"
+      max_retry_attempts: 3
+      initial_retry_delay: 1000
+      retry_delay_multiplier: 2.0
+
+  # Configuration serveur Neo4j
+  server:
+    # Mémoire et performance
+    memory:
+      heap:
+        initial_size: "8g"
+        max_size: "16g"
+      pagecache:
+        size: "32g"  # 50% de la RAM disponible
+        
+    # Configuration GC
+    gc:
+      g1:
+        enabled: true
+        region_size: "16m"
+        
+    # Network et sécurité
+    network:
+      default_listen_address: "0.0.0.0"
+      default_advertised_address: "${NEO4J_HOST}"
+      
+      connectors:
+        bolt:
+          enabled: true
+          listen_address: "0.0.0.0:7687"
+          advertised_address: "${NEO4J_HOST}:7687"
+          tls_level: "REQUIRED"
+          
+        http:
+          enabled: true
+          listen_address: "0.0.0.0:7474"
+          advertised_address: "${NEO4J_HOST}:7474"
+          
+        https:
+          enabled: true
+          listen_address: "0.0.0.0:7473"
+          advertised_address: "${NEO4J_HOST}:7473"
+
+  # Configuration de la base de données
+  database:
+    # Base principale pour le tenant
+    name: "${TENANT_ID}_recommendations"
+    
+    # Configuration des transactions
+    transaction:
+      timeout: "60s"
+      bookmark_ready_timeout: "30s"
+      
+    # Configuration des procédures
+    procedures:
+      unrestricted: 
+        - "gds.*"          # Graph Data Science
+        - "apoc.*"         # APOC procedures
+        - "algo.*"         # Neo4j Graph Algorithms
+        
+    # Configuration des fonctions
+    functions:
+      unrestricted:
+        - "gds.*"
+        - "apoc.*"
+
+  # Modèle de données optimisé pour Spotify
+  schema:
+    # Contraintes et index
+    constraints:
+      # Contraintes d'unicité
+      unique_constraints:
+        - "CREATE CONSTRAINT user_id_unique ON (u:User) ASSERT u.user_id IS UNIQUE"
+        - "CREATE CONSTRAINT track_id_unique ON (t:Track) ASSERT t.track_id IS UNIQUE"
+        - "CREATE CONSTRAINT artist_id_unique ON (a:Artist) ASSERT a.artist_id IS UNIQUE"
+        - "CREATE CONSTRAINT playlist_id_unique ON (p:Playlist) ASSERT p.playlist_id IS UNIQUE"
+        - "CREATE CONSTRAINT album_id_unique ON (al:Album) ASSERT al.album_id IS UNIQUE"
+        
+      # Contraintes d'existence
+      existence_constraints:
+        - "CREATE CONSTRAINT user_id_exists ON (u:User) ASSERT EXISTS(u.user_id)"
+        - "CREATE CONSTRAINT track_id_exists ON (t:Track) ASSERT EXISTS(t.track_id)"
+        
+    # Index pour performance
+    indexes:
+      # Index simples
+      node_indexes:
+        - "CREATE INDEX user_country ON :User(country)"
+        - "CREATE INDEX track_genre ON :Track(genre)"
+        - "CREATE INDEX track_popularity ON :Track(popularity)"
+        - "CREATE INDEX artist_followers ON :Artist(follower_count)"
+        - "CREATE INDEX listening_timestamp ON :Listening(timestamp)"
+        
+      # Index composites
+      composite_indexes:
+        - "CREATE INDEX user_age_country ON :User(age, country)"
+        - "CREATE INDEX track_genre_popularity ON :Track(genre, popularity)"
+        
+      # Index de recherche textuelle
+      fulltext_indexes:
+        - "CREATE FULLTEXT INDEX track_search FOR (t:Track) ON EACH [t.title, t.artist_name]"
+        - "CREATE FULLTEXT INDEX artist_search FOR (a:Artist) ON EACH [a.name]"
+        - "CREATE FULLTEXT INDEX playlist_search FOR (p:Playlist) ON EACH [p.name, p.description]"
+
+  # Algorithmes de recommandation Graph Data Science
+  graph_algorithms:
+    # Projections de graphe pour algorithmes
+    projections:
+      user_track_interactions:
+        node_projection:
+          User: 
+            label: "User"
+            properties: ["age", "country", "premium"]
+          Track:
+            label: "Track"
+            properties: ["popularity", "duration_ms", "energy", "danceability"]
+        relationship_projection:
+          LISTENED_TO:
+            type: "LISTENED_TO"
+            orientation: "NATURAL"
+            properties: ["play_count", "skip_rate", "like_score"]
+            
+      artist_similarity:
+        node_projection: "Artist"
+        relationship_projection:
+          SIMILAR_TO:
+            type: "SIMILAR_TO"
+            orientation: "UNDIRECTED"
+            properties: ["similarity_score"]
+            
+      social_network:
+        node_projection: "User"
+        relationship_projection:
+          FOLLOWS:
+            type: "FOLLOWS"
+            orientation: "NATURAL"
+          FRIENDS_WITH:
+            type: "FRIENDS_WITH"
+            orientation: "UNDIRECTED"
+            
+    # Configuration des algorithmes
+    algorithms:
+      # Collaborative Filtering
+      collaborative_filtering:
+        algorithm: "gds.nodeSimilarity"
+        config:
+          topK: 50
+          similarityCutoff: 0.1
+          degreeCutoff: 10
+          
+      # Content-based filtering
+      content_similarity:
+        algorithm: "gds.fastRP"
+        config:
+          embeddingDimension: 256
+          iterationWeights: [1.0, 1.0, 2.0, 4.0]
+          
+      # PageRank pour popularité
+      track_popularity:
+        algorithm: "gds.pageRank"
+        config:
+          dampingFactor: 0.85
+          maxIterations: 20
+          tolerance: 0.0000001
+          
+      # Community detection
+      user_communities:
+        algorithm: "gds.louvain"
+        config:
+          maxLevels: 10
+          maxIterations: 10
+          tolerance: 0.0001
+          
+      # Path finding pour découverte
+      music_discovery:
+        algorithm: "gds.shortestPath.dijkstra"
+        config:
+          sourceNode: "user_id"
+          targetNode: "track_id"
+          relationshipWeightProperty: "similarity_score"
+
+  # Configuration de performance
+  performance:
+    # Configuration du cache de pages
+    pagecache:
+      memory: "32g"
+      swapper: "single"
+      
+    # Configuration des threads
+    threads:
+      worker_count: 32
+      
+    # Optimisations de requêtes
+    query:
+      cache_size: 1000
+      cache_ttl: 600  # 10 minutes
+      
+      # Statistiques pour optimiseur
+      statistics:
+        enabled: true
+        
+    # Configuration du stockage
+    storage:
+      # Format de stockage optimisé
+      format: "high_limit"
+      
+      # Compression
+      string_block_size: "120k"
+      array_block_size: "120k"
+      
+      # WAL (Write-Ahead Logging)
+      logs:
+        rotation:
+          retention_policy: "7 days 1G"
+          threshold: "250M"
+
+  # Sécurité et authentification
+  security:
+    # Authentification native
+    auth:
+      enabled: true
+      minimum_password_length: 12
+      
+    # Configuration LDAP (optionnelle)
+    ldap:
+      enabled: false
+      
+    # Rôles et permissions
+    authorization:
+      enabled: true
+      
+    # Utilisateurs et rôles
+    users:
+      "${TENANT_ID}_graph_admin":
+        password: "${NEO4J_ADMIN_PASSWORD}"
+        roles: ["admin", "architect"]
+        
+      "${TENANT_ID}_graph_user":
+        password: "${NEO4J_USER_PASSWORD}"
+        roles: ["reader", "publisher"]
+        
+      "${TENANT_ID}_analytics_user":
+        password: "${NEO4J_ANALYTICS_PASSWORD}"
+        roles: ["reader"]
+        
+    # Définition des rôles personnalisés
+    roles:
+      recommendations_analyst:
+        permissions:
+          - "MATCH (u:User)-[:LISTENED_TO]->(t:Track)"
+          - "CALL gds.* YIELD *"
+          
+      data_scientist:
+        permissions:
+          - "MATCH (n) RETURN n"
+          - "CALL gds.* YIELD *"
+          - "CALL apoc.* YIELD *"
+
+  # Monitoring et observabilité
+  monitoring:
+    # Métriques système
+    metrics:
+      enabled: true
+      csv:
+        enabled: true
+        interval: "30s"
+        path: "/var/lib/neo4j/metrics"
+        
+      prometheus:
+        enabled: true
+        endpoint: "0.0.0.0:2004"
+        
+    # Query logging
+    query_logging:
+      enabled: true
+      threshold: "1s"  # Log queries > 1 seconde
+      
+    # JMX monitoring
+    jmx:
+      enabled: true
+      port: 3637
+      
+    # Alerting sur métriques critiques
+    alerts:
+      memory_usage_threshold: 0.85
+      query_latency_threshold: "5s"
+      connection_pool_exhaustion: 0.9
+
+  # Backup et haute disponibilité
+  backup:
+    # Configuration des sauvegardes
+    enabled: true
+    
+    # Backup vers cloud storage
+    cloud_backup:
+      provider: "s3"
+      bucket: "${NEO4J_BACKUP_BUCKET}"
+      region: "${AWS_REGION}"
+      encryption: true
+      
+    # Politique de sauvegarde
+    policy:
+      full_backup:
+        schedule: "0 2 * * 0"  # Hebdomadaire le dimanche
+        retention: "4 weeks"
+        
+      incremental_backup:
+        schedule: "0 2 * * 1-6"  # Quotidien sauf dimanche
+        retention: "1 week"
+        
+    # Tests de restauration
+    restore_testing:
+      enabled: true
+      schedule: "0 4 1 * *"  # Mensuel
+
+  # Intégrations avec l'écosystème ML
+  ml_integration:
+    # Export pour entraînement de modèles
+    model_training:
+      export_format: "parquet"
+      export_schedule: "0 3 * * *"
+      export_path: "s3://${ML_DATA_BUCKET}/graph_exports/"
+      
+    # Streaming pour features temps réel
+    real_time_features:
+      kafka:
+        enabled: true
+        topic: "graph_features_${TENANT_ID}"
+        batch_size: 1000
+        
+    # API pour serving de recommandations
+    recommendation_api:
+      cache_ttl: 300  # 5 minutes
+      max_recommendations: 100
+      fallback_strategy: "popular_tracks"
+
+# Variables d'environnement
+environment_variables:
+  NEO4J_PASSWORD: "${NEO4J_PROD_PASSWORD}"
+  NEO4J_ADMIN_PASSWORD: "${NEO4J_PROD_ADMIN_PASSWORD}"
+  NEO4J_USER_PASSWORD: "${NEO4J_PROD_USER_PASSWORD}"
+  NEO4J_ANALYTICS_PASSWORD: "${NEO4J_PROD_ANALYTICS_PASSWORD}"
+  NEO4J_BACKUP_BUCKET: "spotify-ai-neo4j-backups-prod"
+  ML_DATA_BUCKET: "spotify-ai-ml-data-prod"
+  NEO4J_HOST: "${HOSTNAME}"
+  AWS_REGION: "us-east-1"
+
+# Métadonnées de configuration
+metadata:
+  environment: production
+  purpose: "Graphe de recommandations et relations sociales"
+  maintainer: "Recommendations & Graph Analytics Team"
+  last_updated: "2025-07-16"
+  version: "2.1.0"
+  notes: |
+    Configuration Neo4j optimisée pour:
+    - Système de recommandation basé sur graphe
+    - Analyse des relations sociales entre utilisateurs
+    - Algorithmes de Graph Data Science pour ML
+    - Découverte de musique via traversées de graphe
+    - Analytics comportementales avancées
+    
+    Architecture haute disponibilité avec Causal Clustering.
+    Intégration native avec pipeline ML pour features temps réel.

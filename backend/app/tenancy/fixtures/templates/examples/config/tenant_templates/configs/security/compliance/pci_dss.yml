@@ -1,0 +1,945 @@
+# PCI-DSS Compliance Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - PCI-DSS compliance architecture with payment security
+# - Senior Backend Developer: Python/FastAPI/Django PCI-DSS enterprise patterns
+# - Payment Security Specialist: PCI-DSS requirements and payment card security
+# - DBA & Data Engineer: PCI-DSS data protection, encryption, and secure storage
+# - Legal Compliance Specialist: PCI-DSS regulatory requirements and payment compliance
+
+# ==========================================
+# PCI-DSS COMPLIANCE CONFIGURATION
+# ==========================================
+
+pci_dss:
+  # General Settings
+  general:
+    enabled: ${PCI_DSS_ENABLED:-false}
+    merchant_level: "${PCI_DSS_MERCHANT_LEVEL:-level_4}"  # level_1, level_2, level_3, level_4
+    service_provider: ${PCI_DSS_SERVICE_PROVIDER:-false}
+    
+    # Entity Information
+    entity_info:
+      company_name: "${PCI_DSS_COMPANY_NAME:-Spotify AI Agent Payments}"
+      merchant_id: "${PCI_DSS_MERCHANT_ID:-}"
+      acquirer_name: "${PCI_DSS_ACQUIRER_NAME:-}"
+      
+      # Card Brands
+      card_brands:
+        - "visa"
+        - "mastercard"
+        - "american_express"
+        - "discover"
+      
+      # Transaction Volume
+      transaction_volume:
+        annual_transactions: ${PCI_DSS_ANNUAL_TRANSACTIONS:-0}
+        card_data_storage: ${PCI_DSS_CARD_DATA_STORAGE:-false}
+        cardholder_data_environment: ${PCI_DSS_CDE:-false}
+    
+    # Compliance Scope
+    compliance_scope:
+      cardholder_data_environment: ${PCI_DSS_CDE_SCOPE:-false}
+      connected_systems: ${PCI_DSS_CONNECTED_SYSTEMS:-false}
+      segmentation_implemented: ${PCI_DSS_SEGMENTATION:-false}
+      
+      # Assessment Type
+      assessment_type: "${PCI_DSS_ASSESSMENT_TYPE:-self_assessment}"  # self_assessment, on_site_assessment
+      assessment_frequency: "${PCI_DSS_ASSESSMENT_FREQUENCY:-annually}"
+      next_assessment_date: "${PCI_DSS_NEXT_ASSESSMENT:-}"
+
+  # Requirement 1: Install and maintain a firewall configuration
+  requirement_1:
+    # Firewall Configuration
+    firewall_configuration:
+      firewall_implemented: ${PCI_DSS_FIREWALL_IMPLEMENTED:-true}
+      configuration_standards: ${PCI_DSS_FIREWALL_STANDARDS:-true}
+      
+      # Firewall Rules
+      firewall_rules:
+        default_deny: ${PCI_DSS_DEFAULT_DENY:-true}
+        rule_documentation: ${PCI_DSS_RULE_DOCUMENTATION:-true}
+        rule_review_frequency: "${PCI_DSS_RULE_REVIEW_FREQUENCY:-semi_annually}"
+        
+        # Required Rules
+        required_rules:
+          - rule: "Block all traffic not specifically allowed"
+            direction: "inbound_outbound"
+            action: "deny"
+            priority: "highest"
+          
+          - rule: "Allow only necessary ports and protocols"
+            direction: "inbound"
+            action: "allow_specific"
+            priority: "high"
+          
+          - rule: "Restrict connections between CDE and non-CDE"
+            direction: "bidirectional"
+            action: "controlled_access"
+            priority: "critical"
+      
+      # Network Segmentation
+      network_segmentation:
+        segmentation_implemented: ${PCI_DSS_NETWORK_SEGMENTATION:-true}
+        cde_isolation: ${PCI_DSS_CDE_ISOLATION:-true}
+        segmentation_testing: ${PCI_DSS_SEGMENTATION_TESTING:-true}
+        
+        # Segmentation Controls
+        segmentation_controls:
+          - control: "VLAN segmentation"
+            implementation: "physical_logical"
+            testing_frequency: "annually"
+          
+          - control: "Firewall rules between segments"
+            implementation: "network_layer"
+            testing_frequency: "semi_annually"
+          
+          - control: "Network access control lists"
+            implementation: "router_switch"
+            testing_frequency: "quarterly"
+    
+    # Router Configuration
+    router_configuration:
+      secure_configuration: ${PCI_DSS_ROUTER_SECURE_CONFIG:-true}
+      configuration_standards: ${PCI_DSS_ROUTER_STANDARDS:-true}
+      
+      # Security Settings
+      security_settings:
+        - setting: "Change default passwords"
+          status: "required"
+          verification: "annually"
+        
+        - setting: "Disable unnecessary services"
+          status: "required"
+          verification: "annually"
+        
+        - setting: "Enable secure protocols only"
+          status: "required"
+          verification: "quarterly"
+
+  # Requirement 2: Do not use vendor-supplied defaults for system passwords
+  requirement_2:
+    # Default Credentials
+    default_credentials:
+      remove_defaults: ${PCI_DSS_REMOVE_DEFAULTS:-true}
+      inventory_systems: ${PCI_DSS_INVENTORY_SYSTEMS:-true}
+      
+      # Password Management
+      password_management:
+        change_defaults: ${PCI_DSS_CHANGE_DEFAULTS:-true}
+        strong_passwords: ${PCI_DSS_STRONG_PASSWORDS:-true}
+        password_policy: ${PCI_DSS_PASSWORD_POLICY:-true}
+        
+        # Password Requirements
+        password_requirements:
+          minimum_length: ${PCI_DSS_PASSWORD_MIN_LENGTH:-8}
+          complexity_required: ${PCI_DSS_PASSWORD_COMPLEXITY:-true}
+          expiration_days: ${PCI_DSS_PASSWORD_EXPIRATION:-90}
+          history_count: ${PCI_DSS_PASSWORD_HISTORY:-4}
+    
+    # System Hardening
+    system_hardening:
+      hardening_standards: ${PCI_DSS_HARDENING_STANDARDS:-true}
+      configuration_baselines: ${PCI_DSS_CONFIG_BASELINES:-true}
+      
+      # Hardening Controls
+      hardening_controls:
+        - control: "Remove unnecessary software"
+          scope: "all_systems"
+          frequency: "installation"
+        
+        - control: "Disable unnecessary services"
+          scope: "all_systems"
+          frequency: "installation"
+        
+        - control: "Configure security parameters"
+          scope: "all_systems"
+          frequency: "installation"
+        
+        - control: "Apply security patches"
+          scope: "all_systems"
+          frequency: "monthly"
+    
+    # Encryption and Security Protocols
+    encryption_protocols:
+      strong_cryptography: ${PCI_DSS_STRONG_CRYPTOGRAPHY:-true}
+      secure_protocols: ${PCI_DSS_SECURE_PROTOCOLS:-true}
+      
+      # Encryption Standards
+      encryption_standards:
+        data_at_rest: ["AES-256"]
+        data_in_transit: ["TLS-1.2", "TLS-1.3"]
+        key_management: "secure_key_management"
+        
+      # Insecure Protocols
+      insecure_protocols:
+        prohibited_protocols: ["SSL", "TLS-1.0", "TLS-1.1", "WEP"]
+        detection_monitoring: ${PCI_DSS_INSECURE_PROTOCOL_MONITORING:-true}
+
+  # Requirement 3: Protect stored cardholder data
+  requirement_3:
+    # Data Protection
+    data_protection:
+      minimize_storage: ${PCI_DSS_MINIMIZE_STORAGE:-true}
+      secure_deletion: ${PCI_DSS_SECURE_DELETION:-true}
+      data_retention_policy: ${PCI_DSS_DATA_RETENTION_POLICY:-true}
+      
+      # Prohibited Data
+      prohibited_data:
+        - "Full magnetic stripe data"
+        - "CAV2/CVC2/CVV2/CID"
+        - "PIN/PIN block"
+        
+      # Permitted Data Storage
+      permitted_data:
+        primary_account_number:
+          storage_allowed: true
+          encryption_required: true
+          access_restricted: true
+        
+        cardholder_name:
+          storage_allowed: true
+          encryption_required: false
+          access_restricted: true
+        
+        expiration_date:
+          storage_allowed: true
+          encryption_required: false
+          access_restricted: true
+        
+        service_code:
+          storage_allowed: true
+          encryption_required: false
+          access_restricted: true
+    
+    # Encryption Requirements
+    encryption_requirements:
+      # Primary Account Number (PAN) Protection
+      pan_protection:
+        encryption_algorithm: "${PCI_DSS_PAN_ENCRYPTION:-AES-256}"
+        key_strength: "${PCI_DSS_PAN_KEY_STRENGTH:-256_bit}"
+        encryption_scope: "full_pan"
+        
+        # Masking Requirements
+        masking:
+          display_masking: ${PCI_DSS_DISPLAY_MASKING:-true}
+          first_six_last_four: ${PCI_DSS_FIRST_SIX_LAST_FOUR:-true}
+          maximum_display: 4  # characters
+      
+      # Key Management
+      key_management:
+        key_generation: ${PCI_DSS_KEY_GENERATION:-true}
+        key_distribution: ${PCI_DSS_KEY_DISTRIBUTION:-true}
+        key_storage: ${PCI_DSS_KEY_STORAGE:-true}
+        key_rotation: ${PCI_DSS_KEY_ROTATION:-true}
+        
+        # Key Management System
+        kms_configuration:
+          dual_control: ${PCI_DSS_DUAL_CONTROL:-true}
+          split_knowledge: ${PCI_DSS_SPLIT_KNOWLEDGE:-true}
+          key_escrow: ${PCI_DSS_KEY_ESCROW:-true}
+          key_rotation_frequency: "${PCI_DSS_KEY_ROTATION_FREQUENCY:-annually}"
+    
+    # Data Storage Controls
+    storage_controls:
+      # Database Security
+      database_security:
+        encryption_at_rest: ${PCI_DSS_DB_ENCRYPTION:-true}
+        access_controls: ${PCI_DSS_DB_ACCESS_CONTROLS:-true}
+        database_hardening: ${PCI_DSS_DB_HARDENING:-true}
+        
+        # Database Controls
+        database_controls:
+          - control: "Encrypt database files"
+            implementation: "file_level_encryption"
+            verification: "quarterly"
+          
+          - control: "Restrict database access"
+            implementation: "role_based_access"
+            verification: "monthly"
+          
+          - control: "Monitor database activity"
+            implementation: "audit_logging"
+            verification: "daily"
+      
+      # File System Security
+      file_system_security:
+        file_encryption: ${PCI_DSS_FILE_ENCRYPTION:-true}
+        access_permissions: ${PCI_DSS_FILE_PERMISSIONS:-true}
+        secure_deletion: ${PCI_DSS_SECURE_FILE_DELETION:-true}
+
+  # Requirement 4: Encrypt transmission of cardholder data
+  requirement_4:
+    # Transmission Security
+    transmission_security:
+      encryption_in_transit: ${PCI_DSS_ENCRYPTION_IN_TRANSIT:-true}
+      secure_protocols: ${PCI_DSS_SECURE_TRANSMISSION_PROTOCOLS:-true}
+      
+      # Protocol Requirements
+      protocol_requirements:
+        minimum_tls_version: "${PCI_DSS_MIN_TLS_VERSION:-TLS-1.2}"
+        cipher_suites: ["ECDHE-RSA-AES256-GCM-SHA384", "ECDHE-RSA-AES128-GCM-SHA256"]
+        perfect_forward_secrecy: ${PCI_DSS_PERFECT_FORWARD_SECRECY:-true}
+        
+        # Certificate Management
+        certificate_management:
+          strong_certificates: ${PCI_DSS_STRONG_CERTIFICATES:-true}
+          certificate_validation: ${PCI_DSS_CERTIFICATE_VALIDATION:-true}
+          certificate_expiry_monitoring: ${PCI_DSS_CERT_EXPIRY_MONITORING:-true}
+    
+    # Wireless Security
+    wireless_security:
+      wireless_networks_secured: ${PCI_DSS_WIRELESS_SECURED:-true}
+      wpa2_minimum: ${PCI_DSS_WPA2_MINIMUM:-true}
+      
+      # Wireless Controls
+      wireless_controls:
+        - control: "Change default wireless passwords"
+          implementation: "strong_authentication"
+          frequency: "installation"
+        
+        - control: "Use strong encryption (WPA2/WPA3)"
+          implementation: "wireless_encryption"
+          frequency: "continuous"
+        
+        - control: "Regular wireless scanning"
+          implementation: "wireless_monitoring"
+          frequency: "quarterly"
+    
+    # Email and Messaging Security
+    messaging_security:
+      secure_email: ${PCI_DSS_SECURE_EMAIL:-true}
+      end_to_end_encryption: ${PCI_DSS_EMAIL_E2E_ENCRYPTION:-true}
+      
+      # Messaging Controls
+      messaging_controls:
+        email_encryption: "TLS_S_MIME"
+        instant_messaging: "encrypted_channels"
+        file_transfers: "SFTP_HTTPS"
+
+  # Requirement 5: Protect all systems against malware
+  requirement_5:
+    # Anti-Malware Protection
+    anti_malware:
+      antivirus_deployed: ${PCI_DSS_ANTIVIRUS_DEPLOYED:-true}
+      real_time_protection: ${PCI_DSS_REAL_TIME_PROTECTION:-true}
+      
+      # Anti-Malware Configuration
+      configuration:
+        automatic_updates: ${PCI_DSS_ANTIVIRUS_AUTO_UPDATES:-true}
+        regular_scans: ${PCI_DSS_REGULAR_SCANS:-true}
+        scan_frequency: "${PCI_DSS_SCAN_FREQUENCY:-daily}"
+        
+        # Scan Types
+        scan_types:
+          - scan_type: "Real-time scanning"
+            scope: "all_systems"
+            frequency: "continuous"
+          
+          - scan_type: "Full system scan"
+            scope: "all_systems"
+            frequency: "weekly"
+          
+          - scan_type: "Boot sector scan"
+            scope: "workstations_servers"
+            frequency: "weekly"
+    
+    # Removable Media Controls
+    removable_media:
+      media_controls: ${PCI_DSS_REMOVABLE_MEDIA_CONTROLS:-true}
+      automatic_scanning: ${PCI_DSS_AUTOMATIC_MEDIA_SCANNING:-true}
+      
+      # Media Types
+      media_types:
+        usb_devices:
+          allowed: ${PCI_DSS_USB_ALLOWED:-false}
+          scanning_required: ${PCI_DSS_USB_SCANNING:-true}
+          encryption_required: ${PCI_DSS_USB_ENCRYPTION:-true}
+        
+        optical_media:
+          allowed: ${PCI_DSS_OPTICAL_MEDIA_ALLOWED:-false}
+          scanning_required: ${PCI_DSS_OPTICAL_SCANNING:-true}
+        
+        network_shares:
+          allowed: ${PCI_DSS_NETWORK_SHARES_ALLOWED:-true}
+          scanning_required: ${PCI_DSS_NETWORK_SHARE_SCANNING:-true}
+
+  # Requirement 6: Develop and maintain secure systems and applications
+  requirement_6:
+    # Secure Development
+    secure_development:
+      secure_coding_practices: ${PCI_DSS_SECURE_CODING:-true}
+      code_review_process: ${PCI_DSS_CODE_REVIEW:-true}
+      
+      # Development Standards
+      development_standards:
+        coding_standards: ${PCI_DSS_CODING_STANDARDS:-true}
+        security_requirements: ${PCI_DSS_SECURITY_REQUIREMENTS:-true}
+        testing_requirements: ${PCI_DSS_TESTING_REQUIREMENTS:-true}
+        
+        # OWASP Top 10 Protection
+        owasp_protection:
+          injection_attacks: ${PCI_DSS_INJECTION_PROTECTION:-true}
+          broken_authentication: ${PCI_DSS_AUTH_PROTECTION:-true}
+          sensitive_data_exposure: ${PCI_DSS_DATA_EXPOSURE_PROTECTION:-true}
+          xml_external_entities: ${PCI_DSS_XXE_PROTECTION:-true}
+          broken_access_control: ${PCI_DSS_ACCESS_CONTROL_PROTECTION:-true}
+          security_misconfiguration: ${PCI_DSS_MISCONFIG_PROTECTION:-true}
+          cross_site_scripting: ${PCI_DSS_XSS_PROTECTION:-true}
+          insecure_deserialization: ${PCI_DSS_DESERIALIZATION_PROTECTION:-true}
+          vulnerable_components: ${PCI_DSS_COMPONENT_PROTECTION:-true}
+          insufficient_logging: ${PCI_DSS_LOGGING_PROTECTION:-true}
+    
+    # Vulnerability Management
+    vulnerability_management:
+      vulnerability_scanning: ${PCI_DSS_VULNERABILITY_SCANNING:-true}
+      patch_management: ${PCI_DSS_PATCH_MANAGEMENT:-true}
+      
+      # Scanning Requirements
+      scanning_requirements:
+        internal_scanning: ${PCI_DSS_INTERNAL_SCANNING:-true}
+        external_scanning: ${PCI_DSS_EXTERNAL_SCANNING:-true}
+        scanning_frequency: "${PCI_DSS_SCANNING_FREQUENCY:-quarterly}"
+        
+        # Scan Results Management
+        scan_results:
+          high_risk_remediation: "within_30_days"
+          medium_risk_remediation: "within_90_days"
+          low_risk_remediation: "within_180_days"
+          rescan_after_remediation: ${PCI_DSS_RESCAN_AFTER_REMEDIATION:-true}
+    
+    # Change Management
+    change_management:
+      change_control_process: ${PCI_DSS_CHANGE_CONTROL:-true}
+      testing_procedures: ${PCI_DSS_CHANGE_TESTING:-true}
+      
+      # Change Process
+      change_process:
+        - stage: "Change request"
+          approval_required: true
+          documentation_required: true
+        
+        - stage: "Impact assessment"
+          security_review: true
+          risk_assessment: true
+        
+        - stage: "Testing"
+          security_testing: true
+          functionality_testing: true
+        
+        - stage: "Approval"
+          management_approval: true
+          security_approval: true
+        
+        - stage: "Implementation"
+          controlled_deployment: true
+          rollback_plan: true
+
+  # Requirement 7: Restrict access to cardholder data by business need-to-know
+  requirement_7:
+    # Access Control
+    access_control:
+      need_to_know_principle: ${PCI_DSS_NEED_TO_KNOW:-true}
+      role_based_access: ${PCI_DSS_ROLE_BASED_ACCESS:-true}
+      
+      # Access Roles
+      access_roles:
+        administrator:
+          description: "Full system access"
+          cardholder_data_access: true
+          approval_level: "cso_approval"
+        
+        operator:
+          description: "Operational system access"
+          cardholder_data_access: true
+          approval_level: "manager_approval"
+        
+        user:
+          description: "Standard user access"
+          cardholder_data_access: false
+          approval_level: "supervisor_approval"
+        
+        read_only:
+          description: "Read-only access"
+          cardholder_data_access: false
+          approval_level: "team_lead_approval"
+    
+    # Access Control System
+    access_control_system:
+      automated_access_control: ${PCI_DSS_AUTOMATED_ACCESS_CONTROL:-true}
+      access_control_lists: ${PCI_DSS_ACCESS_CONTROL_LISTS:-true}
+      
+      # Control Mechanisms
+      control_mechanisms:
+        - mechanism: "Role-based access control (RBAC)"
+          implementation: "identity_management_system"
+          coverage: "all_systems"
+        
+        - mechanism: "Attribute-based access control (ABAC)"
+          implementation: "policy_engine"
+          coverage: "sensitive_data_access"
+        
+        - mechanism: "Mandatory access control (MAC)"
+          implementation: "system_level"
+          coverage: "classified_data"
+
+  # Requirement 8: Identify and authenticate access to system components
+  requirement_8:
+    # User Identification
+    user_identification:
+      unique_user_ids: ${PCI_DSS_UNIQUE_USER_IDS:-true}
+      shared_accounts_prohibited: ${PCI_DSS_NO_SHARED_ACCOUNTS:-true}
+      
+      # User Management
+      user_management:
+        user_provisioning: ${PCI_DSS_USER_PROVISIONING:-true}
+        user_deprovisioning: ${PCI_DSS_USER_DEPROVISIONING:-true}
+        account_review: ${PCI_DSS_ACCOUNT_REVIEW:-true}
+        
+        # Account Lifecycle
+        account_lifecycle:
+          provisioning_process: "automated_workflow"
+          approval_required: true
+          documentation_required: true
+          review_frequency: "quarterly"
+          deprovisioning_triggers: ["termination", "role_change", "prolonged_inactivity"]
+    
+    # Authentication
+    authentication:
+      multi_factor_authentication: ${PCI_DSS_MFA_REQUIRED:-true}
+      strong_authentication: ${PCI_DSS_STRONG_AUTHENTICATION:-true}
+      
+      # MFA Requirements
+      mfa_requirements:
+        remote_access: ${PCI_DSS_MFA_REMOTE_ACCESS:-true}
+        administrative_access: ${PCI_DSS_MFA_ADMIN_ACCESS:-true}
+        cde_access: ${PCI_DSS_MFA_CDE_ACCESS:-true}
+        
+        # Authentication Factors
+        authentication_factors:
+          something_you_know: ["password", "passphrase", "pin"]
+          something_you_have: ["token", "smart_card", "mobile_device"]
+          something_you_are: ["fingerprint", "retina_scan", "voice_recognition"]
+    
+    # Password Policy
+    password_policy:
+      password_requirements: ${PCI_DSS_PASSWORD_REQUIREMENTS:-true}
+      password_complexity: ${PCI_DSS_PASSWORD_COMPLEXITY:-true}
+      
+      # Password Standards
+      password_standards:
+        minimum_length: ${PCI_DSS_PASSWORD_MIN_LENGTH:-7}
+        numeric_alpha_required: ${PCI_DSS_PASSWORD_NUMERIC_ALPHA:-true}
+        expiration_days: ${PCI_DSS_PASSWORD_EXPIRATION:-90}
+        history_count: ${PCI_DSS_PASSWORD_HISTORY:-4}
+        lockout_attempts: ${PCI_DSS_PASSWORD_LOCKOUT_ATTEMPTS:-6}
+        lockout_duration_minutes: ${PCI_DSS_PASSWORD_LOCKOUT_DURATION:-30}
+
+  # Requirement 9: Restrict physical access to cardholder data
+  requirement_9:
+    # Physical Security
+    physical_security:
+      facility_security: ${PCI_DSS_FACILITY_SECURITY:-true}
+      access_controls: ${PCI_DSS_PHYSICAL_ACCESS_CONTROLS:-true}
+      
+      # Access Control Systems
+      access_control_systems:
+        - system: "Badge access system"
+          coverage: "all_restricted_areas"
+          monitoring: "24x7"
+        
+        - system: "Biometric access control"
+          coverage: "high_security_areas"
+          monitoring: "24x7"
+        
+        - system: "Video surveillance"
+          coverage: "all_entry_points"
+          retention_days: 90
+    
+    # Visitor Management
+    visitor_management:
+      visitor_controls: ${PCI_DSS_VISITOR_CONTROLS:-true}
+      escort_requirements: ${PCI_DSS_VISITOR_ESCORT:-true}
+      
+      # Visitor Process
+      visitor_process:
+        registration_required: ${PCI_DSS_VISITOR_REGISTRATION:-true}
+        identification_required: ${PCI_DSS_VISITOR_ID:-true}
+        badge_issuance: ${PCI_DSS_VISITOR_BADGE:-true}
+        log_maintenance: ${PCI_DSS_VISITOR_LOG:-true}
+        
+        # Visitor Types
+        visitor_types:
+          business_visitor:
+            escort_required: false
+            restricted_areas: true
+            time_limited: true
+          
+          vendor_technician:
+            escort_required: true
+            restricted_areas: true
+            background_check: true
+          
+          auditor:
+            escort_required: false
+            full_access: true
+            documented_purpose: true
+    
+    # Media Handling
+    media_handling:
+      secure_media_handling: ${PCI_DSS_SECURE_MEDIA_HANDLING:-true}
+      media_destruction: ${PCI_DSS_MEDIA_DESTRUCTION:-true}
+      
+      # Media Controls
+      media_controls:
+        classification: ${PCI_DSS_MEDIA_CLASSIFICATION:-true}
+        secure_transport: ${PCI_DSS_SECURE_TRANSPORT:-true}
+        destruction_verification: ${PCI_DSS_DESTRUCTION_VERIFICATION:-true}
+        
+        # Destruction Methods
+        destruction_methods:
+          hard_drives: "dod_5220_22_m_wiping"
+          optical_media: "physical_destruction"
+          paper_documents: "cross_cut_shredding"
+          magnetic_tapes: "degaussing"
+
+  # Requirement 10: Track and monitor all access to network resources and cardholder data
+  requirement_10:
+    # Audit Logging
+    audit_logging:
+      comprehensive_logging: ${PCI_DSS_COMPREHENSIVE_LOGGING:-true}
+      log_all_access: ${PCI_DSS_LOG_ALL_ACCESS:-true}
+      
+      # Logged Events
+      logged_events:
+        user_access:
+          - "user_authentication_attempts"
+          - "privilege_escalation"
+          - "account_creation_deletion"
+          - "administrative_actions"
+        
+        data_access:
+          - "cardholder_data_access"
+          - "data_modification"
+          - "data_deletion"
+          - "data_export"
+        
+        system_events:
+          - "system_startup_shutdown"
+          - "security_policy_changes"
+          - "audit_log_modifications"
+          - "failed_login_attempts"
+    
+    # Log Management
+    log_management:
+      centralized_logging: ${PCI_DSS_CENTRALIZED_LOGGING:-true}
+      log_integrity: ${PCI_DSS_LOG_INTEGRITY:-true}
+      
+      # Log Requirements
+      log_requirements:
+        timestamp_synchronization: ${PCI_DSS_TIMESTAMP_SYNC:-true}
+        secure_log_storage: ${PCI_DSS_SECURE_LOG_STORAGE:-true}
+        log_review_process: ${PCI_DSS_LOG_REVIEW_PROCESS:-true}
+        
+        # Log Content
+        log_content_requirements:
+          - "user_identification"
+          - "type_of_event"
+          - "date_and_time"
+          - "success_or_failure"
+          - "origination_of_event"
+          - "identity_or_name_of_affected_data"
+    
+    # Log Review and Analysis
+    log_review:
+      daily_log_review: ${PCI_DSS_DAILY_LOG_REVIEW:-true}
+      automated_analysis: ${PCI_DSS_AUTOMATED_LOG_ANALYSIS:-true}
+      
+      # Review Process
+      review_process:
+        review_frequency: "daily"
+        automated_alerting: ${PCI_DSS_LOG_ALERTING:-true}
+        exception_investigation: ${PCI_DSS_EXCEPTION_INVESTIGATION:-true}
+        
+        # Alert Triggers
+        alert_triggers:
+          - "multiple_failed_login_attempts"
+          - "privilege_escalation_attempts"
+          - "unusual_data_access_patterns"
+          - "system_configuration_changes"
+          - "large_data_transfers"
+
+  # Requirement 11: Regularly test security systems and processes
+  requirement_11:
+    # Security Testing
+    security_testing:
+      penetration_testing: ${PCI_DSS_PENETRATION_TESTING:-true}
+      vulnerability_scanning: ${PCI_DSS_VULNERABILITY_SCANNING:-true}
+      
+      # Testing Requirements
+      testing_requirements:
+        external_penetration_testing: ${PCI_DSS_EXTERNAL_PENTEST:-true}
+        internal_penetration_testing: ${PCI_DSS_INTERNAL_PENTEST:-true}
+        testing_frequency: "${PCI_DSS_TESTING_FREQUENCY:-annually}"
+        
+        # Testing Scope
+        testing_scope:
+          network_layer: ${PCI_DSS_NETWORK_TESTING:-true}
+          application_layer: ${PCI_DSS_APPLICATION_TESTING:-true}
+          segmentation_testing: ${PCI_DSS_SEGMENTATION_TESTING:-true}
+    
+    # Wireless Security Testing
+    wireless_testing:
+      wireless_scanning: ${PCI_DSS_WIRELESS_SCANNING:-true}
+      rogue_access_point_detection: ${PCI_DSS_ROGUE_AP_DETECTION:-true}
+      
+      # Scanning Requirements
+      scanning_requirements:
+        scanning_frequency: "${PCI_DSS_WIRELESS_SCAN_FREQUENCY:-quarterly}"
+        automated_scanning: ${PCI_DSS_AUTOMATED_WIRELESS_SCAN:-true}
+        manual_validation: ${PCI_DSS_MANUAL_WIRELESS_VALIDATION:-true}
+    
+    # Intrusion Detection Systems
+    intrusion_detection:
+      ids_deployed: ${PCI_DSS_IDS_DEPLOYED:-true}
+      file_integrity_monitoring: ${PCI_DSS_FILE_INTEGRITY_MONITORING:-true}
+      
+      # IDS Configuration
+      ids_configuration:
+        network_ids: ${PCI_DSS_NETWORK_IDS:-true}
+        host_ids: ${PCI_DSS_HOST_IDS:-true}
+        real_time_alerting: ${PCI_DSS_REAL_TIME_IDS_ALERTING:-true}
+        
+        # Monitored Areas
+        monitored_areas:
+          - "perimeter_of_cde"
+          - "critical_system_files"
+          - "configuration_files"
+          - "content_files"
+
+  # Requirement 12: Maintain a policy that addresses information security
+  requirement_12:
+    # Information Security Policy
+    security_policy:
+      policy_established: ${PCI_DSS_SECURITY_POLICY_ESTABLISHED:-true}
+      policy_published: ${PCI_DSS_SECURITY_POLICY_PUBLISHED:-true}
+      
+      # Policy Components
+      policy_components:
+        - component: "Information security policy"
+          status: "approved"
+          review_frequency: "annually"
+        
+        - component: "Risk assessment methodology"
+          status: "approved"
+          review_frequency: "annually"
+        
+        - component: "Usage policies for critical technologies"
+          status: "approved"
+          review_frequency: "annually"
+        
+        - component: "Incident response plan"
+          status: "approved"
+          review_frequency: "annually"
+    
+    # Risk Assessment
+    risk_assessment:
+      annual_risk_assessment: ${PCI_DSS_ANNUAL_RISK_ASSESSMENT:-true}
+      risk_methodology: "${PCI_DSS_RISK_METHODOLOGY:-nist_framework}"
+      
+      # Risk Assessment Process
+      assessment_process:
+        asset_inventory: ${PCI_DSS_ASSET_INVENTORY:-true}
+        threat_identification: ${PCI_DSS_THREAT_IDENTIFICATION:-true}
+        vulnerability_assessment: ${PCI_DSS_VULNERABILITY_ASSESSMENT:-true}
+        risk_calculation: ${PCI_DSS_RISK_CALCULATION:-true}
+        
+        # Risk Treatment
+        risk_treatment:
+          risk_acceptance: ${PCI_DSS_RISK_ACCEPTANCE:-true}
+          risk_mitigation: ${PCI_DSS_RISK_MITIGATION:-true}
+          risk_transfer: ${PCI_DSS_RISK_TRANSFER:-true}
+          risk_avoidance: ${PCI_DSS_RISK_AVOIDANCE:-true}
+    
+    # Security Awareness Program
+    security_awareness:
+      awareness_program: ${PCI_DSS_AWARENESS_PROGRAM:-true}
+      security_training: ${PCI_DSS_SECURITY_TRAINING:-true}
+      
+      # Training Requirements
+      training_requirements:
+        initial_training: ${PCI_DSS_INITIAL_TRAINING:-true}
+        annual_training: ${PCI_DSS_ANNUAL_TRAINING:-true}
+        role_specific_training: ${PCI_DSS_ROLE_SPECIFIC_TRAINING:-true}
+        
+        # Training Topics
+        training_topics:
+          - "pci_dss_requirements"
+          - "cardholder_data_protection"
+          - "password_security"
+          - "social_engineering_awareness"
+          - "incident_reporting"
+          - "secure_coding_practices"
+    
+    # Incident Response Plan
+    incident_response:
+      incident_response_plan: ${PCI_DSS_INCIDENT_RESPONSE_PLAN:-true}
+      response_team: ${PCI_DSS_INCIDENT_RESPONSE_TEAM:-true}
+      
+      # Response Process
+      response_process:
+        incident_identification: ${PCI_DSS_INCIDENT_IDENTIFICATION:-true}
+        incident_containment: ${PCI_DSS_INCIDENT_CONTAINMENT:-true}
+        incident_analysis: ${PCI_DSS_INCIDENT_ANALYSIS:-true}
+        incident_communication: ${PCI_DSS_INCIDENT_COMMUNICATION:-true}
+        
+        # Response Timeline
+        response_timeline:
+          initial_response: "within_1_hour"
+          containment: "within_4_hours"
+          assessment: "within_24_hours"
+          notification: "as_required"
+
+  # Monitoring and Compliance
+  monitoring:
+    # Compliance Monitoring
+    compliance_monitoring:
+      enabled: ${PCI_DSS_COMPLIANCE_MONITORING:-true}
+      monitoring_frequency: "continuous"
+      
+      # Key Performance Indicators
+      kpis:
+        - metric: "vulnerability_remediation_time"
+          target: "30_days_high_risk"
+          threshold: "95%"
+        
+        - metric: "security_incident_response_time"
+          target: "1_hour"
+          threshold: "100%"
+        
+        - metric: "log_review_completion"
+          target: "daily"
+          threshold: "100%"
+        
+        - metric: "security_training_completion"
+          target: "100%"
+          threshold: "100%"
+    
+    # Assessment and Audit
+    assessment_audit:
+      internal_audit: ${PCI_DSS_INTERNAL_AUDIT:-true}
+      external_assessment: ${PCI_DSS_EXTERNAL_ASSESSMENT:-true}
+      
+      # Assessment Schedule
+      assessment_schedule:
+        self_assessment: "annually"
+        penetration_testing: "annually"
+        vulnerability_scanning: "quarterly"
+        
+      # Qualified Security Assessor (QSA)
+      qsa_engagement:
+        qsa_required: ${PCI_DSS_QSA_REQUIRED:-false}
+        qsa_selection: "${PCI_DSS_QSA_SELECTION:-}"
+        assessment_scope: "full_environment"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: false
+        cardholder_data_environment: false
+      
+      requirement_3:
+        data_protection:
+          minimize_storage: true
+        
+        encryption_requirements:
+          pan_protection:
+            encryption_algorithm: "AES-256"
+      
+      requirement_10:
+        audit_logging:
+          comprehensive_logging: true
+          log_all_access: false
+    
+    testing:
+      general:
+        enabled: true
+        cardholder_data_environment: false
+      
+      requirement_3:
+        data_protection:
+          minimize_storage: true
+        
+        encryption_requirements:
+          pan_protection:
+            encryption_scope: "test_data_only"
+      
+      requirement_11:
+        security_testing:
+          penetration_testing: true
+          vulnerability_scanning: true
+          testing_frequency: "quarterly"
+    
+    production:
+      general:
+        enabled: true
+        cardholder_data_environment: true
+      
+      requirement_1:
+        firewall_configuration:
+          firewall_implemented: true
+          configuration_standards: true
+        
+        network_segmentation:
+          segmentation_implemented: true
+          cde_isolation: true
+      
+      requirement_3:
+        data_protection:
+          minimize_storage: true
+          secure_deletion: true
+        
+        encryption_requirements:
+          pan_protection:
+            encryption_algorithm: "AES-256"
+            key_strength: "256_bit"
+      
+      requirement_8:
+        authentication:
+          multi_factor_authentication: true
+          strong_authentication: true
+        
+        password_policy:
+          password_requirements: true
+          password_complexity: true
+      
+      requirement_10:
+        audit_logging:
+          comprehensive_logging: true
+          log_all_access: true
+        
+        log_management:
+          centralized_logging: true
+          log_integrity: true
+      
+      requirement_11:
+        security_testing:
+          penetration_testing: true
+          vulnerability_scanning: true
+          testing_frequency: "annually"
+        
+        intrusion_detection:
+          ids_deployed: true
+          file_integrity_monitoring: true
+      
+      monitoring:
+        compliance_monitoring:
+          enabled: true
+          monitoring_frequency: "continuous"
+        
+        assessment_audit:
+          internal_audit: true
+          external_assessment: true

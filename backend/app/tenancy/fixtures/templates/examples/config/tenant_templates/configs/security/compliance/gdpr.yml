@@ -1,0 +1,913 @@
+# GDPR Compliance Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - GDPR compliance architecture with AI privacy optimization
+# - Senior Backend Developer: Python/FastAPI/Django GDPR enterprise patterns
+# - Backend Security Specialist: GDPR security hardening and data protection
+# - DBA & Data Engineer: GDPR data management, retention, and deletion policies
+# - Legal Compliance Specialist: GDPR regulatory requirements and best practices
+
+# ==========================================
+# GDPR COMPLIANCE CONFIGURATION
+# ==========================================
+
+gdpr:
+  # General Settings
+  general:
+    enabled: ${GDPR_ENABLED:-true}
+    data_controller: "${GDPR_DATA_CONTROLLER:-Spotify AI Agent Ltd.}"
+    data_protection_officer:
+      name: "${GDPR_DPO_NAME:-John Doe}"
+      email: "${GDPR_DPO_EMAIL:-dpo@spotify-ai-agent.com}"
+      phone: "${GDPR_DPO_PHONE:-+1-555-0123}"
+    
+    # Jurisdictions
+    applicable_jurisdictions:
+      - "EU"
+      - "EEA"
+      - "UK"
+      - "Switzerland"
+    
+    # Legal Basis for Processing
+    legal_basis:
+      user_accounts: "consent"
+      service_delivery: "contract"
+      analytics: "legitimate_interest"
+      marketing: "consent"
+      security: "legitimate_interest"
+      ai_training: "consent"
+    
+    # Privacy Policy
+    privacy_policy:
+      url: "${GDPR_PRIVACY_POLICY_URL:-https://spotify-ai-agent.com/privacy}"
+      version: "${GDPR_PRIVACY_POLICY_VERSION:-2.0}"
+      last_updated: "${GDPR_PRIVACY_POLICY_LAST_UPDATED:-2025-01-01}"
+
+  # Data Subject Rights
+  data_subject_rights:
+    # Right of Access (Article 15)
+    right_of_access:
+      enabled: ${GDPR_RIGHT_OF_ACCESS_ENABLED:-true}
+      response_time_days: ${GDPR_ACCESS_RESPONSE_TIME:-30}
+      automated_response: ${GDPR_ACCESS_AUTOMATED_RESPONSE:-true}
+      
+      # Data Export Formats
+      export_formats:
+        - "json"
+        - "csv"
+        - "xml"
+        - "pdf"
+      
+      # Data Categories to Include
+      data_categories:
+        - "personal_data"
+        - "usage_data"
+        - "preferences"
+        - "ai_insights"
+        - "interaction_history"
+        - "payment_data"
+        - "technical_data"
+      
+      # Verification Requirements
+      verification:
+        required: ${GDPR_ACCESS_VERIFICATION_REQUIRED:-true}
+        methods:
+          - "email_verification"
+          - "two_factor_authentication"
+          - "identity_document"
+        verification_expiry_hours: ${GDPR_ACCESS_VERIFICATION_EXPIRY:-24}
+    
+    # Right to Rectification (Article 16)
+    right_to_rectification:
+      enabled: ${GDPR_RIGHT_TO_RECTIFICATION_ENABLED:-true}
+      response_time_days: ${GDPR_RECTIFICATION_RESPONSE_TIME:-30}
+      automated_rectification: ${GDPR_RECTIFICATION_AUTOMATED:-true}
+      
+      # Rectifiable Data Fields
+      rectifiable_fields:
+        - "name"
+        - "email"
+        - "phone"
+        - "address"
+        - "preferences"
+        - "profile_data"
+      
+      # Notification Requirements
+      notification:
+        notify_third_parties: ${GDPR_RECTIFICATION_NOTIFY_THIRD_PARTIES:-true}
+        notification_log: ${GDPR_RECTIFICATION_NOTIFICATION_LOG:-true}
+    
+    # Right to Erasure (Article 17)
+    right_to_erasure:
+      enabled: ${GDPR_RIGHT_TO_ERASURE_ENABLED:-true}
+      response_time_days: ${GDPR_ERASURE_RESPONSE_TIME:-30}
+      
+      # Deletion Policies
+      deletion_policies:
+        immediate_deletion:
+          - "user_request"
+          - "consent_withdrawal"
+        
+        delayed_deletion:
+          - data_category: "backup_data"
+            retention_days: 90
+            reason: "backup_integrity"
+          
+          - data_category: "legal_compliance_data"
+            retention_days: 2555  # 7 years
+            reason: "legal_obligation"
+          
+          - data_category: "fraud_prevention_data"
+            retention_days: 1825  # 5 years
+            reason: "legitimate_interest"
+      
+      # Anonymization vs Deletion
+      anonymization:
+        enabled: ${GDPR_ANONYMIZATION_ENABLED:-true}
+        anonymization_techniques:
+          - "k_anonymity"
+          - "differential_privacy"
+          - "data_masking"
+          - "pseudonymization"
+        
+        # Data to Anonymize Instead of Delete
+        anonymize_instead_of_delete:
+          - "analytics_data"
+          - "ai_training_data"
+          - "aggregate_statistics"
+      
+      # Exceptions to Erasure
+      erasure_exceptions:
+        - reason: "freedom_of_expression"
+          applicable_data: ["public_comments", "reviews"]
+        
+        - reason: "legal_obligation"
+          applicable_data: ["tax_records", "audit_logs"]
+          retention_period: "7_years"
+        
+        - reason: "public_interest"
+          applicable_data: ["research_data"]
+          conditions: ["anonymized"]
+        
+        - reason: "legitimate_interest"
+          applicable_data: ["fraud_prevention"]
+          retention_period: "5_years"
+    
+    # Right to Restrict Processing (Article 18)
+    right_to_restrict:
+      enabled: ${GDPR_RIGHT_TO_RESTRICT_ENABLED:-true}
+      response_time_days: ${GDPR_RESTRICT_RESPONSE_TIME:-30}
+      
+      # Restriction Scenarios
+      restriction_scenarios:
+        - scenario: "data_accuracy_contested"
+          restriction_period_days: 30
+          actions: ["suspend_automated_processing", "manual_review"]
+        
+        - scenario: "processing_unlawful"
+          restriction_period_days: 90
+          actions: ["suspend_all_processing", "legal_review"]
+        
+        - scenario: "data_no_longer_needed"
+          restriction_period_days: 180
+          actions: ["suspend_processing", "prepare_deletion"]
+        
+        - scenario: "objection_pending"
+          restriction_period_days: 30
+          actions: ["suspend_processing", "assess_legitimate_interest"]
+      
+      # Notification Requirements
+      notification:
+        notify_before_lifting_restriction: ${GDPR_RESTRICT_NOTIFY_BEFORE_LIFTING:-true}
+        notify_third_parties: ${GDPR_RESTRICT_NOTIFY_THIRD_PARTIES:-true}
+    
+    # Right to Data Portability (Article 20)
+    right_to_portability:
+      enabled: ${GDPR_RIGHT_TO_PORTABILITY_ENABLED:-true}
+      response_time_days: ${GDPR_PORTABILITY_RESPONSE_TIME:-30}
+      
+      # Portable Data Categories
+      portable_data:
+        - "user_profile"
+        - "preferences"
+        - "playlists"
+        - "listening_history"
+        - "ai_recommendations"
+        - "user_content"
+      
+      # Export Formats
+      export_formats:
+        - format: "json"
+          structured: true
+          machine_readable: true
+        
+        - format: "csv"
+          structured: true
+          machine_readable: true
+        
+        - format: "xml"
+          structured: true
+          machine_readable: true
+      
+      # Direct Transfer
+      direct_transfer:
+        enabled: ${GDPR_PORTABILITY_DIRECT_TRANSFER_ENABLED:-false}
+        supported_services: []
+        api_endpoints: []
+    
+    # Right to Object (Article 21)
+    right_to_object:
+      enabled: ${GDPR_RIGHT_TO_OBJECT_ENABLED:-true}
+      response_time_days: ${GDPR_OBJECT_RESPONSE_TIME:-30}
+      
+      # Objection Categories
+      objection_categories:
+        - category: "direct_marketing"
+          immediate_cessation: true
+          no_override: true
+        
+        - category: "legitimate_interest_processing"
+          assessment_required: true
+          compelling_grounds_check: true
+          response_time_days: 30
+        
+        - category: "scientific_research"
+          assessment_required: true
+          public_interest_check: true
+          response_time_days: 60
+        
+        - category: "profiling"
+          assessment_required: true
+          automated_decision_check: true
+          response_time_days: 30
+      
+      # Opt-out Mechanisms
+      opt_out_mechanisms:
+        - mechanism: "web_interface"
+          url: "${GDPR_OPT_OUT_WEB_URL:-https://spotify-ai-agent.com/privacy/opt-out}"
+        
+        - mechanism: "email"
+          address: "${GDPR_OPT_OUT_EMAIL:-privacy@spotify-ai-agent.com}"
+        
+        - mechanism: "api"
+          endpoint: "${GDPR_OPT_OUT_API_ENDPOINT:-/api/v1/privacy/opt-out}"
+
+  # Consent Management
+  consent_management:
+    # Consent Requirements
+    consent_requirements:
+      explicit_consent_required: ${GDPR_EXPLICIT_CONSENT_REQUIRED:-true}
+      granular_consent: ${GDPR_GRANULAR_CONSENT:-true}
+      
+      # Consent Categories
+      consent_categories:
+        - category: "essential"
+          required: true
+          description: "Essential functionality and service delivery"
+          legal_basis: "contract"
+        
+        - category: "analytics"
+          required: false
+          description: "Usage analytics and service improvement"
+          legal_basis: "consent"
+        
+        - category: "marketing"
+          required: false
+          description: "Marketing communications and promotions"
+          legal_basis: "consent"
+        
+        - category: "ai_training"
+          required: false
+          description: "AI model training and improvement"
+          legal_basis: "consent"
+        
+        - category: "personalization"
+          required: false
+          description: "Personalized recommendations and content"
+          legal_basis: "consent"
+        
+        - category: "third_party_sharing"
+          required: false
+          description: "Sharing data with trusted partners"
+          legal_basis: "consent"
+    
+    # Consent Capture
+    consent_capture:
+      # Consent UI Requirements
+      ui_requirements:
+        clear_language: ${GDPR_CONSENT_CLEAR_LANGUAGE:-true}
+        prominent_display: ${GDPR_CONSENT_PROMINENT_DISPLAY:-true}
+        easy_withdrawal: ${GDPR_CONSENT_EASY_WITHDRAWAL:-true}
+        granular_controls: ${GDPR_CONSENT_GRANULAR_CONTROLS:-true}
+        no_pre_ticked_boxes: ${GDPR_CONSENT_NO_PRE_TICKED:-true}
+      
+      # Consent Evidence
+      evidence_requirements:
+        record_timestamp: ${GDPR_CONSENT_RECORD_TIMESTAMP:-true}
+        record_ip_address: ${GDPR_CONSENT_RECORD_IP:-true}
+        record_user_agent: ${GDPR_CONSENT_RECORD_USER_AGENT:-true}
+        record_consent_text: ${GDPR_CONSENT_RECORD_TEXT:-true}
+        record_method: ${GDPR_CONSENT_RECORD_METHOD:-true}
+      
+      # Consent Validation
+      validation:
+        age_verification: ${GDPR_CONSENT_AGE_VERIFICATION:-true}
+        minimum_age: ${GDPR_CONSENT_MINIMUM_AGE:-16}
+        parental_consent_required: ${GDPR_CONSENT_PARENTAL_REQUIRED:-true}
+        jurisdiction_check: ${GDPR_CONSENT_JURISDICTION_CHECK:-true}
+    
+    # Consent Withdrawal
+    consent_withdrawal:
+      easy_withdrawal: ${GDPR_CONSENT_EASY_WITHDRAWAL:-true}
+      
+      # Withdrawal Methods
+      withdrawal_methods:
+        - method: "web_interface"
+          url: "${GDPR_CONSENT_WITHDRAWAL_WEB_URL:-https://spotify-ai-agent.com/privacy/consent}"
+        
+        - method: "email"
+          address: "${GDPR_CONSENT_WITHDRAWAL_EMAIL:-privacy@spotify-ai-agent.com}"
+        
+        - method: "api"
+          endpoint: "${GDPR_CONSENT_WITHDRAWAL_API_ENDPOINT:-/api/v1/privacy/consent/withdraw}"
+      
+      # Post-Withdrawal Actions
+      post_withdrawal_actions:
+        immediate_processing_stop: ${GDPR_CONSENT_IMMEDIATE_STOP:-true}
+        data_retention_review: ${GDPR_CONSENT_RETENTION_REVIEW:-true}
+        notification_stop: ${GDPR_CONSENT_NOTIFICATION_STOP:-true}
+        anonymization_trigger: ${GDPR_CONSENT_ANONYMIZATION_TRIGGER:-true}
+
+  # Data Protection Impact Assessments (DPIA)
+  dpia:
+    # DPIA Requirements
+    required_scenarios:
+      - scenario: "systematic_monitoring"
+        description: "Systematic monitoring of publicly accessible areas"
+        threshold: "large_scale"
+      
+      - scenario: "special_categories"
+        description: "Processing special categories of personal data"
+        threshold: "any_scale"
+      
+      - scenario: "automated_decision_making"
+        description: "Automated decision-making with legal effects"
+        threshold: "any_scale"
+      
+      - scenario: "vulnerable_data_subjects"
+        description: "Processing data of vulnerable individuals"
+        threshold: "any_scale"
+      
+      - scenario: "innovative_technology"
+        description: "Use of new technologies"
+        threshold: "any_scale"
+      
+      - scenario: "data_matching"
+        description: "Combining datasets from different sources"
+        threshold: "large_scale"
+    
+    # DPIA Process
+    process:
+      assessment_template: "${GDPR_DPIA_TEMPLATE_PATH:-/etc/gdpr/templates/dpia.json}"
+      review_frequency_months: ${GDPR_DPIA_REVIEW_FREQUENCY:-12}
+      stakeholder_involvement: ${GDPR_DPIA_STAKEHOLDER_INVOLVEMENT:-true}
+      
+      # Required Assessments
+      required_assessments:
+        - "necessity_assessment"
+        - "proportionality_assessment"
+        - "risk_assessment"
+        - "mitigation_measures"
+        - "safeguards_evaluation"
+      
+      # Risk Levels
+      risk_levels:
+        low:
+          score_range: "0-3"
+          review_frequency_months: 24
+          approval_required: false
+        
+        medium:
+          score_range: "4-6"
+          review_frequency_months: 12
+          approval_required: true
+        
+        high:
+          score_range: "7-10"
+          review_frequency_months: 6
+          approval_required: true
+          consultation_required: true
+
+  # Data Minimization
+  data_minimization:
+    # Principles
+    principles:
+      adequate: ${GDPR_DATA_ADEQUATE:-true}
+      relevant: ${GDPR_DATA_RELEVANT:-true}
+      limited_to_purpose: ${GDPR_DATA_LIMITED_TO_PURPOSE:-true}
+      
+    # Data Collection Limits
+    collection_limits:
+      user_profile:
+        essential_fields: ["email", "name", "password_hash"]
+        optional_fields: ["phone", "address", "preferences"]
+        prohibited_fields: ["political_opinions", "religious_beliefs"]
+      
+      analytics:
+        essential_fields: ["user_id", "event_type", "timestamp"]
+        optional_fields: ["user_agent", "ip_address", "session_id"]
+        anonymization_required: true
+      
+      ai_training:
+        essential_fields: ["user_interactions", "preferences"]
+        optional_fields: ["demographic_data"]
+        anonymization_required: true
+        consent_required: true
+    
+    # Purpose Limitation
+    purpose_limitation:
+      defined_purposes:
+        - purpose: "service_delivery"
+          description: "Providing music streaming and AI recommendation services"
+          data_categories: ["user_profile", "usage_data", "preferences"]
+        
+        - purpose: "analytics"
+          description: "Service improvement and performance analytics"
+          data_categories: ["usage_data", "technical_data"]
+        
+        - purpose: "ai_improvement"
+          description: "Training and improving AI recommendation models"
+          data_categories: ["interaction_data", "preference_data"]
+        
+        - purpose: "customer_support"
+          description: "Providing customer support and troubleshooting"
+          data_categories: ["user_profile", "support_interactions"]
+        
+        - purpose: "legal_compliance"
+          description: "Meeting legal and regulatory requirements"
+          data_categories: ["transaction_data", "audit_logs"]
+      
+      # Compatible Use Assessment
+      compatible_use:
+        assessment_required: ${GDPR_COMPATIBLE_USE_ASSESSMENT:-true}
+        compatibility_factors:
+          - "relationship_to_original_purpose"
+          - "context_of_data_collection"
+          - "nature_of_personal_data"
+          - "consequences_for_data_subjects"
+          - "existence_of_safeguards"
+
+  # Data Retention
+  data_retention:
+    # General Retention Principles
+    principles:
+      time_limited: ${GDPR_RETENTION_TIME_LIMITED:-true}
+      purpose_based: ${GDPR_RETENTION_PURPOSE_BASED:-true}
+      regular_review: ${GDPR_RETENTION_REGULAR_REVIEW:-true}
+    
+    # Retention Periods by Data Category
+    retention_periods:
+      user_accounts:
+        active_period: "unlimited"  # While account is active
+        inactive_period_days: 1095  # 3 years after last activity
+        deletion_trigger: "account_closure_or_inactivity"
+      
+      transaction_data:
+        retention_days: 2555  # 7 years for legal compliance
+        deletion_trigger: "automatic"
+        legal_basis: "legal_obligation"
+      
+      analytics_data:
+        retention_days: 1095  # 3 years
+        deletion_trigger: "automatic"
+        anonymization_after_days: 365  # 1 year
+      
+      support_tickets:
+        retention_days: 1095  # 3 years
+        deletion_trigger: "automatic"
+        legal_basis: "legitimate_interest"
+      
+      audit_logs:
+        retention_days: 2555  # 7 years
+        deletion_trigger: "automatic"
+        legal_basis: "legal_obligation"
+      
+      ai_training_data:
+        retention_days: 1825  # 5 years
+        deletion_trigger: "automatic"
+        anonymization_required: true
+        consent_dependent: true
+      
+      marketing_data:
+        retention_days: 1095  # 3 years
+        deletion_trigger: "consent_withdrawal_or_automatic"
+        consent_dependent: true
+      
+      backup_data:
+        retention_days: 365  # 1 year
+        deletion_trigger: "automatic"
+        encryption_required: true
+    
+    # Automated Deletion
+    automated_deletion:
+      enabled: ${GDPR_AUTOMATED_DELETION_ENABLED:-true}
+      deletion_frequency: "daily"
+      deletion_time: "02:00"
+      
+      # Deletion Verification
+      verification:
+        verification_required: ${GDPR_DELETION_VERIFICATION:-true}
+        verification_log: ${GDPR_DELETION_VERIFICATION_LOG:-true}
+        verification_report_frequency: "weekly"
+      
+      # Safe Deletion
+      safe_deletion:
+        secure_overwrite: ${GDPR_SECURE_OVERWRITE:-true}
+        multiple_passes: ${GDPR_MULTIPLE_PASSES:-3}
+        verification_passes: ${GDPR_VERIFICATION_PASSES:-1}
+        crypto_shredding: ${GDPR_CRYPTO_SHREDDING:-true}
+
+  # Technical and Organizational Measures
+  technical_organizational_measures:
+    # Technical Measures
+    technical_measures:
+      # Encryption
+      encryption:
+        data_at_rest: ${GDPR_ENCRYPTION_AT_REST:-true}
+        data_in_transit: ${GDPR_ENCRYPTION_IN_TRANSIT:-true}
+        data_in_processing: ${GDPR_ENCRYPTION_IN_PROCESSING:-false}
+        encryption_algorithms: ["AES-256", "RSA-2048", "ChaCha20-Poly1305"]
+        key_management: "vault"
+      
+      # Access Controls
+      access_controls:
+        role_based_access: ${GDPR_RBAC_ENABLED:-true}
+        attribute_based_access: ${GDPR_ABAC_ENABLED:-true}
+        multi_factor_authentication: ${GDPR_MFA_ENABLED:-true}
+        privileged_access_management: ${GDPR_PAM_ENABLED:-true}
+        session_management: ${GDPR_SESSION_MANAGEMENT:-true}
+      
+      # Monitoring and Logging
+      monitoring:
+        audit_logging: ${GDPR_AUDIT_LOGGING:-true}
+        security_monitoring: ${GDPR_SECURITY_MONITORING:-true}
+        anomaly_detection: ${GDPR_ANOMALY_DETECTION:-true}
+        intrusion_detection: ${GDPR_INTRUSION_DETECTION:-true}
+        data_loss_prevention: ${GDPR_DLP_ENABLED:-true}
+      
+      # Data Processing Security
+      processing_security:
+        input_validation: ${GDPR_INPUT_VALIDATION:-true}
+        output_sanitization: ${GDPR_OUTPUT_SANITIZATION:-true}
+        secure_development: ${GDPR_SECURE_DEVELOPMENT:-true}
+        vulnerability_management: ${GDPR_VULNERABILITY_MANAGEMENT:-true}
+        penetration_testing: ${GDPR_PENETRATION_TESTING:-true}
+    
+    # Organizational Measures
+    organizational_measures:
+      # Policies and Procedures
+      policies:
+        data_protection_policy: "${GDPR_DATA_PROTECTION_POLICY_URL:-https://spotify-ai-agent.com/policies/data-protection}"
+        privacy_policy: "${GDPR_PRIVACY_POLICY_URL:-https://spotify-ai-agent.com/privacy}"
+        incident_response_policy: "${GDPR_INCIDENT_RESPONSE_POLICY_URL:-https://spotify-ai-agent.com/policies/incident-response}"
+        data_retention_policy: "${GDPR_DATA_RETENTION_POLICY_URL:-https://spotify-ai-agent.com/policies/data-retention}"
+        vendor_management_policy: "${GDPR_VENDOR_MANAGEMENT_POLICY_URL:-https://spotify-ai-agent.com/policies/vendor-management}"
+      
+      # Training and Awareness
+      training:
+        mandatory_training: ${GDPR_MANDATORY_TRAINING:-true}
+        training_frequency_months: ${GDPR_TRAINING_FREQUENCY:-12}
+        role_specific_training: ${GDPR_ROLE_SPECIFIC_TRAINING:-true}
+        training_tracking: ${GDPR_TRAINING_TRACKING:-true}
+        
+        # Training Topics
+        training_topics:
+          - "gdpr_fundamentals"
+          - "data_subject_rights"
+          - "consent_management"
+          - "data_minimization"
+          - "breach_response"
+          - "vendor_management"
+          - "privacy_by_design"
+      
+      # Data Protection Officer
+      dpo:
+        appointed: ${GDPR_DPO_APPOINTED:-true}
+        independent: ${GDPR_DPO_INDEPENDENT:-true}
+        accessible: ${GDPR_DPO_ACCESSIBLE:-true}
+        reporting_line: "board_level"
+        
+        # DPO Responsibilities
+        responsibilities:
+          - "monitor_compliance"
+          - "conduct_dpia"
+          - "provide_advice"
+          - "cooperate_with_authority"
+          - "act_as_contact_point"
+          - "raise_awareness"
+          - "train_staff"
+
+  # Cross-Border Data Transfers
+  data_transfers:
+    # Transfer Mechanisms
+    transfer_mechanisms:
+      adequacy_decisions:
+        enabled: ${GDPR_ADEQUACY_DECISIONS:-true}
+        approved_countries: ["Andorra", "Argentina", "Canada", "Faroe Islands", "Guernsey", "Israel", "Isle of Man", "Japan", "Jersey", "New Zealand", "Republic of Korea", "Switzerland", "United Kingdom", "Uruguay"]
+      
+      standard_contractual_clauses:
+        enabled: ${GDPR_SCC_ENABLED:-true}
+        version: "2021"
+        supplementary_measures: ${GDPR_SCC_SUPPLEMENTARY_MEASURES:-true}
+      
+      binding_corporate_rules:
+        enabled: ${GDPR_BCR_ENABLED:-false}
+        approval_status: "pending"
+      
+      certification_mechanisms:
+        enabled: ${GDPR_CERTIFICATION_ENABLED:-false}
+        certifications: []
+    
+    # Transfer Impact Assessment
+    transfer_impact_assessment:
+      required: ${GDPR_TIA_REQUIRED:-true}
+      assessment_factors:
+        - "legal_system_of_destination"
+        - "surveillance_laws"
+        - "data_protection_rights"
+        - "available_remedies"
+        - "practical_experience"
+      
+      # Risk Mitigation
+      risk_mitigation:
+        technical_measures:
+          - "end_to_end_encryption"
+          - "pseudonymization"
+          - "data_minimization"
+        
+        organizational_measures:
+          - "contractual_protections"
+          - "transparency_obligations"
+          - "data_subject_rights"
+    
+    # Third Country Monitoring
+    third_country_monitoring:
+      monitoring_enabled: ${GDPR_THIRD_COUNTRY_MONITORING:-true}
+      monitoring_frequency: "quarterly"
+      
+      # Monitoring Indicators
+      monitoring_indicators:
+        - "legal_developments"
+        - "enforcement_actions"
+        - "adequacy_status_changes"
+        - "surveillance_law_changes"
+        - "court_decisions"
+
+  # Data Breach Management
+  breach_management:
+    # Breach Detection
+    detection:
+      automated_detection: ${GDPR_BREACH_AUTOMATED_DETECTION:-true}
+      detection_systems:
+        - "siem"
+        - "dlp"
+        - "anomaly_detection"
+        - "user_behavior_analytics"
+      
+      # Detection Metrics
+      detection_metrics:
+        mean_time_to_detection: "${GDPR_BREACH_MTTD:-15m}"
+        false_positive_rate: "${GDPR_BREACH_FPR:-5%}"
+        coverage_percentage: "${GDPR_BREACH_COVERAGE:-95%}"
+    
+    # Breach Response
+    response:
+      response_team: ${GDPR_BREACH_RESPONSE_TEAM:-true}
+      response_plan: "${GDPR_BREACH_RESPONSE_PLAN_URL:-https://spotify-ai-agent.com/policies/breach-response}"
+      
+      # Response Timeline
+      timeline:
+        initial_assessment: "1h"
+        detailed_investigation: "24h"
+        containment: "4h"
+        supervisory_authority_notification: "72h"
+        data_subject_notification: "72h"
+      
+      # Notification Requirements
+      notification:
+        supervisory_authority:
+          required: ${GDPR_BREACH_SA_NOTIFICATION:-true}
+          threshold: "likely_risk"
+          contact: "${GDPR_SA_CONTACT:-dpa@example.gov}"
+          
+          # Notification Content
+          content_requirements:
+            - "nature_of_breach"
+            - "categories_of_data"
+            - "approximate_number_affected"
+            - "likely_consequences"
+            - "measures_taken"
+            - "contact_details"
+        
+        data_subjects:
+          required: ${GDPR_BREACH_DS_NOTIFICATION:-true}
+          threshold: "high_risk"
+          
+          # Notification Methods
+          methods:
+            - "email"
+            - "in_app_notification"
+            - "website_notice"
+            - "postal_mail"
+          
+          # High Risk Criteria
+          high_risk_criteria:
+            - "special_categories_data"
+            - "financial_data"
+            - "children_data"
+            - "authentication_credentials"
+            - "large_scale_breach"
+    
+    # Breach Documentation
+    documentation:
+      breach_register: ${GDPR_BREACH_REGISTER:-true}
+      register_retention_years: ${GDPR_BREACH_REGISTER_RETENTION:-7}
+      
+      # Documentation Requirements
+      required_documentation:
+        - "facts_of_breach"
+        - "effects_and_consequences"
+        - "remedial_action_taken"
+        - "notification_details"
+        - "lessons_learned"
+        - "preventive_measures"
+
+  # Privacy by Design and Default
+  privacy_by_design:
+    # Design Principles
+    design_principles:
+      proactive: ${GDPR_PBD_PROACTIVE:-true}
+      default_protection: ${GDPR_PBD_DEFAULT_PROTECTION:-true}
+      embedded_privacy: ${GDPR_PBD_EMBEDDED:-true}
+      full_functionality: ${GDPR_PBD_FULL_FUNCTIONALITY:-true}
+      end_to_end_security: ${GDPR_PBD_END_TO_END_SECURITY:-true}
+      visibility_transparency: ${GDPR_PBD_VISIBILITY:-true}
+      respect_user_privacy: ${GDPR_PBD_RESPECT_PRIVACY:-true}
+    
+    # Implementation Requirements
+    implementation:
+      # Development Process
+      development_process:
+        privacy_impact_assessment: ${GDPR_PBD_PIA_REQUIRED:-true}
+        privacy_requirements: ${GDPR_PBD_PRIVACY_REQUIREMENTS:-true}
+        privacy_testing: ${GDPR_PBD_PRIVACY_TESTING:-true}
+        privacy_review: ${GDPR_PBD_PRIVACY_REVIEW:-true}
+      
+      # Default Settings
+      default_settings:
+        minimal_data_collection: ${GDPR_PBD_MINIMAL_COLLECTION:-true}
+        privacy_friendly_defaults: ${GDPR_PBD_FRIENDLY_DEFAULTS:-true}
+        opt_in_required: ${GDPR_PBD_OPT_IN_REQUIRED:-true}
+        granular_controls: ${GDPR_PBD_GRANULAR_CONTROLS:-true}
+      
+      # Technical Implementation
+      technical_implementation:
+        data_minimization_controls: ${GDPR_PBD_DATA_MIN_CONTROLS:-true}
+        purpose_binding: ${GDPR_PBD_PURPOSE_BINDING:-true}
+        automated_deletion: ${GDPR_PBD_AUTOMATED_DELETION:-true}
+        privacy_dashboards: ${GDPR_PBD_PRIVACY_DASHBOARDS:-true}
+
+  # Monitoring and Compliance
+  monitoring:
+    # Compliance Monitoring
+    compliance_monitoring:
+      enabled: ${GDPR_COMPLIANCE_MONITORING:-true}
+      monitoring_frequency: "monthly"
+      
+      # Key Performance Indicators
+      kpis:
+        - metric: "data_subject_request_response_time"
+          target: "30_days"
+          threshold: "95%"
+        
+        - metric: "consent_withdrawal_response_time"
+          target: "immediate"
+          threshold: "100%"
+        
+        - metric: "data_breach_detection_time"
+          target: "15_minutes"
+          threshold: "90%"
+        
+        - metric: "privacy_training_completion"
+          target: "100%"
+          threshold: "95%"
+        
+        - metric: "dpia_completion_rate"
+          target: "100%"
+          threshold: "100%"
+    
+    # Audit and Review
+    audit_review:
+      internal_audit:
+        frequency: "quarterly"
+        scope: "full_gdpr_compliance"
+        auditor: "internal_audit_team"
+      
+      external_audit:
+        frequency: "annually"
+        scope: "gdpr_compliance_assessment"
+        auditor: "external_privacy_consultant"
+      
+      supervisory_authority_cooperation:
+        enabled: ${GDPR_SA_COOPERATION:-true}
+        contact_person: "${GDPR_SA_CONTACT_PERSON:-John Doe}"
+        response_commitment: "5_business_days"
+    
+    # Reporting
+    reporting:
+      management_reporting:
+        frequency: "monthly"
+        recipients: ["ceo", "dpo", "legal_counsel", "ciso"]
+        
+        # Report Content
+        report_content:
+          - "compliance_status"
+          - "data_subject_requests"
+          - "consent_metrics"
+          - "breach_incidents"
+          - "training_completion"
+          - "audit_findings"
+          - "risk_assessment"
+      
+      regulatory_reporting:
+        annual_report: ${GDPR_ANNUAL_REPORT:-true}
+        breach_notifications: ${GDPR_BREACH_NOTIFICATIONS:-true}
+        dpia_submissions: ${GDPR_DPIA_SUBMISSIONS:-true}
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: false
+      
+      data_subject_rights:
+        right_of_access:
+          response_time_days: 1
+          automated_response: true
+        
+        right_to_erasure:
+          response_time_days: 1
+      
+      consent_management:
+        consent_requirements:
+          explicit_consent_required: false
+      
+      data_retention:
+        retention_periods:
+          user_accounts:
+            inactive_period_days: 30
+          analytics_data:
+            retention_days: 30
+      
+      monitoring:
+        compliance_monitoring:
+          enabled: false
+    
+    production:
+      general:
+        enabled: true
+      
+      data_subject_rights:
+        right_of_access:
+          verification:
+            required: true
+            methods: ["email_verification", "two_factor_authentication"]
+      
+      consent_management:
+        consent_requirements:
+          explicit_consent_required: true
+          granular_consent: true
+      
+      technical_organizational_measures:
+        technical_measures:
+          encryption:
+            data_at_rest: true
+            data_in_transit: true
+            data_in_processing: true
+          
+          access_controls:
+            multi_factor_authentication: true
+            privileged_access_management: true
+      
+      monitoring:
+        compliance_monitoring:
+          enabled: true
+          monitoring_frequency: "weekly"
+        
+        audit_review:
+          internal_audit:
+            frequency: "monthly"
+          external_audit:
+            frequency: "bi_annually"

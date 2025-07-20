@@ -1,0 +1,530 @@
+{
+  "_metadata": {
+    "template_type": "ai_recommendation_engine",
+    "template_version": "4.2.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "RecommendationTemplateGenerator",
+    "tags": ["ai", "recommendation", "ml", "personalization", "discovery", "hybrid"],
+    "description": "Advanced AI recommendation engine with hybrid algorithms and explainable recommendations"
+  },
+  "engine_id": "{{ engine_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "user_id": "{{ user_id }}",
+  "engine_configuration": {
+    "engine_name": "{{ engine_name | default('Advanced Music Recommendation Engine') }}",
+    "engine_version": "4.2.0",
+    "algorithm_type": "{{ algorithm_type | default('hybrid_ensemble') }}",
+    "personalization_level": "{{ personalization_level | default('high') }}",
+    "real_time_learning": "{{ real_time_learning | default(true) }}",
+    "cross_domain_recommendations": "{{ cross_domain_recommendations | default(true) }}",
+    "explanation_enabled": "{{ explanation_enabled | default(true) }}",
+    "diversity_optimization": "{{ diversity_optimization | default(true) }}",
+    "cold_start_handling": "{{ cold_start_handling | default('advanced') }}",
+    "feedback_integration": "{{ feedback_integration | default(true) }}"
+  },
+  "user_profile": {
+    "user_modeling": {
+      "demographic_features": {
+        "age_group": "{{ user_age_group | default('25-34') }}",
+        "location": "{{ user_location | default('') }}",
+        "timezone": "{{ user_timezone | default('UTC') }}",
+        "language": "{{ user_language | default('en') }}",
+        "cultural_background": "{{ user_cultural_background | default('') }}"
+      },
+      "listening_profile": {
+        "total_listening_time_hours": "{{ total_listening_hours | default(0) }}",
+        "average_session_duration_minutes": "{{ avg_session_duration | default(30) }}",
+        "preferred_listening_times": [
+          {
+            "time_slot": "morning",
+            "probability": "{{ morning_listening_prob | default(0.2) }}"
+          },
+          {
+            "time_slot": "afternoon",
+            "probability": "{{ afternoon_listening_prob | default(0.3) }}"
+          },
+          {
+            "time_slot": "evening",
+            "probability": "{{ evening_listening_prob | default(0.4) }}"
+          },
+          {
+            "time_slot": "night",
+            "probability": "{{ night_listening_prob | default(0.1) }}"
+          }
+        ],
+        "device_preferences": [
+          {
+            "device_type": "mobile",
+            "usage_percentage": "{{ mobile_usage_percent | default(60) }}"
+          },
+          {
+            "device_type": "desktop",
+            "usage_percentage": "{{ desktop_usage_percent | default(25) }}"
+          },
+          {
+            "device_type": "smart_speaker",
+            "usage_percentage": "{{ speaker_usage_percent | default(15) }}"
+          }
+        ]
+      },
+      "music_preferences": {
+        "genre_affinities": [
+          {
+            "genre": "{{ top_genre_1 | default('pop') }}",
+            "affinity_score": "{{ top_genre_1_score | default(0.8) }}",
+            "discovery_openness": "{{ top_genre_1_discovery | default(0.6) }}"
+          },
+          {
+            "genre": "{{ top_genre_2 | default('rock') }}",
+            "affinity_score": "{{ top_genre_2_score | default(0.7) }}",
+            "discovery_openness": "{{ top_genre_2_discovery | default(0.5) }}"
+          },
+          {
+            "genre": "{{ top_genre_3 | default('electronic') }}",
+            "affinity_score": "{{ top_genre_3_score | default(0.6) }}",
+            "discovery_openness": "{{ top_genre_3_discovery | default(0.8) }}"
+          }
+        ],
+        "audio_feature_preferences": {
+          "energy": {
+            "preferred_range": [
+              "{{ energy_min | default(0.4) }}",
+              "{{ energy_max | default(0.8) }}"
+            ],
+            "context_variations": {
+              "workout": "{{ energy_workout | default(0.9) }}",
+              "study": "{{ energy_study | default(0.3) }}",
+              "party": "{{ energy_party | default(0.85) }}",
+              "relax": "{{ energy_relax | default(0.2) }}"
+            }
+          },
+          "valence": {
+            "preferred_range": [
+              "{{ valence_min | default(0.3) }}",
+              "{{ valence_max | default(0.8) }}"
+            ],
+            "mood_correlations": {
+              "happy": "{{ valence_happy | default(0.85) }}",
+              "sad": "{{ valence_sad | default(0.15) }}",
+              "neutral": "{{ valence_neutral | default(0.5) }}"
+            }
+          },
+          "danceability": {
+            "preferred_range": [
+              "{{ danceability_min | default(0.4) }}",
+              "{{ danceability_max | default(0.9) }}"
+            ],
+            "activity_preferences": {
+              "workout": "{{ danceability_workout | default(0.8) }}",
+              "background": "{{ danceability_background | default(0.5) }}",
+              "focus": "{{ danceability_focus | default(0.3) }}"
+            }
+          },
+          "acousticness": {
+            "preferred_range": [
+              "{{ acousticness_min | default(0.1) }}",
+              "{{ acousticness_max | default(0.7) }}"
+            ],
+            "context_preferences": {
+              "intimate": "{{ acousticness_intimate | default(0.8) }}",
+              "energetic": "{{ acousticness_energetic | default(0.2) }}"
+            }
+          }
+        },
+        "temporal_preferences": {
+          "decade_preferences": [
+            {
+              "decade": "{{ preferred_decade_1 | default('2010s') }}",
+              "preference_score": "{{ decade_1_score | default(0.8) }}"
+            },
+            {
+              "decade": "{{ preferred_decade_2 | default('2000s') }}",
+              "preference_score": "{{ decade_2_score | default(0.6) }}"
+            }
+          ],
+          "release_recency_preference": "{{ recency_preference | default(0.7) }}",
+          "nostalgia_factor": "{{ nostalgia_factor | default(0.3) }}"
+        }
+      },
+      "behavioral_patterns": {
+        "exploration_vs_exploitation": "{{ exploration_ratio | default(0.3) }}",
+        "skip_patterns": {
+          "average_skip_rate": "{{ avg_skip_rate | default(0.15) }}",
+          "skip_time_threshold_seconds": "{{ skip_threshold | default(30) }}",
+          "skip_reasons": [
+            {
+              "reason": "tempo_mismatch",
+              "frequency": "{{ skip_tempo_mismatch | default(0.25) }}"
+            },
+            {
+              "reason": "genre_dislike",
+              "frequency": "{{ skip_genre_dislike | default(0.30) }}"
+            },
+            {
+              "reason": "mood_mismatch",
+              "frequency": "{{ skip_mood_mismatch | default(0.20) }}"
+            }
+          ]
+        },
+        "repeat_behavior": {
+          "track_repeat_tendency": "{{ track_repeat_tendency | default(0.2) }}",
+          "playlist_repeat_tendency": "{{ playlist_repeat_tendency | default(0.4) }}",
+          "artist_loyalty_score": "{{ artist_loyalty_score | default(0.6) }}"
+        },
+        "social_influence": {
+          "friend_recommendation_receptivity": "{{ friend_rec_receptivity | default(0.7) }}",
+          "trending_music_interest": "{{ trending_interest | default(0.5) }}",
+          "playlist_sharing_frequency": "{{ sharing_frequency | default(0.3) }}"
+        }
+      }
+    },
+    "contextual_factors": {
+      "current_context": {
+        "time_of_day": "{{ current_time_of_day | default('evening') }}",
+        "day_of_week": "{{ current_day_of_week | default('friday') }}",
+        "weather": "{{ current_weather | default('clear') }}",
+        "location_type": "{{ current_location_type | default('home') }}",
+        "activity": "{{ current_activity | default('relaxing') }}",
+        "device": "{{ current_device | default('mobile') }}",
+        "social_context": "{{ social_context | default('alone') }}"
+      },
+      "mood_detection": {
+        "detected_mood": "{{ detected_mood | default('neutral') }}",
+        "mood_confidence": "{{ mood_confidence | default(0.7) }}",
+        "mood_history": [
+          {
+            "timestamp": "{{ mood_1_time | default(current_timestamp()) }}",
+            "mood": "{{ mood_1 | default('happy') }}",
+            "confidence": "{{ mood_1_confidence | default(0.8) }}"
+          }
+        ],
+        "mood_transition_patterns": {
+          "morning_to_afternoon": "{{ mood_transition_morning_afternoon | default('stable') }}",
+          "afternoon_to_evening": "{{ mood_transition_afternoon_evening | default('relaxed') }}",
+          "weekday_to_weekend": "{{ mood_transition_weekday_weekend | default('energetic') }}"
+        }
+      },
+      "environmental_factors": {
+        "noise_level": "{{ environmental_noise_level | default('quiet') }}",
+        "lighting": "{{ environmental_lighting | default('dim') }}",
+        "temperature": "{{ environmental_temperature | default('comfortable') }}",
+        "social_setting": "{{ environmental_social_setting | default('private') }}"
+      }
+    }
+  },
+  "recommendation_algorithms": {
+    "collaborative_filtering": {
+      "enabled": "{{ cf_enabled | default(true) }}",
+      "algorithm_type": "{{ cf_algorithm | default('matrix_factorization') }}",
+      "weight": "{{ cf_weight | default(0.35) }}",
+      "configuration": {
+        "user_similarity_threshold": "{{ cf_user_similarity_threshold | default(0.6) }}",
+        "item_similarity_threshold": "{{ cf_item_similarity_threshold | default(0.7) }}",
+        "neighborhood_size": "{{ cf_neighborhood_size | default(50) }}",
+        "factorization_dimensions": "{{ cf_factorization_dimensions | default(100) }}",
+        "regularization_factor": "{{ cf_regularization | default(0.01) }}",
+        "learning_rate": "{{ cf_learning_rate | default(0.001) }}"
+      },
+      "performance_metrics": {
+        "rmse": "{{ cf_rmse | default(0.85) }}",
+        "precision_at_k": "{{ cf_precision_at_k | default(0.72) }}",
+        "recall_at_k": "{{ cf_recall_at_k | default(0.68) }}",
+        "map_score": "{{ cf_map_score | default(0.65) }}"
+      }
+    },
+    "content_based_filtering": {
+      "enabled": "{{ cbf_enabled | default(true) }}",
+      "algorithm_type": "{{ cbf_algorithm | default('deep_audio_features') }}",
+      "weight": "{{ cbf_weight | default(0.25) }}",
+      "configuration": {
+        "feature_vector_dimensions": "{{ cbf_feature_dimensions | default(512) }}",
+        "similarity_metric": "{{ cbf_similarity_metric | default('cosine') }}",
+        "feature_weighting": {
+          "audio_features": "{{ cbf_audio_weight | default(0.4) }}",
+          "metadata_features": "{{ cbf_metadata_weight | default(0.3) }}",
+          "lyrical_features": "{{ cbf_lyrical_weight | default(0.2) }}",
+          "temporal_features": "{{ cbf_temporal_weight | default(0.1) }}"
+        },
+        "content_analysis": {
+          "spectral_analysis_enabled": "{{ cbf_spectral_analysis | default(true) }}",
+          "lyric_sentiment_analysis": "{{ cbf_lyric_sentiment | default(true) }}",
+          "genre_classification": "{{ cbf_genre_classification | default(true) }}",
+          "mood_classification": "{{ cbf_mood_classification | default(true) }}"
+        }
+      },
+      "performance_metrics": {
+        "precision": "{{ cbf_precision | default(0.74) }}",
+        "recall": "{{ cbf_recall | default(0.69) }}",
+        "f1_score": "{{ cbf_f1_score | default(0.71) }}",
+        "novelty_score": "{{ cbf_novelty_score | default(0.58) }}"
+      }
+    },
+    "deep_learning": {
+      "enabled": "{{ dl_enabled | default(true) }}",
+      "algorithm_type": "{{ dl_algorithm | default('transformer_based') }}",
+      "weight": "{{ dl_weight | default(0.30) }}",
+      "model_configuration": {
+        "model_architecture": "{{ dl_architecture | default('transformer') }}",
+        "embedding_dimension": "{{ dl_embedding_dim | default(256) }}",
+        "num_attention_heads": "{{ dl_attention_heads | default(8) }}",
+        "num_layers": "{{ dl_num_layers | default(6) }}",
+        "dropout_rate": "{{ dl_dropout_rate | default(0.1) }}",
+        "learning_rate": "{{ dl_learning_rate | default(0.0001) }}",
+        "batch_size": "{{ dl_batch_size | default(128) }}"
+      },
+      "training_data": {
+        "sequence_length": "{{ dl_sequence_length | default(50) }}",
+        "negative_sampling_ratio": "{{ dl_negative_sampling | default(5) }}",
+        "data_augmentation": "{{ dl_data_augmentation | default(true) }}",
+        "temporal_weighting": "{{ dl_temporal_weighting | default(true) }}"
+      },
+      "performance_metrics": {
+        "hit_rate_at_10": "{{ dl_hit_rate_10 | default(0.78) }}",
+        "ndcg_at_10": "{{ dl_ndcg_10 | default(0.73) }}",
+        "mrr": "{{ dl_mrr | default(0.69) }}",
+        "diversity_score": "{{ dl_diversity_score | default(0.82) }}"
+      }
+    },
+    "knowledge_graph": {
+      "enabled": "{{ kg_enabled | default(true) }}",
+      "algorithm_type": "{{ kg_algorithm | default('graph_neural_network') }}",
+      "weight": "{{ kg_weight | default(0.10) }}",
+      "graph_configuration": {
+        "entity_types": ["artist", "track", "album", "genre", "mood", "user"],
+        "relation_types": ["similar_to", "performed_by", "belongs_to", "has_mood", "listened_by"],
+        "graph_embedding_dimension": "{{ kg_embedding_dim | default(128) }}",
+        "walk_length": "{{ kg_walk_length | default(80) }}",
+        "num_walks": "{{ kg_num_walks | default(10) }}",
+        "context_window": "{{ kg_context_window | default(5) }}"
+      },
+      "reasoning_capabilities": {
+        "transitive_reasoning": "{{ kg_transitive_reasoning | default(true) }}",
+        "multi_hop_reasoning": "{{ kg_multi_hop_reasoning | default(true) }}",
+        "temporal_reasoning": "{{ kg_temporal_reasoning | default(true) }}",
+        "causal_reasoning": "{{ kg_causal_reasoning | default(false) }}"
+      }
+    }
+  },
+  "recommendation_generation": {
+    "ensemble_strategy": {
+      "combination_method": "{{ ensemble_method | default('weighted_average') }}",
+      "dynamic_weighting": "{{ dynamic_weighting | default(true) }}",
+      "context_aware_weighting": "{{ context_aware_weighting | default(true) }}",
+      "performance_based_adjustment": "{{ performance_based_adjustment | default(true) }}",
+      "fallback_strategy": "{{ fallback_strategy | default('popularity_based') }}"
+    },
+    "recommendation_types": [
+      {
+        "type": "discover_weekly",
+        "enabled": "{{ discover_weekly_enabled | default(true) }}",
+        "target_size": "{{ discover_weekly_size | default(30) }}",
+        "novelty_weight": "{{ discover_weekly_novelty | default(0.7) }}",
+        "diversity_constraint": "{{ discover_weekly_diversity | default(0.8) }}",
+        "refresh_frequency": "weekly"
+      },
+      {
+        "type": "daily_mix",
+        "enabled": "{{ daily_mix_enabled | default(true) }}",
+        "target_size": "{{ daily_mix_size | default(50) }}",
+        "familiarity_weight": "{{ daily_mix_familiarity | default(0.8) }}",
+        "context_adaptation": "{{ daily_mix_context_adaptation | default(true) }}",
+        "refresh_frequency": "daily"
+      },
+      {
+        "type": "mood_based",
+        "enabled": "{{ mood_based_enabled | default(true) }}",
+        "target_size": "{{ mood_based_size | default(25) }}",
+        "mood_coherence": "{{ mood_based_coherence | default(0.9) }}",
+        "energy_matching": "{{ mood_based_energy_matching | default(true) }}",
+        "refresh_frequency": "real_time"
+      },
+      {
+        "type": "similar_artists",
+        "enabled": "{{ similar_artists_enabled | default(true) }}",
+        "target_size": "{{ similar_artists_size | default(20) }}",
+        "similarity_threshold": "{{ similar_artists_threshold | default(0.7) }}",
+        "discovery_balance": "{{ similar_artists_discovery | default(0.3) }}",
+        "refresh_frequency": "weekly"
+      },
+      {
+        "type": "contextual",
+        "enabled": "{{ contextual_enabled | default(true) }}",
+        "target_size": "{{ contextual_size | default(15) }}",
+        "context_sensitivity": "{{ contextual_sensitivity | default(0.8) }}",
+        "adaptation_speed": "{{ contextual_adaptation_speed | default(0.6) }}",
+        "refresh_frequency": "real_time"
+      }
+    ],
+    "quality_filters": {
+      "minimum_audio_quality": "{{ min_audio_quality | default(0.7) }}",
+      "copyright_compliance": "{{ copyright_compliance | default(true) }}",
+      "explicit_content_filter": "{{ explicit_content_filter | default(false) }}",
+      "regional_availability": "{{ regional_availability | default(true) }}",
+      "minimum_popularity": "{{ minimum_popularity | default(0.1) }}",
+      "maximum_obscurity": "{{ maximum_obscurity | default(0.95) }}"
+    },
+    "diversity_optimization": {
+      "genre_diversity_weight": "{{ genre_diversity_weight | default(0.3) }}",
+      "artist_diversity_weight": "{{ artist_diversity_weight | default(0.4) }}",
+      "temporal_diversity_weight": "{{ temporal_diversity_weight | default(0.2) }}",
+      "audio_feature_diversity_weight": "{{ audio_feature_diversity_weight | default(0.1) }}",
+      "max_same_artist": "{{ max_same_artist | default(3) }}",
+      "max_same_genre_consecutive": "{{ max_same_genre_consecutive | default(2) }}",
+      "diversity_decay_factor": "{{ diversity_decay_factor | default(0.9) }}"
+    }
+  },
+  "explainable_ai": {
+    "explanation_generation": {
+      "enabled": "{{ explanation_enabled | default(true) }}",
+      "explanation_type": "{{ explanation_type | default('natural_language') }}",
+      "detail_level": "{{ explanation_detail_level | default('medium') }}",
+      "personalization": "{{ explanation_personalization | default(true) }}",
+      "confidence_threshold": "{{ explanation_confidence_threshold | default(0.6) }}"
+    },
+    "explanation_categories": [
+      {
+        "category": "similarity_based",
+        "template": "{{ similarity_explanation_template | default('Because you liked {{similar_track}} by {{similar_artist}}') }}",
+        "weight": "{{ similarity_explanation_weight | default(0.3) }}"
+      },
+      {
+        "category": "genre_preference",
+        "template": "{{ genre_explanation_template | default('Based on your love for {{genre}} music') }}",
+        "weight": "{{ genre_explanation_weight | default(0.25) }}"
+      },
+      {
+        "category": "mood_matching",
+        "template": "{{ mood_explanation_template | default('Perfect for your current {{mood}} mood') }}",
+        "weight": "{{ mood_explanation_weight | default(0.2) }}"
+      },
+      {
+        "category": "contextual",
+        "template": "{{ contextual_explanation_template | default('Great for {{activity}} during {{time_of_day}}') }}",
+        "weight": "{{ contextual_explanation_weight | default(0.15) }}"
+      },
+      {
+        "category": "discovery",
+        "template": "{{ discovery_explanation_template | default('Discover something new based on your taste') }}",
+        "weight": "{{ discovery_explanation_weight | default(0.1) }}"
+      }
+    ],
+    "feature_importance": {
+      "global_importance": [
+        {
+          "feature": "user_listening_history",
+          "importance": "{{ feature_importance_history | default(0.35) }}"
+        },
+        {
+          "feature": "audio_features",
+          "importance": "{{ feature_importance_audio | default(0.25) }}"
+        },
+        {
+          "feature": "collaborative_signals",
+          "importance": "{{ feature_importance_collaborative | default(0.20) }}"
+        },
+        {
+          "feature": "contextual_factors",
+          "importance": "{{ feature_importance_contextual | default(0.15) }}"
+        },
+        {
+          "feature": "content_metadata",
+          "importance": "{{ feature_importance_metadata | default(0.05) }}"
+        }
+      ],
+      "local_importance_enabled": "{{ local_importance_enabled | default(true) }}",
+      "shap_values_computation": "{{ shap_values_enabled | default(true) }}",
+      "lime_explanations": "{{ lime_explanations_enabled | default(false) }}"
+    }
+  },
+  "learning_and_adaptation": {
+    "feedback_mechanisms": {
+      "explicit_feedback": {
+        "thumbs_up_down": "{{ thumbs_feedback_enabled | default(true) }}",
+        "star_ratings": "{{ star_ratings_enabled | default(false) }}",
+        "detailed_feedback": "{{ detailed_feedback_enabled | default(false) }}",
+        "feedback_weight": "{{ explicit_feedback_weight | default(0.7) }}"
+      },
+      "implicit_feedback": {
+        "play_completion": "{{ play_completion_feedback | default(true) }}",
+        "skip_behavior": "{{ skip_behavior_feedback | default(true) }}",
+        "repeat_behavior": "{{ repeat_behavior_feedback | default(true) }}",
+        "save_behavior": "{{ save_behavior_feedback | default(true) }}",
+        "share_behavior": "{{ share_behavior_feedback | default(true) }}",
+        "feedback_weight": "{{ implicit_feedback_weight | default(0.3) }}"
+      }
+    },
+    "online_learning": {
+      "enabled": "{{ online_learning_enabled | default(true) }}",
+      "learning_rate": "{{ online_learning_rate | default(0.001) }}",
+      "batch_size": "{{ online_batch_size | default(32) }}",
+      "update_frequency": "{{ online_update_frequency | default('hourly') }}",
+      "gradient_clipping": "{{ gradient_clipping_enabled | default(true) }}",
+      "momentum": "{{ online_momentum | default(0.9) }}"
+    },
+    "model_updates": {
+      "incremental_updates": "{{ incremental_updates_enabled | default(true) }}",
+      "full_retrain_frequency": "{{ full_retrain_frequency | default('weekly') }}",
+      "a_b_testing_enabled": "{{ ab_testing_enabled | default(true) }}",
+      "champion_challenger_enabled": "{{ champion_challenger_enabled | default(true) }}",
+      "performance_monitoring": "{{ performance_monitoring_enabled | default(true) }}"
+    },
+    "personalization_evolution": {
+      "preference_drift_detection": "{{ preference_drift_detection | default(true) }}",
+      "concept_drift_adaptation": "{{ concept_drift_adaptation | default(true) }}",
+      "seasonal_adaptation": "{{ seasonal_adaptation | default(true) }}",
+      "life_event_detection": "{{ life_event_detection | default(false) }}",
+      "forgetting_factor": "{{ forgetting_factor | default(0.95) }}"
+    }
+  },
+  "performance_monitoring": {
+    "metrics_tracking": {
+      "recommendation_accuracy": "{{ rec_accuracy_tracking | default(true) }}",
+      "user_engagement": "{{ engagement_tracking | default(true) }}",
+      "diversity_metrics": "{{ diversity_tracking | default(true) }}",
+      "novelty_metrics": "{{ novelty_tracking | default(true) }}",
+      "business_metrics": "{{ business_metrics_tracking | default(true) }}"
+    },
+    "real_time_monitoring": {
+      "latency_monitoring": "{{ latency_monitoring | default(true) }}",
+      "throughput_monitoring": "{{ throughput_monitoring | default(true) }}",
+      "error_rate_monitoring": "{{ error_rate_monitoring | default(true) }}",
+      "resource_usage_monitoring": "{{ resource_monitoring | default(true) }}",
+      "alert_thresholds": {
+        "max_latency_ms": "{{ max_latency_threshold | default(200) }}",
+        "min_throughput_rps": "{{ min_throughput_threshold | default(100) }}",
+        "max_error_rate": "{{ max_error_rate_threshold | default(0.01) }}"
+      }
+    },
+    "experimentation": {
+      "a_b_test_framework": "{{ ab_test_framework_enabled | default(true) }}",
+      "multi_armed_bandit": "{{ multi_armed_bandit_enabled | default(true) }}",
+      "statistical_significance": "{{ statistical_significance_threshold | default(0.05) }}",
+      "minimum_sample_size": "{{ minimum_sample_size | default(1000) }}",
+      "experiment_duration_days": "{{ experiment_duration_days | default(14) }}"
+    }
+  },
+  "privacy_and_ethics": {
+    "privacy_preservation": {
+      "differential_privacy": "{{ differential_privacy_enabled | default(true) }}",
+      "privacy_budget": "{{ privacy_budget | default(1.0) }}",
+      "data_anonymization": "{{ data_anonymization | default(true) }}",
+      "federated_learning": "{{ federated_learning_enabled | default(false) }}",
+      "user_consent_tracking": "{{ user_consent_tracking | default(true) }}"
+    },
+    "bias_mitigation": {
+      "demographic_parity": "{{ demographic_parity | default(true) }}",
+      "equal_opportunity": "{{ equal_opportunity | default(true) }}",
+      "individual_fairness": "{{ individual_fairness | default(true) }}",
+      "bias_monitoring": "{{ bias_monitoring | default(true) }}",
+      "bias_correction": "{{ bias_correction | default(true) }}"
+    },
+    "transparency": {
+      "model_interpretability": "{{ model_interpretability | default(true) }}",
+      "recommendation_explanations": "{{ recommendation_explanations | default(true) }}",
+      "data_usage_transparency": "{{ data_usage_transparency | default(true) }}",
+      "algorithm_transparency": "{{ algorithm_transparency | default(false) }}",
+      "user_control": "{{ user_control_enabled | default(true) }}"
+    }
+  }
+}

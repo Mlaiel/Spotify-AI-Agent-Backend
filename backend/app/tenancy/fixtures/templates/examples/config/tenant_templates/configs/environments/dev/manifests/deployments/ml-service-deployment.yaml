@@ -1,0 +1,254 @@
+# Machine Learning Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-ai-agent-ml
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: ml-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Machine Learning microservice for AI operations"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spotify-ai-agent-ml
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent-ml
+        app.kubernetes.io/name: spotify-ai-agent
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/version: v1.0.0
+        app.kubernetes.io/component: ml-service
+        environment: development
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9001"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: spotify-ai-agent-ml
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 2001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: ml-service
+        image: spotify-ai-agent/ml-service:dev-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8001
+          name: grpc
+          protocol: TCP
+        - containerPort: 9001
+          name: metrics
+          protocol: TCP
+        - containerPort: 8501
+          name: tf-serving
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          value: "development"
+        - name: ML_MODEL_PATH
+          value: "/app/models"
+        - name: TENSORFLOW_SERVING_PORT
+          value: "8501"
+        - name: PYTORCH_MODEL_PATH
+          value: "/app/models/pytorch"
+        - name: HUGGINGFACE_CACHE_DIR
+          value: "/app/cache/huggingface"
+        - name: TRANSFORMERS_CACHE
+          value: "/app/cache/transformers"
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "0"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-credentials
+              key: openai_api_key
+        - name: HUGGINGFACE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ai-credentials
+              key: huggingface_token
+              optional: true
+        envFrom:
+        - configMapRef:
+            name: ml-model-config
+        - configMapRef:
+            name: ai-service-config
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+            nvidia.com/gpu: "0"
+            ephemeral-storage: "2Gi"
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+            nvidia.com/gpu: "1"
+            ephemeral-storage: "10Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 60
+          successThreshold: 1
+        volumeMounts:
+        - name: ml-models
+          mountPath: /app/models
+          readOnly: true
+        - name: ml-cache
+          mountPath: /app/cache
+        - name: temp-ml-storage
+          mountPath: /tmp/ml
+        - name: ml-config
+          mountPath: /app/config
+          readOnly: true
+        - name: model-artifacts
+          mountPath: /app/artifacts
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop:
+            - ALL
+      - name: tensorflow-serving
+        image: tensorflow/serving:2.13.0-gpu
+        ports:
+        - containerPort: 8500
+          name: tf-grpc
+        - containerPort: 8501
+          name: tf-rest
+        env:
+        - name: MODEL_BASE_PATH
+          value: "/models"
+        - name: MODEL_NAME
+          value: "spotify_recommendation_model"
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+            nvidia.com/gpu: "0"
+          limits:
+            memory: "4Gi"
+            cpu: "1000m"
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - name: ml-models
+          mountPath: /models
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1001
+      volumes:
+      - name: ml-models
+        persistentVolumeClaim:
+          claimName: ml-models-pvc
+      - name: ml-cache
+        persistentVolumeClaim:
+          claimName: ml-cache-pvc
+      - name: temp-ml-storage
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: ml-config
+        configMap:
+          name: ml-model-config
+          defaultMode: 0644
+      - name: model-artifacts
+        emptyDir:
+          sizeLimit: 3Gi
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: accelerator
+                operator: In
+                values:
+                - nvidia-tesla-k80
+                - nvidia-tesla-p4
+                - nvidia-tesla-p100
+                - nvidia-tesla-t4
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                - gpu-enabled
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: spotify-ai-agent-ml
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  progressDeadlineSeconds: 900
+  revisionHistoryLimit: 5

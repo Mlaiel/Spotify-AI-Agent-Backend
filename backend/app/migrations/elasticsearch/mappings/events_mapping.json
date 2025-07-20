@@ -1,0 +1,61 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "event_type": {"type": "keyword"},
+      "description": {"type": "text", "analyzer": "synonym_analyzer"},
+      "location": {"type": "geo_point"},
+      "venue": {
+        "properties": {
+          "name": {"type": "text", "fields": {"raw": {"type": "keyword"}}},
+          "address": {"type": "text"},
+          "city": {"type": "keyword"},
+          "country": {"type": "keyword"},
+          "geo": {"type": "geo_point"}
+        }
+      },
+      "participants": {
+        "type": "nested",
+        "properties": {
+          "user_id": {"type": "keyword"},
+          "role": {"type": "keyword"},
+          "checkin_time": {"type": "date"},
+          "location": {"type": "geo_point"}
+        }
+      },
+      "tags": {"type": "keyword"},
+      "audit": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "user_id": {"type": "keyword"},
+        "timestamp": {"type": "date"}
+      }},
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "synonym_analyzer": {
+          "tokenizer": "standard",
+          "filter": ["lowercase", "my_synonyms"]
+        },
+        "default": {"type": "standard"}
+      },
+      "filter": {
+        "my_synonyms": {
+          "type": "synonym",
+          "synonyms": [
+            "concert, gig, show",
+            "festival, openair"
+          ]
+        }
+      }
+    },
+    "lifecycle": {
+      "name": "events_policy"
+    }
+  }
+}

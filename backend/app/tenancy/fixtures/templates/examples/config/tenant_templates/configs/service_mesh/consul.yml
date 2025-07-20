@@ -1,0 +1,913 @@
+# Consul Service Mesh Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Consul service mesh architecture with service discovery
+# - Senior DevOps Engineer: HashiCorp Consul enterprise deployment patterns
+# - Service Mesh Specialist: Consul Connect configuration, intentions, and security
+# - Platform Engineer: Service mesh observability, monitoring, and performance optimization
+# - Security Engineer: ACLs, mTLS, and Consul security hardening
+
+# ==========================================
+# CONSUL SERVICE MESH CONFIGURATION
+# ==========================================
+
+consul:
+  # General Settings
+  general:
+    enabled: ${CONSUL_ENABLED:-true}
+    version: "${CONSUL_VERSION:-1.17.0}"
+    
+    # Installation Configuration
+    installation:
+      namespace: "${CONSUL_NAMESPACE:-consul}"
+      datacenter: "${CONSUL_DATACENTER:-dc1}"
+      domain: "${CONSUL_DOMAIN:-consul}"
+      
+      # Server Configuration
+      server:
+        replicas: ${CONSUL_SERVER_REPLICAS:-3}
+        bootstrap_expect: ${CONSUL_BOOTSTRAP_EXPECT:-3}
+        
+        # Storage Configuration
+        storage:
+          enabled: ${CONSUL_STORAGE_ENABLED:-true}
+          storage_class: "${CONSUL_STORAGE_CLASS:-}"
+          size: "${CONSUL_STORAGE_SIZE:-10Gi}"
+        
+        # Resource Configuration
+        resources:
+          requests:
+            memory: "${CONSUL_SERVER_MEMORY_REQUEST:-100Mi}"
+            cpu: "${CONSUL_SERVER_CPU_REQUEST:-100m}"
+          limits:
+            memory: "${CONSUL_SERVER_MEMORY_LIMIT:-1Gi}"
+            cpu: "${CONSUL_SERVER_CPU_LIMIT:-1000m}"
+      
+      # Client Configuration
+      client:
+        enabled: ${CONSUL_CLIENT_ENABLED:-true}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            memory: "${CONSUL_CLIENT_MEMORY_REQUEST:-100Mi}"
+            cpu: "${CONSUL_CLIENT_CPU_REQUEST:-100m}"
+          limits:
+            memory: "${CONSUL_CLIENT_MEMORY_LIMIT:-100Mi}"
+            cpu: "${CONSUL_CLIENT_CPU_LIMIT:-100m}"
+
+  # Service Discovery
+  service_discovery:
+    # DNS Configuration
+    dns:
+      enabled: ${CONSUL_DNS_ENABLED:-true}
+      enable_truncate: ${CONSUL_DNS_ENABLE_TRUNCATE:-true}
+      max_stale: "${CONSUL_DNS_MAX_STALE:-10s}"
+      node_ttl: "${CONSUL_DNS_NODE_TTL:-0s}"
+      service_ttl: "${CONSUL_DNS_SERVICE_TTL:-0s}"
+      
+      # DNS Recursors
+      recursors:
+        - "${CONSUL_DNS_RECURSOR_1:-8.8.8.8}"
+        - "${CONSUL_DNS_RECURSOR_2:-8.8.4.4}"
+    
+    # Catalog Configuration
+    catalog:
+      enabled: ${CONSUL_CATALOG_ENABLED:-true}
+      
+      # Service Registration
+      service_registration:
+        # API Service Registration
+        api_service:
+          enabled: ${CONSUL_API_SERVICE_REG_ENABLED:-true}
+          service_name: "api-service"
+          service_id: "api-service-${POD_NAME:-}"
+          service_address: "${POD_IP:-}"
+          service_port: ${CONSUL_API_SERVICE_PORT:-8000}
+          service_tags:
+            - "api"
+            - "http"
+            - "v1"
+          
+          # Health Checks
+          health_checks:
+            - name: "HTTP Health Check"
+              http: "http://${POD_IP:-}:${CONSUL_API_SERVICE_PORT:-8000}/health"
+              interval: "${CONSUL_API_HEALTH_INTERVAL:-10s}"
+              timeout: "${CONSUL_API_HEALTH_TIMEOUT:-3s}"
+              deregister_critical_service_after: "${CONSUL_API_HEALTH_DEREGISTER:-30s}"
+        
+        # Database Service Registration
+        database_service:
+          enabled: ${CONSUL_DATABASE_SERVICE_REG_ENABLED:-true}
+          service_name: "database-service"
+          service_id: "database-service-${POD_NAME:-}"
+          service_address: "${POD_IP:-}"
+          service_port: ${CONSUL_DATABASE_SERVICE_PORT:-5432}
+          service_tags:
+            - "database"
+            - "postgresql"
+            - "primary"
+          
+          # Health Checks
+          health_checks:
+            - name: "TCP Health Check"
+              tcp: "${POD_IP:-}:${CONSUL_DATABASE_SERVICE_PORT:-5432}"
+              interval: "${CONSUL_DATABASE_HEALTH_INTERVAL:-10s}"
+              timeout: "${CONSUL_DATABASE_HEALTH_TIMEOUT:-3s}"
+              deregister_critical_service_after: "${CONSUL_DATABASE_HEALTH_DEREGISTER:-30s}"
+        
+        # ML Service Registration
+        ml_service:
+          enabled: ${CONSUL_ML_SERVICE_REG_ENABLED:-true}
+          service_name: "ml-service"
+          service_id: "ml-service-${POD_NAME:-}"
+          service_address: "${POD_IP:-}"
+          service_port: ${CONSUL_ML_SERVICE_PORT:-8080}
+          service_tags:
+            - "ml"
+            - "tensorflow"
+            - "predict"
+          
+          # Health Checks
+          health_checks:
+            - name: "HTTP Health Check"
+              http: "http://${POD_IP:-}:${CONSUL_ML_SERVICE_PORT:-8080}/health"
+              interval: "${CONSUL_ML_HEALTH_INTERVAL:-10s}"
+              timeout: "${CONSUL_ML_HEALTH_TIMEOUT:-5s}"
+              deregister_critical_service_after: "${CONSUL_ML_HEALTH_DEREGISTER:-60s}"
+
+  # Service Mesh (Consul Connect)
+  service_mesh:
+    # Connect Configuration
+    connect:
+      enabled: ${CONSUL_CONNECT_ENABLED:-true}
+      
+      # Sidecar Injection
+      sidecar_injection:
+        enabled: ${CONSUL_SIDECAR_INJECTION_ENABLED:-true}
+        default: ${CONSUL_SIDECAR_INJECTION_DEFAULT:-false}
+        
+        # Injection Configuration
+        injection_config:
+          # Consul Dataplane
+          consul_dataplane:
+            image: "${CONSUL_DATAPLANE_IMAGE:-hashicorp/consul-dataplane:1.3.0}"
+            
+            # Resource Configuration
+            resources:
+              requests:
+                memory: "${CONSUL_DATAPLANE_MEMORY_REQUEST:-50Mi}"
+                cpu: "${CONSUL_DATAPLANE_CPU_REQUEST:-50m}"
+              limits:
+                memory: "${CONSUL_DATAPLANE_MEMORY_LIMIT:-50Mi}"
+                cpu: "${CONSUL_DATAPLANE_CPU_LIMIT:-50m}"
+            
+            # Envoy Configuration
+            envoy_extra_args: "${CONSUL_ENVOY_EXTRA_ARGS:-}"
+            
+            # Consul Sidecar
+            consul_sidecar:
+              proxy:
+                # Proxy Configuration
+                config:
+                  protocol: "${CONSUL_PROXY_PROTOCOL:-http}"
+                  
+                  # Upstream Configuration
+                  upstreams:
+                    # Database Upstream
+                    - destination_name: "database-service"
+                      local_bind_port: ${CONSUL_DB_UPSTREAM_PORT:-5432}
+                      
+                    # ML Service Upstream
+                    - destination_name: "ml-service"
+                      local_bind_port: ${CONSUL_ML_UPSTREAM_PORT:-8080}
+    
+    # Service Defaults
+    service_defaults:
+      # API Service Defaults
+      api_service:
+        enabled: ${CONSUL_API_SERVICE_DEFAULTS_ENABLED:-true}
+        service_name: "api-service"
+        
+        # Configuration
+        spec:
+          protocol: "http"
+          
+          # Mesh Gateway
+          mesh_gateway:
+            mode: "${CONSUL_API_MESH_GATEWAY_MODE:-local}"
+          
+          # External Source
+          external_sni: "${CONSUL_API_EXTERNAL_SNI:-}"
+          
+          # Proxy Configuration
+          proxy:
+            # Envoy Configuration
+            envoy_extensions:
+              - name: "builtin/http/localratelimit"
+                arguments:
+                  token_bucket:
+                    max_tokens: ${CONSUL_API_RATE_LIMIT_MAX_TOKENS:-100}
+                    tokens_per_fill: ${CONSUL_API_RATE_LIMIT_TOKENS_PER_FILL:-100}
+                    fill_interval: "${CONSUL_API_RATE_LIMIT_FILL_INTERVAL:-1s}"
+      
+      # Database Service Defaults
+      database_service:
+        enabled: ${CONSUL_DATABASE_SERVICE_DEFAULTS_ENABLED:-true}
+        service_name: "database-service"
+        
+        # Configuration
+        spec:
+          protocol: "tcp"
+          
+          # Mesh Gateway
+          mesh_gateway:
+            mode: "${CONSUL_DATABASE_MESH_GATEWAY_MODE:-local}"
+      
+      # ML Service Defaults
+      ml_service:
+        enabled: ${CONSUL_ML_SERVICE_DEFAULTS_ENABLED:-true}
+        service_name: "ml-service"
+        
+        # Configuration
+        spec:
+          protocol: "http"
+          
+          # Mesh Gateway
+          mesh_gateway:
+            mode: "${CONSUL_ML_MESH_GATEWAY_MODE:-local}"
+          
+          # Proxy Configuration
+          proxy:
+            # Timeout Configuration
+            config:
+              connect_timeout_ms: ${CONSUL_ML_CONNECT_TIMEOUT:-5000}
+              request_timeout_ms: ${CONSUL_ML_REQUEST_TIMEOUT:-120000}
+    
+    # Service Intentions
+    service_intentions:
+      # API Service Intentions
+      api_service_intentions:
+        enabled: ${CONSUL_API_SERVICE_INTENTIONS_ENABLED:-true}
+        source_name: "web-frontend"
+        destination_name: "api-service"
+        
+        # Action
+        action: "${CONSUL_API_INTENTION_ACTION:-allow}"
+        
+        # Permissions
+        permissions:
+          - action: "allow"
+            http:
+              path_exact: "/api/v1/health"
+              methods: ["GET"]
+          
+          - action: "allow"
+            http:
+              path_prefix: "/api/v1/"
+              methods: ["GET", "POST", "PUT", "DELETE"]
+              header:
+                - name: "authorization"
+                  present: true
+      
+      # Database Service Intentions
+      database_service_intentions:
+        enabled: ${CONSUL_DATABASE_SERVICE_INTENTIONS_ENABLED:-true}
+        source_name: "api-service"
+        destination_name: "database-service"
+        
+        # Action
+        action: "${CONSUL_DATABASE_INTENTION_ACTION:-allow}"
+      
+      # ML Service Intentions
+      ml_service_intentions:
+        enabled: ${CONSUL_ML_SERVICE_INTENTIONS_ENABLED:-true}
+        source_name: "api-service"
+        destination_name: "ml-service"
+        
+        # Action
+        action: "${CONSUL_ML_INTENTION_ACTION:-allow}"
+        
+        # Permissions
+        permissions:
+          - action: "allow"
+            http:
+              path_prefix: "/predict"
+              methods: ["POST"]
+          
+          - action: "allow"
+            http:
+              path_exact: "/health"
+              methods: ["GET"]
+
+  # Security
+  security:
+    # ACL Configuration
+    acl:
+      enabled: ${CONSUL_ACL_ENABLED:-true}
+      default_policy: "${CONSUL_ACL_DEFAULT_POLICY:-deny}"
+      enable_token_persistence: ${CONSUL_ACL_TOKEN_PERSISTENCE:-true}
+      
+      # Management Token
+      management_token:
+        secret_name: "${CONSUL_ACL_MGMT_TOKEN_SECRET:-consul-bootstrap-acl-token}"
+        secret_key: "${CONSUL_ACL_MGMT_TOKEN_KEY:-token}"
+      
+      # Tokens
+      tokens:
+        # Agent Token
+        agent:
+          secret_name: "${CONSUL_ACL_AGENT_TOKEN_SECRET:-consul-agent-acl-token}"
+          secret_key: "${CONSUL_ACL_AGENT_TOKEN_KEY:-token}"
+        
+        # Client Token
+        client:
+          secret_name: "${CONSUL_ACL_CLIENT_TOKEN_SECRET:-consul-client-acl-token}"
+          secret_key: "${CONSUL_ACL_CLIENT_TOKEN_KEY:-token}"
+      
+      # Policies
+      policies:
+        # Agent Policy
+        agent_policy:
+          enabled: ${CONSUL_ACL_AGENT_POLICY_ENABLED:-true}
+          name: "agent-policy"
+          description: "Policy for Consul agents"
+          
+          # Rules
+          rules: |
+            node_prefix "" {
+              policy = "write"
+            }
+            service_prefix "" {
+              policy = "read"
+            }
+            session_prefix "" {
+              policy = "read"
+            }
+        
+        # Service Policy
+        service_policy:
+          enabled: ${CONSUL_ACL_SERVICE_POLICY_ENABLED:-true}
+          name: "service-policy"
+          description: "Policy for services"
+          
+          # Rules
+          rules: |
+            service_prefix "" {
+              policy = "write"
+            }
+            node_prefix "" {
+              policy = "read"
+            }
+            key_prefix "_rexec" {
+              policy = "write"
+            }
+    
+    # TLS Configuration
+    tls:
+      enabled: ${CONSUL_TLS_ENABLED:-true}
+      
+      # CA Configuration
+      ca:
+        # Auto Encryption
+        auto_encrypt:
+          enabled: ${CONSUL_TLS_AUTO_ENCRYPT_ENABLED:-true}
+          
+        # CA Certificate
+        ca_cert:
+          secret_name: "${CONSUL_TLS_CA_CERT_SECRET:-consul-ca-cert}"
+          secret_key: "${CONSUL_TLS_CA_CERT_KEY:-tls.crt}"
+        
+        # CA Key
+        ca_key:
+          secret_name: "${CONSUL_TLS_CA_KEY_SECRET:-consul-ca-key}"
+          secret_key: "${CONSUL_TLS_CA_KEY_KEY:-tls.key}"
+      
+      # Server TLS
+      server:
+        enabled: ${CONSUL_SERVER_TLS_ENABLED:-true}
+        
+        # Certificate
+        cert:
+          secret_name: "${CONSUL_SERVER_TLS_CERT_SECRET:-consul-server-cert}"
+          secret_key: "${CONSUL_SERVER_TLS_CERT_KEY:-tls.crt}"
+        
+        # Key
+        key:
+          secret_name: "${CONSUL_SERVER_TLS_KEY_SECRET:-consul-server-key}"
+          secret_key: "${CONSUL_SERVER_TLS_KEY_KEY:-tls.key}"
+      
+      # Verify Configuration
+      verify:
+        server_hostname: ${CONSUL_TLS_VERIFY_SERVER_HOSTNAME:-true}
+        incoming_rpc: ${CONSUL_TLS_VERIFY_INCOMING_RPC:-true}
+        incoming_https: ${CONSUL_TLS_VERIFY_INCOMING_HTTPS:-true}
+    
+    # Gossip Encryption
+    gossip_encryption:
+      enabled: ${CONSUL_GOSSIP_ENCRYPTION_ENABLED:-true}
+      
+      # Encryption Key
+      secret_name: "${CONSUL_GOSSIP_ENCRYPTION_SECRET:-consul-gossip-encryption-key}"
+      secret_key: "${CONSUL_GOSSIP_ENCRYPTION_KEY:-key}"
+
+  # Networking
+  networking:
+    # Service Mesh Gateways
+    mesh_gateways:
+      enabled: ${CONSUL_MESH_GATEWAYS_ENABLED:-false}
+      
+      # Gateway Configuration
+      gateway_config:
+        replicas: ${CONSUL_MESH_GATEWAY_REPLICAS:-2}
+        
+        # Service Configuration
+        service:
+          type: "${CONSUL_MESH_GATEWAY_SERVICE_TYPE:-LoadBalancer}"
+          port: ${CONSUL_MESH_GATEWAY_PORT:-443}
+          node_port: ${CONSUL_MESH_GATEWAY_NODE_PORT:-30443}
+          
+          # Annotations
+          annotations:
+            service.beta.kubernetes.io/aws-load-balancer-type: "${CONSUL_MESH_GATEWAY_LB_TYPE:-nlb}"
+        
+        # Resource Configuration
+        resources:
+          requests:
+            memory: "${CONSUL_MESH_GATEWAY_MEMORY_REQUEST:-100Mi}"
+            cpu: "${CONSUL_MESH_GATEWAY_CPU_REQUEST:-100m}"
+          limits:
+            memory: "${CONSUL_MESH_GATEWAY_MEMORY_LIMIT:-100Mi}"
+            cpu: "${CONSUL_MESH_GATEWAY_CPU_LIMIT:-100m}"
+    
+    # Ingress Gateways
+    ingress_gateways:
+      enabled: ${CONSUL_INGRESS_GATEWAYS_ENABLED:-false}
+      
+      # Gateway Configuration
+      gateway_config:
+        replicas: ${CONSUL_INGRESS_GATEWAY_REPLICAS:-2}
+        
+        # Service Configuration
+        service:
+          type: "${CONSUL_INGRESS_GATEWAY_SERVICE_TYPE:-LoadBalancer}"
+          
+          # Ports
+          ports:
+            - port: 80
+              target_port: 8080
+              name: "http"
+            - port: 443
+              target_port: 8443
+              name: "https"
+        
+        # Resource Configuration
+        resources:
+          requests:
+            memory: "${CONSUL_INGRESS_GATEWAY_MEMORY_REQUEST:-100Mi}"
+            cpu: "${CONSUL_INGRESS_GATEWAY_CPU_REQUEST:-100m}"
+          limits:
+            memory: "${CONSUL_INGRESS_GATEWAY_MEMORY_LIMIT:-100Mi}"
+            cpu: "${CONSUL_INGRESS_GATEWAY_CPU_LIMIT:-100m}"
+    
+    # Terminating Gateways
+    terminating_gateways:
+      enabled: ${CONSUL_TERMINATING_GATEWAYS_ENABLED:-false}
+      
+      # Gateway Configuration
+      gateway_config:
+        replicas: ${CONSUL_TERMINATING_GATEWAY_REPLICAS:-2}
+        
+        # Resource Configuration
+        resources:
+          requests:
+            memory: "${CONSUL_TERMINATING_GATEWAY_MEMORY_REQUEST:-100Mi}"
+            cpu: "${CONSUL_TERMINATING_GATEWAY_CPU_REQUEST:-100m}"
+          limits:
+            memory: "${CONSUL_TERMINATING_GATEWAY_MEMORY_LIMIT:-100Mi}"
+            cpu: "${CONSUL_TERMINATING_GATEWAY_CPU_LIMIT:-100m}"
+
+  # Observability
+  observability:
+    # Metrics
+    metrics:
+      enabled: ${CONSUL_METRICS_ENABLED:-true}
+      
+      # Prometheus Configuration
+      prometheus:
+        enabled: ${CONSUL_PROMETHEUS_ENABLED:-true}
+        retention: "${CONSUL_PROMETHEUS_RETENTION:-24h}"
+        
+        # Prometheus Operator
+        prometheus_operator:
+          enabled: ${CONSUL_PROMETHEUS_OPERATOR_ENABLED:-false}
+          
+          # Service Monitor
+          service_monitor:
+            enabled: ${CONSUL_SERVICE_MONITOR_ENABLED:-true}
+            interval: "${CONSUL_SERVICE_MONITOR_INTERVAL:-30s}"
+            
+        # External Prometheus
+        external_prometheus:
+          enabled: ${CONSUL_EXTERNAL_PROMETHEUS_ENABLED:-false}
+          endpoint: "${CONSUL_EXTERNAL_PROMETHEUS_ENDPOINT:-}"
+      
+      # Custom Metrics
+      custom_metrics:
+        enabled: ${CONSUL_CUSTOM_METRICS_ENABLED:-true}
+        
+        # Service Metrics
+        service_metrics:
+          - metric_name: "consul_http_request_duration_seconds"
+            metric_type: "histogram"
+            help: "Consul HTTP request duration"
+            labels: ["method", "path", "code"]
+          
+          - metric_name: "consul_raft_leader"
+            metric_type: "gauge"
+            help: "Consul Raft leader status"
+          
+          - metric_name: "consul_serf_lan_members"
+            metric_type: "gauge"
+            help: "Consul Serf LAN members"
+    
+    # Distributed Tracing
+    tracing:
+      enabled: ${CONSUL_TRACING_ENABLED:-false}
+      
+      # Jaeger Configuration
+      jaeger:
+        enabled: ${CONSUL_JAEGER_ENABLED:-false}
+        endpoint: "${CONSUL_JAEGER_ENDPOINT:-jaeger-collector:14268}"
+        
+        # Tracing Configuration
+        tracing_config:
+          sampling_rate: ${CONSUL_JAEGER_SAMPLING_RATE:-0.1}
+    
+    # Logging
+    logging:
+      enabled: ${CONSUL_LOGGING_ENABLED:-true}
+      
+      # Log Level
+      log_level: "${CONSUL_LOG_LEVEL:-INFO}"
+      log_json: ${CONSUL_LOG_JSON:-true}
+      
+      # Log Outputs
+      log_outputs:
+        - "${CONSUL_LOG_OUTPUT_1:-stdout}"
+        - "${CONSUL_LOG_OUTPUT_2:-}"
+      
+      # Structured Logging
+      structured_logging:
+        enabled: ${CONSUL_STRUCTURED_LOGGING_ENABLED:-true}
+
+  # UI Configuration
+  ui:
+    enabled: ${CONSUL_UI_ENABLED:-true}
+    
+    # Service Configuration
+    service:
+      type: "${CONSUL_UI_SERVICE_TYPE:-ClusterIP}"
+      port: ${CONSUL_UI_SERVICE_PORT:-80}
+      
+      # External Access
+      external_access:
+        enabled: ${CONSUL_UI_EXTERNAL_ACCESS_ENABLED:-false}
+        
+        # Ingress Configuration
+        ingress:
+          enabled: ${CONSUL_UI_INGRESS_ENABLED:-false}
+          host: "${CONSUL_UI_HOST:-consul.spotify-ai-agent.com}"
+          
+          # TLS Configuration
+          tls:
+            enabled: ${CONSUL_UI_TLS_ENABLED:-true}
+            secret_name: "${CONSUL_UI_TLS_SECRET:-consul-ui-tls}"
+    
+    # Dashboard Configuration
+    dashboard:
+      enabled: ${CONSUL_DASHBOARD_ENABLED:-true}
+      
+      # Metrics Dashboard
+      metrics_dashboard:
+        enabled: ${CONSUL_METRICS_DASHBOARD_ENABLED:-true}
+        
+        # Dashboard Panels
+        panels:
+          - name: "Consul Cluster Health"
+            description: "Overall cluster health metrics"
+            
+          - name: "Service Discovery"
+            description: "Service registration and discovery metrics"
+            
+          - name: "Connect Service Mesh"
+            description: "Service mesh traffic and security metrics"
+            
+          - name: "KV Store Performance"
+            description: "Key-value store performance metrics"
+
+  # Performance and Scaling
+  performance:
+    # Server Performance
+    server_performance:
+      # Raft Configuration
+      raft:
+        # Performance Tuning
+        performance:
+          raft_multiplier: ${CONSUL_RAFT_MULTIPLIER:-1}
+          
+        # Snapshots
+        snapshot:
+          interval: "${CONSUL_SNAPSHOT_INTERVAL:-30s}"
+          threshold: ${CONSUL_SNAPSHOT_THRESHOLD:-8192}
+          
+        # Log Configuration
+        log:
+          disable_log_cache: ${CONSUL_DISABLE_LOG_CACHE:-false}
+      
+      # Limits Configuration
+      limits:
+        # HTTP Configuration
+        http:
+          request_limits:
+            mode: "${CONSUL_HTTP_REQUEST_LIMITS_MODE:-disabled}"  # disabled, enforce, permissive
+            read_rate: ${CONSUL_HTTP_READ_RATE:--1}
+            write_rate: ${CONSUL_HTTP_WRITE_RATE:--1}
+        
+        # RPC Configuration
+        rpc:
+          rate: ${CONSUL_RPC_RATE:--1}
+          max_conns_per_client: ${CONSUL_RPC_MAX_CONNS_PER_CLIENT:-100}
+        
+        # KV Store Configuration
+        kv:
+          max_value_size: ${CONSUL_KV_MAX_VALUE_SIZE:-524288}  # 512KB
+    
+    # Client Performance
+    client_performance:
+      # Cache Configuration
+      cache:
+        entry_fetch_max_burst: ${CONSUL_CACHE_ENTRY_FETCH_MAX_BURST:-2}
+        entry_fetch_rate: ${CONSUL_CACHE_ENTRY_FETCH_RATE:--1}
+    
+    # Connect Performance
+    connect_performance:
+      # CA Configuration
+      ca:
+        # Intermediate Certificate
+        intermediate_cert_ttl: "${CONSUL_CA_INTERMEDIATE_CERT_TTL:-8760h}"  # 1 year
+        
+        # Leaf Certificate
+        leaf_cert_ttl: "${CONSUL_CA_LEAF_CERT_TTL:-72h}"  # 3 days
+      
+      # Proxy Configuration
+      proxy:
+        # Sidecar Configuration
+        sidecar:
+          disable_empty_local_datacenter_config: ${CONSUL_SIDECAR_DISABLE_EMPTY_LOCAL_DC:-false}
+
+  # Multicluster Configuration
+  multicluster:
+    enabled: ${CONSUL_MULTICLUSTER_ENABLED:-false}
+    
+    # Federation Configuration
+    federation:
+      enabled: ${CONSUL_FEDERATION_ENABLED:-false}
+      
+      # Primary Datacenter
+      primary_datacenter: "${CONSUL_PRIMARY_DATACENTER:-dc1}"
+      
+      # Secondary Datacenters
+      secondary_datacenters:
+        - name: "${CONSUL_SECONDARY_DC_1:-dc2}"
+          enabled: ${CONSUL_SECONDARY_DC_1_ENABLED:-false}
+          
+        - name: "${CONSUL_SECONDARY_DC_2:-dc3}"
+          enabled: ${CONSUL_SECONDARY_DC_2_ENABLED:-false}
+    
+    # WAN Federation
+    wan_federation:
+      enabled: ${CONSUL_WAN_FEDERATION_ENABLED:-false}
+      
+      # Primary Gateway
+      primary_gateway:
+        enabled: ${CONSUL_PRIMARY_GATEWAY_ENABLED:-false}
+        k8s_auth_method_host: "${CONSUL_PRIMARY_K8S_AUTH_METHOD_HOST:-}"
+      
+      # Secondary Gateways
+      secondary_gateways:
+        enabled: ${CONSUL_SECONDARY_GATEWAYS_ENABLED:-false}
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: true
+        installation:
+          server:
+            replicas: 1
+            bootstrap_expect: 1
+            storage:
+              enabled: false
+      
+      security:
+        acl:
+          enabled: false
+        
+        tls:
+          enabled: false
+        
+        gossip_encryption:
+          enabled: false
+      
+      observability:
+        metrics:
+          enabled: true
+          prometheus:
+            retention: "2h"
+        
+        logging:
+          log_level: "DEBUG"
+      
+      ui:
+        enabled: true
+        service:
+          external_access:
+            enabled: true
+    
+    testing:
+      general:
+        enabled: true
+        installation:
+          server:
+            replicas: 3
+            bootstrap_expect: 3
+      
+      service_mesh:
+        connect:
+          enabled: true
+          sidecar_injection:
+            enabled: true
+        
+        service_intentions:
+          api_service_intentions:
+            enabled: true
+          database_service_intentions:
+            enabled: true
+          ml_service_intentions:
+            enabled: true
+      
+      security:
+        acl:
+          enabled: true
+          default_policy: "allow"
+        
+        tls:
+          enabled: true
+      
+      observability:
+        metrics:
+          enabled: true
+        
+        tracing:
+          enabled: true
+    
+    production:
+      general:
+        enabled: true
+        installation:
+          server:
+            replicas: 5
+            bootstrap_expect: 5
+            storage:
+              enabled: true
+              storage_class: "fast-ssd"
+              size: "20Gi"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"
+      
+      service_discovery:
+        dns:
+          enabled: true
+          recursors:
+            - "8.8.8.8"
+            - "1.1.1.1"
+      
+      service_mesh:
+        connect:
+          enabled: true
+          sidecar_injection:
+            enabled: true
+            default: false
+        
+        service_defaults:
+          api_service:
+            enabled: true
+          database_service:
+            enabled: true
+          ml_service:
+            enabled: true
+        
+        service_intentions:
+          api_service_intentions:
+            enabled: true
+          database_service_intentions:
+            enabled: true
+          ml_service_intentions:
+            enabled: true
+      
+      security:
+        acl:
+          enabled: true
+          default_policy: "deny"
+          enable_token_persistence: true
+        
+        tls:
+          enabled: true
+          ca:
+            auto_encrypt:
+              enabled: true
+          verify:
+            server_hostname: true
+            incoming_rpc: true
+            incoming_https: true
+        
+        gossip_encryption:
+          enabled: true
+      
+      networking:
+        mesh_gateways:
+          enabled: true
+          gateway_config:
+            replicas: 3
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+      
+      observability:
+        metrics:
+          enabled: true
+          prometheus:
+            enabled: true
+            retention: "24h"
+            prometheus_operator:
+              enabled: true
+              service_monitor:
+                enabled: true
+        
+        tracing:
+          enabled: true
+          jaeger:
+            enabled: true
+        
+        logging:
+          enabled: true
+          log_level: "INFO"
+          log_json: true
+          structured_logging:
+            enabled: true
+      
+      ui:
+        enabled: true
+        service:
+          external_access:
+            enabled: true
+            ingress:
+              enabled: true
+              tls:
+                enabled: true
+      
+      performance:
+        server_performance:
+          raft:
+            performance:
+              raft_multiplier: 1
+            snapshot:
+              interval: "30s"
+              threshold: 8192
+          
+          limits:
+            http:
+              request_limits:
+                mode: "enforce"
+                read_rate: 100
+                write_rate: 100
+            
+            rpc:
+              rate: 100
+              max_conns_per_client: 100
+      
+      multicluster:
+        enabled: false

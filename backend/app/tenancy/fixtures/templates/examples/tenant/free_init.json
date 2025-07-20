@@ -1,0 +1,543 @@
+{
+  "_metadata": {
+    "template_type": "tenant_init_free",
+    "template_version": "2024.2.0",
+    "schema_version": "2024.2",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "TenantManagerAdvanced",
+    "tags": ["tenant", "free", "entry-level", "basic"],
+    "description": "Free tier tenant configuration with essential features and basic security",
+    "tier_benefits": [
+      "Basic AI assistant",
+      "Limited storage",
+      "Community support",
+      "Standard features"
+    ],
+    "upgrade_path": "professional"
+  },
+  
+  "tenant_id": "{{ tenant_id }}",
+  "tenant_name": "{{ tenant_name | default(tenant_id | title) }}",
+  "tier": "free",
+  "status": "active",
+  
+  "configuration": {
+    "limits": {
+      "max_users": 5,
+      "storage_gb": 1.0,
+      "ai_sessions_per_month": 50,
+      "api_rate_limit_per_hour": 100,
+      "concurrent_sessions": 2,
+      "custom_integrations": 1,
+      "data_retention_days": 30,
+      "backup_retention_days": 7,
+      "ml_training_jobs_per_month": 0,
+      "real_time_predictions_per_day": 100,
+      "custom_models": 0,
+      "webhook_endpoints": 2,
+      "scheduled_jobs": 5,
+      "file_upload_size_mb": 10,
+      "monthly_bandwidth_gb": 1,
+      
+      "auto_scaling": {
+        "enabled": false,
+        "scale_up_threshold": 0.9,
+        "scale_down_threshold": 0.2,
+        "max_scale_factor": 1.0
+      },
+      
+      "rate_limiting": {
+        "requests_per_second": 2,
+        "burst_capacity": 10,
+        "daily_quota": 1000,
+        "ip_based_limiting": true
+      }
+    },
+    
+    "features": {
+      "enabled": [
+        "basic_ai_chat",
+        "standard_collaboration",
+        "community_support",
+        "basic_analytics",
+        "mobile_app",
+        "web_interface",
+        "email_notifications",
+        "basic_reporting",
+        "data_export",
+        "user_management"
+      ],
+      "disabled": [
+        "advanced_ai",
+        "custom_integrations",
+        "priority_support",
+        "advanced_analytics",
+        "white_labeling",
+        "custom_branding",
+        "sso_integration",
+        "api_access",
+        "webhook_notifications",
+        "custom_models",
+        "ml_pipeline",
+        "real_time_collaboration",
+        "advanced_security",
+        "audit_logs",
+        "compliance_reporting"
+      ],
+      "trial_features": {
+        "enabled": true,
+        "duration_days": 14,
+        "features": [
+          "advanced_ai",
+          "priority_support", 
+          "api_access"
+        ]
+      }
+    },
+    
+    "security": {
+      "password_policy": {
+        "min_length": 8,
+        "require_special_chars": false,
+        "require_numbers": true,
+        "require_uppercase": false,
+        "require_lowercase": true,
+        "max_age_days": 365,
+        "history_count": 3,
+        "lockout_attempts": 10,
+        "lockout_duration_minutes": 15
+      },
+      
+      "session_config": {
+        "timeout_minutes": 1440,
+        "absolute_timeout_hours": 72,
+        "concurrent_sessions_limit": 2,
+        "idle_timeout_minutes": 120,
+        "remember_me_days": 7
+      },
+      
+      "mfa_config": {
+        "required": false,
+        "methods": ["email"],
+        "backup_codes": 5,
+        "grace_period_days": 30
+      },
+      
+      "encryption": {
+        "algorithm": "AES-256-CBC",
+        "key_rotation_days": 365,
+        "at_rest": true,
+        "in_transit": true,
+        "field_level": false
+      },
+      
+      "threat_detection": {
+        "enabled": true,
+        "ml_anomaly_detection": false,
+        "geo_blocking": false,
+        "suspicious_activity_threshold": 0.9,
+        "auto_suspend_on_threat": false,
+        "notification_channels": ["email"]
+      },
+      
+      "access_control": {
+        "default_policy": "allow",
+        "rbac_enabled": false,
+        "abac_enabled": false,
+        "audit_enabled": false,
+        "session_recording": false,
+        "ip_whitelist": [],
+        "geo_restrictions": []
+      }
+    },
+    
+    "ai_configuration": {
+      "model_access": {
+        "gpt-3.5-turbo": true,
+        "gpt-4": false,
+        "claude-3": false,
+        "gemini-pro": false,
+        "custom_models": false,
+        "fine_tuned_models": false
+      },
+      
+      "rate_limits": {
+        "requests_per_minute": 10,
+        "tokens_per_day": 10000,
+        "concurrent_requests": 2,
+        "batch_size_limit": 10,
+        "context_window_tokens": 4096
+      },
+      
+      "features": {
+        "context_memory": false,
+        "custom_prompts": false,
+        "conversation_export": true,
+        "ai_analytics": false,
+        "model_fine_tuning": false,
+        "embeddings_generation": false,
+        "semantic_search": false,
+        "auto_categorization": false,
+        "sentiment_analysis": false,
+        "language_translation": false
+      },
+      
+      "safety_settings": {
+        "content_filter": true,
+        "profanity_filter": true,
+        "personal_info_detection": true,
+        "bias_detection": false,
+        "hallucination_detection": false,
+        "max_session_duration": 1800,
+        "safety_threshold": 0.9,
+        "adult_content_filter": true
+      },
+      
+      "ml_pipeline": {
+        "auto_ml_enabled": false,
+        "model_monitoring": false,
+        "drift_detection": false,
+        "a_b_testing": false,
+        "model_versioning": false,
+        "performance_tracking": false
+      }
+    },
+    
+    "integrations": {
+      "spotify": {
+        "enabled": true,
+        "client_id": "{{ spotify_client_id }}",
+        "scopes": [
+          "user-read-private",
+          "user-read-email",
+          "playlist-read-private"
+        ],
+        "rate_limit": 50
+      },
+      
+      "slack": {
+        "enabled": false,
+        "webhook_url": null,
+        "channel": null,
+        "bot_token": null
+      },
+      
+      "microsoft_teams": {
+        "enabled": false,
+        "webhook_url": null,
+        "tenant_id": null
+      },
+      
+      "google_workspace": {
+        "enabled": false,
+        "client_id": null,
+        "scopes": []
+      },
+      
+      "zapier": {
+        "enabled": false,
+        "webhook_limit": 0
+      }
+    },
+    
+    "compliance": {
+      "gdpr_enabled": true,
+      "ccpa_enabled": false,
+      "hipaa_enabled": false,
+      "data_retention_days": 30,
+      "audit_log_retention_days": 7,
+      "right_to_deletion": true,
+      "data_portability": true,
+      "consent_management": true,
+      "cookie_consent": true
+    }
+  },
+  
+  "infrastructure": {
+    "isolation_level": "shared",
+    
+    "database": {
+      "schema_name": "public",
+      "isolation_level": "shared",
+      "encryption_at_rest": true,
+      "backup_enabled": true,
+      "backup_retention_days": 7,
+      "point_in_time_recovery": false,
+      "connection_pooling": true,
+      "max_connections": 5,
+      "query_timeout_seconds": 30,
+      
+      "replication": {
+        "enabled": false,
+        "type": null,
+        "replicas": 0
+      },
+      
+      "performance": {
+        "connection_pooling": true,
+        "query_optimization": false,
+        "index_tuning": false,
+        "cache_enabled": true,
+        "cache_size_mb": 64,
+        "slow_query_threshold_ms": 5000
+      }
+    },
+    
+    "storage": {
+      "bucket_name": "tenant-{{ tenant_id }}-free-storage",
+      "encryption_enabled": true,
+      "versioning_enabled": false,
+      "cdn_enabled": false,
+      "backup_enabled": false,
+      "storage_class": "standard",
+      
+      "lifecycle_policies": {
+        "archive_after_days": null,
+        "delete_after_days": 30
+      },
+      
+      "access_control": {
+        "public_read": false,
+        "signed_urls": true,
+        "url_expiry_hours": 24
+      }
+    },
+    
+    "networking": {
+      "vpc_dedicated": false,
+      "load_balancer": "shared",
+      "cdn_enabled": false,
+      "ssl_termination": true,
+      "custom_domain": false,
+      
+      "rate_limiting": {
+        "enabled": true,
+        "requests_per_second": 2,
+        "burst_capacity": 10
+      },
+      
+      "security": {
+        "ddos_protection": "basic",
+        "waf_enabled": false,
+        "geo_blocking": false
+      }
+    },
+    
+    "compute": {
+      "instance_type": "shared",
+      "cpu_cores": 0.25,
+      "memory_gb": 0.5,
+      "auto_scaling": false,
+      "availability_zones": 1,
+      
+      "container_config": {
+        "cpu_limit": "250m",
+        "memory_limit": "512Mi",
+        "cpu_request": "100m",
+        "memory_request": "256Mi"
+      }
+    }
+  },
+  
+  "monitoring": {
+    "metrics": {
+      "enabled": true,
+      "retention_days": 7,
+      "granularity_minutes": 5,
+      "custom_metrics": false,
+      
+      "dashboards": {
+        "system_overview": true,
+        "user_activity": false,
+        "performance": false,
+        "security": false
+      }
+    },
+    
+    "logging": {
+      "enabled": true,
+      "level": "ERROR",
+      "retention_days": 7,
+      "structured_logging": false,
+      "log_aggregation": false,
+      
+      "categories": {
+        "application": true,
+        "security": false,
+        "audit": false,
+        "performance": false
+      }
+    },
+    
+    "alerting": {
+      "enabled": false,
+      "channels": [],
+      "escalation": false,
+      
+      "rules": {
+        "system_health": false,
+        "security_events": false,
+        "usage_limits": true,
+        "performance": false
+      }
+    },
+    
+    "analytics": {
+      "user_behavior": false,
+      "performance_analytics": false,
+      "business_intelligence": false,
+      "predictive_analytics": false,
+      "real_time_analytics": false
+    }
+  },
+  
+  "billing": {
+    "subscription": {
+      "plan_id": "free",
+      "status": "active",
+      "started_at": "{{ current_timestamp() }}",
+      "auto_renew": false,
+      "billing_cycle": "monthly"
+    },
+    
+    "pricing": {
+      "base_price": 0.00,
+      "user_price": 0.00,
+      "storage_price_per_gb": 0.00,
+      "ai_session_price": 0.00,
+      "overage_protection": true
+    },
+    
+    "usage_tracking": {
+      "track_users": true,
+      "track_storage": true,
+      "track_ai_sessions": true,
+      "track_api_calls": true,
+      "track_bandwidth": true,
+      "real_time_tracking": false
+    },
+    
+    "limits_enforcement": {
+      "hard_limits": true,
+      "grace_period_hours": 24,
+      "suspension_on_overage": false,
+      "upgrade_prompts": true
+    }
+  },
+  
+  "lifecycle": {
+    "provisioning": {
+      "auto_provision": true,
+      "provision_timeout_minutes": 15,
+      "rollback_on_failure": true
+    },
+    
+    "upgrades": {
+      "auto_upgrade_available": true,
+      "upgrade_path": "professional",
+      "migration_support": true,
+      "data_migration": true
+    },
+    
+    "deprovisioning": {
+      "grace_period_days": 30,
+      "data_retention_days": 30,
+      "backup_before_deletion": true
+    },
+    
+    "maintenance": {
+      "maintenance_window": "Sunday 02:00-04:00 UTC",
+      "auto_updates": true,
+      "notification_hours": 24
+    }
+  },
+  
+  "notifications": {
+    "email_enabled": true,
+    "sms_enabled": false,
+    "push_enabled": false,
+    "slack_enabled": false,
+    "webhook_enabled": false,
+    
+    "preferences": {
+      "system_alerts": true,
+      "usage_reports": false,
+      "security_notifications": true,
+      "billing_notifications": true,
+      "feature_updates": true,
+      "marketing": false
+    },
+    
+    "frequency": {
+      "immediate": ["security_alerts", "system_outages"],
+      "daily": [],
+      "weekly": ["usage_summary"],
+      "monthly": []
+    }
+  },
+  
+  "support": {
+    "level": "community",
+    "channels": ["documentation", "community_forum", "email"],
+    "response_time_hours": 72,
+    "languages": ["en"],
+    "business_hours_only": true,
+    
+    "self_service": {
+      "knowledge_base": true,
+      "video_tutorials": false,
+      "interactive_guides": false,
+      "chatbot": true
+    }
+  },
+  
+  "data_governance": {
+    "data_classification": "basic",
+    "retention_policies": {
+      "user_data": 30,
+      "logs": 7,
+      "backups": 7,
+      "analytics": 30
+    },
+    
+    "privacy": {
+      "data_minimization": true,
+      "consent_required": true,
+      "opt_out_available": true,
+      "data_portability": true
+    },
+    
+    "geographic_restrictions": {
+      "data_residency": null,
+      "processing_locations": ["us-east", "eu-west"],
+      "cross_border_transfers": true
+    }
+  },
+  
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "ttl_seconds": 3600,
+      "strategy": "read-through",
+      "cache_size_mb": 128
+    },
+    
+    "optimization": {
+      "lazy_loading": true,
+      "compression": true,
+      "minification": true,
+      "image_optimization": false
+    },
+    
+    "sla": {
+      "uptime_target": 99.0,
+      "response_time_ms": 2000,
+      "availability_monitoring": false
+    }
+  },
+  
+  "created_at": "{{ current_timestamp() }}",
+  "updated_at": "{{ current_timestamp() }}",
+  "expires_at": null,
+  "trial_expires_at": "{{ trial_expiry_date() }}"
+}

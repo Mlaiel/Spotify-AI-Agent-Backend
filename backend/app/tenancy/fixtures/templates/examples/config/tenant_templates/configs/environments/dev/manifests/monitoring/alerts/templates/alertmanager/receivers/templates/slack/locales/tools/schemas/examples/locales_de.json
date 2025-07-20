@@ -1,0 +1,133 @@
+{
+  "alerting": {
+    "critical": {
+      "title": "🚨 KRITISCHER ALARM - Sofortige Maßnahme Erforderlich",
+      "severity_label": "Schweregrad",
+      "tenant_label": "Mandant",
+      "environment_label": "Umgebung",
+      "service_label": "Service",
+      "instance_label": "Instanz",
+      "started_at_label": "Gestartet Um",
+      "description_label": "Beschreibung",
+      "actions": {
+        "view_grafana": "🔍 Grafana Anzeigen",
+        "view_prometheus": "📊 Prometheus",
+        "view_runbook": "🔧 Runbook"
+      }
+    },
+    "warning": {
+      "title": "⚠️ WARNUNG",
+      "metric_label": "Metrik",
+      "current_value_label": "Aktueller Wert"
+    },
+    "info": {
+      "title": "ℹ️ INFORMATION",
+      "type_label": "Typ"
+    },
+    "security": {
+      "title": "🛡️ SICHERHEITSVORFALL ERKANNT",
+      "incident_type_label": "Vorfalltyp",
+      "source_ip_label": "Quell-IP",
+      "user_label": "Benutzer",
+      "timestamp_label": "Zeitstempel",
+      "auto_actions_label": "Automatische Aktionen"
+    },
+    "performance": {
+      "title": "📉 LEISTUNGSABFALL ERKANNT",
+      "affected_tenant_label": "Betroffener Mandant",
+      "threshold_label": "Schwellenwert",
+      "impact_level_label": "Geschätzte Auswirkung",
+      "recommended_action_label": "Empfohlene Aktion"
+    },
+    "backup": {
+      "title": "💾 BACKUP-STATUS",
+      "success_title": "Backup Erfolgreich",
+      "failure_title": "Backup Fehlgeschlagen",
+      "type_label": "Backup-Typ",
+      "size_label": "Größe",
+      "duration_label": "Dauer",
+      "location_label": "Standort"
+    },
+    "ai_model": {
+      "title": "🤖 KI-MODELL LEISTUNG",
+      "model_label": "Modell",
+      "accuracy_label": "Genauigkeit",
+      "avg_latency_label": "Durchschnittliche Latenz",
+      "requests_per_minute_label": "Anfragen/Min",
+      "gpu_usage_label": "GPU-Nutzung"
+    },
+    "tenant_onboarding": {
+      "title": "🚀 NEUER MANDANT ERSTELLT",
+      "success_message": "Mandant {{tenant.name}} erfolgreich konfiguriert",
+      "tenant_id_label": "Mandanten-ID",
+      "subscription_tier_label": "Abonnement-Stufe",
+      "environment_label": "Umgebung",
+      "allocated_resources_label": "Zugewiesene Ressourcen"
+    }
+  },
+  "common": {
+    "tenant": "Mandant",
+    "environment": "Umgebung",
+    "severity": "Schweregrad",
+    "service": "Service",
+    "timestamp": "Zeitstempel",
+    "description": "Beschreibung",
+    "status": "Status",
+    "success": "Erfolg",
+    "failure": "Fehler",
+    "warning": "Warnung",
+    "critical": "Kritisch",
+    "info": "Information",
+    "unknown": "Unbekannt"
+  },
+  "environments": {
+    "dev": "Entwicklung",
+    "staging": "Staging",
+    "prod": "Produktion",
+    "test": "Test"
+  },
+  "subscription_tiers": {
+    "free": "Kostenlos",
+    "premium": "Premium",
+    "enterprise": "Unternehmen",
+    "enterprise_plus": "Unternehmen Plus"
+  },
+  "services": {
+    "api": "API-Service",
+    "database": "Datenbank",
+    "cache": "Cache",
+    "ml_model": "ML-Modell",
+    "file_storage": "Dateispeicher",
+    "authentication": "Authentifizierung",
+    "monitoring": "Überwachung",
+    "logging": "Protokollierung"
+  },
+  "metrics": {
+    "cpu_usage": "CPU-Auslastung",
+    "memory_usage": "Speichernutzung",
+    "disk_usage": "Festplattennutzung",
+    "network_io": "Netzwerk-E/A",
+    "api_latency": "API-Latenz",
+    "request_rate": "Anfragerate",
+    "error_rate": "Fehlerrate",
+    "ml_inference_time": "ML-Inferenzzeit",
+    "model_accuracy": "Modellgenauigkeit"
+  },
+  "actions": {
+    "acknowledge": "Bestätigen",
+    "silence": "Stumm Schalten",
+    "escalate": "Eskalieren",
+    "resolve": "Lösen",
+    "investigate": "Untersuchen",
+    "restart_service": "Service Neustarten",
+    "scale_up": "Hochskalieren",
+    "contact_support": "Support Kontaktieren"
+  },
+  "notifications": {
+    "footer": "Spotify AI Agent Überwachung",
+    "powered_by": "Betrieben von Prometheus & Grafana",
+    "documentation": "Dokumentation",
+    "support": "Support",
+    "dashboard": "Dashboard"
+  }
+}

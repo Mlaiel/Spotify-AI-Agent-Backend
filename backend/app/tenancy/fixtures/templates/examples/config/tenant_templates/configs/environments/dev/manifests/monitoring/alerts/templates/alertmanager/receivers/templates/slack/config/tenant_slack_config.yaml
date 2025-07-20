@@ -1,0 +1,279 @@
+# Configuration example for tenant-specific Slack alert settings
+# File: tenant_slack_config.yaml
+
+# Tenant Configuration for Slack Alerts
+tenant_id: "spotify_prod_001"
+tenant_name: "Spotify Production"
+environment: "production"
+
+# Slack Integration Settings
+slack:
+  # Primary webhook configuration
+  webhook_url: "${SLACK_WEBHOOK_URL_PROD}"
+  
+  # Backup webhook for high-priority alerts
+  backup_webhook_url: "${SLACK_WEBHOOK_URL_BACKUP}"
+  
+  # Channel routing configuration
+  channels:
+    # Default channel for all alerts
+    default: "#alerts-production"
+    
+    # Severity-based routing
+    critical: "#critical-alerts"
+    warning: "#warnings"
+    info: "#info-alerts"
+    
+    # Service-specific channels
+    services:
+      spotify-api: "#api-alerts"
+      spotify-ml: "#ml-alerts"
+      spotify-auth: "#auth-alerts"
+      spotify-billing: "#billing-alerts"
+      spotify-streaming: "#streaming-alerts"
+  
+  # Message formatting preferences
+  formatting:
+    # Use Slack blocks for rich formatting
+    use_blocks: true
+    
+    # Include interactive buttons
+    include_actions: true
+    
+    # Attach thread replies for updates
+    use_threads: true
+    
+    # Maximum message length before truncation
+    max_message_length: 3000
+    
+    # Include AI insights in messages
+    include_ai_insights: true
+  
+  # Rate limiting configuration
+  rate_limiting:
+    # Maximum messages per minute
+    max_messages_per_minute: 30
+    
+    # Burst allowance
+    burst_size: 10
+    
+    # Cooldown period for similar alerts (seconds)
+    alert_cooldown: 300
+    
+    # Aggregate similar alerts
+    enable_aggregation: true
+    aggregation_window: 600  # 10 minutes
+
+# Alert Routing Rules
+routing:
+  # Rules are evaluated in order
+  rules:
+    # Critical alerts go to dedicated channel immediately
+    - name: "critical_alerts"
+      conditions:
+        severity: ["critical", "emergency"]
+      actions:
+        channel: "#critical-alerts"
+        mention_users: ["@oncall", "@devops-lead"]
+        escalate_after: 300  # 5 minutes
+    
+    # ML service alerts to ML team
+    - name: "ml_service_alerts"
+      conditions:
+        service_name: ["spotify-ml", "recommendation-engine", "audio-analysis"]
+      actions:
+        channel: "#ml-alerts"
+        mention_users: ["@ml-team"]
+    
+    # API alerts during business hours
+    - name: "api_business_hours"
+      conditions:
+        service_name: ["spotify-api"]
+        time_range: "09:00-18:00"
+        timezone: "UTC"
+      actions:
+        channel: "#api-alerts"
+        priority: "high"
+    
+    # Billing alerts to finance team
+    - name: "billing_alerts"
+      conditions:
+        component: ["billing", "payment", "subscription"]
+      actions:
+        channel: "#billing-alerts"
+        mention_users: ["@finance-team"]
+        include_cost_impact: true
+    
+    # Default rule - catch all
+    - name: "default_routing"
+      conditions: {}
+      actions:
+        channel: "#alerts-production"
+
+# Escalation Configuration
+escalation:
+  # Enable automatic escalation
+  enabled: true
+  
+  # Escalation levels
+  levels:
+    - level: 1
+      delay_minutes: 5
+      actions:
+        - mention_user: "@team-lead"
+        - send_email: "team-lead@spotify.com"
+    
+    - level: 2
+      delay_minutes: 15
+      actions:
+        - mention_user: "@engineering-manager"
+        - send_sms: "+1234567890"
+        - create_incident: true
+    
+    - level: 3
+      delay_minutes: 30
+      actions:
+        - mention_user: "@director"
+        - page_oncall: true
+        - escalate_to_vendor: true
+
+# Template Configuration
+templates:
+  # Language preference
+  default_language: "en"
+  
+  # Available languages
+  supported_languages: ["en", "fr", "de"]
+  
+  # Template mapping
+  template_mapping:
+    critical:
+      blocks: "critical_blocks.j2"
+      text: "critical_text.j2"
+    warning:
+      blocks: "warning_blocks.j2"
+      text: "warning_text.j2"
+    info:
+      blocks: "info_blocks.j2"
+      text: "info_text.j2"
+    digest:
+      text: "digest_text.j2"
+  
+  # Custom template variables
+  custom_variables:
+    company_logo: "https://cdn.spotify.com/logo.png"
+    support_email: "devops@spotify.com"
+    dashboard_url: "https://monitoring.spotify.com"
+    runbook_base_url: "https://runbooks.spotify.com"
+
+# Monitoring and Metrics
+monitoring:
+  # Enable metrics collection
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - "slack_messages_sent_total"
+    - "slack_delivery_latency_seconds"
+    - "slack_errors_total"
+    - "slack_rate_limit_hits_total"
+    - "alert_acknowledgment_time_seconds"
+    - "escalation_triggered_total"
+  
+  # Health check configuration
+  health_check:
+    enabled: true
+    interval_seconds: 60
+    webhook_test: true
+    channel_accessibility: true
+
+# Security Configuration
+security:
+  # Webhook URL validation
+  validate_webhook_ssl: true
+  
+  # Message content filtering
+  content_filtering:
+    # Remove sensitive data patterns
+    remove_patterns:
+      - "password=.*"
+      - "api_key=.*"
+      - "secret=.*"
+      - "token=.*"
+    
+    # Redact PII
+    redact_pii: true
+    
+    # Maximum retention for message logs
+    log_retention_days: 30
+  
+  # Access control
+  access_control:
+    # Users who can modify alert settings
+    admins: ["admin@spotify.com", "devops-lead@spotify.com"]
+    
+    # Users who can acknowledge alerts
+    operators: ["@devops", "@sre-team"]
+
+# Advanced Features
+advanced:
+  # AI-powered features
+  ai_features:
+    # Enable intelligent alert correlation
+    alert_correlation: true
+    
+    # Root cause analysis
+    root_cause_analysis: true
+    
+    # Predictive escalation
+    predictive_escalation: true
+    
+    # Auto-resolution suggestions
+    auto_resolution_suggestions: true
+  
+  # Integration with external systems
+  integrations:
+    # PagerDuty integration
+    pagerduty:
+      enabled: true
+      integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+      auto_create_incidents: true
+    
+    # Jira integration for incident tracking
+    jira:
+      enabled: true
+      project_key: "OPS"
+      auto_create_tickets: true
+      ticket_type: "Incident"
+    
+    # ServiceNow integration
+    servicenow:
+      enabled: false
+      instance_url: ""
+      username: ""
+      password: ""
+
+# Environment-specific overrides
+environment_overrides:
+  development:
+    slack:
+      channels:
+        default: "#alerts-dev"
+        critical: "#alerts-dev"
+    rate_limiting:
+      max_messages_per_minute: 10
+    escalation:
+      enabled: false
+  
+  staging:
+    slack:
+      channels:
+        default: "#alerts-staging"
+        critical: "#alerts-staging"
+    rate_limiting:
+      max_messages_per_minute: 20
+    escalation:
+      enabled: true
+      levels:
+        - level: 1
+          delay_minutes: 10

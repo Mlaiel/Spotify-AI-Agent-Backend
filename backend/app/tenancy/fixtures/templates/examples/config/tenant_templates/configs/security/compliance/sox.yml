@@ -1,0 +1,953 @@
+# SOX Compliance Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - SOX compliance architecture with enterprise controls
+# - Senior Backend Developer: Python/FastAPI/Django SOX enterprise patterns
+# - Financial Controls Specialist: SOX financial reporting and internal controls
+# - DBA & Data Engineer: SOX data integrity, audit trails, and retention policies
+# - Legal Compliance Specialist: SOX regulatory requirements and financial compliance
+
+# ==========================================
+# SOX COMPLIANCE CONFIGURATION
+# ==========================================
+
+sox:
+  # General Settings
+  general:
+    enabled: ${SOX_ENABLED:-false}
+    public_company: ${SOX_PUBLIC_COMPANY:-false}
+    subsidiaries_included: ${SOX_SUBSIDIARIES_INCLUDED:-false}
+    
+    # Company Information
+    company_info:
+      name: "${SOX_COMPANY_NAME:-Spotify AI Agent Corp}"
+      cik_number: "${SOX_CIK_NUMBER:-}"
+      ticker_symbol: "${SOX_TICKER_SYMBOL:-}"
+      fiscal_year_end: "${SOX_FISCAL_YEAR_END:-12-31}"
+      
+      # Reporting Structure
+      reporting_structure:
+        ceo: "${SOX_CEO_NAME:-John Doe}"
+        cfo: "${SOX_CFO_NAME:-Jane Smith}"
+        audit_committee_chair: "${SOX_AUDIT_COMMITTEE_CHAIR:-Bob Johnson}"
+        
+        # Key Personnel
+        key_personnel:
+          chief_compliance_officer:
+            name: "${SOX_CCO_NAME:-Alice Brown}"
+            email: "${SOX_CCO_EMAIL:-compliance@spotify-ai-agent.com}"
+            phone: "${SOX_CCO_PHONE:-+1-555-0126}"
+          
+          internal_audit_director:
+            name: "${SOX_IAD_NAME:-Charlie Wilson}"
+            email: "${SOX_IAD_EMAIL:-internal-audit@spotify-ai-agent.com}"
+            phone: "${SOX_IAD_PHONE:-+1-555-0127}"
+    
+    # Compliance Scope
+    compliance_scope:
+      financial_reporting: ${SOX_FINANCIAL_REPORTING:-true}
+      icfr_assessment: ${SOX_ICFR_ASSESSMENT:-true}  # Internal Control over Financial Reporting
+      disclosure_controls: ${SOX_DISCLOSURE_CONTROLS:-true}
+      
+      # Applicable Sections
+      applicable_sections:
+        section_302: ${SOX_SECTION_302:-true}  # Corporate Responsibility for Financial Reports
+        section_404: ${SOX_SECTION_404:-true}  # Management Assessment of Internal Controls
+        section_409: ${SOX_SECTION_409:-true}  # Real Time Issuer Disclosures
+        section_906: ${SOX_SECTION_906:-true}  # Corporate Responsibility for Financial Reports
+
+  # Section 302 - Corporate Responsibility for Financial Reports
+  section_302:
+    # CEO/CFO Certifications
+    certifications:
+      required: ${SOX_302_CERTIFICATIONS_REQUIRED:-true}
+      quarterly_certifications: ${SOX_302_QUARTERLY_CERTS:-true}
+      annual_certifications: ${SOX_302_ANNUAL_CERTS:-true}
+      
+      # Certification Requirements
+      certification_requirements:
+        review_completion: ${SOX_302_REVIEW_COMPLETION:-true}
+        accuracy_verification: ${SOX_302_ACCURACY_VERIFICATION:-true}
+        material_weakness_disclosure: ${SOX_302_MATERIAL_WEAKNESS_DISCLOSURE:-true}
+        control_changes_disclosure: ${SOX_302_CONTROL_CHANGES_DISCLOSURE:-true}
+        
+        # Certification Process
+        certification_process:
+          review_period_days: ${SOX_302_REVIEW_PERIOD:-15}
+          sign_off_deadline: "${SOX_302_SIGN_OFF_DEADLINE:-2_days_before_filing}"
+          documentation_required: ${SOX_302_DOCUMENTATION_REQUIRED:-true}
+          sub_certifications: ${SOX_302_SUB_CERTIFICATIONS:-true}
+    
+    # Disclosure Controls and Procedures
+    disclosure_controls:
+      # Control Framework
+      control_framework:
+        framework_used: "${SOX_DISCLOSURE_FRAMEWORK:-COSO}"
+        documentation_required: ${SOX_DISCLOSURE_DOCUMENTATION:-true}
+        testing_frequency: "${SOX_DISCLOSURE_TESTING_FREQUENCY:-quarterly}"
+        
+        # Control Categories
+        control_categories:
+          period_end_financial_reporting:
+            description: "Controls over period-end financial reporting process"
+            owner: "finance_team"
+            testing_frequency: "quarterly"
+          
+          management_review_controls:
+            description: "Management review and approval controls"
+            owner: "senior_management"
+            testing_frequency: "quarterly"
+          
+          information_technology_controls:
+            description: "IT general controls and application controls"
+            owner: "it_team"
+            testing_frequency: "quarterly"
+          
+          entity_level_controls:
+            description: "Tone at the top and control environment"
+            owner: "executive_team"
+            testing_frequency: "annually"
+      
+      # Control Testing
+      control_testing:
+        testing_methodology: "${SOX_CONTROL_TESTING_METHODOLOGY:-risk_based}"
+        sample_sizes: ${SOX_CONTROL_SAMPLE_SIZES:-true}
+        testing_documentation: ${SOX_CONTROL_TESTING_DOCS:-true}
+        
+        # Testing Standards
+        testing_standards:
+          walkthrough_procedures: ${SOX_WALKTHROUGH_PROCEDURES:-true}
+          design_effectiveness: ${SOX_DESIGN_EFFECTIVENESS:-true}
+          operating_effectiveness: ${SOX_OPERATING_EFFECTIVENESS:-true}
+          
+          # Sample Sizes by Risk Level
+          sample_sizes_by_risk:
+            high_risk: 40
+            medium_risk: 25
+            low_risk: 15
+            automated_controls: 1
+    
+    # Material Weakness Assessment
+    material_weakness:
+      # Assessment Criteria
+      assessment_criteria:
+        reasonable_possibility: ${SOX_REASONABLE_POSSIBILITY:-true}
+        material_misstatement: ${SOX_MATERIAL_MISSTATEMENT:-true}
+        quantitative_threshold: ${SOX_QUANTITATIVE_THRESHOLD:-5}  # Percentage of net income
+        qualitative_factors: ${SOX_QUALITATIVE_FACTORS:-true}
+        
+        # Severity Levels
+        severity_levels:
+          material_weakness:
+            description: "Deficiency that results in reasonable possibility of material misstatement"
+            reporting_required: true
+            remediation_priority: "immediate"
+          
+          significant_deficiency:
+            description: "Deficiency that is less severe than material weakness"
+            reporting_required: true
+            remediation_priority: "high"
+          
+          control_deficiency:
+            description: "Deficiency in design or operation of control"
+            reporting_required: false
+            remediation_priority: "medium"
+      
+      # Remediation Process
+      remediation:
+        remediation_plan_required: ${SOX_REMEDIATION_PLAN_REQUIRED:-true}
+        timeline_tracking: ${SOX_REMEDIATION_TIMELINE_TRACKING:-true}
+        progress_monitoring: ${SOX_REMEDIATION_PROGRESS_MONITORING:-true}
+        
+        # Remediation Timeline
+        timeline:
+          assessment_completion: "30_days"
+          remediation_plan: "60_days"
+          implementation_start: "90_days"
+          validation_testing: "quarterly"
+
+  # Section 404 - Management Assessment of Internal Controls
+  section_404:
+    # Internal Control Framework
+    internal_control_framework:
+      framework: "${SOX_404_FRAMEWORK:-COSO_2013}"
+      documentation_standard: "${SOX_404_DOCUMENTATION_STANDARD:-detailed_narratives}"
+      
+      # COSO Components
+      coso_components:
+        control_environment:
+          description: "Tone at the top and ethical values"
+          assessment_frequency: "annually"
+          components:
+            - "integrity_ethical_values"
+            - "board_oversight"
+            - "organizational_structure"
+            - "commitment_to_competence"
+            - "accountability_authority"
+        
+        risk_assessment:
+          description: "Identification and analysis of risks"
+          assessment_frequency: "annually"
+          components:
+            - "objective_specification"
+            - "risk_identification"
+            - "fraud_risk_assessment"
+            - "significant_change_identification"
+        
+        control_activities:
+          description: "Policies and procedures that help ensure directives are carried out"
+          assessment_frequency: "quarterly"
+          components:
+            - "control_selection_development"
+            - "technology_controls"
+            - "policy_procedure_deployment"
+        
+        information_communication:
+          description: "Information flow and communication requirements"
+          assessment_frequency: "annually"
+          components:
+            - "information_requirements"
+            - "internal_communication"
+            - "external_communication"
+        
+        monitoring_activities:
+          description: "Ongoing and separate evaluations"
+          assessment_frequency: "quarterly"
+          components:
+            - "ongoing_separate_evaluations"
+            - "deficiency_evaluation_communication"
+    
+    # Key Financial Reporting Processes
+    key_processes:
+      # Revenue Recognition
+      revenue_recognition:
+        process_owner: "revenue_accounting_team"
+        control_objectives:
+          - "completeness_of_revenue"
+          - "accuracy_of_revenue"
+          - "cutoff_procedures"
+          - "proper_classification"
+        
+        key_controls:
+          - control_id: "REV001"
+            description: "Monthly revenue reconciliation"
+            frequency: "monthly"
+            automation_level: "manual"
+            testing_frequency: "quarterly"
+          
+          - control_id: "REV002"
+            description: "Contract review and approval"
+            frequency: "per_transaction"
+            automation_level: "automated"
+            testing_frequency: "quarterly"
+      
+      # Expense Management
+      expense_management:
+        process_owner: "accounts_payable_team"
+        control_objectives:
+          - "authorization_of_expenses"
+          - "accuracy_of_recording"
+          - "proper_accruals"
+          - "vendor_management"
+        
+        key_controls:
+          - control_id: "EXP001"
+            description: "Three-way match for invoices"
+            frequency: "per_transaction"
+            automation_level: "automated"
+            testing_frequency: "quarterly"
+          
+          - control_id: "EXP002"
+            description: "Monthly accrual review"
+            frequency: "monthly"
+            automation_level: "manual"
+            testing_frequency: "quarterly"
+      
+      # Financial Reporting and Close
+      financial_close:
+        process_owner: "financial_reporting_team"
+        control_objectives:
+          - "completeness_of_close_process"
+          - "accuracy_of_financial_statements"
+          - "timely_financial_reporting"
+          - "proper_disclosures"
+        
+        key_controls:
+          - control_id: "FRC001"
+            description: "Monthly close checklist completion"
+            frequency: "monthly"
+            automation_level: "manual"
+            testing_frequency: "quarterly"
+          
+          - control_id: "FRC002"
+            description: "Financial statement review and approval"
+            frequency: "monthly"
+            automation_level: "manual"
+            testing_frequency: "quarterly"
+    
+    # IT General Controls (ITGC)
+    it_general_controls:
+      # Access Controls
+      access_controls:
+        logical_access: ${SOX_ITGC_LOGICAL_ACCESS:-true}
+        privileged_access: ${SOX_ITGC_PRIVILEGED_ACCESS:-true}
+        segregation_of_duties: ${SOX_ITGC_SEGREGATION_DUTIES:-true}
+        
+        # Control Activities
+        control_activities:
+          - control_id: "ITGC001"
+            description: "User access provisioning and deprovisioning"
+            testing_frequency: "quarterly"
+            automation_level: "semi_automated"
+          
+          - control_id: "ITGC002"
+            description: "Periodic access reviews"
+            testing_frequency: "quarterly"
+            automation_level: "manual"
+          
+          - control_id: "ITGC003"
+            description: "Privileged access monitoring"
+            testing_frequency: "monthly"
+            automation_level: "automated"
+      
+      # Change Management
+      change_management:
+        change_control_process: ${SOX_ITGC_CHANGE_CONTROL:-true}
+        emergency_changes: ${SOX_ITGC_EMERGENCY_CHANGES:-true}
+        testing_requirements: ${SOX_ITGC_TESTING_REQUIREMENTS:-true}
+        
+        # Control Activities
+        control_activities:
+          - control_id: "ITGC004"
+            description: "Change request approval process"
+            testing_frequency: "quarterly"
+            automation_level: "semi_automated"
+          
+          - control_id: "ITGC005"
+            description: "Change testing and validation"
+            testing_frequency: "quarterly"
+            automation_level: "manual"
+      
+      # System Operations
+      system_operations:
+        backup_recovery: ${SOX_ITGC_BACKUP_RECOVERY:-true}
+        system_monitoring: ${SOX_ITGC_SYSTEM_MONITORING:-true}
+        incident_management: ${SOX_ITGC_INCIDENT_MANAGEMENT:-true}
+        
+        # Control Activities
+        control_activities:
+          - control_id: "ITGC006"
+            description: "Daily backup monitoring and verification"
+            testing_frequency: "quarterly"
+            automation_level: "automated"
+          
+          - control_id: "ITGC007"
+            description: "System availability monitoring"
+            testing_frequency: "monthly"
+            automation_level: "automated"
+    
+    # Management Assessment Process
+    management_assessment:
+      # Assessment Timeline
+      assessment_timeline:
+        planning_phase: "Q1"
+        testing_phase: "Q2-Q3"
+        evaluation_phase: "Q4"
+        reporting_phase: "Year_end"
+        
+        # Key Milestones
+        milestones:
+          - milestone: "Risk assessment completion"
+            target_date: "March_31"
+            responsible_party: "internal_audit"
+          
+          - milestone: "Control testing completion"
+            target_date: "September_30"
+            responsible_party: "process_owners"
+          
+          - milestone: "Deficiency evaluation completion"
+            target_date: "November_30"
+            responsible_party: "management"
+          
+          - milestone: "Management report completion"
+            target_date: "February_15"
+            responsible_party: "finance_team"
+      
+      # Assessment Methodology
+      methodology:
+        top_down_approach: ${SOX_TOP_DOWN_APPROACH:-true}
+        risk_based_scoping: ${SOX_RISK_BASED_SCOPING:-true}
+        entity_level_controls: ${SOX_ENTITY_LEVEL_CONTROLS:-true}
+        
+        # Scoping Factors
+        scoping_factors:
+          - "financial_statement_materiality"
+          - "quantitative_qualitative_risk_factors"
+          - "entity_level_controls_effectiveness"
+          - "period_end_financial_reporting"
+          - "complementary_user_entity_controls"
+
+  # Section 409 - Real Time Issuer Disclosures
+  section_409:
+    # Current Report Requirements (8-K)
+    current_reports:
+      filing_deadline_days: ${SOX_409_FILING_DEADLINE:-4}  # Business days
+      triggering_events: ${SOX_409_TRIGGERING_EVENTS:-true}
+      
+      # Reportable Events
+      reportable_events:
+        material_agreements:
+          description: "Material definitive agreements"
+          disclosure_required: true
+          timeframe: "4_business_days"
+        
+        acquisitions_dispositions:
+          description: "Acquisition or disposition of assets"
+          disclosure_required: true
+          timeframe: "4_business_days"
+        
+        bankruptcy_receivership:
+          description: "Bankruptcy or receivership"
+          disclosure_required: true
+          timeframe: "4_business_days"
+        
+        material_impairments:
+          description: "Material impairments"
+          disclosure_required: true
+          timeframe: "4_business_days"
+        
+        departure_directors_officers:
+          description: "Departure of directors or officers"
+          disclosure_required: true
+          timeframe: "4_business_days"
+        
+        amendments_articles_bylaws:
+          description: "Amendments to articles or bylaws"
+          disclosure_required: true
+          timeframe: "4_business_days"
+    
+    # Real-Time Disclosure Process
+    disclosure_process:
+      # Event Identification
+      event_identification:
+        monitoring_procedures: ${SOX_409_MONITORING_PROCEDURES:-true}
+        escalation_process: ${SOX_409_ESCALATION_PROCESS:-true}
+        legal_review_required: ${SOX_409_LEGAL_REVIEW:-true}
+        
+        # Identification Methods
+        identification_methods:
+          - "executive_notifications"
+          - "legal_department_alerts"
+          - "business_unit_reporting"
+          - "external_counsel_notifications"
+          - "media_monitoring"
+      
+      # Disclosure Preparation
+      preparation:
+        disclosure_committee: ${SOX_409_DISCLOSURE_COMMITTEE:-true}
+        template_library: ${SOX_409_TEMPLATE_LIBRARY:-true}
+        review_process: ${SOX_409_REVIEW_PROCESS:-true}
+        
+        # Review Stages
+        review_stages:
+          - stage: "initial_draft"
+            responsible_party: "legal_counsel"
+            timeframe: "24_hours"
+          
+          - stage: "business_review"
+            responsible_party: "business_unit_head"
+            timeframe: "12_hours"
+          
+          - stage: "executive_review"
+            responsible_party: "ceo_cfo"
+            timeframe: "12_hours"
+          
+          - stage: "final_approval"
+            responsible_party: "disclosure_committee"
+            timeframe: "6_hours"
+    
+    # Disclosure Controls
+    disclosure_controls:
+      # Control Procedures
+      control_procedures:
+        periodic_review: ${SOX_409_PERIODIC_REVIEW:-true}
+        effectiveness_assessment: ${SOX_409_EFFECTIVENESS_ASSESSMENT:-true}
+        documentation_requirements: ${SOX_409_DOCUMENTATION_REQUIREMENTS:-true}
+        
+        # Key Controls
+        key_controls:
+          - control_id: "DSC001"
+            description: "Material event identification and reporting"
+            frequency: "continuous"
+            owner: "legal_department"
+          
+          - control_id: "DSC002"
+            description: "Disclosure committee review and approval"
+            frequency: "per_event"
+            owner: "disclosure_committee"
+          
+          - control_id: "DSC003"
+            description: "Filing deadline monitoring and compliance"
+            frequency: "per_filing"
+            owner: "sec_reporting_team"
+
+  # Section 906 - Corporate Responsibility for Financial Reports
+  section_906:
+    # Criminal Penalties
+    criminal_penalties:
+      certification_requirements: ${SOX_906_CERTIFICATION_REQUIREMENTS:-true}
+      criminal_liability: ${SOX_906_CRIMINAL_LIABILITY:-true}
+      
+      # Penalty Structure
+      penalty_structure:
+        willful_violation:
+          fine_amount: "up_to_1_million"
+          imprisonment: "up_to_10_years"
+          both_penalties: true
+        
+        knowing_violation:
+          fine_amount: "up_to_5_million"
+          imprisonment: "up_to_20_years"
+          both_penalties: true
+    
+    # Certification Process
+    certification_process:
+      # Certification Requirements
+      requirements:
+        quarterly_certification: ${SOX_906_QUARTERLY_CERT:-true}
+        annual_certification: ${SOX_906_ANNUAL_CERT:-true}
+        accuracy_representation: ${SOX_906_ACCURACY_REP:-true}
+        fair_presentation: ${SOX_906_FAIR_PRESENTATION:-true}
+        
+        # Certification Content
+        certification_content:
+          - "financial_statements_fairly_present"
+          - "no_material_misstatements"
+          - "compliance_with_sec_requirements"
+          - "disclosure_control_effectiveness"
+      
+      # Due Diligence Process
+      due_diligence:
+        review_procedures: ${SOX_906_REVIEW_PROCEDURES:-true}
+        documentation_requirements: ${SOX_906_DOCUMENTATION:-true}
+        sign_off_process: ${SOX_906_SIGN_OFF_PROCESS:-true}
+        
+        # Review Components
+        review_components:
+          - "financial_statement_review"
+          - "supporting_documentation_review"
+          - "control_testing_results_review"
+          - "management_representation_letters"
+          - "legal_compliance_review"
+
+  # Data Integrity and Audit Trails
+  data_integrity:
+    # Financial Data Integrity
+    financial_data_integrity:
+      # Data Controls
+      data_controls:
+        input_controls: ${SOX_INPUT_CONTROLS:-true}
+        processing_controls: ${SOX_PROCESSING_CONTROLS:-true}
+        output_controls: ${SOX_OUTPUT_CONTROLS:-true}
+        
+        # Control Types
+        control_types:
+          automated_controls:
+            description: "System-enforced controls with minimal human intervention"
+            testing_approach: "one_time_testing"
+            reliance_level: "high"
+          
+          semi_automated_controls:
+            description: "Controls with both automated and manual components"
+            testing_approach: "quarterly_testing"
+            reliance_level: "medium"
+          
+          manual_controls:
+            description: "Controls performed entirely by personnel"
+            testing_approach: "quarterly_testing"
+            reliance_level: "varies"
+      
+      # Data Validation
+      data_validation:
+        reconciliation_controls: ${SOX_RECONCILIATION_CONTROLS:-true}
+        exception_reporting: ${SOX_EXCEPTION_REPORTING:-true}
+        variance_analysis: ${SOX_VARIANCE_ANALYSIS:-true}
+        
+        # Validation Procedures
+        validation_procedures:
+          - procedure: "Monthly account reconciliations"
+            frequency: "monthly"
+            automation_level: "semi_automated"
+            reviewer: "accounting_manager"
+          
+          - procedure: "System-generated exception reports"
+            frequency: "daily"
+            automation_level: "automated"
+            reviewer: "process_owner"
+          
+          - procedure: "Budget vs actual variance analysis"
+            frequency: "monthly"
+            automation_level: "manual"
+            reviewer: "financial_analyst"
+    
+    # Audit Trail Requirements
+    audit_trails:
+      # Logging Requirements
+      logging_requirements:
+        transaction_logging: ${SOX_TRANSACTION_LOGGING:-true}
+        user_activity_logging: ${SOX_USER_ACTIVITY_LOGGING:-true}
+        system_access_logging: ${SOX_SYSTEM_ACCESS_LOGGING:-true}
+        data_modification_logging: ${SOX_DATA_MODIFICATION_LOGGING:-true}
+        
+        # Log Content Requirements
+        log_content:
+          required_fields:
+            - "timestamp"
+            - "user_id"
+            - "transaction_type"
+            - "data_modified"
+            - "before_after_values"
+            - "authorization_approvals"
+          
+          optional_fields:
+            - "ip_address"
+            - "session_id"
+            - "application_module"
+            - "business_justification"
+      
+      # Log Retention
+      log_retention:
+        retention_period_years: ${SOX_LOG_RETENTION_YEARS:-7}
+        archive_procedures: ${SOX_LOG_ARCHIVE_PROCEDURES:-true}
+        retrieval_procedures: ${SOX_LOG_RETRIEVAL_PROCEDURES:-true}
+        
+        # Retention by Log Type
+        retention_by_type:
+          financial_transactions: "7_years"
+          system_access_logs: "7_years"
+          configuration_changes: "7_years"
+          audit_logs: "7_years"
+          security_logs: "7_years"
+      
+      # Log Review and Analysis
+      log_analysis:
+        automated_monitoring: ${SOX_AUTOMATED_LOG_MONITORING:-true}
+        exception_alerting: ${SOX_LOG_EXCEPTION_ALERTING:-true}
+        periodic_review: ${SOX_PERIODIC_LOG_REVIEW:-true}
+        
+        # Review Procedures
+        review_procedures:
+          - procedure: "Daily automated log analysis"
+            frequency: "daily"
+            scope: "critical_transactions"
+            alerting: "real_time"
+          
+          - procedure: "Weekly manual log review"
+            frequency: "weekly"
+            scope: "high_risk_activities"
+            alerting: "batch"
+          
+          - procedure: "Monthly comprehensive log analysis"
+            frequency: "monthly"
+            scope: "all_logs"
+            alerting: "report_based"
+
+  # Risk Management
+  risk_management:
+    # Enterprise Risk Management
+    enterprise_risk_management:
+      # Risk Framework
+      risk_framework:
+        framework_used: "${SOX_RISK_FRAMEWORK:-COSO_ERM}"
+        risk_appetite: "${SOX_RISK_APPETITE:-moderate}"
+        risk_tolerance: "${SOX_RISK_TOLERANCE:-defined_thresholds}"
+        
+        # Risk Categories
+        risk_categories:
+          strategic_risks:
+            description: "Risks affecting strategic objectives"
+            assessment_frequency: "annually"
+            owner: "executive_team"
+          
+          operational_risks:
+            description: "Risks affecting daily operations"
+            assessment_frequency: "quarterly"
+            owner: "operational_management"
+          
+          reporting_risks:
+            description: "Risks affecting financial reporting"
+            assessment_frequency: "quarterly"
+            owner: "finance_team"
+          
+          compliance_risks:
+            description: "Risks affecting regulatory compliance"
+            assessment_frequency: "quarterly"
+            owner: "compliance_team"
+      
+      # Risk Assessment Process
+      risk_assessment_process:
+        identification: ${SOX_RISK_IDENTIFICATION:-true}
+        assessment: ${SOX_RISK_ASSESSMENT:-true}
+        response: ${SOX_RISK_RESPONSE:-true}
+        monitoring: ${SOX_RISK_MONITORING:-true}
+        
+        # Assessment Methodology
+        assessment_methodology:
+          likelihood_scale: "1_to_5"
+          impact_scale: "1_to_5"
+          risk_matrix: "5x5_matrix"
+          quantitative_analysis: ${SOX_QUANTITATIVE_RISK_ANALYSIS:-true}
+          qualitative_analysis: ${SOX_QUALITATIVE_RISK_ANALYSIS:-true}
+    
+    # Financial Reporting Risks
+    financial_reporting_risks:
+      # Key Risk Areas
+      key_risk_areas:
+        revenue_recognition:
+          risk_level: "high"
+          control_intensity: "high"
+          testing_frequency: "quarterly"
+        
+        complex_transactions:
+          risk_level: "high"
+          control_intensity: "high"
+          testing_frequency: "per_transaction"
+        
+        related_party_transactions:
+          risk_level: "medium"
+          control_intensity: "medium"
+          testing_frequency: "quarterly"
+        
+        estimates_judgments:
+          risk_level: "high"
+          control_intensity: "high"
+          testing_frequency: "quarterly"
+      
+      # Risk Mitigation
+      risk_mitigation:
+        preventive_controls: ${SOX_PREVENTIVE_CONTROLS:-true}
+        detective_controls: ${SOX_DETECTIVE_CONTROLS:-true}
+        corrective_controls: ${SOX_CORRECTIVE_CONTROLS:-true}
+        
+        # Mitigation Strategies
+        mitigation_strategies:
+          - strategy: "Automated system controls"
+            effectiveness: "high"
+            implementation_cost: "high"
+            maintenance_effort: "low"
+          
+          - strategy: "Management review controls"
+            effectiveness: "medium"
+            implementation_cost: "low"
+            maintenance_effort: "high"
+          
+          - strategy: "Independent verification"
+            effectiveness: "high"
+            implementation_cost: "medium"
+            maintenance_effort: "medium"
+
+  # Documentation and Reporting
+  documentation:
+    # Documentation Standards
+    documentation_standards:
+      documentation_framework: "${SOX_DOCUMENTATION_FRAMEWORK:-process_narratives}"
+      detail_level: "${SOX_DOCUMENTATION_DETAIL:-detailed}"
+      update_frequency: "${SOX_DOCUMENTATION_UPDATE_FREQUENCY:-annually}"
+      
+      # Required Documentation
+      required_documentation:
+        process_narratives:
+          description: "Detailed description of business processes"
+          update_frequency: "annually"
+          owner: "process_owners"
+        
+        control_matrices:
+          description: "Control objectives and activities mapping"
+          update_frequency: "annually"
+          owner: "internal_audit"
+        
+        flowcharts:
+          description: "Visual representation of process flows"
+          update_frequency: "annually"
+          owner: "process_owners"
+        
+        risk_control_matrices:
+          description: "Risk to control mapping"
+          update_frequency: "annually"
+          owner: "risk_management"
+    
+    # Testing Documentation
+    testing_documentation:
+      # Testing Standards
+      testing_standards:
+        testing_methodology: "${SOX_TESTING_METHODOLOGY:-substantive_testing}"
+        sample_selection: "${SOX_SAMPLE_SELECTION:-statistical_sampling}"
+        documentation_requirements: ${SOX_TESTING_DOCUMENTATION:-true}
+        
+        # Testing Documentation Requirements
+        documentation_requirements:
+          - "test_objectives"
+          - "test_procedures"
+          - "sample_selection_criteria"
+          - "test_results"
+          - "conclusions"
+          - "exceptions_identified"
+          - "management_responses"
+      
+      # Documentation Retention
+      retention:
+        testing_workpapers: "7_years"
+        control_documentation: "7_years"
+        management_reports: "7_years"
+        external_auditor_communications: "7_years"
+    
+    # Management Reporting
+    management_reporting:
+      # Reporting Requirements
+      reporting_requirements:
+        quarterly_reports: ${SOX_QUARTERLY_MANAGEMENT_REPORTS:-true}
+        annual_assessment: ${SOX_ANNUAL_MANAGEMENT_ASSESSMENT:-true}
+        deficiency_reporting: ${SOX_DEFICIENCY_REPORTING:-true}
+        
+        # Report Content
+        report_content:
+          quarterly_reports:
+            - "control_testing_results"
+            - "deficiencies_identified"
+            - "remediation_status"
+            - "significant_changes"
+          
+          annual_assessment:
+            - "overall_control_effectiveness"
+            - "material_weaknesses"
+            - "significant_deficiencies"
+            - "management_conclusions"
+      
+      # Distribution
+      distribution:
+        audit_committee: ${SOX_AUDIT_COMMITTEE_REPORTING:-true}
+        board_of_directors: ${SOX_BOARD_REPORTING:-true}
+        external_auditors: ${SOX_EXTERNAL_AUDITOR_REPORTING:-true}
+        
+        # Distribution Timeline
+        timeline:
+          quarterly_reports: "within_45_days"
+          annual_assessment: "within_75_days"
+          deficiency_reports: "within_15_days"
+
+  # Monitoring and Continuous Improvement
+  monitoring:
+    # Ongoing Monitoring
+    ongoing_monitoring:
+      monitoring_activities: ${SOX_ONGOING_MONITORING:-true}
+      key_performance_indicators: ${SOX_KPI_MONITORING:-true}
+      trend_analysis: ${SOX_TREND_ANALYSIS:-true}
+      
+      # Monitoring Procedures
+      monitoring_procedures:
+        - procedure: "Monthly control effectiveness metrics"
+          frequency: "monthly"
+          owner: "internal_audit"
+          reporting: "dashboard"
+        
+        - procedure: "Quarterly risk assessment updates"
+          frequency: "quarterly"
+          owner: "risk_management"
+          reporting: "formal_report"
+        
+        - procedure: "Annual control framework review"
+          frequency: "annually"
+          owner: "management"
+          reporting: "board_presentation"
+    
+    # Continuous Improvement
+    continuous_improvement:
+      improvement_process: ${SOX_IMPROVEMENT_PROCESS:-true}
+      best_practices_adoption: ${SOX_BEST_PRACTICES:-true}
+      technology_enhancement: ${SOX_TECHNOLOGY_ENHANCEMENT:-true}
+      
+      # Improvement Areas
+      improvement_areas:
+        process_automation:
+          description: "Automate manual controls where possible"
+          priority: "high"
+          expected_benefit: "reduced_testing_effort"
+        
+        control_simplification:
+          description: "Simplify complex control procedures"
+          priority: "medium"
+          expected_benefit: "improved_effectiveness"
+        
+        risk_based_approach:
+          description: "Enhance risk-based scoping"
+          priority: "high"
+          expected_benefit: "focused_testing"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: false
+        public_company: false
+      
+      data_integrity:
+        audit_trails:
+          logging_requirements:
+            transaction_logging: true
+            user_activity_logging: false
+          
+          log_retention:
+            retention_period_years: 1
+    
+    testing:
+      general:
+        enabled: true
+        public_company: false
+      
+      section_404:
+        internal_control_framework:
+          framework: "simplified_coso"
+        
+        management_assessment:
+          assessment_timeline:
+            testing_phase: "continuous"
+    
+    production:
+      general:
+        enabled: true
+        public_company: true
+      
+      section_302:
+        certifications:
+          required: true
+          quarterly_certifications: true
+          annual_certifications: true
+      
+      section_404:
+        internal_control_framework:
+          framework: "COSO_2013"
+          documentation_standard: "detailed_narratives"
+        
+        management_assessment:
+          methodology:
+            top_down_approach: true
+            risk_based_scoping: true
+      
+      data_integrity:
+        audit_trails:
+          logging_requirements:
+            transaction_logging: true
+            user_activity_logging: true
+            system_access_logging: true
+            data_modification_logging: true
+          
+          log_retention:
+            retention_period_years: 7
+      
+      monitoring:
+        ongoing_monitoring:
+          monitoring_activities: true
+          key_performance_indicators: true
+          trend_analysis: true

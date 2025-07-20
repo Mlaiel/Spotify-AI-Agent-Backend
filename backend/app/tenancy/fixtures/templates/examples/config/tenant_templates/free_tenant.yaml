@@ -1,0 +1,257 @@
+# Free Tenant Template Configuration
+# Basic Configuration for Free Tier Users
+# Essential functionality with usage limits
+
+tenant_profile:
+  name: "free_tenant"
+  display_name: "Free Tier Tenant"
+  tier: "free"
+  version: "2.0.0"
+  priority: "low"
+  sla_level: "bronze"
+  
+  metadata:
+    created_date: "2024-01-20"
+    last_updated: "2024-01-20"
+    template_author: "fahed.mlaiel"
+    compliance_certified: false
+    security_reviewed: false
+
+# Resource Allocation
+resources:
+  compute:
+    cpu_cores: 1
+    memory_gb: 2
+    storage_gb: 10
+    network_bandwidth_mbps: 50
+    gpu_enabled: false
+    
+  scaling:
+    auto_scaling: false
+    min_instances: 1
+    max_instances: 1
+    scale_up_threshold: 90
+    scale_down_threshold: 10
+    scaling_cooldown_minutes: 30
+    
+  geographic_distribution:
+    multi_region: false
+    primary_region: "us-east-1"
+    secondary_regions: []
+    cross_region_replication: false
+
+# Performance Configuration
+performance:
+  cache_configuration:
+    l1_cache_size_gb: 0.1
+    l2_cache_size_gb: 0.5
+    l3_cache_size_gb: 2
+    cdn_enabled: false
+    edge_caching: false
+    
+  database:
+    connection_pool_size: 5
+    read_replicas: 0
+    write_replicas: 0
+    sharding_enabled: false
+    partitioning: "none"
+    
+  api_limits:
+    requests_per_second: 10
+    burst_capacity: 100
+    concurrent_connections: 10
+    file_upload_size_mb: 5
+    batch_operation_size: 50
+
+# Security Configuration
+security:
+  authentication:
+    multi_factor_required: false
+    biometric_enabled: false
+    hardware_tokens: false
+    certificate_based: false
+    sso_integration: false
+    
+  authorization:
+    rbac_enabled: false
+    abac_enabled: false
+    policy_based_access: false
+    context_aware_access: false
+    
+  encryption:
+    data_at_rest: "AES-128"
+    data_in_transit: "TLS 1.2"
+    key_management: "basic"
+    key_rotation_days: 365
+    
+  monitoring:
+    siem_integration: false
+    behavioral_analytics: false
+    threat_detection: "none"
+    incident_response: "community"
+    
+  compliance:
+    frameworks: []
+    audit_logging: "minimal"
+    data_lineage: false
+    privacy_controls: "minimal"
+
+# Feature Access
+features:
+  core_features:
+    template_engine: "limited"
+    workflow_automation: false
+    api_access: "limited"
+    custom_integrations: false
+    white_labeling: false
+    
+  advanced_features:
+    ai_powered_insights: false
+    predictive_analytics: false
+    machine_learning_models: false
+    custom_algorithms: false
+    real_time_processing: false
+    
+  free_tier_features:
+    basic_templates: true
+    community_support: true
+    documentation_access: true
+    usage_analytics: "basic"
+    
+  limitations:
+    max_templates: 5
+    max_users: 1
+    max_projects: 1
+    max_api_calls_per_day: 1000
+    max_storage_mb: 100
+
+# Compliance and Governance
+compliance:
+  data_governance:
+    data_classification: "public"
+    retention_policies: "minimal"
+    archival_strategy: "none"
+    disposal_method: "immediate_deletion"
+    
+  audit_requirements:
+    continuous_monitoring: false
+    real_time_compliance: false
+    automated_reporting: false
+    third_party_audits: "none"
+    
+  privacy_controls:
+    data_minimization: false
+    purpose_limitation: false
+    consent_management: "basic"
+    subject_rights: "self_service"
+
+# Integration Capabilities
+integrations:
+  business_systems:
+    erp_integration: false
+    crm_integration: false
+    hr_systems: false
+    financial_systems: false
+    
+  cloud_platforms:
+    aws_integration: false
+    azure_integration: false
+    gcp_integration: false
+    hybrid_cloud: false
+    
+  security_tools:
+    siem_integration: false
+    vulnerability_scanners: false
+    identity_providers: false
+    
+  development_tools:
+    ci_cd_pipelines: false
+    version_control: false
+    issue_tracking: false
+
+# Service Level Agreements
+sla:
+  availability:
+    uptime_percentage: 95.0
+    maintenance_windows: "anytime"
+    planned_downtime_hours_monthly: 24
+    
+  performance:
+    response_time_ms: 1000
+    throughput_requests_per_second: 10
+    data_processing_latency_ms: 2000
+    
+  support:
+    response_time_critical: "none"
+    response_time_high: "none"
+    response_time_medium: "community"
+    response_time_low: "community"
+    
+  recovery:
+    rto_minutes: 1440  # 24 hours
+    rpo_minutes: 1440  # 24 hours
+    backup_frequency: "none"
+    cross_region_failover: "none"
+
+# Monitoring and Analytics
+monitoring:
+  real_time_dashboards: false
+  custom_metrics: false
+  predictive_alerting: false
+  capacity_planning: false
+  
+  business_intelligence:
+    usage_analytics: "limited"
+    performance_insights: false
+    cost_optimization: false
+    trend_analysis: false
+
+# Customization Options
+customization:
+  branding:
+    custom_logo: false
+    custom_colors: false
+    custom_fonts: false
+    custom_domain: false
+    
+  functionality:
+    custom_workflows: false
+    custom_templates: false
+    custom_apis: false
+    custom_connectors: false
+
+# Backup and Disaster Recovery
+backup_disaster_recovery:
+  backup_strategy:
+    frequency: "none"
+    retention_years: 0
+    encryption: "none"
+    compression: false
+    verification: "none"
+    
+  disaster_recovery:
+    strategy: "best_effort"
+    failover_time_minutes: 1440
+    data_synchronization: "none"
+    testing_frequency: "none"
+
+# Cost Management
+cost_management:
+  billing_model: "free"
+  cost_optimization: "none"
+  budget_controls: false
+  cost_allocation: "none"
+
+# Upgrade Prompts
+upgrade_prompts:
+  enabled: true
+  triggers:
+    - "api_limit_reached"
+    - "storage_limit_reached"
+    - "template_limit_reached"
+  
+  upgrade_paths:
+    - target_tier: "standard"
+      benefits: ["More API calls", "Additional storage", "Email support"]
+      discount_percentage: 20
+      trial_period_days: 14

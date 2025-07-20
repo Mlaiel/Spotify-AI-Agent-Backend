@@ -1,0 +1,935 @@
+# Security Hardening Configuration
+# Enterprise Production-Ready Security Setup with Advanced Features
+# Architecture: Defense in Depth with Multi-Layer Security Controls
+
+_metadata:
+  template_type: "security_hardening"
+  template_version: "3.2.0"
+  schema_version: "2024.2"
+  created_at: "{{ current_timestamp() }}"
+  generator: "SecurityHardeningGenerator"
+  tags: ["security", "hardening", "compliance", "enterprise", "production", "defense-in-depth"]
+  description: "Comprehensive security hardening with defense in depth, compliance frameworks, and advanced threat protection"
+  
+cluster_id: "{{ cluster_id }}"
+tenant_id: "{{ tenant_id }}"
+environment: "{{ environment | default('production') }}"
+
+# Configuration sécurité globale
+security_hardening:
+  cluster_name: "{{ cluster_name | default('spotify-ai-agent-security') }}"
+  security_framework_version: "{{ security_version | default('2024.2') }}"
+  
+  # Conformité réglementaire
+  compliance_frameworks:
+    # GDPR (Règlement Général sur la Protection des Données)
+    gdpr:
+      enabled: true
+      data_protection_officer: "{{ dpo_contact | default('dpo@spotify-ai-agent.com') }}"
+      
+      # Configuration GDPR
+      data_processing:
+        lawful_basis: "{{ gdpr_lawful_basis | default('legitimate_interest') }}"
+        data_retention_days: "{{ gdpr_retention_days | default(730) }}"  # 2 ans
+        
+        # Droits des personnes
+        subject_rights:
+          right_to_access: true
+          right_to_rectification: true
+          right_to_erasure: true
+          right_to_portability: true
+          right_to_object: true
+          
+        # Pseudonymisation et anonymisation
+        data_anonymization:
+          enabled: true
+          algorithms: ["k-anonymity", "differential_privacy", "data_masking"]
+          anonymization_threshold: "{{ anonymization_threshold | default(5) }}"
+          
+    # SOC 2 Type II
+    soc2:
+      enabled: true
+      controls:
+        security: true
+        availability: true
+        processing_integrity: true
+        confidentiality: true
+        privacy: true
+        
+      audit_frequency: "{{ soc2_audit_frequency | default('annual') }}"
+      
+    # ISO 27001
+    iso27001:
+      enabled: true
+      certification_body: "{{ iso_cert_body | default('BSI') }}"
+      
+      # Contrôles de sécurité
+      security_controls:
+        information_security_policies: true
+        organization_information_security: true
+        human_resource_security: true
+        asset_management: true
+        access_control: true
+        cryptography: true
+        physical_environmental_security: true
+        operations_security: true
+        communications_security: true
+        system_acquisition_development_maintenance: true
+        supplier_relationships: true
+        information_security_incident_management: true
+        business_continuity_management: true
+        compliance: true
+        
+    # PCI DSS (si traitement de paiements)
+    pci_dss:
+      enabled: "{{ pci_dss_enabled | default(false) }}"
+      level: "{{ pci_dss_level | default('Level 1') }}"
+      
+      requirements:
+        build_maintain_secure_network: true
+        protect_cardholder_data: true
+        maintain_vulnerability_management: true
+        implement_strong_access_controls: true
+        regularly_monitor_test_networks: true
+        maintain_information_security_policy: true
+        
+  # Gestion des identités et accès (IAM)
+  identity_access_management:
+    # Authentification multi-facteurs
+    multi_factor_authentication:
+      enabled: true
+      required_for_all_users: true
+      
+      # Méthodes MFA supportées
+      supported_methods:
+        - "totp"          # Time-based One-Time Password
+        - "webauthn"      # WebAuthn/FIDO2
+        - "sms"           # SMS (backup uniquement)
+        - "backup_codes"  # Codes de récupération
+        
+      # Configuration TOTP
+      totp_configuration:
+        issuer: "{{ mfa_issuer | default('Spotify AI Agent') }}"
+        algorithm: "{{ totp_algorithm | default('SHA256') }}"
+        digits: "{{ totp_digits | default(6) }}"
+        period_seconds: "{{ totp_period | default(30) }}"
+        
+      # Configuration WebAuthn
+      webauthn_configuration:
+        rp_name: "{{ webauthn_rp_name | default('Spotify AI Agent') }}"
+        rp_id: "{{ webauthn_rp_id | default('spotify-ai-agent.com') }}"
+        origin: "{{ webauthn_origin | default('https://spotify-ai-agent.com') }}"
+        timeout_ms: "{{ webauthn_timeout | default(60000) }}"
+        
+    # Contrôle d'accès basé sur les rôles (RBAC)
+    role_based_access_control:
+      enabled: true
+      
+      # Rôles système
+      system_roles:
+        # Administrateurs
+        - role_name: "system_admin"
+          description: "Administrateur système complet"
+          permissions:
+            - "system:*"
+            - "user:*"
+            - "data:*"
+            - "security:*"
+          mfa_required: true
+          session_timeout_minutes: "{{ admin_session_timeout | default(60) }}"
+          
+        - role_name: "security_admin"
+          description: "Administrateur sécurité"
+          permissions:
+            - "security:*"
+            - "audit:read"
+            - "user:read"
+          mfa_required: true
+          session_timeout_minutes: "{{ security_admin_timeout | default(120) }}"
+          
+        # Développeurs
+        - role_name: "developer"
+          description: "Développeur application"
+          permissions:
+            - "app:read"
+            - "app:write"
+            - "data:read"
+            - "logs:read"
+          mfa_required: true
+          session_timeout_minutes: "{{ developer_timeout | default(480) }}"
+          
+        - role_name: "developer_readonly"
+          description: "Développeur lecture seule"
+          permissions:
+            - "app:read"
+            - "data:read"
+            - "logs:read"
+          mfa_required: false
+          session_timeout_minutes: "{{ readonly_dev_timeout | default(480) }}"
+          
+        # Opérations
+        - role_name: "devops_engineer"
+          description: "Ingénieur DevOps"
+          permissions:
+            - "infrastructure:*"
+            - "monitoring:*"
+            - "deployment:*"
+          mfa_required: true
+          session_timeout_minutes: "{{ devops_timeout | default(240) }}"
+          
+        - role_name: "data_scientist"
+          description: "Data Scientist"
+          permissions:
+            - "data:read"
+            - "analytics:*"
+            - "ml:*"
+          mfa_required: false
+          session_timeout_minutes: "{{ data_scientist_timeout | default(480) }}"
+          
+        # Utilisateurs métier
+        - role_name: "business_analyst"
+          description: "Analyste métier"
+          permissions:
+            - "analytics:read"
+            - "reports:read"
+          mfa_required: false
+          session_timeout_minutes: "{{ business_timeout | default(480) }}"
+          
+    # Contrôle d'accès basé sur les attributs (ABAC)
+    attribute_based_access_control:
+      enabled: true
+      
+      # Attributs utilisateur
+      user_attributes:
+        - name: "department"
+          values: ["engineering", "security", "data", "business"]
+          
+        - name: "clearance_level"
+          values: ["public", "internal", "confidential", "secret"]
+          
+        - name: "location"
+          values: ["office", "remote", "datacenter"]
+          
+        - name: "time_based"
+          values: ["business_hours", "24x7", "emergency_only"]
+          
+      # Règles d'accès
+      access_rules:
+        - rule_id: "high_security_data"
+          condition: "clearance_level == 'secret' AND department IN ['security', 'engineering']"
+          effect: "allow"
+          
+        - rule_id: "remote_access_restriction"
+          condition: "location == 'remote' AND time NOT IN business_hours"
+          effect: "deny"
+          
+        - rule_id: "emergency_access"
+          condition: "emergency_mode == true AND clearance_level IN ['confidential', 'secret']"
+          effect: "allow"
+          
+  # Chiffrement et gestion des clés
+  encryption_key_management:
+    # Chiffrement en transit
+    in_transit_encryption:
+      enabled: true
+      
+      # Configuration TLS
+      tls_configuration:
+        min_version: "{{ tls_min_version | default('1.2') }}"
+        max_version: "{{ tls_max_version | default('1.3') }}"
+        
+        # Suites de chiffrement autorisées
+        cipher_suites:
+          - "TLS_AES_256_GCM_SHA384"
+          - "TLS_CHACHA20_POLY1305_SHA256"
+          - "TLS_AES_128_GCM_SHA256"
+          - "ECDHE-RSA-AES256-GCM-SHA384"
+          - "ECDHE-RSA-AES128-GCM-SHA256"
+          
+        # Configuration certificats
+        certificates:
+          ca_cert_path: "{{ ca_cert_path | default('/etc/ssl/certs/ca.crt') }}"
+          server_cert_path: "{{ server_cert_path | default('/etc/ssl/certs/server.crt') }}"
+          server_key_path: "{{ server_key_path | default('/etc/ssl/private/server.key') }}"
+          
+          # Rotation automatique
+          auto_rotation:
+            enabled: true
+            rotation_days: "{{ cert_rotation_days | default(30) }}"
+            
+      # Configuration mTLS (Mutual TLS)
+      mutual_tls:
+        enabled: true
+        client_cert_required: true
+        verify_client_cert: true
+        
+    # Chiffrement au repos
+    at_rest_encryption:
+      enabled: true
+      
+      # Configuration algorithmes
+      encryption_algorithms:
+        primary: "{{ encryption_primary_algo | default('AES-256-GCM') }}"
+        secondary: "{{ encryption_secondary_algo | default('ChaCha20-Poly1305') }}"
+        
+      # Gestion des clés de chiffrement
+      key_management:
+        # Utilisation d'un HSM (Hardware Security Module)
+        hsm:
+          enabled: "{{ hsm_enabled | default(true) }}"
+          provider: "{{ hsm_provider | default('AWS CloudHSM') }}"
+          cluster_id: "{{ hsm_cluster_id | default('') }}"
+          
+        # Utilisation de Vault pour la gestion des secrets
+        vault_integration:
+          enabled: true
+          vault_address: "{{ vault_address | default('https://vault.internal') }}"
+          vault_namespace: "{{ vault_namespace | default('spotify-ai-agent') }}"
+          
+          # Configuration authentification Vault
+          auth_method: "{{ vault_auth_method | default('kubernetes') }}"
+          
+          # Politiques Vault
+          policies:
+            - "spotify-ai-agent-read"
+            - "spotify-ai-agent-write"
+            - "spotify-ai-agent-admin"
+            
+        # Rotation automatique des clés
+        key_rotation:
+          enabled: true
+          rotation_interval_days: "{{ key_rotation_days | default(90) }}"
+          
+          # Schedule de rotation
+          rotation_schedule:
+            - component: "database_encryption_key"
+              interval_days: "{{ db_key_rotation_days | default(90) }}"
+              
+            - component: "application_secrets"
+              interval_days: "{{ app_secrets_rotation_days | default(30) }}"
+              
+            - component: "api_keys"
+              interval_days: "{{ api_key_rotation_days | default(60) }}"
+              
+  # Sécurité réseau
+  network_security:
+    # Configuration firewall
+    firewall:
+      enabled: true
+      
+      # Règles par défaut
+      default_policy: "deny"
+      
+      # Règles d'autorisation
+      allow_rules:
+        # Traffic interne cluster
+        - name: "cluster_internal"
+          source: "{{ cluster_cidr | default('10.0.0.0/8') }}"
+          destination: "{{ cluster_cidr | default('10.0.0.0/8') }}"
+          ports: ["80", "443", "6379", "27017", "5432"]
+          protocol: "tcp"
+          
+        # Traffic load balancer
+        - name: "load_balancer"
+          source: "{{ lb_cidr | default('10.100.0.0/16') }}"
+          destination: "{{ cluster_cidr | default('10.0.0.0/8') }}"
+          ports: ["80", "443"]
+          protocol: "tcp"
+          
+        # Traffic monitoring
+        - name: "monitoring"
+          source: "{{ monitoring_cidr | default('10.200.0.0/16') }}"
+          destination: "{{ cluster_cidr | default('10.0.0.0/8') }}"
+          ports: ["9090", "9100", "9216", "9121"]
+          protocol: "tcp"
+          
+      # Règles de déni spécifiques
+      deny_rules:
+        - name: "block_suspicious_ips"
+          source: "{{ threat_ip_ranges | default([]) }}"
+          destination: "any"
+          ports: ["any"]
+          protocol: "any"
+          
+    # Segmentation réseau
+    network_segmentation:
+      enabled: true
+      
+      # Zones de sécurité
+      security_zones:
+        # Zone DMZ
+        dmz:
+          cidr: "{{ dmz_cidr | default('10.1.0.0/16') }}"
+          components: ["load_balancers", "api_gateways"]
+          security_level: "medium"
+          
+        # Zone application
+        application:
+          cidr: "{{ app_cidr | default('10.2.0.0/16') }}"
+          components: ["web_servers", "app_servers"]
+          security_level: "high"
+          
+        # Zone données
+        data:
+          cidr: "{{ data_cidr | default('10.3.0.0/16') }}"
+          components: ["databases", "cache_servers"]
+          security_level: "critical"
+          
+        # Zone management
+        management:
+          cidr: "{{ mgmt_cidr | default('10.4.0.0/16') }}"
+          components: ["monitoring", "logging", "backup"]
+          security_level: "high"
+          
+    # Détection d'intrusion (IDS/IPS)
+    intrusion_detection:
+      enabled: true
+      
+      # Configuration Suricata
+      suricata:
+        enabled: true
+        rules_sources:
+          - "https://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz"
+          - "{{ custom_rules_source | default('') }}"
+          
+        # Configuration détection
+        detection_modes:
+          - "signature_based"
+          - "anomaly_based"
+          - "behavior_based"
+          
+        # Actions sur détection
+        actions:
+          alert: true
+          block: "{{ ids_block_enabled | default(true) }}"
+          log: true
+          
+      # Configuration Falco (Runtime Security)
+      falco:
+        enabled: true
+        
+        # Règles personnalisées
+        custom_rules:
+          - name: "Suspicious Network Activity"
+            condition: "evt.type=connect and fd.sip!=\"127.0.0.1\" and proc.name in (suspicious_processes)"
+            output: "Suspicious network connection (command=%proc.cmdline connection=%fd.name)"
+            priority: "WARNING"
+            
+          - name: "Unexpected File Access"
+            condition: "open_read and fd.name contains \"/etc/passwd\""
+            output: "Unauthorized access to sensitive file (command=%proc.cmdline file=%fd.name)"
+            priority: "ERROR"
+            
+  # Surveillance et audit
+  security_monitoring:
+    # SIEM (Security Information and Event Management)
+    siem:
+      enabled: true
+      
+      # Configuration ELK Stack pour SIEM
+      elasticsearch:
+        cluster_name: "{{ siem_cluster_name | default('security-monitoring') }}"
+        retention_days: "{{ siem_retention_days | default(365) }}"
+        
+      # Sources de logs sécurité
+      log_sources:
+        - "kubernetes_audit_logs"
+        - "application_security_logs"
+        - "network_security_logs"
+        - "authentication_logs"
+        - "database_audit_logs"
+        - "system_security_logs"
+        
+      # Règles de corrélation
+      correlation_rules:
+        - name: "Failed Login Attempts"
+          query: "event.type:authentication AND event.outcome:failure"
+          threshold: "{{ failed_login_threshold | default(5) }}"
+          timeframe: "{{ failed_login_timeframe | default('5m') }}"
+          action: "alert"
+          
+        - name: "Privilege Escalation"
+          query: "event.type:process AND process.executable:sudo"
+          threshold: "{{ privilege_escalation_threshold | default(10) }}"
+          timeframe: "{{ privilege_escalation_timeframe | default('1h') }}"
+          action: "alert"
+          
+        - name: "Data Exfiltration"
+          query: "network.bytes > {{ data_exfiltration_threshold | default('1GB') }}"
+          threshold: 1
+          timeframe: "{{ data_exfiltration_timeframe | default('1h') }}"
+          action: "block"
+          
+    # Audit de sécurité
+    security_auditing:
+      enabled: true
+      
+      # Configuration audit Kubernetes
+      kubernetes_audit:
+        enabled: true
+        audit_policy_file: "/etc/kubernetes/audit-policy.yaml"
+        
+        # Niveaux d'audit
+        audit_levels:
+          - level: "RequestResponse"
+            resources:
+              - group: ""
+                resources: ["secrets", "configmaps"]
+              - group: "rbac.authorization.k8s.io"
+                resources: ["*"]
+                
+          - level: "Request"
+            namespaces: ["kube-system", "kube-public"]
+            
+          - level: "Metadata"
+            omitStages: ["RequestReceived"]
+            
+      # Audit base de données
+      database_audit:
+        enabled: true
+        
+        # PostgreSQL audit
+        postgresql_audit:
+          log_connections: true
+          log_disconnections: true
+          log_statement: "all"
+          log_duration: true
+          
+        # MongoDB audit
+        mongodb_audit:
+          audit_filter: |
+            {
+              atype: {
+                $in: ["authenticate", "authCheck", "createUser", "dropUser", "createRole", "dropRole"]
+              }
+            }
+            
+        # Redis audit
+        redis_audit:
+          command_logging: true
+          slow_log_enabled: true
+          
+  # Réponse aux incidents de sécurité
+  incident_response:
+    # Plan de réponse automatisé
+    automated_response:
+      enabled: true
+      
+      # Actions automatiques
+      automatic_actions:
+        # Blocage automatique d'IP suspectes
+        - trigger: "multiple_failed_logins"
+          action: "block_ip"
+          duration_minutes: "{{ auto_block_duration | default(60) }}"
+          
+        # Isolation de workload compromis
+        - trigger: "malware_detected"
+          action: "isolate_workload"
+          quarantine_namespace: "security-quarantine"
+          
+        # Révocation de tokens compromis
+        - trigger: "token_leak_detected"
+          action: "revoke_tokens"
+          affected_user_actions: ["force_logout", "require_password_reset"]
+          
+    # Playbooks de réponse
+    response_playbooks:
+      # Playbook compromission de compte
+      account_compromise:
+        steps:
+          - "Isoler le compte utilisateur"
+          - "Révoquer toutes les sessions actives"
+          - "Analyser les logs d'activité"
+          - "Identifier les ressources accédées"
+          - "Notifier l'équipe sécurité"
+          - "Forcer la réinitialisation du mot de passe"
+          - "Activer la surveillance renforcée"
+          
+      # Playbook exfiltration de données
+      data_exfiltration:
+        steps:
+          - "Bloquer le trafic réseau suspect"
+          - "Identifier la source de l'exfiltration"
+          - "Préserver les preuves"
+          - "Évaluer l'impact des données"
+          - "Notifier les autorités si requis (GDPR)"
+          - "Implémenter des contrôles additionnels"
+          - "Conduire une investigation forensique"
+          
+      # Playbook malware/ransomware
+      malware_incident:
+        steps:
+          - "Isoler les systèmes affectés"
+          - "Arrêter la propagation"
+          - "Identifier le vecteur d'infection"
+          - "Restaurer depuis les backups"
+          - "Scanner tous les systèmes"
+          - "Patcher les vulnérabilités"
+          - "Renforcer la surveillance"
+
+# Configuration Kubernetes Network Policies
+kubernetes_network_policies:
+  namespace: "{{ k8s_namespace | default('security') }}"
+  
+  # Politiques de sécurité réseau
+  network_policies:
+    # Politique par défaut - déni tout
+    default_deny_all:
+      enabled: true
+      policy_name: "default-deny-all"
+      
+      spec:
+        pod_selector: {}
+        policy_types: ["Ingress", "Egress"]
+        
+    # Permettre traffic interne application
+    allow_app_internal:
+      enabled: true
+      policy_name: "allow-app-internal"
+      
+      spec:
+        pod_selector:
+          match_labels:
+            tier: "application"
+        ingress:
+          - from:
+              - pod_selector:
+                  match_labels:
+                    tier: "application"
+            ports:
+              - protocol: "TCP"
+                port: 8080
+                
+    # Permettre accès aux bases de données
+    allow_database_access:
+      enabled: true
+      policy_name: "allow-database-access"
+      
+      spec:
+        pod_selector:
+          match_labels:
+            tier: "database"
+        ingress:
+          - from:
+              - pod_selector:
+                  match_labels:
+                    tier: "application"
+            ports:
+              - protocol: "TCP"
+                port: 5432  # PostgreSQL
+              - protocol: "TCP"
+                port: 27017  # MongoDB
+              - protocol: "TCP"
+                port: 6379   # Redis
+                
+    # Permettre traffic monitoring
+    allow_monitoring:
+      enabled: true
+      policy_name: "allow-monitoring"
+      
+      spec:
+        pod_selector:
+          match_labels:
+            monitoring: "true"
+        ingress:
+          - from:
+              - namespace_selector:
+                  match_labels:
+                    name: "monitoring"
+            ports:
+              - protocol: "TCP"
+                port: 9090  # Prometheus
+
+# Configuration Pod Security Standards
+pod_security_standards:
+  # Politique de sécurité des pods
+  pod_security_policy:
+    enabled: true
+    
+    # Standards de sécurité
+    security_standards:
+      # Niveau Restricted (le plus strict)
+      restricted:
+        namespaces: ["production", "staging"]
+        
+        policies:
+          # Pas de containers privilégiés
+          privileged: false
+          
+          # Pas de capabilities dangereuses
+          allowed_capabilities: []
+          default_add_capabilities: []
+          required_drop_capabilities: ["ALL"]
+          
+          # Run as non-root
+          run_as_user:
+            rule: "MustRunAsNonRoot"
+            
+          # Pas d'escalade de privilèges
+          allow_privilege_escalation: false
+          
+          # SecComp profile obligatoire
+          seccomp:
+            type: "RuntimeDefault"
+            
+          # SELinux labels
+          se_linux:
+            rule: "RunAsAny"
+            
+      # Niveau Baseline (intermédiaire)
+      baseline:
+        namespaces: ["development", "testing"]
+        
+        policies:
+          privileged: false
+          allow_privilege_escalation: false
+          
+          run_as_user:
+            rule: "RunAsAny"
+            
+          # Volumes autorisés
+          allowed_volume_types:
+            - "configMap"
+            - "emptyDir"
+            - "projected"
+            - "secret"
+            - "downwardAPI"
+            - "persistentVolumeClaim"
+
+# Scripts d'automatisation sécurité
+security_automation_scripts:
+  # Script d'audit sécurité
+  security_audit: |
+    #!/bin/bash
+    # Script d'audit sécurité automatisé
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('security') }}"
+    REPORT_FILE="/tmp/security-audit-$(date +%Y%m%d-%H%M%S).json"
+    
+    echo "Démarrage de l'audit sécurité..."
+    
+    # Audit des configurations Kubernetes
+    echo "Audit des configurations Kubernetes..."
+    
+    # Vérifier les Pod Security Standards
+    kubectl get pods --all-namespaces -o json | jq '.items[] | select(.spec.securityContext.runAsRoot == true)' > "$REPORT_FILE.root-pods"
+    
+    # Vérifier les Network Policies
+    kubectl get networkpolicies --all-namespaces -o json > "$REPORT_FILE.network-policies"
+    
+    # Vérifier les RBAC
+    kubectl get clusterroles,clusterrolebindings,roles,rolebindings --all-namespaces -o json > "$REPORT_FILE.rbac"
+    
+    # Audit des certificats
+    echo "Audit des certificats..."
+    
+    # Vérifier l'expiration des certificats
+    find /etc/ssl/certs -name "*.crt" -exec openssl x509 -in {} -text -noout \; | grep -E "(Not After|Subject)" > "$REPORT_FILE.certificates"
+    
+    # Audit des logs de sécurité
+    echo "Analyse des logs de sécurité..."
+    
+    # Recherche d'activités suspectes
+    kubectl logs -l app=security-monitor -n $NAMESPACE --since=24h | grep -E "(CRITICAL|ERROR|WARN)" > "$REPORT_FILE.security-alerts"
+    
+    echo "Audit terminé. Rapport: $REPORT_FILE"
+    
+  # Script de rotation des secrets
+  rotate_secrets: |
+    #!/bin/bash
+    # Script de rotation automatique des secrets
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('security') }}"
+    
+    echo "Rotation des secrets..."
+    
+    # Générer nouveau mot de passe base de données
+    NEW_DB_PASSWORD=$(openssl rand -base64 32)
+    
+    # Mettre à jour le secret Kubernetes
+    kubectl patch secret db-credentials -n $NAMESPACE \
+      --type='json' \
+      -p='[{"op": "replace", "path": "/data/password", "value": "'$(echo -n $NEW_DB_PASSWORD | base64)'"}]'
+    
+    # Redémarrer les applications utilisant ce secret
+    kubectl rollout restart deployment/app-server -n application
+    
+    # Générer nouvelles clés API
+    NEW_API_KEY=$(uuidgen)
+    kubectl patch secret api-keys -n $NAMESPACE \
+      --type='json' \
+      -p='[{"op": "replace", "path": "/data/api-key", "value": "'$(echo -n $NEW_API_KEY | base64)'"}]'
+    
+    echo "Rotation des secrets terminée"
+    
+  # Script de scan de vulnérabilités
+  vulnerability_scan: |
+    #!/bin/bash
+    # Script de scan de vulnérabilités
+    set -euo pipefail
+    
+    SCAN_REPORT="/tmp/vulnerability-scan-$(date +%Y%m%d-%H%M%S).json"
+    
+    echo "Démarrage du scan de vulnérabilités..."
+    
+    # Scanner les images de containers
+    echo "Scan des images de containers..."
+    
+    # Utiliser Trivy pour scanner les images
+    kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{"\n"}{end}' | sort -u | while read image; do
+      echo "Scanning image: $image"
+      trivy image --format json --output "$SCAN_REPORT.$image" "$image"
+    done
+    
+    # Scanner les configurations Kubernetes
+    echo "Scan des configurations Kubernetes..."
+    
+    # Utiliser kube-bench pour les benchmarks CIS
+    kube-bench run --json > "$SCAN_REPORT.kube-bench"
+    
+    # Scanner avec kube-hunter
+    kube-hunter --remote --report json > "$SCAN_REPORT.kube-hunter"
+    
+    echo "Scan terminé. Rapports dans $SCAN_REPORT.*"
+    
+  # Script de réponse aux incidents
+  incident_response: |
+    #!/bin/bash
+    # Script de réponse automatique aux incidents
+    set -euo pipefail
+    
+    INCIDENT_TYPE="$1"
+    AFFECTED_RESOURCE="$2"
+    
+    case "$INCIDENT_TYPE" in
+      "malware_detected")
+        echo "Réponse à l'incident: Malware détecté sur $AFFECTED_RESOURCE"
+        
+        # Isoler le pod affecté
+        kubectl label pod "$AFFECTED_RESOURCE" quarantine=true
+        
+        # Appliquer une Network Policy de quarantaine
+        kubectl apply -f - <<EOF
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: quarantine-$AFFECTED_RESOURCE
+    spec:
+      podSelector:
+        matchLabels:
+          quarantine: "true"
+      policyTypes:
+      - Ingress
+      - Egress
+    EOF
+        
+        # Collecter les logs
+        kubectl logs "$AFFECTED_RESOURCE" > "/tmp/incident-logs-$AFFECTED_RESOURCE.log"
+        
+        # Notifier l'équipe sécurité
+        echo "Incident malware - Pod $AFFECTED_RESOURCE mis en quarantaine" | mail -s "Security Incident" security@company.com
+        ;;
+        
+      "data_breach")
+        echo "Réponse à l'incident: Fuite de données détectée"
+        
+        # Bloquer le trafic réseau
+        kubectl patch networkpolicy default-deny-all --type='json' -p='[{"op": "replace", "path": "/spec/egress", "value": []}]'
+        
+        # Collecter les preuves
+        kubectl get events --all-namespaces > "/tmp/incident-events-$(date +%Y%m%d-%H%M%S).log"
+        
+        # Notification GDPR (72h)
+        echo "BREACH ALERT: Data breach detected at $(date)" | mail -s "GDPR BREACH NOTIFICATION" dpo@company.com
+        ;;
+        
+      "unauthorized_access")
+        echo "Réponse à l'incident: Accès non autorisé détecté"
+        
+        # Révoquer toutes les sessions
+        kubectl delete secrets --all -l type=kubernetes.io/service-account-token
+        
+        # Forcer la re-authentification
+        kubectl patch deployment app-server -p '{"spec":{"template":{"metadata":{"annotations":{"security.breach.timestamp":"'$(date +%s)'"}}}}}' 
+        ;;
+    esac
+
+# Configuration monitoring sécurité
+security_monitoring_config:
+  # Métriques de sécurité
+  security_metrics:
+    enabled: true
+    
+    # Collecteurs de métriques
+    collectors:
+      # Métriques d'authentification
+      authentication_metrics:
+        - metric: "auth_attempts_total"
+          labels: ["method", "result"]
+          
+        - metric: "mfa_usage_total"
+          labels: ["method", "result"]
+          
+        - metric: "session_duration_seconds"
+          labels: ["user_type"]
+          
+      # Métriques d'autorisation
+      authorization_metrics:
+        - metric: "authz_decisions_total"
+          labels: ["decision", "resource", "action"]
+          
+        - metric: "privilege_escalation_attempts_total"
+          labels: ["user", "target_privilege"]
+          
+      # Métriques réseau
+      network_metrics:
+        - metric: "blocked_connections_total"
+          labels: ["source_ip", "destination", "reason"]
+          
+        - metric: "intrusion_attempts_total"
+          labels: ["type", "severity"]
+          
+      # Métriques audit
+      audit_metrics:
+        - metric: "audit_events_total"
+          labels: ["event_type", "resource", "user"]
+          
+        - metric: "compliance_violations_total"
+          labels: ["framework", "control", "severity"]
+          
+  # Alertes de sécurité
+  security_alerts:
+    enabled: true
+    
+    # Seuils d'alerte
+    alert_thresholds:
+      failed_login_rate: "{{ failed_login_alert_rate | default(10) }}"  # par minute
+      privilege_escalation_rate: "{{ privilege_escalation_alert_rate | default(5) }}"  # par heure
+      data_access_anomaly: "{{ data_access_anomaly_threshold | default(1000) }}"  # requêtes par minute
+      network_intrusion_rate: "{{ network_intrusion_alert_rate | default(1) }}"  # par minute
+      
+    # Canaux de notification
+    notification_channels:
+      - type: "slack"
+        webhook_url: "{{ security_slack_webhook | default('') }}"
+        channel: "#security-alerts"
+        
+      - type: "email"
+        recipients: "{{ security_email_list | default(['security@company.com']) }}"
+        
+      - type: "pagerduty"
+        integration_key: "{{ pagerduty_integration_key | default('') }}"
+
+# Métriques SLA sécurité
+security_sla_objectives:
+  # Objectifs de sécurité
+  security_targets:
+    incident_detection_time_minutes: "{{ incident_detection_target | default(5) }}"
+    incident_response_time_minutes: "{{ incident_response_target | default(15) }}"
+    vulnerability_patch_time_hours: "{{ vulnerability_patch_target | default(24) }}"
+    security_audit_compliance_rate: "{{ audit_compliance_target | default('99%') }}"
+    certificate_uptime: "{{ certificate_uptime_target | default('99.99%') }}"
+    mfa_adoption_rate: "{{ mfa_adoption_target | default('100%') }}"
+    security_training_completion: "{{ security_training_target | default('100%') }}"

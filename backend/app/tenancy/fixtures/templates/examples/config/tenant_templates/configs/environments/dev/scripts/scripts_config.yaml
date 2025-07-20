@@ -1,0 +1,400 @@
+# =============================================================================
+# Scripts Configuration File
+# =============================================================================
+# Advanced configuration for the Spotify AI Agent script management system
+# 
+# Developed by: Fahed Mlaiel
+# Expert Team: Lead Dev + AI Architect, Senior Backend Developer, ML Engineer,
+#              DBA & Data Engineer, Backend Security Specialist, Microservices Architect
+# =============================================================================
+
+# Global script configuration
+global:
+  version: "2.0.0"
+  author: "Fahed Mlaiel Expert Team"
+  organization: "Spotify AI Agent Development"
+  environment: "development"
+  
+  # Default timeouts and retries
+  default_timeout: 300  # seconds
+  default_retries: 3
+  retry_delay: 5  # seconds
+  
+  # Logging configuration
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "scripts_execution.log"
+    max_size: "10MB"
+    backup_count: 5
+  
+  # Security settings
+  security:
+    allow_sudo: false
+    allowed_directories:
+      - "/workspaces/Achiri/spotify-ai-agent"
+      - "/tmp/spotify-ai-agent"
+    forbidden_commands:
+      - "rm -rf /"
+      - "dd if="
+      - "mkfs"
+      - "fdisk"
+    
+  # Performance settings
+  performance:
+    max_parallel_scripts: 5
+    memory_limit_mb: 1024
+    cpu_limit_percent: 80
+
+# Script-specific configurations
+scripts:
+  setup_dev:
+    type: "setup"
+    description: "Complete development environment setup"
+    timeout: 600
+    critical: true
+    dependencies: []
+    requirements:
+      - "python>=3.9"
+      - "git"
+      - "docker"
+    environment_variables:
+      DEVELOPMENT_MODE: "true"
+      LOG_LEVEL: "DEBUG"
+    validation_rules:
+      pre_execution:
+        - check_python_version
+        - check_git_available
+        - check_docker_running
+      post_execution:
+        - verify_virtual_env
+        - verify_dependencies_installed
+    
+  start_services:
+    type: "services"
+    description: "Start all development services"
+    timeout: 300
+    dependencies: ["setup_dev"]
+    parallel: false
+    environment_variables:
+      SERVICES_MODE: "development"
+      AUTO_RESTART: "true"
+    validation_rules:
+      pre_execution:
+        - check_ports_available
+      post_execution:
+        - verify_services_running
+        - check_health_endpoints
+    
+  reset_db:
+    type: "database"
+    description: "Reset development database"
+    timeout: 120
+    critical: false
+    dependencies: []
+    environment_variables:
+      DB_RESET_MODE: "development"
+      BACKUP_BEFORE_RESET: "true"
+    validation_rules:
+      pre_execution:
+        - check_database_connection
+        - backup_current_data
+      post_execution:
+        - verify_schema_created
+        - verify_test_data_loaded
+    
+  monitor_health:
+    type: "monitoring"
+    description: "Monitor system and application health"
+    timeout: 60
+    parallel: true
+    dependencies: ["start_services"]
+    config:
+      check_interval: 30
+      alert_thresholds:
+        cpu_percent: 90
+        memory_percent: 85
+        disk_percent: 90
+    validation_rules:
+      post_execution:
+        - verify_monitoring_active
+    
+  manage_logs:
+    type: "maintenance"
+    description: "Manage and rotate log files"
+    timeout: 60
+    dependencies: []
+    config:
+      max_log_size_mb: 100
+      retention_days: 30
+      compression: true
+    validation_rules:
+      post_execution:
+        - verify_logs_rotated
+
+# Environment-specific overrides
+environments:
+  development:
+    global:
+      logging:
+        level: "DEBUG"
+      performance:
+        max_parallel_scripts: 3
+    scripts:
+      setup_dev:
+        timeout: 900  # Longer timeout for development
+        environment_variables:
+          DEVELOPMENT_MODE: "true"
+          VERBOSE_OUTPUT: "true"
+  
+  testing:
+    global:
+      logging:
+        level: "WARNING"
+      performance:
+        max_parallel_scripts: 10
+    scripts:
+      setup_dev:
+        timeout: 300  # Faster setup for testing
+        environment_variables:
+          TESTING_MODE: "true"
+          SKIP_INTERACTIVE: "true"
+  
+  production:
+    global:
+      logging:
+        level: "ERROR"
+      security:
+        allow_sudo: false
+        strict_validation: true
+    scripts:
+      setup_dev:
+        enabled: false  # No development setup in production
+
+# Validation rules definitions
+validation_rules:
+  check_python_version:
+    type: "command"
+    command: "python --version"
+    expected_output_regex: "Python 3\\.[9-9]\\."
+    failure_message: "Python 3.9+ is required"
+  
+  check_git_available:
+    type: "command"
+    command: "git --version"
+    expected_return_code: 0
+    failure_message: "Git is not installed or not available"
+  
+  check_docker_running:
+    type: "command"
+    command: "docker info"
+    expected_return_code: 0
+    failure_message: "Docker is not running"
+  
+  check_ports_available:
+    type: "port_check"
+    ports: [8000, 5432, 6379]
+    failure_message: "Required ports are not available"
+  
+  verify_virtual_env:
+    type: "environment_variable"
+    variable: "VIRTUAL_ENV"
+    required: true
+    failure_message: "Virtual environment is not activated"
+  
+  verify_dependencies_installed:
+    type: "python_import"
+    modules: ["fastapi", "sqlalchemy", "redis"]
+    failure_message: "Required Python dependencies are not installed"
+  
+  verify_services_running:
+    type: "process_check"
+    processes: ["uvicorn", "postgres", "redis-server"]
+    failure_message: "Required services are not running"
+  
+  check_health_endpoints:
+    type: "http_check"
+    endpoints:
+      - url: "http://localhost:8000/health"
+        expected_status: 200
+        timeout: 10
+    failure_message: "Health endpoints are not responding"
+  
+  check_database_connection:
+    type: "database_check"
+    connection_string: "${DATABASE_URL}"
+    timeout: 10
+    failure_message: "Cannot connect to database"
+  
+  backup_current_data:
+    type: "script"
+    script: "backup_database.sh"
+    failure_message: "Failed to backup current database"
+  
+  verify_schema_created:
+    type: "database_query"
+    query: "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"
+    expected_min_result: 5
+    failure_message: "Database schema was not properly created"
+  
+  verify_test_data_loaded:
+    type: "database_query"
+    query: "SELECT COUNT(*) FROM users WHERE email LIKE '%test%'"
+    expected_min_result: 1
+    failure_message: "Test data was not loaded"
+  
+  verify_monitoring_active:
+    type: "file_check"
+    file: "/tmp/monitoring.pid"
+    failure_message: "Monitoring process is not active"
+  
+  verify_logs_rotated:
+    type: "file_check"
+    file: "logs/application.log"
+    max_size_mb: 100
+    failure_message: "Log files were not properly rotated"
+
+# Notification settings
+notifications:
+  enabled: true
+  channels:
+    slack:
+      enabled: false
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channel: "#dev-alerts"
+    
+    email:
+      enabled: false
+      smtp_server: "${SMTP_SERVER}"
+      from_address: "${NOTIFICATION_EMAIL}"
+      to_addresses:
+        - "dev-team@company.com"
+    
+    file:
+      enabled: true
+      log_file: "script_notifications.log"
+  
+  triggers:
+    on_failure: true
+    on_success: false
+    on_timeout: true
+    critical_script_failure: true
+
+# Monitoring and metrics
+monitoring:
+  enabled: true
+  
+  metrics:
+    collection_interval: 60  # seconds
+    retention_days: 30
+    
+    system_metrics:
+      - cpu_usage
+      - memory_usage
+      - disk_usage
+      - network_io
+    
+    script_metrics:
+      - execution_time
+      - success_rate
+      - failure_rate
+      - resource_usage
+  
+  alerts:
+    high_failure_rate:
+      threshold: 30  # percent
+      window_minutes: 60
+      
+    long_execution_time:
+      threshold: 600  # seconds
+      
+    system_resource_usage:
+      cpu_threshold: 90
+      memory_threshold: 85
+      disk_threshold: 90
+
+# Backup and recovery
+backup:
+  enabled: true
+  
+  configuration_backup:
+    enabled: true
+    interval_hours: 24
+    retention_days: 30
+    location: "backups/config"
+  
+  script_backup:
+    enabled: true
+    interval_hours: 12
+    retention_days: 14
+    location: "backups/scripts"
+  
+  logs_backup:
+    enabled: true
+    interval_hours: 6
+    retention_days: 7
+    location: "backups/logs"
+    compression: true
+
+# Development tools integration
+development_tools:
+  pre_commit_hooks:
+    enabled: true
+    hooks:
+      - script_validation
+      - security_scan
+      - dependency_check
+  
+  ide_integration:
+    vscode:
+      enabled: true
+      tasks_file: ".vscode/tasks.json"
+      launch_file: ".vscode/launch.json"
+    
+    intellij:
+      enabled: false
+  
+  testing:
+    unit_tests:
+      enabled: true
+      framework: "pytest"
+      coverage_threshold: 80
+    
+    integration_tests:
+      enabled: true
+      test_environment: "testing"
+
+# Advanced features
+advanced:
+  script_versioning:
+    enabled: true
+    version_control: "git"
+    auto_commit: true
+    
+  dynamic_configuration:
+    enabled: true
+    hot_reload: true
+    watch_files: true
+    
+  distributed_execution:
+    enabled: false
+    cluster_config: "cluster.yaml"
+    
+  machine_learning:
+    predictive_failures:
+      enabled: false
+      model_path: "models/failure_prediction.pkl"
+    
+    performance_optimization:
+      enabled: false
+      auto_tuning: true
+    
+  containers:
+    docker_support:
+      enabled: true
+      base_image: "python:3.9-slim"
+      build_context: "."
+    
+    kubernetes_support:
+      enabled: false
+      namespace: "spotify-ai-agent"

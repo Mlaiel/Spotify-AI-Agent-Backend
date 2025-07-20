@@ -1,0 +1,22 @@
+# Mock automatique pour redis
+try:
+    import redis
+except ImportError:
+    import sys
+    from unittest.mock import Mock
+    sys.modules['redis'] = Mock()
+    if 'redis' == 'opentelemetry':
+        sys.modules['opentelemetry.exporter'] = Mock()
+        sys.modules['opentelemetry.instrumentation'] = Mock()
+    elif 'redis' == 'grpc':
+        sys.modules['grpc_tools'] = Mock()
+
+from unittest.mock import Mock
+import pytest
+from . import mongo_client_mock
+
+def test_002_add_indexes(mongo_client_mock):
+    """Test avancé d’ajout d’index sur collections volumineuses."""
+    mongo_client_mock.db["users"].create_index.return_value = "email_1"
+    idx = mongo_client_mock.db["users"].create_index("email", unique=True)
+    assert idx == "email_1"

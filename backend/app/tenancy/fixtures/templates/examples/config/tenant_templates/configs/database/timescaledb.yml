@@ -1,0 +1,413 @@
+# TimescaleDB Advanced Configuration Template for Enterprise Tenant Templates
+# ==========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced TimescaleDB architecture with AI time-series optimization
+# - Senior Backend Developer: Python/FastAPI/Django TimescaleDB enterprise patterns
+# - DBA & Data Engineer: TimescaleDB performance tuning, hypertables, and continuous aggregates
+# - Backend Security Specialist: TimescaleDB security hardening and encryption
+# - Microservices Architect: TimescaleDB service mesh integration and monitoring
+
+# ==========================================
+# TIMESCALEDB ENTERPRISE CONFIGURATION
+# ==========================================
+
+timescaledb:
+  # Connection Configuration (extends PostgreSQL)
+  connection:
+    # Basic Connection Settings
+    host: "${TIMESCALEDB_HOST:-localhost}"
+    port: ${TIMESCALEDB_PORT:-5432}
+    database: "${TIMESCALEDB_DATABASE:-spotify_ai_timeseries}"
+    username: "${TIMESCALEDB_USERNAME:-postgres}"
+    password: "${TIMESCALEDB_PASSWORD:-postgres}"
+    
+    # Connection Pool Settings
+    pool:
+      min_connections: ${TIMESCALEDB_POOL_MIN:-10}
+      max_connections: ${TIMESCALEDB_POOL_MAX:-50}
+      max_overflow: ${TIMESCALEDB_POOL_OVERFLOW:-100}
+      pool_timeout: ${TIMESCALEDB_POOL_TIMEOUT:-30}
+      pool_recycle: ${TIMESCALEDB_POOL_RECYCLE:-3600}
+      pool_pre_ping: ${TIMESCALEDB_POOL_PRE_PING:-true}
+      
+      # TimescaleDB Specific Pool Settings
+      statement_timeout: ${TIMESCALEDB_STATEMENT_TIMEOUT:-300000}  # 5 minutes
+      lock_timeout: ${TIMESCALEDB_LOCK_TIMEOUT:-30000}  # 30 seconds
+      idle_in_transaction_session_timeout: ${TIMESCALEDB_IDLE_TRANSACTION_TIMEOUT:-60000}  # 1 minute
+    
+    # SSL/TLS Configuration
+    ssl:
+      enabled: ${TIMESCALEDB_SSL_ENABLED:-false}
+      mode: "${TIMESCALEDB_SSL_MODE:-prefer}"
+      cert_file: "${TIMESCALEDB_SSL_CERT:-}"
+      key_file: "${TIMESCALEDB_SSL_KEY:-}"
+      ca_file: "${TIMESCALEDB_SSL_CA:-}"
+
+  # TimescaleDB Specific Configuration
+  timescale:
+    # Extension Settings
+    extension:
+      version: "${TIMESCALEDB_VERSION:-2.11}"
+      telemetry: ${TIMESCALEDB_TELEMETRY:-off}
+      license: "${TIMESCALEDB_LICENSE:-community}"  # community, apache
+    
+    # Hypertable Configuration
+    hypertables:
+      # Default Settings
+      default_chunk_time_interval: "${TIMESCALEDB_DEFAULT_CHUNK_INTERVAL:-1 day}"
+      default_chunk_target_size: "${TIMESCALEDB_CHUNK_TARGET_SIZE:-25MB}"
+      
+      # Chunk Management
+      chunk_cache_size: ${TIMESCALEDB_CHUNK_CACHE_SIZE:-32}  # Number of chunks to cache
+      max_chunks_per_hypertable: ${TIMESCALEDB_MAX_CHUNKS_PER_HYPERTABLE:-10000}
+      
+      # Compression Settings
+      compression:
+        enabled: ${TIMESCALEDB_COMPRESSION_ENABLED:-true}
+        compression_segment_by: "${TIMESCALEDB_COMPRESSION_SEGMENT_BY:-}"  # Column to segment by
+        compression_order_by: "${TIMESCALEDB_COMPRESSION_ORDER_BY:-time DESC}"
+        compression_chunk_time_interval: "${TIMESCALEDB_COMPRESSION_CHUNK_INTERVAL:-7 days}"
+        
+        # Compression Algorithms
+        algorithm: "${TIMESCALEDB_COMPRESSION_ALGORITHM:-auto}"  # auto, lz4, zstd
+        level: ${TIMESCALEDB_COMPRESSION_LEVEL:-1}
+      
+      # Retention Policies
+      retention:
+        enabled: ${TIMESCALEDB_RETENTION_ENABLED:-true}
+        default_retention_period: "${TIMESCALEDB_DEFAULT_RETENTION:-90 days}"
+        cascade_to_materializations: ${TIMESCALEDB_RETENTION_CASCADE:-true}
+    
+    # Continuous Aggregates
+    continuous_aggregates:
+      # Default Settings
+      enabled: ${TIMESCALEDB_CONTINUOUS_AGGREGATES_ENABLED:-true}
+      default_refresh_interval: "${TIMESCALEDB_DEFAULT_REFRESH_INTERVAL:-1 hour}"
+      max_interval_per_job: "${TIMESCALEDB_MAX_INTERVAL_PER_JOB:-100}"
+      
+      # Materialization Settings
+      materialization:
+        # Real-time Aggregation
+        real_time_aggregation: ${TIMESCALEDB_REAL_TIME_AGGREGATION:-true}
+        max_interval_per_job: "${TIMESCALEDB_MATERIALIZATION_MAX_INTERVAL:-100}"
+        
+        # Parallel Processing
+        max_parallel_workers: ${TIMESCALEDB_MAX_PARALLEL_WORKERS:-4}
+        enable_parallel_chunk_processing: ${TIMESCALEDB_PARALLEL_CHUNK_PROCESSING:-true}
+      
+      # Refresh Policies
+      refresh_policies:
+        # Background Jobs
+        background_worker_processes: ${TIMESCALEDB_BACKGROUND_WORKER_PROCESSES:-8}
+        max_background_workers: ${TIMESCALEDB_MAX_BACKGROUND_WORKERS:-16}
+        
+        # Scheduling
+        schedule_interval: "${TIMESCALEDB_SCHEDULE_INTERVAL:-1 minute}"
+        retry_period: "${TIMESCALEDB_RETRY_PERIOD:-5 minutes}"
+        max_runtime: "${TIMESCALEDB_MAX_RUNTIME:-30 minutes}"
+    
+    # Multi-node Configuration (TimescaleDB Distributed)
+    distributed:
+      enabled: ${TIMESCALEDB_DISTRIBUTED_ENABLED:-false}
+      
+      # Data Nodes
+      data_nodes:
+        - name: "data_node_1"
+          host: "${TIMESCALEDB_DATA_NODE_1_HOST:-localhost}"
+          port: ${TIMESCALEDB_DATA_NODE_1_PORT:-5433}
+          database: "${TIMESCALEDB_DATA_NODE_1_DB:-spotify_ai_timeseries_dn1}"
+          
+        - name: "data_node_2"
+          host: "${TIMESCALEDB_DATA_NODE_2_HOST:-localhost}"
+          port: ${TIMESCALEDB_DATA_NODE_2_PORT:-5434}
+          database: "${TIMESCALEDB_DATA_NODE_2_DB:-spotify_ai_timeseries_dn2}"
+      
+      # Distributed Hypertables
+      distributed_hypertables:
+        replication_factor: ${TIMESCALEDB_REPLICATION_FACTOR:-2}
+        data_nodes: "${TIMESCALEDB_DATA_NODES:-data_node_1,data_node_2}"
+        chunk_time_interval: "${TIMESCALEDB_DISTRIBUTED_CHUNK_INTERVAL:-1 day}"
+
+  # Performance Configuration
+  performance:
+    # PostgreSQL Base Settings
+    postgresql:
+      # Memory Settings
+      shared_buffers: "${TIMESCALEDB_SHARED_BUFFERS:-256MB}"
+      effective_cache_size: "${TIMESCALEDB_EFFECTIVE_CACHE_SIZE:-1GB}"
+      work_mem: "${TIMESCALEDB_WORK_MEM:-64MB}"
+      maintenance_work_mem: "${TIMESCALEDB_MAINTENANCE_WORK_MEM:-256MB}"
+      
+      # Parallel Processing
+      max_parallel_workers: ${TIMESCALEDB_PG_MAX_PARALLEL_WORKERS:-8}
+      max_parallel_workers_per_gather: ${TIMESCALEDB_PG_MAX_PARALLEL_WORKERS_PER_GATHER:-4}
+      max_parallel_maintenance_workers: ${TIMESCALEDB_PG_MAX_PARALLEL_MAINTENANCE_WORKERS:-2}
+      
+      # WAL Settings
+      wal_buffers: "${TIMESCALEDB_WAL_BUFFERS:-16MB}"
+      checkpoint_completion_target: ${TIMESCALEDB_CHECKPOINT_COMPLETION_TARGET:-0.9}
+      checkpoint_timeout: "${TIMESCALEDB_CHECKPOINT_TIMEOUT:-15min}"
+      max_wal_size: "${TIMESCALEDB_MAX_WAL_SIZE:-2GB}"
+      min_wal_size: "${TIMESCALEDB_MIN_WAL_SIZE:-80MB}"
+      
+      # Query Planning
+      random_page_cost: ${TIMESCALEDB_RANDOM_PAGE_COST:-1.1}
+      seq_page_cost: ${TIMESCALEDB_SEQ_PAGE_COST:-1.0}
+      effective_io_concurrency: ${TIMESCALEDB_EFFECTIVE_IO_CONCURRENCY:-200}
+    
+    # TimescaleDB Specific Performance
+    timescale_performance:
+      # Query Optimization
+      enable_constraint_exclusion: ${TIMESCALEDB_CONSTRAINT_EXCLUSION:-on}
+      enable_partitionwise_join: ${TIMESCALEDB_PARTITIONWISE_JOIN:-on}
+      enable_partitionwise_aggregate: ${TIMESCALEDB_PARTITIONWISE_AGGREGATE:-on}
+      
+      # Time-series Specific
+      timescaledb.max_background_workers: ${TIMESCALEDB_TS_MAX_BACKGROUND_WORKERS:-16}
+      timescaledb.last_updated_optimization: ${TIMESCALEDB_LAST_UPDATED_OPTIMIZATION:-on}
+      timescaledb.enable_2pc: ${TIMESCALEDB_ENABLE_2PC:-on}
+      timescaledb.enable_per_data_node_queries: ${TIMESCALEDB_PER_DATA_NODE_QUERIES:-on}
+      
+      # Memory and I/O
+      timescaledb.materializations:
+        max_refresh_workers: ${TIMESCALEDB_MAX_REFRESH_WORKERS:-4}
+        refresh_lag_threshold: "${TIMESCALEDB_REFRESH_LAG_THRESHOLD:-1 hour}"
+
+  # Monitoring Configuration
+  monitoring:
+    # TimescaleDB Specific Monitoring
+    timescale_monitoring:
+      enabled: ${TIMESCALEDB_MONITORING_ENABLED:-true}
+      
+      # Metrics Collection
+      metrics:
+        # Hypertable Metrics
+        hypertable_stats: ${TIMESCALEDB_HYPERTABLE_STATS:-true}
+        chunk_stats: ${TIMESCALEDB_CHUNK_STATS:-true}
+        compression_stats: ${TIMESCALEDB_COMPRESSION_STATS:-true}
+        
+        # Continuous Aggregate Metrics
+        continuous_aggregate_stats: ${TIMESCALEDB_CAGG_STATS:-true}
+        materialization_stats: ${TIMESCALEDB_MATERIALIZATION_STATS:-true}
+        
+        # Job Statistics
+        job_stats: ${TIMESCALEDB_JOB_STATS:-true}
+        background_worker_stats: ${TIMESCALEDB_BACKGROUND_WORKER_STATS:-true}
+      
+      # Performance Views
+      performance_views:
+        # Query Performance
+        query_performance: ${TIMESCALEDB_QUERY_PERFORMANCE_VIEW:-true}
+        slow_queries: ${TIMESCALEDB_SLOW_QUERIES_VIEW:-true}
+        
+        # Storage Performance
+        chunk_detail: ${TIMESCALEDB_CHUNK_DETAIL_VIEW:-true}
+        compression_detail: ${TIMESCALEDB_COMPRESSION_DETAIL_VIEW:-true}
+    
+    # External Monitoring Integration
+    external_monitoring:
+      # Prometheus
+      prometheus:
+        enabled: ${TIMESCALEDB_PROMETHEUS_ENABLED:-true}
+        exporter_port: ${TIMESCALEDB_PROMETHEUS_PORT:-9187}
+        metrics_path: "${TIMESCALEDB_PROMETHEUS_PATH:-/metrics}"
+        scrape_interval: "${TIMESCALEDB_PROMETHEUS_INTERVAL:-15s}"
+        
+        # Custom Metrics
+        custom_metrics:
+          - name: "timescaledb_hypertable_size"
+            query: "SELECT schemaname, tablename, pg_total_relation_size(schemaname||'.'||tablename) as size_bytes FROM timescaledb_information.hypertables"
+            
+          - name: "timescaledb_chunk_count"
+            query: "SELECT hypertable_schema, hypertable_name, count(*) as chunk_count FROM timescaledb_information.chunks GROUP BY 1,2"
+      
+      # Grafana Integration
+      grafana:
+        enabled: ${TIMESCALEDB_GRAFANA_ENABLED:-true}
+        dashboard_provisioning: ${TIMESCALEDB_GRAFANA_PROVISIONING:-true}
+        alerting: ${TIMESCALEDB_GRAFANA_ALERTING:-true}
+
+  # Security Configuration
+  security:
+    # Row Level Security
+    row_level_security:
+      enabled: ${TIMESCALEDB_RLS_ENABLED:-true}
+      tenant_isolation: ${TIMESCALEDB_TENANT_ISOLATION:-true}
+      
+      # Policy Templates
+      policies:
+        tenant_isolation:
+          policy_name: "tenant_isolation_policy"
+          expression: "tenant_id = current_setting('app.current_tenant')::uuid"
+        
+        time_based_access:
+          policy_name: "time_based_access_policy"
+          expression: "time >= current_setting('app.access_start_time')::timestamptz"
+    
+    # Encryption
+    encryption:
+      # Transparent Data Encryption
+      tde_enabled: ${TIMESCALEDB_TDE_ENABLED:-false}
+      encryption_key_management: "${TIMESCALEDB_KEY_MANAGEMENT:-vault}"  # vault, aws_kms, azure_kv
+      
+      # Column-level Encryption
+      column_encryption:
+        enabled: ${TIMESCALEDB_COLUMN_ENCRYPTION:-false}
+        sensitive_columns: "${TIMESCALEDB_SENSITIVE_COLUMNS:-user_id,device_id,location}"
+
+  # Backup and Disaster Recovery
+  backup:
+    # Backup Configuration
+    backup_strategy: "${TIMESCALEDB_BACKUP_STRATEGY:-continuous}"  # continuous, scheduled
+    
+    # Point-in-Time Recovery
+    pitr:
+      enabled: ${TIMESCALEDB_PITR_ENABLED:-true}
+      wal_archive_mode: ${TIMESCALEDB_WAL_ARCHIVE_MODE:-on}
+      wal_archive_command: "${TIMESCALEDB_WAL_ARCHIVE_COMMAND:-cp %p /var/lib/postgresql/wal_archive/%f}"
+      recovery_target_time: "${TIMESCALEDB_RECOVERY_TARGET_TIME:-}"
+    
+    # Logical Backups
+    logical_backup:
+      enabled: ${TIMESCALEDB_LOGICAL_BACKUP_ENABLED:-true}
+      schedule: "${TIMESCALEDB_LOGICAL_BACKUP_SCHEDULE:-0 2 * * *}"  # Daily at 2 AM
+      retention_days: ${TIMESCALEDB_LOGICAL_BACKUP_RETENTION:-30}
+      compression: ${TIMESCALEDB_LOGICAL_BACKUP_COMPRESSION:-true}
+    
+    # Physical Backups
+    physical_backup:
+      enabled: ${TIMESCALEDB_PHYSICAL_BACKUP_ENABLED:-true}
+      base_backup_schedule: "${TIMESCALEDB_BASE_BACKUP_SCHEDULE:-0 1 * * 0}"  # Weekly on Sunday 1 AM
+      retention_count: ${TIMESCALEDB_BASE_BACKUP_RETENTION:-4}
+    
+    # Cloud Backup
+    cloud_backup:
+      enabled: ${TIMESCALEDB_CLOUD_BACKUP_ENABLED:-false}
+      provider: "${TIMESCALEDB_CLOUD_BACKUP_PROVIDER:-s3}"  # s3, gcs, azure
+      
+      # S3 Configuration
+      s3:
+        bucket: "${TIMESCALEDB_S3_BACKUP_BUCKET:-}"
+        region: "${TIMESCALEDB_S3_BACKUP_REGION:-us-east-1}"
+        access_key: "${TIMESCALEDB_S3_BACKUP_ACCESS_KEY:-}"
+        secret_key: "${TIMESCALEDB_S3_BACKUP_SECRET_KEY:-}"
+        encryption: "${TIMESCALEDB_S3_BACKUP_ENCRYPTION:-AES256}"
+
+# ==========================================
+# TENANT-SPECIFIC CONFIGURATIONS
+# ==========================================
+
+tenant_overrides:
+  # Multi-tenant Hypertable Management
+  hypertable_management:
+    strategy: "${TIMESCALEDB_TENANT_HYPERTABLE_STRATEGY:-shared_hypertable}"  # shared_hypertable, separate_hypertable
+    naming_convention: "${TIMESCALEDB_TENANT_NAMING:-tenant_{{tenant_id}}_{{table}}"
+    
+    # Tenant-specific Chunk Settings
+    tenant_chunk_settings:
+      chunk_time_interval: "${TIMESCALEDB_TENANT_CHUNK_INTERVAL:-1 hour}"
+      compression_policy: "${TIMESCALEDB_TENANT_COMPRESSION_POLICY:-1 day}"
+      retention_policy: "${TIMESCALEDB_TENANT_RETENTION_POLICY:-30 days}"
+  
+  # Resource Isolation
+  resource_isolation:
+    # Memory Limits per Tenant
+    max_memory_per_tenant: "${TIMESCALEDB_MAX_MEMORY_PER_TENANT:-512MB}"
+    max_connections_per_tenant: ${TIMESCALEDB_MAX_CONNECTIONS_PER_TENANT:-20}
+    
+    # Query Limits
+    max_query_duration_per_tenant: "${TIMESCALEDB_MAX_QUERY_DURATION_PER_TENANT:-300s}"
+    max_parallel_workers_per_tenant: ${TIMESCALEDB_MAX_PARALLEL_WORKERS_PER_TENANT:-2}
+
+# ==========================================
+# AI/ML TIME-SERIES OPTIMIZATION
+# ==========================================
+
+ai_optimization:
+  # Time-series Forecasting
+  forecasting:
+    enabled: ${TIMESCALEDB_AI_FORECASTING_ENABLED:-true}
+    
+    # Models
+    models:
+      - name: "arima"
+        enabled: ${TIMESCALEDB_ARIMA_ENABLED:-true}
+        auto_tune: ${TIMESCALEDB_ARIMA_AUTO_TUNE:-true}
+        
+      - name: "lstm"
+        enabled: ${TIMESCALEDB_LSTM_ENABLED:-true}
+        model_path: "${TIMESCALEDB_LSTM_MODEL_PATH:-/var/lib/timescaledb/ml_models/lstm/"
+        
+      - name: "prophet"
+        enabled: ${TIMESCALEDB_PROPHET_ENABLED:-true}
+        seasonality_mode: "${TIMESCALEDB_PROPHET_SEASONALITY:-additive}"
+    
+    # Forecast Storage
+    forecast_storage:
+      retention_period: "${TIMESCALEDB_FORECAST_RETENTION:-7 days}"
+      compression_enabled: ${TIMESCALEDB_FORECAST_COMPRESSION:-true}
+  
+  # Anomaly Detection
+  anomaly_detection:
+    enabled: ${TIMESCALEDB_ANOMALY_DETECTION_ENABLED:-true}
+    
+    # Detection Methods
+    methods:
+      - name: "statistical"
+        enabled: ${TIMESCALEDB_STATISTICAL_ANOMALY_ENABLED:-true}
+        threshold_sigma: ${TIMESCALEDB_ANOMALY_THRESHOLD_SIGMA:-3.0}
+        
+      - name: "isolation_forest"
+        enabled: ${TIMESCALEDB_ISOLATION_FOREST_ENABLED:-true}
+        contamination: ${TIMESCALEDB_ISOLATION_FOREST_CONTAMINATION:-0.1}
+        
+      - name: "autoencoder"
+        enabled: ${TIMESCALEDB_AUTOENCODER_ENABLED:-false}
+        model_path: "${TIMESCALEDB_AUTOENCODER_MODEL_PATH:-/var/lib/timescaledb/ml_models/autoencoder/}"
+    
+    # Real-time Processing
+    real_time_processing:
+      enabled: ${TIMESCALEDB_REAL_TIME_ANOMALY_ENABLED:-true}
+      processing_interval: "${TIMESCALEDB_ANOMALY_PROCESSING_INTERVAL:-1 minute}"
+      batch_size: ${TIMESCALEDB_ANOMALY_BATCH_SIZE:-1000}
+  
+  # Smart Compression
+  smart_compression:
+    enabled: ${TIMESCALEDB_SMART_COMPRESSION_ENABLED:-true}
+    
+    # ML-based Compression
+    ml_compression:
+      model_type: "${TIMESCALEDB_ML_COMPRESSION_MODEL:-gradient_boosting}"
+      compression_threshold: ${TIMESCALEDB_ML_COMPRESSION_THRESHOLD:-0.8}
+      
+    # Adaptive Compression
+    adaptive_compression:
+      enabled: ${TIMESCALEDB_ADAPTIVE_COMPRESSION_ENABLED:-true}
+      data_pattern_analysis: ${TIMESCALEDB_DATA_PATTERN_ANALYSIS:-true}
+      compression_ratio_optimization: ${TIMESCALEDB_COMPRESSION_RATIO_OPTIMIZATION:-true}
+
+# ==========================================
+# INDUSTRY-SPECIFIC CONFIGURATIONS
+# ==========================================
+
+industry_configs:
+  # Music Streaming Analytics
+  music_streaming:
+    # User Behavior Tracking
+    user_behavior:
+      session_timeout: "${TIMESCALEDB_SESSION_TIMEOUT:-30 minutes}"
+      chunk_interval: "${TIMESCALEDB_USER_BEHAVIOR_CHUNK_INTERVAL:-1 hour}"
+      retention_period: "${TIMESCALEDB_USER_BEHAVIOR_RETENTION:-1 year}"
+    
+    # Audio Quality Metrics
+    audio_quality:
+      chunk_interval: "${TIMESCALEDB_AUDIO_QUALITY_CHUNK_INTERVAL:-5 minutes}"
+      compression_after: "${TIMESCALEDB_AUDIO_QUALITY_COMPRESSION:-1 day}"
+      retention_period: "${TIMESCALEDB_AUDIO_QUALITY_RETENTION:-90 days}"
+    
+    # Real-time Recommendations
+    recommendations:
+      processing_interval: "${TIMESCALEDB_RECOMMENDATIONS_INTERVAL:-10 seconds}"
+      materialized_view_refresh: "${TIMESCALEDB_RECOMMENDATIONS_REFRESH:-5 minutes}"

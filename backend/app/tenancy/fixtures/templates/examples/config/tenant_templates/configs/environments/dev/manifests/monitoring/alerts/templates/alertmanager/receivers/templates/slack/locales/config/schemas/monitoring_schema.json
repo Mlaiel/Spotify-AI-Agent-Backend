@@ -1,0 +1,602 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Monitoring Configuration Schema",
+  "description": "Schéma de configuration complet pour le monitoring et alerting multi-tenant",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "scrape_interval": {
+          "type": "string",
+          "pattern": "^[0-9]+[smhd]$",
+          "description": "Intervalle de collecte des métriques"
+        },
+        "evaluation_interval": {
+          "type": "string",
+          "pattern": "^[0-9]+[smhd]$",
+          "description": "Intervalle d'évaluation des règles"
+        },
+        "external_labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "prometheus": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "retention_time": {
+              "type": "string",
+              "pattern": "^[0-9]+[dwmy]$"
+            },
+            "storage_path": {
+              "type": "string"
+            },
+            "web_listen_address": {
+              "type": "string"
+            },
+            "web_external_url": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "scrape_configs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "job_name": {
+                "type": "string"
+              },
+              "scrape_interval": {
+                "type": "string",
+                "pattern": "^[0-9]+[smhd]$"
+              },
+              "scrape_timeout": {
+                "type": "string",
+                "pattern": "^[0-9]+[smhd]$"
+              },
+              "metrics_path": {
+                "type": "string"
+              },
+              "static_configs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "targets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "labels": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "relabel_configs": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": ["job_name"]
+          }
+        }
+      }
+    },
+    "alertmanager": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "global": {
+              "type": "object",
+              "properties": {
+                "smtp_smarthost": {
+                  "type": "string"
+                },
+                "smtp_from": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "slack_api_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "resolve_timeout": {
+                  "type": "string",
+                  "pattern": "^[0-9]+[smhd]$"
+                }
+              }
+            },
+            "templates": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "route": {
+              "type": "object",
+              "properties": {
+                "group_by": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "group_wait": {
+                  "type": "string",
+                  "pattern": "^[0-9]+[smhd]$"
+                },
+                "group_interval": {
+                  "type": "string",
+                  "pattern": "^[0-9]+[smhd]$"
+                },
+                "repeat_interval": {
+                  "type": "string",
+                  "pattern": "^[0-9]+[smhd]$"
+                },
+                "receiver": {
+                  "type": "string"
+                },
+                "routes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/properties/alertmanager/properties/config/properties/route"
+                  }
+                },
+                "match": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "match_re": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "continue": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["receiver"]
+            },
+            "receivers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email_configs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "to": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "from": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "subject": {
+                          "type": "string"
+                        },
+                        "body": {
+                          "type": "string"
+                        },
+                        "html": {
+                          "type": "string"
+                        },
+                        "headers": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "slack_configs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "api_url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "channel": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "color": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "title_link": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "text": {
+                          "type": "string"
+                        },
+                        "fallback": {
+                          "type": "string"
+                        },
+                        "pretext": {
+                          "type": "string"
+                        },
+                        "icon_emoji": {
+                          "type": "string"
+                        },
+                        "icon_url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "link_names": {
+                          "type": "boolean"
+                        },
+                        "actions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "style": {
+                                "type": "string",
+                                "enum": ["default", "primary", "danger"]
+                              }
+                            }
+                          }
+                        },
+                        "fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string"
+                              },
+                              "short": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "webhook_configs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "send_resolved": {
+                          "type": "boolean"
+                        },
+                        "http_config": {
+                          "type": "object",
+                          "properties": {
+                            "basic_auth": {
+                              "type": "object",
+                              "properties": {
+                                "username": {
+                                  "type": "string"
+                                },
+                                "password": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "bearer_token": {
+                              "type": "string"
+                            },
+                            "proxy_url": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": ["name"]
+              }
+            },
+            "inhibit_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source_match": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "source_match_re": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "target_match": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "target_match_re": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "equal": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "grafana": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "server": {
+              "type": "object",
+              "properties": {
+                "http_port": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "domain": {
+                  "type": "string"
+                },
+                "root_url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            },
+            "database": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["sqlite3", "mysql", "postgres"]
+                },
+                "host": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            },
+            "auth": {
+              "type": "object",
+              "properties": {
+                "disable_login_form": {
+                  "type": "boolean"
+                },
+                "oauth_auto_login": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "admin_user": {
+                  "type": "string"
+                },
+                "admin_password": {
+                  "type": "string"
+                },
+                "secret_key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "datasources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "access": {
+                "type": "string",
+                "enum": ["proxy", "direct"]
+              },
+              "isDefault": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "folder": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "disableDeletion": {
+                "type": "boolean"
+              },
+              "updateIntervalSeconds": {
+                "type": "integer"
+              },
+              "options": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tenant_specific": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "custom_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "labels": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "custom_alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "expr": {
+                "type": "string"
+              },
+              "for": {
+                "type": "string",
+                "pattern": "^[0-9]+[smhd]$"
+              },
+              "labels": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "annotations": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "notification_channels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["email", "slack", "webhook", "pagerduty", "teams"]
+              },
+              "settings": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["global", "prometheus", "alertmanager"],
+  "additionalProperties": false
+}

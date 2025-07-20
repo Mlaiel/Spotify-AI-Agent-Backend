@@ -1,0 +1,529 @@
+# Redis Advanced Configuration Template for Enterprise Tenant Templates
+# =====================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced Redis architecture with AI caching optimization
+# - Senior Backend Developer: Python/FastAPI/Django Redis enterprise patterns
+# - DBA & Data Engineer: Redis performance tuning, clustering, and persistence
+# - Backend Security Specialist: Redis security hardening and encryption
+# - Microservices Architect: Redis service mesh integration and monitoring
+
+# ==========================================
+# REDIS ENTERPRISE CONFIGURATION
+# ==========================================
+
+redis:
+  # Connection Configuration
+  connection:
+    # Basic Connection Settings
+    host: "${REDIS_HOST:-localhost}"
+    port: ${REDIS_PORT:-6379}
+    password: "${REDIS_PASSWORD:-}"
+    database: ${REDIS_DB:-0}
+    
+    # Connection Pool Settings
+    pool:
+      max_connections: ${REDIS_POOL_MAX_CONNECTIONS:-20}
+      retry_on_timeout: ${REDIS_RETRY_ON_TIMEOUT:-true}
+      retry_on_error: ${REDIS_RETRY_ON_ERROR:-true}
+      socket_keepalive: ${REDIS_SOCKET_KEEPALIVE:-true}
+      socket_keepalive_options: {}
+      health_check_interval: ${REDIS_HEALTH_CHECK_INTERVAL:-30}
+      
+      # Connection Timeouts
+      socket_timeout: ${REDIS_SOCKET_TIMEOUT:-5}
+      socket_connect_timeout: ${REDIS_SOCKET_CONNECT_TIMEOUT:-5}
+      connection_pool_kwargs: {}
+    
+    # Encoding and Serialization
+    encoding: "${REDIS_ENCODING:-utf-8}"
+    decode_responses: ${REDIS_DECODE_RESPONSES:-true}
+    errors: "${REDIS_ERRORS:-strict}"
+    
+    # Client Configuration
+    client:
+      name: "${REDIS_CLIENT_NAME:-spotify-ai-agent}"
+      username: "${REDIS_USERNAME:-}"
+      client_side_caching: ${REDIS_CLIENT_SIDE_CACHING:-false}
+      protocol: ${REDIS_PROTOCOL:-2}
+
+  # Cluster Configuration
+  cluster:
+    enabled: ${REDIS_CLUSTER_ENABLED:-false}
+    
+    # Cluster Nodes
+    nodes:
+      - host: "${REDIS_CLUSTER_NODE1_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE1_PORT:-7000}
+      - host: "${REDIS_CLUSTER_NODE2_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE2_PORT:-7001}
+      - host: "${REDIS_CLUSTER_NODE3_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE3_PORT:-7002}
+      - host: "${REDIS_CLUSTER_NODE4_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE4_PORT:-7003}
+      - host: "${REDIS_CLUSTER_NODE5_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE5_PORT:-7004}
+      - host: "${REDIS_CLUSTER_NODE6_HOST:-localhost}"
+        port: ${REDIS_CLUSTER_NODE6_PORT:-7005}
+    
+    # Cluster Settings
+    settings:
+      skip_full_coverage_check: ${REDIS_CLUSTER_SKIP_FULL_COVERAGE:-false}
+      readonly_mode: ${REDIS_CLUSTER_READONLY_MODE:-false}
+      max_connections_per_node: ${REDIS_CLUSTER_MAX_CONNECTIONS_PER_NODE:-16}
+      
+      # Cluster Failover
+      cluster_require_full_coverage: ${REDIS_CLUSTER_REQUIRE_FULL_COVERAGE:-true}
+      cluster_node_timeout: ${REDIS_CLUSTER_NODE_TIMEOUT:-15000}
+      cluster_slave_validity_factor: ${REDIS_CLUSTER_SLAVE_VALIDITY_FACTOR:-10}
+      cluster_migration_barrier: ${REDIS_CLUSTER_MIGRATION_BARRIER:-1}
+      
+      # Hash Slots
+      cluster_config_file: "${REDIS_CLUSTER_CONFIG_FILE:-nodes.conf}"
+      cluster_config_file_lock_timeout: ${REDIS_CLUSTER_CONFIG_LOCK_TIMEOUT:-5000}
+
+  # Sentinel Configuration (High Availability)
+  sentinel:
+    enabled: ${REDIS_SENTINEL_ENABLED:-false}
+    
+    # Sentinel Nodes
+    sentinels:
+      - host: "${REDIS_SENTINEL1_HOST:-localhost}"
+        port: ${REDIS_SENTINEL1_PORT:-26379}
+      - host: "${REDIS_SENTINEL2_HOST:-localhost}"
+        port: ${REDIS_SENTINEL2_PORT:-26380}
+      - host: "${REDIS_SENTINEL3_HOST:-localhost}"
+        port: ${REDIS_SENTINEL3_PORT:-26381}
+    
+    # Sentinel Settings
+    settings:
+      service_name: "${REDIS_SENTINEL_SERVICE_NAME:-mymaster}"
+      sentinel_kwargs:
+        socket_timeout: ${REDIS_SENTINEL_SOCKET_TIMEOUT:-0.1}
+        socket_connect_timeout: ${REDIS_SENTINEL_CONNECT_TIMEOUT:-0.1}
+        socket_keepalive: ${REDIS_SENTINEL_KEEPALIVE:-true}
+        password: "${REDIS_SENTINEL_PASSWORD:-}"
+      
+      # Failover Configuration
+      master_name: "${REDIS_SENTINEL_MASTER_NAME:-mymaster}"
+      quorum: ${REDIS_SENTINEL_QUORUM:-2}
+      down_after_milliseconds: ${REDIS_SENTINEL_DOWN_AFTER_MS:-30000}
+      failover_timeout: ${REDIS_SENTINEL_FAILOVER_TIMEOUT:-180000}
+      parallel_syncs: ${REDIS_SENTINEL_PARALLEL_SYNCS:-1}
+
+  # Memory and Performance Configuration
+  performance:
+    # Memory Management
+    memory:
+      maxmemory: "${REDIS_MAXMEMORY:-2gb}"
+      maxmemory_policy: "${REDIS_MAXMEMORY_POLICY:-allkeys-lru}"
+      maxmemory_samples: ${REDIS_MAXMEMORY_SAMPLES:-5}
+      
+      # Memory Optimization
+      hash_max_ziplist_entries: ${REDIS_HASH_MAX_ZIPLIST_ENTRIES:-512}
+      hash_max_ziplist_value: ${REDIS_HASH_MAX_ZIPLIST_VALUE:-64}
+      list_max_ziplist_size: ${REDIS_LIST_MAX_ZIPLIST_SIZE:--2}
+      list_compress_depth: ${REDIS_LIST_COMPRESS_DEPTH:-0}
+      set_max_intset_entries: ${REDIS_SET_MAX_INTSET_ENTRIES:-512}
+      zset_max_ziplist_entries: ${REDIS_ZSET_MAX_ZIPLIST_ENTRIES:-128}
+      zset_max_ziplist_value: ${REDIS_ZSET_MAX_ZIPLIST_VALUE:-64}
+      hll_sparse_max_bytes: ${REDIS_HLL_SPARSE_MAX_BYTES:-3000}
+      
+      # Active Memory Defragmentation
+      active_defrag: ${REDIS_ACTIVE_DEFRAG:-yes}
+      active_defrag_ignore_bytes: "${REDIS_ACTIVE_DEFRAG_IGNORE_BYTES:-100mb}"
+      active_defrag_threshold_lower: ${REDIS_ACTIVE_DEFRAG_THRESHOLD_LOWER:-10}
+      active_defrag_threshold_upper: ${REDIS_ACTIVE_DEFRAG_THRESHOLD_UPPER:-100}
+      active_defrag_cycle_min: ${REDIS_ACTIVE_DEFRAG_CYCLE_MIN:-5}
+      active_defrag_cycle_max: ${REDIS_ACTIVE_DEFRAG_CYCLE_MAX:-75}
+    
+    # I/O and Networking
+    io:
+      # TCP Settings
+      tcp_backlog: ${REDIS_TCP_BACKLOG:-511}
+      tcp_keepalive: ${REDIS_TCP_KEEPALIVE:-300}
+      timeout: ${REDIS_TIMEOUT:-0}
+      
+      # I/O Threads
+      io_threads: ${REDIS_IO_THREADS:-1}
+      io_threads_do_reads: ${REDIS_IO_THREADS_DO_READS:-no}
+      
+      # Network Performance
+      tcp_nodelay: ${REDIS_TCP_NODELAY:-yes}
+      bind: "${REDIS_BIND:-127.0.0.1}"
+      protected_mode: ${REDIS_PROTECTED_MODE:-yes}
+    
+    # CPU and Processing
+    cpu:
+      # Lazy Freeing
+      lazyfree_lazy_eviction: ${REDIS_LAZYFREE_LAZY_EVICTION:-no}
+      lazyfree_lazy_expire: ${REDIS_LAZYFREE_LAZY_EXPIRE:-no}
+      lazyfree_lazy_server_del: ${REDIS_LAZYFREE_LAZY_SERVER_DEL:-no}
+      slave_lazy_flush: ${REDIS_SLAVE_LAZY_FLUSH:-no}
+      
+      # Background Tasks
+      hz: ${REDIS_HZ:-10}
+      dynamic_hz: ${REDIS_DYNAMIC_HZ:-yes}
+
+  # Persistence Configuration
+  persistence:
+    # RDB (Redis Database) Snapshots
+    rdb:
+      enabled: ${REDIS_RDB_ENABLED:-true}
+      
+      # Save Points
+      save_points:
+        - seconds: 900
+          changes: 1
+        - seconds: 300
+          changes: 10
+        - seconds: 60
+          changes: 10000
+      
+      # RDB Settings
+      settings:
+        stop_writes_on_bgsave_error: ${REDIS_STOP_WRITES_ON_BGSAVE_ERROR:-yes}
+        rdbcompression: ${REDIS_RDB_COMPRESSION:-yes}
+        rdbchecksum: ${REDIS_RDB_CHECKSUM:-yes}
+        dbfilename: "${REDIS_RDB_FILENAME:-dump.rdb}"
+        dir: "${REDIS_DATA_DIR:-/var/lib/redis}"
+        
+        # RDB Performance
+        rdb_save_incremental_fsync: ${REDIS_RDB_SAVE_INCREMENTAL_FSYNC:-yes}
+    
+    # AOF (Append Only File)
+    aof:
+      enabled: ${REDIS_AOF_ENABLED:-true}
+      
+      # AOF Settings
+      settings:
+        appendonly: ${REDIS_APPENDONLY:-yes}
+        appendfilename: "${REDIS_AOF_FILENAME:-appendonly.aof}"
+        appendfsync: "${REDIS_AOF_FSYNC:-everysec}"
+        no_appendfsync_on_rewrite: ${REDIS_NO_APPENDFSYNC_ON_REWRITE:-no}
+        auto_aof_rewrite_percentage: ${REDIS_AUTO_AOF_REWRITE_PERCENTAGE:-100}
+        auto_aof_rewrite_min_size: "${REDIS_AUTO_AOF_REWRITE_MIN_SIZE:-64mb}"
+        
+        # AOF Performance
+        aof_load_truncated: ${REDIS_AOF_LOAD_TRUNCATED:-yes}
+        aof_use_rdb_preamble: ${REDIS_AOF_USE_RDB_PREAMBLE:-yes}
+        aof_rewrite_incremental_fsync: ${REDIS_AOF_REWRITE_INCREMENTAL_FSYNC:-yes}
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # Password Protection
+      requirepass: "${REDIS_REQUIREPASS:-}"
+      
+      # ACL (Access Control Lists)
+      acl:
+        enabled: ${REDIS_ACL_ENABLED:-false}
+        users:
+          - username: "admin"
+            password: "${REDIS_ADMIN_PASSWORD:-}"
+            permissions: "+@all ~*"
+            enabled: true
+          
+          - username: "readonly"
+            password: "${REDIS_READONLY_PASSWORD:-}"
+            permissions: "+@read ~*"
+            enabled: true
+          
+          - username: "cache_user"
+            password: "${REDIS_CACHE_USER_PASSWORD:-}"
+            permissions: "+@read +@write -@dangerous ~cache:*"
+            enabled: true
+        
+        # ACL Settings
+        acl_log_max_len: ${REDIS_ACL_LOG_MAX_LEN:-128}
+        acl_save_config: ${REDIS_ACL_SAVE_CONFIG:-yes}
+    
+    # Network Security
+    network:
+      # Protected Mode
+      protected_mode: ${REDIS_PROTECTED_MODE:-yes}
+      
+      # Bind Configuration
+      bind_addresses:
+        - "${REDIS_BIND_ADDRESS1:-127.0.0.1}"
+        - "${REDIS_BIND_ADDRESS2:-::1}"
+      
+      # TLS/SSL Configuration
+      tls:
+        enabled: ${REDIS_TLS_ENABLED:-false}
+        port: ${REDIS_TLS_PORT:-6380}
+        
+        # TLS Certificates
+        cert_file: "${REDIS_TLS_CERT_FILE:-}"
+        key_file: "${REDIS_TLS_KEY_FILE:-}"
+        ca_cert_file: "${REDIS_TLS_CA_CERT_FILE:-}"
+        ca_cert_dir: "${REDIS_TLS_CA_CERT_DIR:-}"
+        
+        # TLS Settings
+        protocols: "${REDIS_TLS_PROTOCOLS:-TLSv1.2 TLSv1.3}"
+        ciphers: "${REDIS_TLS_CIPHERS:-EECDH+AESGCM:EDH+AESGCM}"
+        cipher_suites: "${REDIS_TLS_CIPHER_SUITES:-TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256}"
+        prefer_server_ciphers: ${REDIS_TLS_PREFER_SERVER_CIPHERS:-yes}
+        session_caching: ${REDIS_TLS_SESSION_CACHING:-no}
+        session_cache_size: ${REDIS_TLS_SESSION_CACHE_SIZE:-5000}
+        session_cache_timeout: ${REDIS_TLS_SESSION_CACHE_TIMEOUT:-60}
+    
+    # Command Security
+    command_security:
+      # Dangerous Commands
+      rename_commands:
+        FLUSHDB: ""
+        FLUSHALL: ""
+        EVAL: ""
+        DEBUG: "DEBUG_${REDIS_SECRET_SUFFIX:-1234}"
+        CONFIG: "CONFIG_${REDIS_SECRET_SUFFIX:-1234}"
+        SHUTDOWN: "SHUTDOWN_${REDIS_SECRET_SUFFIX:-1234}"
+      
+      # Command Blacklist
+      disabled_commands:
+        - "FLUSHDB"
+        - "FLUSHALL"
+        - "KEYS"
+        - "EVAL"
+        - "SCRIPT"
+
+  # Logging and Monitoring
+  monitoring:
+    # Logging Configuration
+    logging:
+      # Basic Logging
+      loglevel: "${REDIS_LOGLEVEL:-notice}"
+      logfile: "${REDIS_LOGFILE:-}"
+      syslog_enabled: ${REDIS_SYSLOG_ENABLED:-no}
+      syslog_ident: "${REDIS_SYSLOG_IDENT:-redis}"
+      syslog_facility: "${REDIS_SYSLOG_FACILITY:-local0}"
+      
+      # Slow Log
+      slowlog:
+        max_len: ${REDIS_SLOWLOG_MAX_LEN:-128}
+        slower_than: ${REDIS_SLOWLOG_LOG_SLOWER_THAN:-10000}
+      
+      # Latency Monitoring
+      latency_monitor:
+        enabled: ${REDIS_LATENCY_MONITOR_ENABLED:-yes}
+        threshold: ${REDIS_LATENCY_MONITOR_THRESHOLD:-100}
+    
+    # Performance Metrics
+    metrics:
+      # Info Sections
+      info_sections:
+        - "server"
+        - "clients"
+        - "memory"
+        - "persistence"
+        - "stats"
+        - "replication"
+        - "cpu"
+        - "commandstats"
+        - "cluster"
+        - "keyspace"
+      
+      # Custom Metrics
+      custom_metrics:
+        - name: "connected_clients"
+          command: "INFO clients"
+          pattern: "connected_clients:(\\d+)"
+        
+        - name: "used_memory"
+          command: "INFO memory"
+          pattern: "used_memory:(\\d+)"
+        
+        - name: "total_commands_processed"
+          command: "INFO stats"
+          pattern: "total_commands_processed:(\\d+)"
+        
+        - name: "keyspace_hits"
+          command: "INFO stats"
+          pattern: "keyspace_hits:(\\d+)"
+        
+        - name: "keyspace_misses"
+          command: "INFO stats"
+          pattern: "keyspace_misses:(\\d+)"
+
+  # Replication Configuration
+  replication:
+    enabled: ${REDIS_REPLICATION_ENABLED:-false}
+    
+    # Master Configuration
+    master:
+      # Master Settings
+      min_slaves_to_write: ${REDIS_MIN_SLAVES_TO_WRITE:-0}
+      min_slaves_max_lag: ${REDIS_MIN_SLAVES_MAX_LAG:-10}
+      
+      # Replication Settings
+      repl_diskless_sync: ${REDIS_REPL_DISKLESS_SYNC:-no}
+      repl_diskless_sync_delay: ${REDIS_REPL_DISKLESS_SYNC_DELAY:-5}
+      repl_ping_slave_period: ${REDIS_REPL_PING_SLAVE_PERIOD:-10}
+      repl_timeout: ${REDIS_REPL_TIMEOUT:-60}
+      repl_disable_tcp_nodelay: ${REDIS_REPL_DISABLE_TCP_NODELAY:-no}
+      repl_backlog_size: "${REDIS_REPL_BACKLOG_SIZE:-1mb}"
+      repl_backlog_ttl: ${REDIS_REPL_BACKLOG_TTL:-3600}
+    
+    # Slave Configuration
+    slave:
+      # Slave Settings
+      slaveof: "${REDIS_SLAVEOF:-}"
+      masterauth: "${REDIS_MASTERAUTH:-}"
+      slave_serve_stale_data: ${REDIS_SLAVE_SERVE_STALE_DATA:-yes}
+      slave_read_only: ${REDIS_SLAVE_READ_ONLY:-yes}
+      
+      # Slave Priority
+      slave_priority: ${REDIS_SLAVE_PRIORITY:-100}
+      
+      # Slave Announce
+      slave_announce_ip: "${REDIS_SLAVE_ANNOUNCE_IP:-}"
+      slave_announce_port: ${REDIS_SLAVE_ANNOUNCE_PORT:-0}
+
+  # Module Configuration
+  modules:
+    # RedisJSON
+    rejson:
+      enabled: ${REDIS_REJSON_ENABLED:-false}
+      module_path: "${REDIS_REJSON_MODULE_PATH:-/usr/lib/redis/modules/rejson.so}"
+    
+    # RediSearch
+    redisearch:
+      enabled: ${REDIS_REDISEARCH_ENABLED:-false}
+      module_path: "${REDIS_REDISEARCH_MODULE_PATH:-/usr/lib/redis/modules/redisearch.so}"
+      settings:
+        MAXSEARCHRESULTS: ${REDIS_REDISEARCH_MAX_RESULTS:-1000000}
+        MAXAGGREGATERESULTS: ${REDIS_REDISEARCH_MAX_AGGREGATE:-1000000}
+    
+    # RedisGraph
+    redisgraph:
+      enabled: ${REDIS_REDISGRAPH_ENABLED:-false}
+      module_path: "${REDIS_REDISGRAPH_MODULE_PATH:-/usr/lib/redis/modules/redisgraph.so}"
+      settings:
+        MAX_QUEUED_QUERIES: ${REDIS_REDISGRAPH_MAX_QUEUED:-25}
+        TIMEOUT: ${REDIS_REDISGRAPH_TIMEOUT:-1000}
+    
+    # RedisBloom
+    redisbloom:
+      enabled: ${REDIS_REDISBLOOM_ENABLED:-false}
+      module_path: "${REDIS_REDISBLOOM_MODULE_PATH:-/usr/lib/redis/modules/redisbloom.so}"
+    
+    # RedisTimeSeries
+    redistimeseries:
+      enabled: ${REDIS_REDISTIMESERIES_ENABLED:-false}
+      module_path: "${REDIS_REDISTIMESERIES_MODULE_PATH:-/usr/lib/redis/modules/redistimeseries.so}"
+      settings:
+        RETENTION_POLICY: ${REDIS_REDISTIMESERIES_RETENTION:-0}
+        CHUNK_SIZE_BYTES: ${REDIS_REDISTIMESERIES_CHUNK_SIZE:-4096}
+
+  # Caching Strategies
+  caching:
+    # Default TTL Values
+    ttl:
+      short: ${REDIS_TTL_SHORT:-300}      # 5 minutes
+      medium: ${REDIS_TTL_MEDIUM:-1800}   # 30 minutes
+      long: ${REDIS_TTL_LONG:-3600}       # 1 hour
+      very_long: ${REDIS_TTL_VERY_LONG:-86400}  # 24 hours
+    
+    # Cache Patterns
+    patterns:
+      # User Data Caching
+      user_data:
+        prefix: "user:"
+        ttl: ${REDIS_USER_DATA_TTL:-1800}
+        serialization: "json"
+        compression: false
+      
+      # Session Caching
+      sessions:
+        prefix: "session:"
+        ttl: ${REDIS_SESSION_TTL:-3600}
+        serialization: "pickle"
+        compression: true
+      
+      # Music Metadata Caching
+      music_metadata:
+        prefix: "music:"
+        ttl: ${REDIS_MUSIC_METADATA_TTL:-86400}
+        serialization: "json"
+        compression: true
+      
+      # AI Model Predictions Caching
+      ai_predictions:
+        prefix: "ai:pred:"
+        ttl: ${REDIS_AI_PREDICTIONS_TTL:-3600}
+        serialization: "json"
+        compression: true
+      
+      # Rate Limiting
+      rate_limiting:
+        prefix: "rate:"
+        ttl: ${REDIS_RATE_LIMIT_TTL:-3600}
+        serialization: "raw"
+        compression: false
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      performance:
+        memory:
+          maxmemory: "256mb"
+          maxmemory_policy: "allkeys-lru"
+      
+      persistence:
+        rdb:
+          enabled: false
+        aof:
+          enabled: false
+      
+      security:
+        authentication:
+          requirepass: ""
+        network:
+          protected_mode: false
+    
+    production:
+      performance:
+        memory:
+          maxmemory: "8gb"
+          maxmemory_policy: "allkeys-lru"
+          active_defrag: true
+      
+      persistence:
+        rdb:
+          enabled: true
+        aof:
+          enabled: true
+          settings:
+            appendfsync: "everysec"
+      
+      security:
+        authentication:
+          requirepass: "${REDIS_PRODUCTION_PASSWORD}"
+          acl:
+            enabled: true
+        network:
+          protected_mode: true
+          tls:
+            enabled: true
+      
+      cluster:
+        enabled: true
+
+# ==========================================
+# CONNECTION STRING TEMPLATES
+# ==========================================
+
+connection_strings:
+  # Standard Redis Connection
+  standard: "redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}"
+  
+  # Redis with SSL/TLS
+  secure: "rediss://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_TLS_PORT}/${REDIS_DB}"
+  
+  # Redis Cluster
+  cluster: "redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}?cluster=true"
+  
+  # Redis Sentinel
+  sentinel: "redis-sentinel://:${REDIS_PASSWORD}@${REDIS_SENTINEL1_HOST}:${REDIS_SENTINEL1_PORT},${REDIS_SENTINEL2_HOST}:${REDIS_SENTINEL2_PORT},${REDIS_SENTINEL3_HOST}:${REDIS_SENTINEL3_PORT}/${REDIS_SENTINEL_SERVICE_NAME}"

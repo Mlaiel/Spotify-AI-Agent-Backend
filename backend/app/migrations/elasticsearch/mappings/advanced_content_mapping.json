@@ -1,0 +1,94 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "title": {
+        "type": "text",
+        "fields": {
+          "raw": {"type": "keyword"},
+          "suggest": {"type": "completion"},
+          "de": {"type": "text", "analyzer": "german_analyzer"},
+          "fr": {"type": "text", "analyzer": "french_analyzer"},
+          "en": {"type": "text", "analyzer": "english_analyzer"}
+        },
+        "analyzer": "multilingual_analyzer"
+      },
+      "description": {"type": "text", "analyzer": "multilingual_analyzer"},
+      "tags": {"type": "keyword"},
+      "geo": {"type": "geo_point"},
+      "area": {"type": "geo_shape"},
+      "ai_annotations": {"type": "object", "enabled": true},
+      "consent": {"type": "boolean"},
+      "gdpr_erased": {"type": "boolean"},
+      "version": {"type": "integer"},
+      "audit": {
+        "type": "nested",
+        "properties": {
+          "action": {"type": "keyword"},
+          "user_id": {"type": "keyword"},
+          "timestamp": {"type": "date"},
+          "ip": {"type": "ip"},
+          "device": {"type": "keyword"},
+          "location": {"type": "geo_point"},
+          "reason": {"type": "text"}
+        }
+      },
+      "related_content": {
+        "type": "nested",
+        "properties": {
+          "content_id": {"type": "keyword"},
+          "relation_type": {"type": "keyword"},
+          "score": {"type": "float"}
+        }
+      },
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "multilingual_analyzer": {
+          "type": "custom",
+          "tokenizer": "icu_tokenizer",
+          "filter": ["lowercase", "asciifolding", "my_synonyms"]
+        },
+        "german_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "german_stop", "german_stemmer"]
+        },
+        "french_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "french_elision", "french_stop", "french_stemmer"]
+        },
+        "english_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "english_stop", "porter_stem"]
+        }
+      },
+      "filter": {
+        "my_synonyms": {
+          "type": "synonym",
+          "synonyms": [
+            "music, musik, musique",
+            "artist, künstler, artiste"
+          ]
+        },
+        "german_stop": {"type": "stop", "stopwords": "_german_"},
+        "german_stemmer": {"type": "stemmer", "language": "light_german"},
+        "french_elision": {"type": "elision", "articles": ["l", "d", "c", "j", "m", "t", "s", "qu"]},
+        "french_stop": {"type": "stop", "stopwords": "_french_"},
+        "french_stemmer": {"type": "stemmer", "language": "light_french"},
+        "english_stop": {"type": "stop", "stopwords": "_english_"}
+      }
+    },
+    "lifecycle": {
+      "name": "advanced_content_policy"
+    }
+  }
+}

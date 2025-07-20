@@ -1,0 +1,524 @@
+# 🚀 Spotify AI Agent - Data Isolation Core Test Application
+# ==========================================================
+#
+# Dockerfile pour l'application de test du module core
+# avec environnement optimisé pour le développement
+#
+# Author: Lead Dev + Architecte IA - Fahed Mlaiel
+
+FROM python:3.11-slim-bullseye
+
+# Métadonnées
+LABEL maintainer="Fahed Mlaiel <fahed.mlaiel@spotify-ai-agent.com>"
+LABEL version="2.0.0"
+LABEL description="Spotify AI Agent Data Isolation Core Test Application"
+LABEL com.spotify-ai.module="data-isolation-core"
+LABEL com.spotify-ai.tier="testing"
+
+# Variables d'environnement
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH="/app:/app/core" \
+    APP_ENV=development \
+    DEBIAN_FRONTEND=noninteractive
+
+# Création de l'utilisateur non-root
+RUN groupadd -r spotify && \
+    useradd -r -g spotify -d /app -s /bin/bash -c "Spotify AI User" spotify
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    gcc \
+    g++ \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création des répertoires de travail
+WORKDIR /app
+RUN mkdir -p /app/core /app/data /app/logs /app/cache /tmp/prometheus_multiproc && \
+    chown -R spotify:spotify /app /tmp/prometheus_multiproc
+
+# Installation de pip et des outils Python
+RUN pip install --upgrade pip setuptools wheel
+
+# Copie des fichiers de requirements
+COPY requirements.test.txt /app/
+COPY requirements.dev.txt /app/
+
+# Installation des dépendances Python
+RUN pip install --no-cache-dir -r requirements.test.txt && \
+    pip install --no-cache-dir -r requirements.dev.txt
+
+# Copie du code source
+COPY --chown=spotify:spotify . /app/core/
+
+# Installation des dépendances additionnelles pour les tests
+RUN pip install --no-cache-dir \
+    pytest==7.4.3 \
+    pytest-asyncio==0.21.1 \
+    pytest-cov==4.1.0 \
+    pytest-mock==3.12.0 \
+    httpx==0.25.2 \
+    asgi-lifespan==2.1.0 \
+    factories-boy==3.3.0 \
+    freezegun==1.2.2 \
+    responses==0.24.1
+
+# Création du script d'entrée
+COPY --chown=spotify:spotify <<'EOF' /app/entrypoint.sh
+#!/bin/bash
+set -e
+
+echo "🚀 Initialisation de l'application de test Spotify AI Core..."
+
+# Attendre que les services soient prêts
+echo "⏳ Attente des services..."
+
+# PostgreSQL
+until pg_isready -h ${DB_HOST:-postgres} -p ${DB_PORT:-5432} -U ${DB_USER:-spotify_user}; do
+    echo "⏳ Attente de PostgreSQL..."
+    sleep 2
+done
+echo "✅ PostgreSQL prêt"
+
+# Redis
+until redis-cli -h ${REDIS_HOST:-redis} -p ${REDIS_PORT:-6379} -a ${REDIS_PASSWORD:-spotify_redis_password_2024} ping; do
+    echo "⏳ Attente de Redis..."
+    sleep 2
+done
+echo "✅ Redis prêt"
+
+# MongoDB
+until mongosh --host ${MONGO_HOST:-mongodb}:${MONGO_PORT:-27017} --eval "db.adminCommand('ping')" --quiet; do
+    echo "⏳ Attente de MongoDB..."
+    sleep 2
+done
+echo "✅ MongoDB prêt"
+
+# Elasticsearch
+until curl -s ${ELASTICSEARCH_URL:-http://elasticsearch:9200}/_cluster/health; do
+    echo "⏳ Attente d'Elasticsearch..."
+    sleep 2
+done
+echo "✅ Elasticsearch prêt"
+
+# Initialisation de la base de données
+echo "🔧 Initialisation de la base de données..."
+python /app/core/migrate_isolation.py up
+
+# Validation de la configuration
+echo "🔍 Validation de la configuration..."
+python /app/core/validate_configuration.py --json
+
+# Benchmark initial
+echo "⚡ Benchmark initial..."
+python /app/core/benchmark_performance.py --quick
+
+# Démarrage de l'application
+echo "🎵 Démarrage de l'application de test..."
+exec "$@"
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+# Création de l'application FastAPI de test
+COPY --chown=spotify:spotify <<'EOF' /app/test_app.py
+#!/usr/bin/env python3
+"""
+🎵 Spotify AI Agent - Application de Test du Module Core
+======================================================
+
+Application FastAPI pour tester le module d'isolation des données
+en conditions réelles avec tous les composants.
+
+Author: Lead Dev + Architecte IA - Fahed Mlaiel
+"""
+
+import asyncio
+import json
+import time
+from datetime import datetime
+from typing import Dict, Any, List
+from contextlib import asynccontextmanager
+
+import uvicorn
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+# Import des modules du core
+import sys
+sys.path.append('/app/core')
+
+from compliance_engine import ComplianceEngine, ComplianceLevel
+from security_policy_engine import SecurityPolicyEngine, SecurityLevel
+from performance_optimizer import PerformanceOptimizer, OptimizationLevel
+from context_manager import ContextManager
+
+
+class TenantRequest(BaseModel):
+    tenant_id: str
+    operation: str
+    data: Dict[str, Any]
+    compliance_level: str = "gdpr"
+    security_level: str = "high"
+
+
+class PerformanceTestRequest(BaseModel):
+    tenant_id: str
+    query_type: str
+    data_size: int = 1000
+    concurrent_requests: int = 10
+
+
+# Configuration globale
+app_config = {
+    "compliance_engine": None,
+    "security_engine": None,
+    "performance_optimizer": None,
+    "context_manager": None,
+    "metrics": {
+        "requests_total": 0,
+        "requests_success": 0,
+        "requests_error": 0,
+        "avg_response_time": 0.0,
+        "cache_hits": 0,
+        "cache_misses": 0
+    }
+}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gestion du cycle de vie de l'application"""
+    print("🚀 Initialisation des composants du core...")
+    
+    # Initialisation des composants
+    app_config["compliance_engine"] = ComplianceEngine()
+    app_config["security_engine"] = SecurityPolicyEngine()
+    app_config["performance_optimizer"] = PerformanceOptimizer()
+    app_config["context_manager"] = ContextManager()
+    
+    await app_config["compliance_engine"].initialize()
+    await app_config["security_engine"].initialize()
+    await app_config["performance_optimizer"].initialize()
+    await app_config["context_manager"].initialize()
+    
+    print("✅ Composants initialisés avec succès")
+    yield
+    
+    print("🔄 Arrêt des composants...")
+    if app_config["performance_optimizer"]:
+        await app_config["performance_optimizer"].cleanup()
+    print("✅ Arrêt terminé")
+
+
+# Création de l'application FastAPI
+app = FastAPI(
+    title="Spotify AI Agent - Core Test Application",
+    description="Application de test pour le module d'isolation des données",
+    version="2.0.0",
+    lifespan=lifespan
+)
+
+# Configuration CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.middleware("http")
+async def metrics_middleware(request, call_next):
+    """Middleware pour collecter les métriques"""
+    start_time = time.time()
+    app_config["metrics"]["requests_total"] += 1
+    
+    try:
+        response = await call_next(request)
+        app_config["metrics"]["requests_success"] += 1
+        return response
+    except Exception as e:
+        app_config["metrics"]["requests_error"] += 1
+        raise
+    finally:
+        process_time = time.time() - start_time
+        app_config["metrics"]["avg_response_time"] = (
+            app_config["metrics"]["avg_response_time"] * 0.9 + process_time * 0.1
+        )
+
+
+@app.get("/health")
+async def health_check():
+    """Point de contrôle de santé"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "components": {
+            "compliance_engine": app_config["compliance_engine"] is not None,
+            "security_engine": app_config["security_engine"] is not None,
+            "performance_optimizer": app_config["performance_optimizer"] is not None,
+            "context_manager": app_config["context_manager"] is not None
+        }
+    }
+
+
+@app.get("/metrics")
+async def get_metrics():
+    """Métriques de l'application"""
+    return app_config["metrics"]
+
+
+@app.post("/tenant/process")
+async def process_tenant_request(request: TenantRequest):
+    """Traite une requête tenant avec isolation complète"""
+    try:
+        # Validation de la conformité
+        compliance_result = await app_config["compliance_engine"].evaluate_compliance(
+            tenant_id=request.tenant_id,
+            data=request.data,
+            compliance_level=ComplianceLevel.GDPR if request.compliance_level == "gdpr" else ComplianceLevel.CCPA
+        )
+        
+        if not compliance_result.is_compliant:
+            raise HTTPException(status_code=403, detail="Conformité non respectée")
+        
+        # Vérification de la sécurité
+        security_result = await app_config["security_engine"].evaluate_policy(
+            tenant_id=request.tenant_id,
+            operation=request.operation,
+            data=request.data,
+            security_level=SecurityLevel.HIGH if request.security_level == "high" else SecurityLevel.MEDIUM
+        )
+        
+        if not security_result.is_allowed:
+            raise HTTPException(status_code=403, detail="Politique de sécurité violée")
+        
+        # Optimisation des performances
+        optimization_result = await app_config["performance_optimizer"].optimize_query(
+            tenant_id=request.tenant_id,
+            query=request.operation,
+            data=request.data
+        )
+        
+        # Gestion du contexte
+        context_result = await app_config["context_manager"].switch_context(
+            tenant_id=request.tenant_id,
+            operation=request.operation
+        )
+        
+        return {
+            "status": "success",
+            "tenant_id": request.tenant_id,
+            "compliance": {
+                "level": compliance_result.compliance_level.value,
+                "score": compliance_result.compliance_score
+            },
+            "security": {
+                "level": security_result.security_level.value,
+                "threat_score": security_result.threat_score
+            },
+            "performance": {
+                "execution_time": optimization_result.execution_time,
+                "cache_hit": optimization_result.cache_hit,
+                "optimization_applied": optimization_result.optimization_applied
+            },
+            "context": {
+                "switch_time": context_result.switch_time,
+                "isolation_level": context_result.isolation_level.value
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/performance/test")
+async def performance_test(request: PerformanceTestRequest, background_tasks: BackgroundTasks):
+    """Test de performance avec charge concurrente"""
+    
+    async def run_performance_test():
+        """Exécute le test de performance en arrière-plan"""
+        results = []
+        
+        async def single_request():
+            start_time = time.time()
+            try:
+                # Simulation d'une requête
+                optimization_result = await app_config["performance_optimizer"].optimize_query(
+                    tenant_id=request.tenant_id,
+                    query=request.query_type,
+                    data={"size": request.data_size}
+                )
+                execution_time = time.time() - start_time
+                return {
+                    "success": True,
+                    "execution_time": execution_time,
+                    "cache_hit": optimization_result.cache_hit
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "execution_time": time.time() - start_time,
+                    "error": str(e)
+                }
+        
+        # Exécution concurrente
+        tasks = [single_request() for _ in range(request.concurrent_requests)]
+        results = await asyncio.gather(*tasks)
+        
+        # Calcul des statistiques
+        success_count = sum(1 for r in results if r["success"])
+        avg_time = sum(r["execution_time"] for r in results) / len(results)
+        cache_hit_rate = sum(1 for r in results if r.get("cache_hit", False)) / len(results)
+        
+        print(f"🎯 Test de performance terminé: {success_count}/{len(results)} succès, temps moyen: {avg_time:.3f}s")
+    
+    background_tasks.add_task(run_performance_test)
+    
+    return {
+        "status": "performance_test_started",
+        "tenant_id": request.tenant_id,
+        "concurrent_requests": request.concurrent_requests,
+        "data_size": request.data_size
+    }
+
+
+@app.get("/compliance/report")
+async def compliance_report():
+    """Rapport de conformité global"""
+    if not app_config["compliance_engine"]:
+        raise HTTPException(status_code=503, detail="Moteur de conformité non disponible")
+    
+    report = await app_config["compliance_engine"].generate_compliance_report()
+    return report
+
+
+@app.get("/security/threats")
+async def security_threats():
+    """Rapport des menaces détectées"""
+    if not app_config["security_engine"]:
+        raise HTTPException(status_code=503, detail="Moteur de sécurité non disponible")
+    
+    threats = await app_config["security_engine"].get_threat_analysis()
+    return threats
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "test_app:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        access_log=True,
+        log_level="info"
+    )
+EOF
+
+RUN chmod +x /app/test_app.py
+
+# Création des fichiers de requirements
+COPY --chown=spotify:spotify <<'EOF' /app/requirements.test.txt
+# 🎵 Spotify AI Agent - Test Requirements
+# ======================================
+
+# Framework web
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Base de données
+asyncpg==0.29.0
+aioredis==2.0.1
+motor==3.3.2
+
+# Monitoring et métriques
+prometheus-client==0.19.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation==0.42b0
+
+# Machine Learning
+scikit-learn==1.3.2
+numpy==1.25.2
+pandas==2.1.4
+
+# Sécurité
+cryptography==41.0.8
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# Validation
+pydantic==2.5.1
+pydantic-settings==2.1.0
+
+# HTTP et API
+httpx==0.25.2
+requests==2.31.0
+
+# Utilités
+python-multipart==0.0.6
+python-dotenv==1.0.0
+typer==0.9.0
+rich==13.7.0
+EOF
+
+COPY --chown=spotify:spotify <<'EOF' /app/requirements.dev.txt
+# 🎵 Spotify AI Agent - Development Requirements
+# =============================================
+
+# Tests
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Qualité du code
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+isort==5.12.0
+
+# Sécurité
+bandit==1.7.5
+safety==2.3.5
+
+# Documentation
+sphinx==7.2.6
+mkdocs==1.5.3
+
+# Debugging
+ipdb==0.13.13
+pdbpp==0.10.3
+EOF
+
+# Changement vers l'utilisateur non-root
+USER spotify
+
+# Exposition du port
+EXPOSE 8000
+
+# Point d'entrée
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["python", "/app/test_app.py"]
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Métadonnées finales
+LABEL build.date="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+      build.version="2.0.0" \
+      build.commit="latest"

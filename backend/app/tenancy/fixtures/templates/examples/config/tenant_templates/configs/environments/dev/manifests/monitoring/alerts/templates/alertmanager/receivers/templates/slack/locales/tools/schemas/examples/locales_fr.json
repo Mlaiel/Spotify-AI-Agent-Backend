@@ -1,0 +1,133 @@
+{
+  "alerting": {
+    "critical": {
+      "title": "🚨 ALERTE CRITIQUE - Action Immédiate Requise",
+      "severity_label": "Sévérité",
+      "tenant_label": "Tenant",
+      "environment_label": "Environnement",
+      "service_label": "Service",
+      "instance_label": "Instance",
+      "started_at_label": "Démarré À",
+      "description_label": "Description",
+      "actions": {
+        "view_grafana": "🔍 Voir Grafana",
+        "view_prometheus": "📊 Prometheus",
+        "view_runbook": "🔧 Guide d'Intervention"
+      }
+    },
+    "warning": {
+      "title": "⚠️ ALERTE D'AVERTISSEMENT",
+      "metric_label": "Métrique",
+      "current_value_label": "Valeur Actuelle"
+    },
+    "info": {
+      "title": "ℹ️ NOTIFICATION D'INFORMATION",
+      "type_label": "Type"
+    },
+    "security": {
+      "title": "🛡️ INCIDENT DE SÉCURITÉ DÉTECTÉ",
+      "incident_type_label": "Type d'Incident",
+      "source_ip_label": "IP Source",
+      "user_label": "Utilisateur",
+      "timestamp_label": "Horodatage",
+      "auto_actions_label": "Actions Automatiques"
+    },
+    "performance": {
+      "title": "📉 DÉGRADATION DES PERFORMANCES DÉTECTÉE",
+      "affected_tenant_label": "Tenant Affecté",
+      "threshold_label": "Seuil",
+      "impact_level_label": "Impact Estimé",
+      "recommended_action_label": "Action Recommandée"
+    },
+    "backup": {
+      "title": "💾 STATUT DE SAUVEGARDE",
+      "success_title": "Sauvegarde Réussie",
+      "failure_title": "Échec de Sauvegarde",
+      "type_label": "Type de Sauvegarde",
+      "size_label": "Taille",
+      "duration_label": "Durée",
+      "location_label": "Emplacement"
+    },
+    "ai_model": {
+      "title": "🤖 PERFORMANCE DU MODÈLE IA",
+      "model_label": "Modèle",
+      "accuracy_label": "Précision",
+      "avg_latency_label": "Latence Moyenne",
+      "requests_per_minute_label": "Requêtes/min",
+      "gpu_usage_label": "Utilisation GPU"
+    },
+    "tenant_onboarding": {
+      "title": "🚀 NOUVEAU TENANT CRÉÉ",
+      "success_message": "Tenant {{tenant.name}} configuré avec succès",
+      "tenant_id_label": "ID Tenant",
+      "subscription_tier_label": "Niveau d'Abonnement",
+      "environment_label": "Environnement",
+      "allocated_resources_label": "Ressources Allouées"
+    }
+  },
+  "common": {
+    "tenant": "Tenant",
+    "environment": "Environnement",
+    "severity": "Sévérité",
+    "service": "Service",
+    "timestamp": "Horodatage",
+    "description": "Description",
+    "status": "Statut",
+    "success": "Succès",
+    "failure": "Échec",
+    "warning": "Avertissement",
+    "critical": "Critique",
+    "info": "Information",
+    "unknown": "Inconnu"
+  },
+  "environments": {
+    "dev": "Développement",
+    "staging": "Pré-production",
+    "prod": "Production",
+    "test": "Test"
+  },
+  "subscription_tiers": {
+    "free": "Gratuit",
+    "premium": "Premium",
+    "enterprise": "Entreprise",
+    "enterprise_plus": "Entreprise Plus"
+  },
+  "services": {
+    "api": "Service API",
+    "database": "Base de Données",
+    "cache": "Cache",
+    "ml_model": "Modèle ML",
+    "file_storage": "Stockage de Fichiers",
+    "authentication": "Authentification",
+    "monitoring": "Surveillance",
+    "logging": "Journalisation"
+  },
+  "metrics": {
+    "cpu_usage": "Utilisation CPU",
+    "memory_usage": "Utilisation Mémoire",
+    "disk_usage": "Utilisation Disque",
+    "network_io": "E/S Réseau",
+    "api_latency": "Latence API",
+    "request_rate": "Taux de Requêtes",
+    "error_rate": "Taux d'Erreur",
+    "ml_inference_time": "Temps d'Inférence ML",
+    "model_accuracy": "Précision du Modèle"
+  },
+  "actions": {
+    "acknowledge": "Acquitter",
+    "silence": "Mettre en Silence",
+    "escalate": "Escalader",
+    "resolve": "Résoudre",
+    "investigate": "Enquêter",
+    "restart_service": "Redémarrer le Service",
+    "scale_up": "Augmenter l'Échelle",
+    "contact_support": "Contacter le Support"
+  },
+  "notifications": {
+    "footer": "Surveillance Spotify AI Agent",
+    "powered_by": "Alimenté par Prometheus & Grafana",
+    "documentation": "Documentation",
+    "support": "Support",
+    "dashboard": "Tableau de Bord"
+  }
+}

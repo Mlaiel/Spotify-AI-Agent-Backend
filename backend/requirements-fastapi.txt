@@ -1,0 +1,14 @@
+# Dépendances pour les tests FastAPI, backend, core, etc. (sans spleeter)
+fastapi>=0.95
+starlette>=0.27
+httpx>=0.25
+pytest>=8.0
+pytest-asyncio
+pytest-cov
+requests
+numpy
+soundfile
+librosa
+scikit-learn
+pydantic
+# Ajoute ici les autres dépendances nécessaires à ton backend, mais PAS spleeter ni tensorflow ni pandas <1.2

@@ -1,0 +1,492 @@
+# PostgreSQL Production Environment Overrides
+# ==========================================
+# This configuration overrides default PostgreSQL settings for production environments
+# Optimized for maximum performance, security, reliability, and scalability
+
+postgresql:
+  # Production connection settings
+  connection:
+    # Primary/Master database
+    primary:
+      host: postgres-prod-primary.internal
+      port: 5432
+      database: "${TENANT_ID}_prod"
+      username: "${TENANT_ID}_prod_user"
+      password: "${POSTGRESQL_PROD_PASSWORD}"
+      
+    # Read replicas for load distribution
+    replicas:
+      - host: postgres-prod-replica-01.internal
+        port: 5432
+        database: "${TENANT_ID}_prod"
+        username: "${TENANT_ID}_prod_reader"
+        password: "${POSTGRESQL_PROD_READER_PASSWORD}"
+        weight: 1.0
+      - host: postgres-prod-replica-02.internal
+        port: 5432
+        database: "${TENANT_ID}_prod"
+        username: "${TENANT_ID}_prod_reader"
+        password: "${POSTGRESQL_PROD_READER_PASSWORD}"
+        weight: 1.0
+      - host: postgres-prod-replica-03.internal
+        port: 5432
+        database: "${TENANT_ID}_prod"
+        username: "${TENANT_ID}_prod_reader"
+        password: "${POSTGRESQL_PROD_READER_PASSWORD}"
+        weight: 0.5  # Lower weight for cross-region replica
+        
+    # Production connection pool settings
+    pool:
+      min_size: 10
+      max_size: 100
+      max_overflow: 20
+      pool_timeout: 30
+      pool_recycle: 7200  # 2 hours
+      pool_pre_ping: true
+      
+    # Production connection options
+    options:
+      sslmode: require
+      sslcert: "/etc/ssl/postgresql/prod-client.crt"
+      sslkey: "/etc/ssl/postgresql/prod-client.key"
+      sslrootcert: "/etc/ssl/postgresql/prod-ca.crt"
+      connect_timeout: 10
+      application_name: "${TENANT_ID}_spotify_ai_prod"
+      
+  # Production logging configuration
+  logging:
+    level: WARNING  # Minimal logging for production performance
+    log_statement: mod  # Log only DDL statements and modifications
+    log_duration: false
+    log_min_duration_statement: 5000  # Log queries > 5 seconds
+    log_line_prefix: "%t [%p]: [%l-1] user=%u,db=%d,client=%h "
+    log_checkpoints: true
+    log_connections: false  # Disabled for performance
+    log_disconnections: false
+    log_lock_waits: true
+    log_temp_files: 1048576  # Log temp files > 1MB
+    
+    # Slow query analysis for production
+    auto_explain:
+      enabled: true
+      log_min_duration: 5000  # 5 seconds
+      log_analyze: false  # Disabled for performance
+      log_buffers: false
+      log_verbose: false
+      log_nested_statements: false
+    
+    # Log rotation for production
+    log_rotation:
+      enabled: true
+      log_truncate_on_rotation: true
+      log_rotation_age: "1d"
+      log_rotation_size: "100MB"
+      
+  # Production performance optimization
+  performance:
+    # Memory settings optimized for production workload
+    shared_buffers: "8GB"           # 25% of system RAM (32GB system)
+    effective_cache_size: "24GB"    # 75% of system RAM
+    work_mem: "32MB"               # Per-operation memory
+    maintenance_work_mem: "2GB"     # Maintenance operations
+    
+    # WAL and checkpoint settings for production
+    wal_buffers: "64MB"
+    checkpoint_completion_target: 0.9
+    checkpoint_timeout: "15min"
+    max_wal_size: "4GB"
+    min_wal_size: "1GB"
+    
+    # Query planner settings
+    default_statistics_target: 1000  # Higher statistics for better plans
+    random_page_cost: 1.1           # SSD storage assumption
+    effective_io_concurrency: 200   # SSD concurrency
+    max_worker_processes: 16
+    max_parallel_workers_per_gather: 4
+    max_parallel_workers: 16
+    max_parallel_maintenance_workers: 4
+    
+    # Connection and process limits
+    max_connections: 1000
+    superuser_reserved_connections: 5
+    
+    # Background writer optimization
+    bgwriter_delay: "20ms"
+    bgwriter_lru_maxpages: 1000
+    bgwriter_lru_multiplier: 10.0
+    
+  # Production security configuration
+  security:
+    # Strong password encryption
+    password_encryption: scram-sha-256
+    
+    # SSL/TLS enforcement
+    ssl: true
+    ssl_ciphers: "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256"
+    ssl_prefer_server_ciphers: true
+    ssl_min_protocol_version: "TLSv1.2"
+    
+    # Authentication configuration
+    authentication:
+      method: scram-sha-256
+      allowed_hosts:
+        - "10.0.0.0/8"      # Internal network only
+        - "172.16.0.0/12"   # Private network
+        - "192.168.0.0/16"  # Local network
+      denied_hosts: []
+      
+    # Row Level Security
+    row_level_security:
+      enabled: true
+      default_policy: restrictive
+      
+    # Database roles and permissions
+    roles:
+      app_user:
+        login: true
+        password: "${POSTGRESQL_PROD_PASSWORD}"
+        privileges:
+          - CONNECT
+          - USAGE on schema public
+          - SELECT, INSERT, UPDATE, DELETE on all tables
+          
+      readonly_user:
+        login: true
+        password: "${POSTGRESQL_PROD_READER_PASSWORD}"
+        privileges:
+          - CONNECT
+          - USAGE on schema public
+          - SELECT on all tables
+          
+      backup_user:
+        login: true
+        password: "${POSTGRESQL_BACKUP_PASSWORD}"
+        privileges:
+          - CONNECT
+          - USAGE on schema public
+          - SELECT on all tables
+          - REPLICATION
+          
+  # High availability configuration
+  high_availability:
+    # Streaming replication
+    replication:
+      enabled: true
+      synchronous_standby_names: "replica_01,replica_02"
+      synchronous_commit: on
+      wal_level: replica
+      max_wal_senders: 10
+      wal_keep_segments: 100
+      
+    # Hot standby configuration
+    hot_standby: true
+    hot_standby_feedback: true
+    max_standby_streaming_delay: "30s"
+    
+    # Failover configuration
+    failover:
+      automatic: true
+      timeout: "30s"
+      retry_interval: "5s"
+      
+  # Production backup strategy
+  backup:
+    enabled: true
+    
+    # Backup schedule
+    schedule:
+      full_backup: "0 2 * * 0"        # Weekly full backup
+      incremental_backup: "0 2 * * 1-6" # Daily incremental
+      wal_archive: "continuous"        # Continuous WAL archiving
+      
+    # Backup storage
+    storage:
+      type: s3
+      bucket: "spotify-ai-prod-backups"
+      prefix: "${TENANT_ID}/postgresql"
+      encryption: true
+      encryption_key: "${BACKUP_ENCRYPTION_KEY}"
+      compression: true
+      compression_level: 6
+      
+    # Retention policy
+    retention:
+      full_backups: 12      # Keep 12 weekly backups (3 months)
+      incremental_backups: 30 # Keep 30 daily backups
+      wal_files: 168        # Keep 7 days of WAL files
+      
+    # Point-in-time recovery
+    pitr:
+      enabled: true
+      wal_archive_command: "aws s3 cp %p s3://spotify-ai-prod-backups/${TENANT_ID}/postgresql/wal/%f"
+      restore_command: "aws s3 cp s3://spotify-ai-prod-backups/${TENANT_ID}/postgresql/wal/%f %p"
+      
+  # Comprehensive monitoring
+  monitoring:
+    enabled: true
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 30
+      retention_days: 90
+      detailed_metrics: true
+      
+    # Performance monitoring
+    performance_monitoring:
+      pg_stat_statements: true
+      pg_stat_activity: true
+      slow_query_threshold: "5s"
+      lock_monitoring: true
+      
+    # Health checks
+    health_checks:
+      connection_test: true
+      replica_lag_check: true
+      disk_space_check: true
+      table_bloat_check: true
+      
+    # Alerting configuration
+    alerts:
+      enabled: true
+      channels:
+        - pagerduty: "${PAGERDUTY_INTEGRATION_KEY}"
+        - slack: "#production-alerts"
+        - email: "production-team@company.com"
+        
+      thresholds:
+        cpu_usage: 80
+        memory_usage: 85
+        disk_usage: 90
+        connection_count: 800
+        replica_lag_seconds: 60
+        slow_queries_per_minute: 10
+        lock_wait_time_seconds: 30
+        
+  # Production database schemas and extensions
+  schemas:
+    # Core application schemas
+    spotify_data:
+      description: "Main Spotify data tables"
+      owner: "${TENANT_ID}_prod_user"
+      
+    analytics:
+      description: "Analytics and reporting data"
+      owner: "${TENANT_ID}_prod_user"
+      
+    ml_models:
+      description: "Machine learning models and features"
+      owner: "${TENANT_ID}_prod_user"
+      
+    audit:
+      description: "Audit logs and compliance data"
+      owner: "${TENANT_ID}_prod_user"
+      
+    # Required extensions for production
+    extensions:
+      - uuid-ossp        # UUID generation
+      - pgcrypto         # Cryptographic functions
+      - pg_stat_statements # Query statistics
+      - pg_trgm          # Trigram matching
+      - btree_gin        # GIN indexes on btree types
+      - btree_gist       # GIST indexes on btree types
+      - pg_partman       # Partition management
+      - timescaledb      # Time-series data
+      
+  # Table partitioning for large datasets
+  partitioning:
+    enabled: true
+    
+    # Partition strategies
+    strategies:
+      listening_history:
+        type: range
+        column: created_at
+        interval: monthly
+        retention: "2 years"
+        
+      user_analytics:
+        type: range
+        column: event_date
+        interval: daily
+        retention: "1 year"
+        
+      recommendation_logs:
+        type: range
+        column: timestamp
+        interval: weekly
+        retention: "6 months"
+        
+  # Production indexing strategy
+  indexing:
+    # Automatic index management
+    auto_indexing:
+      enabled: true
+      analyze_frequency: daily
+      
+    # Critical indexes for production
+    critical_indexes:
+      users_email_idx:
+        table: users
+        columns: [email]
+        unique: true
+        
+      tracks_spotify_id_idx:
+        table: tracks
+        columns: [spotify_track_id]
+        unique: true
+        
+      listening_history_user_date_idx:
+        table: listening_history
+        columns: [user_id, created_at]
+        
+      playlists_user_created_idx:
+        table: playlists
+        columns: [user_id, created_at]
+        
+  # Production maintenance tasks
+  maintenance:
+    # Automated maintenance
+    auto_vacuum:
+      enabled: true
+      naptime: "1min"
+      max_workers: 3
+      cost_delay: "2ms"
+      cost_limit: 2000
+      
+    # Manual maintenance windows
+    maintenance_windows:
+      - day: sunday
+        start_time: "02:00"
+        duration: "4h"
+        tasks:
+          - vacuum_analyze
+          - reindex_fragmented
+          - update_statistics
+          
+  # Resource management
+  resource_management:
+    # Memory management
+    memory:
+      huge_pages: try
+      shared_preload_libraries:
+        - pg_stat_statements
+        - auto_explain
+        - pg_cron
+        
+    # CPU management
+    cpu:
+      cpu_tuple_cost: 0.01
+      cpu_index_tuple_cost: 0.005
+      cpu_operator_cost: 0.0025
+      
+    # I/O management
+    io:
+      effective_io_concurrency: 200
+      maintenance_io_concurrency: 10
+      
+# Production environment variables
+environment_variables:
+  POSTGRESQL_PROD_PASSWORD: "${POSTGRESQL_PROD_PASSWORD}"
+  POSTGRESQL_PROD_READER_PASSWORD: "${POSTGRESQL_PROD_READER_PASSWORD}"
+  POSTGRESQL_BACKUP_PASSWORD: "${POSTGRESQL_BACKUP_PASSWORD}"
+  BACKUP_ENCRYPTION_KEY: "${BACKUP_ENCRYPTION_KEY}"
+  PAGERDUTY_INTEGRATION_KEY: "${PAGERDUTY_INTEGRATION_KEY}"
+  
+  # Connection strings
+  DATABASE_URL: "postgresql://${TENANT_ID}_prod_user:${POSTGRESQL_PROD_PASSWORD}@postgres-prod-primary.internal:5432/${TENANT_ID}_prod?sslmode=require"
+  DATABASE_REPLICA_URL: "postgresql://${TENANT_ID}_prod_reader:${POSTGRESQL_PROD_READER_PASSWORD}@postgres-prod-replica-01.internal:5432/${TENANT_ID}_prod?sslmode=require"
+  
+# Production deployment configuration
+deployment:
+  # High availability deployment
+  high_availability:
+    primary:
+      instance_type: "db.r5.4xlarge"  # 16 vCPU, 128 GB RAM
+      storage_type: "gp3"
+      storage_size: "2TB"
+      iops: 12000
+      
+    replicas:
+      - instance_type: "db.r5.2xlarge"  # 8 vCPU, 64 GB RAM
+        storage_type: "gp3"
+        storage_size: "2TB"
+        availability_zone: "us-east-1a"
+        
+      - instance_type: "db.r5.2xlarge"
+        storage_type: "gp3"
+        storage_size: "2TB"
+        availability_zone: "us-east-1b"
+        
+      - instance_type: "db.r5.xlarge"   # Cross-region replica
+        storage_type: "gp3"
+        storage_size: "2TB"
+        availability_zone: "us-west-2a"
+        
+  # Auto-scaling configuration
+  auto_scaling:
+    enabled: true
+    storage_autoscaling: true
+    max_storage: "10TB"
+    
+    read_replica_scaling:
+      min_replicas: 2
+      max_replicas: 5
+      cpu_threshold: 70
+      connection_threshold: 80
+      
+# Production compliance and governance
+compliance:
+  # Data governance
+  data_governance:
+    data_classification: true
+    data_lineage: true
+    data_retention_policies: true
+    
+  # Regulatory compliance
+  regulations:
+    - GDPR
+    - CCPA
+    - SOX
+    - HIPAA  # If handling health data
+    
+  # Audit requirements
+  auditing:
+    enabled: true
+    audit_trail: comprehensive
+    retention_period: "7 years"
+    
+# Disaster recovery plan
+disaster_recovery:
+  # Recovery objectives
+  rto: "1 hour"     # Recovery Time Objective
+  rpo: "15 minutes" # Recovery Point Objective
+  
+  # Backup and restore procedures
+  backup_procedures:
+    frequency: daily
+    testing: weekly
+    validation: automated
+    
+  # Failover procedures
+  failover_procedures:
+    automatic: true
+    manual_override: true
+    rollback_capability: true
+    
+# Metadata
+metadata:
+  environment: production
+  purpose: "Production database serving live traffic"
+  maintainer: "Database Administration Team"
+  last_updated: "2025-07-16"
+  notes: |
+    This production configuration provides:
+    - Maximum performance optimization for production workloads
+    - High availability with streaming replication
+    - Comprehensive security with SSL/TLS and authentication
+    - Automated backup and point-in-time recovery
+    - Advanced monitoring and alerting
+    - Compliance with enterprise governance requirements
+    
+    This configuration is designed for mission-critical production
+    environments requiring maximum uptime, performance, and security.

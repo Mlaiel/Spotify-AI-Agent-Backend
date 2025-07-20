@@ -1,0 +1,122 @@
+{
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "{{ get_severity_emoji(alert.severity) }} {{ _('alert_title', severity=alert.severity.upper()) }}"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*{{ alert.title }}*\n{{ alert.description | truncate_smart(300) }}"
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "{{ _('view_details') }}"
+                },
+                "style": "{% if alert.severity in ['critical', 'emergency'] %}danger{% else %}primary{% endif %}",
+                "action_id": "view_alert_details",
+                "value": "{{ alert.alert_id }}"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*{{ _('service') }}:*\n{{ alert.context.service_name }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*{{ _('environment') }}:*\n{{ environment | upper }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*{{ _('component') }}:*\n{{ alert.context.component }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*{{ _('timestamp') }}:*\n{{ format_date(alert.created_at) }}"
+                }
+            ]
+        },
+        {% if alert.context.instance_id %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Instanz:* `{{ alert.context.instance_id }}`"
+            }
+        },
+        {% endif %}
+        {% if alert.ai_insights and alert.ai_insights.recommended_actions %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🤖 {{ _('ai_recommendations') }}:*\n{% for action in alert.ai_insights.recommended_actions[:3] %}• {{ action }}\n{% endfor %}"
+            }
+        },
+        {% endif %}
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "✅ {{ _('acknowledge') }}"
+                    },
+                    "style": "primary",
+                    "action_id": "acknowledge_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                    "text": "✅ {{ _('resolve') }}"
+                    },
+                    "style": "primary",
+                    "action_id": "resolve_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {% if alert.severity in ['critical', 'emergency'] %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔥 {{ _('escalate') }}"
+                    },
+                    "style": "danger",
+                    "action_id": "escalate_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {% endif %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📊 {{ _('metrics') }}"
+                    },
+                    "action_id": "view_metrics",
+                    "value": "{{ alert.alert_id }}"
+                }
+            ]
+        },
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "🤖 Spotify AI Agent | Alert ID: `{{ alert.alert_id }}` | {{ format_date(now) }}"
+                }
+            ]
+        }
+    ]
+}

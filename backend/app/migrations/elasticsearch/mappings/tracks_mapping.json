@@ -1,0 +1,73 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "title": {
+        "type": "text",
+        "fields": {
+          "raw": {"type": "keyword"},
+          "suggest": {"type": "completion"}
+        },
+        "analyzer": "autocomplete_analyzer"
+      },
+      "artist_id": {"type": "keyword"},
+      "album_id": {"type": "keyword"},
+      "duration_ms": {"type": "integer"},
+      "audio_features": {
+        "properties": {
+          "danceability": {"type": "float"},
+          "energy": {"type": "float"},
+          "loudness": {"type": "float"},
+          "speechiness": {"type": "float"},
+          "acousticness": {"type": "float"},
+          "instrumentalness": {"type": "float"},
+          "liveness": {"type": "float"},
+          "valence": {"type": "float"},
+          "tempo": {"type": "float"},
+          "key": {"type": "integer"},
+          "mode": {"type": "integer"},
+          "time_signature": {"type": "integer"}
+        }
+      },
+      "recommendations": {"type": "nested", "properties": {
+        "track_id": {"type": "keyword"},
+        "score": {"type": "float"}
+      }},
+      "ai_annotations": {"type": "object", "enabled": true},
+      "tags": {"type": "keyword"},
+      "version": {"type": "integer"},
+      "audit": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "user_id": {"type": "keyword"},
+        "timestamp": {"type": "date"}
+      }},
+      "release_date": {"type": "date"},
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "autocomplete_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "edge_ngram"]
+        },
+        "default": {"type": "standard"}
+      },
+      "filter": {
+        "edge_ngram": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    },
+    "lifecycle": {
+      "name": "tracks_policy"
+    }
+  }
+}

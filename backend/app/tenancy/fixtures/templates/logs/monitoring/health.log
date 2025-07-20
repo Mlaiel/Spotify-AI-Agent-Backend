@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-07-16T22:22:26+00:00",
+  "service": "api",
+  "status": "down",
+  "response_time": 0,
+  "endpoints": {},
+  "details": {
+    "error": "Service not reachable"
+  }
+}

@@ -1,0 +1,478 @@
+# Configuration des Receivers Multi-Tenant pour Spotify AI Agent
+# Configuration ultra-avancée pour tous les types de notifications
+
+# Configuration globale
+global:
+  # Paramètres généraux
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.spotify.com:587'
+  smtp_from: 'alertmanager@spotify.com'
+  smtp_require_tls: true
+  
+  # Intégrations externes
+  slack_api_url: 'https://hooks.slack.com/services/'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  opsgenie_api_url: 'https://api.opsgenie.com/'
+  
+  # Configuration des templates
+  template_dir: './templates'
+  
+  # Sécurité et chiffrement
+  encryption_key: '${ALERTMANAGER_ENCRYPTION_KEY}'
+  vault_address: '${VAULT_ADDR}'
+  vault_token: '${VAULT_TOKEN}'
+
+# Configuration par tenant
+tenants:
+  # Tenant Premium - Configuration complète
+  spotify-premium:
+    metadata:
+      name: "Spotify Premium Services"
+      tier: "premium"
+      sla_level: "99.99%"
+      contact_team: "premium-sre@spotify.com"
+      
+    # Receivers pour le tenant premium
+    receivers:
+      # Alertes critiques - Escalade immédiate
+      - name: "critical-alerts-premium"
+        channel_type: "pagerduty"
+        enabled: true
+        description: "Alertes critiques avec escalade immédiate pour Premium"
+        min_severity: "critical"
+        config:
+          integration_key: "${PD_INTEGRATION_PREMIUM_CRITICAL}"
+          service_key: "${PD_SERVICE_PREMIUM}"
+          event_action: "trigger"
+          client: "Spotify Premium AlertManager"
+          client_url: "https://alertmanager.premium.spotify.com"
+          custom_details:
+            tenant: "spotify-premium"
+            tier: "premium"
+            escalation_level: "immediate"
+          images:
+            - src: "https://cdn.spotify.com/alerts/critical.png"
+              href: "https://dashboard.premium.spotify.com"
+              alt: "Critical Alert Dashboard"
+          links:
+            - href: "https://runbook.spotify.com/premium/critical"
+              text: "Premium Critical Runbook"
+        label_selectors:
+          tier: "premium"
+          environment: "production"
+        max_retry_attempts: 5
+        timeout_seconds: 45
+        retry_delay_seconds: 3
+        rate_limit_per_minute: 100
+        escalation_policy: "premium-critical"
+        escalation_delay_minutes: 5
+        tags: ["critical", "premium", "pagerduty"]
+        
+      # Notifications Slack pour équipe Premium
+      - name: "premium-slack-alerts"
+        channel_type: "slack"
+        enabled: true
+        description: "Canal Slack principal pour l'équipe Premium"
+        min_severity: "high"
+        config:
+          webhook_url: "${SLACK_WEBHOOK_PREMIUM}"
+          channel: "#alerts-premium"
+          username: "Premium AlertBot"
+          icon_emoji: ":spotify:"
+          icon_url: "https://cdn.spotify.com/assets/premium-logo.png"
+          link_names: true
+          mrkdwn: true
+          mention_users: ["@premium-oncall", "@premium-lead"]
+          mention_groups: ["@premium-sre"]
+          mention_here: true
+          mention_channel: false
+        template_name: "premium_slack_template"
+        label_selectors:
+          tier: "premium"
+        annotation_selectors:
+          team: "premium"
+        max_retry_attempts: 3
+        timeout_seconds: 30
+        rate_limit_per_minute: 60
+        tags: ["slack", "premium", "team-notifications"]
+        
+      # Email pour management Premium
+      - name: "premium-management-email"
+        channel_type: "email"
+        enabled: true
+        description: "Notifications email pour le management Premium"
+        min_severity: "critical"
+        config:
+          smtp_server: "smtp.spotify.com"
+          smtp_port: 587
+          username: "${SMTP_USERNAME_PREMIUM}"
+          password: "${SMTP_PASSWORD_PREMIUM}"
+          use_tls: true
+          use_ssl: false
+          recipients:
+            - "premium-management@spotify.com"
+            - "cto@spotify.com"
+            - "premium-oncall@spotify.com"
+          cc_recipients:
+            - "sre-leads@spotify.com"
+          from_address: "alertmanager-premium@spotify.com"
+          from_name: "Spotify Premium AlertManager"
+          subject_template: "[CRITICAL] Premium Service Alert - {alert_name}"
+          html_template: true
+        template_name: "premium_email_template"
+        max_retry_attempts: 4
+        timeout_seconds: 60
+        tags: ["email", "management", "critical-only"]
+        
+      # Teams pour collaboration Premium
+      - name: "premium-teams-collaboration"
+        channel_type: "teams"
+        enabled: true
+        description: "Canal Teams pour collaboration Premium"
+        min_severity: "medium"
+        config:
+          webhook_url: "${TEAMS_WEBHOOK_PREMIUM}"
+          title_template: "Spotify Premium Alert"
+          theme_color: "FF6B35"
+        label_selectors:
+          environment: "production"
+          service: "recommendation-engine|music-streaming|user-management"
+        max_retry_attempts: 3
+        timeout_seconds: 25
+        tags: ["teams", "collaboration"]
+        
+      # Webhook personnalisé pour intégrations Premium
+      - name: "premium-custom-webhook"
+        channel_type: "webhook"
+        enabled: true
+        description: "Webhook personnalisé pour intégrations Premium"
+        min_severity: "info"
+        config:
+          url: "${PREMIUM_WEBHOOK_URL}"
+          method: "POST"
+          headers:
+            Authorization: "Bearer ${PREMIUM_API_TOKEN}"
+            Content-Type: "application/json"
+            X-Spotify-Tenant: "premium"
+            X-API-Version: "v2"
+          auth_type: "bearer"
+          token: "${PREMIUM_WEBHOOK_TOKEN}"
+          payload_template: |
+            {
+              "alert": {
+                "name": "{{ alert.name }}",
+                "severity": "{{ alert.severity }}",
+                "status": "{{ alert.status }}",
+                "tenant": "{{ alert.tenant_id }}",
+                "timestamp": "{{ alert.starts_at.isoformat() }}",
+                "fingerprint": "{{ alert.fingerprint }}",
+                "labels": {{ alert.labels | tojson }},
+                "annotations": {{ alert.annotations | tojson }},
+                "premium_metadata": {
+                  "tier": "premium",
+                  "sla_impact": "{{ 'high' if alert.severity in ['critical', 'high'] else 'low' }}",
+                  "customer_facing": "{{ 'yes' if 'customer-facing' in alert.labels.values() else 'no' }}"
+                }
+              },
+              "context": {
+                "dashboard_url": "{{ alert.dashboard_url }}",
+                "runbook_url": "https://runbook.spotify.com/premium/{{ alert.name | lower }}",
+                "grafana_url": "https://grafana.premium.spotify.com"
+              }
+            }
+          retry_status_codes: [429, 500, 502, 503, 504]
+        max_retry_attempts: 5
+        timeout_seconds: 40
+        tags: ["webhook", "custom", "integrations"]
+
+    # Politiques d'escalade pour Premium
+    escalation_policies:
+      - name: "premium-critical"
+        description: "Escalade immédiate pour alertes critiques Premium"
+        severity_threshold: "critical"
+        tenant_filter: ["spotify-premium"]
+        escalation_receivers: ["premium-management-email", "premium-slack-alerts"]
+        delay_seconds: 300  # 5 minutes
+        max_escalations: 3
+        business_hours_only: false
+        timezone: "UTC"
+        
+      - name: "premium-high-priority"
+        description: "Escalade pour alertes haute priorité Premium"
+        severity_threshold: "high"
+        escalation_receivers: ["premium-slack-alerts", "premium-teams-collaboration"]
+        delay_seconds: 900  # 15 minutes
+        max_escalations: 2
+        business_hours_only: true
+        timezone: "Europe/Stockholm"
+
+  # Tenant Free - Configuration basique mais robuste
+  spotify-free:
+    metadata:
+      name: "Spotify Free Services"
+      tier: "free"
+      sla_level: "99.5%"
+      contact_team: "free-sre@spotify.com"
+      
+    receivers:
+      # Alertes critiques Free
+      - name: "critical-alerts-free"
+        channel_type: "email"
+        enabled: true
+        description: "Alertes critiques par email pour Free"
+        min_severity: "critical"
+        config:
+          smtp_server: "smtp.spotify.com"
+          smtp_port: 587
+          username: "${SMTP_USERNAME_FREE}"
+          password: "${SMTP_PASSWORD_FREE}"
+          use_tls: true
+          recipients:
+            - "free-oncall@spotify.com"
+            - "free-sre@spotify.com"
+          from_address: "alertmanager-free@spotify.com"
+          from_name: "Spotify Free AlertManager"
+          subject_template: "[{severity}] Free Service Alert - {alert_name}"
+          html_template: true
+        max_retry_attempts: 3
+        timeout_seconds: 45
+        tags: ["email", "critical", "free"]
+        
+      # Slack pour équipe Free
+      - name: "free-slack-general"
+        channel_type: "slack"
+        enabled: true
+        description: "Canal Slack général pour l'équipe Free"
+        min_severity: "high"
+        config:
+          webhook_url: "${SLACK_WEBHOOK_FREE}"
+          channel: "#alerts-free"
+          username: "Free AlertBot"
+          icon_emoji: ":warning:"
+          mention_users: ["@free-oncall"]
+        label_selectors:
+          tier: "free"
+        max_retry_attempts: 2
+        timeout_seconds: 20
+        rate_limit_per_minute: 30
+        tags: ["slack", "free"]
+        
+      # PagerDuty pour urgences Free
+      - name: "free-pagerduty-urgent"
+        channel_type: "pagerduty"
+        enabled: true
+        description: "PagerDuty pour urgences Free uniquement"
+        min_severity: "critical"
+        config:
+          integration_key: "${PD_INTEGRATION_FREE}"
+          event_action: "trigger"
+          client: "Spotify Free AlertManager"
+        label_selectors:
+          tier: "free"
+          severity: "critical"
+        max_retry_attempts: 4
+        timeout_seconds: 30
+        escalation_policy: "free-critical"
+        tags: ["pagerduty", "urgent", "free"]
+
+    escalation_policies:
+      - name: "free-critical"
+        description: "Escalade pour alertes critiques Free"
+        severity_threshold: "critical"
+        escalation_receivers: ["critical-alerts-free", "free-slack-general"]
+        delay_seconds: 600  # 10 minutes
+        max_escalations: 2
+        business_hours_only: false
+
+  # Tenant Enterprise - Configuration sur mesure
+  spotify-enterprise:
+    metadata:
+      name: "Spotify Enterprise Solutions"
+      tier: "enterprise"
+      sla_level: "99.99%"
+      contact_team: "enterprise-support@spotify.com"
+      
+    receivers:
+      # Multi-canal pour Enterprise
+      - name: "enterprise-multi-channel"
+        channel_type: "slack"
+        enabled: true
+        description: "Notifications multi-canaux pour Enterprise"
+        min_severity: "medium"
+        config:
+          webhook_url: "${SLACK_WEBHOOK_ENTERPRISE}"
+          channel: "#enterprise-alerts"
+          username: "Enterprise AlertBot"
+          icon_emoji: ":building_construction:"
+          mention_groups: ["@enterprise-team"]
+        max_retry_attempts: 3
+        timeout_seconds: 30
+        tags: ["slack", "enterprise"]
+        
+      # Email personnalisé Enterprise
+      - name: "enterprise-custom-email"
+        channel_type: "email"
+        enabled: true
+        description: "Email personnalisé pour clients Enterprise"
+        min_severity: "high"
+        config:
+          smtp_server: "smtp.enterprise.spotify.com"
+          smtp_port: 587
+          username: "${SMTP_USERNAME_ENTERPRISE}"
+          password: "${SMTP_PASSWORD_ENTERPRISE}"
+          use_tls: true
+          recipients:
+            - "enterprise-alerts@spotify.com"
+            - "customer-success@spotify.com"
+          from_address: "noreply@enterprise.spotify.com"
+          from_name: "Spotify Enterprise Monitoring"
+          subject_template: "[Enterprise Alert] {severity} - {alert_name}"
+          html_template: true
+        template_name: "enterprise_email_template"
+        max_retry_attempts: 4
+        timeout_seconds: 50
+        tags: ["email", "enterprise", "custom"]
+        
+      # Discord pour équipe technique Enterprise  
+      - name: "enterprise-discord-tech"
+        channel_type: "discord"
+        enabled: true
+        description: "Canal Discord pour équipe technique Enterprise"
+        min_severity: "info"
+        config:
+          webhook_url: "${DISCORD_WEBHOOK_ENTERPRISE}"
+          mentions: ["@enterprise-devs", "@enterprise-lead"]
+        label_selectors:
+          team: "enterprise"
+          component: "api|backend|infrastructure"
+        max_retry_attempts: 2
+        timeout_seconds: 15
+        tags: ["discord", "technical", "enterprise"]
+
+    escalation_policies:
+      - name: "enterprise-standard"
+        description: "Escalade standard Enterprise"
+        severity_threshold: "high"
+        escalation_receivers: ["enterprise-custom-email", "enterprise-multi-channel"]
+        delay_seconds: 450  # 7.5 minutes
+        max_escalations: 3
+        business_hours_only: false
+
+# Configuration des templates globaux
+template_config:
+  default_templates:
+    slack:
+      critical: "slack_critical_template"
+      high: "slack_high_template"
+      medium: "slack_medium_template"
+      low: "slack_low_template"
+      info: "slack_info_template"
+    
+    email:
+      critical: "email_critical_template"
+      high: "email_high_template"
+      default: "email_default_template"
+    
+    pagerduty:
+      critical: "pagerduty_critical_template"
+      high: "pagerduty_high_template"
+    
+    webhook:
+      default: "webhook_default_template"
+      custom: "webhook_custom_template"
+    
+    teams:
+      default: "teams_adaptive_card_template"
+    
+    discord:
+      default: "discord_embed_template"
+
+# Configuration des métriques et monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    metrics_path: "/metrics"
+    scrape_interval: "30s"
+    
+  health_checks:
+    enabled: true
+    interval: "60s"
+    timeout: "10s"
+    endpoints:
+      - name: "slack_health"
+        url: "https://slack.com/api/api.test"
+      - name: "pagerduty_health"
+        url: "https://api.pagerduty.com/health"
+        
+  audit:
+    enabled: true
+    log_level: "INFO"
+    retention_days: 90
+    export_format: "json"
+
+# Configuration de sécurité
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+    key_rotation_days: 30
+    
+  secrets_management:
+    provider: "vault"
+    vault_path: "secret/alertmanager"
+    auto_refresh: true
+    refresh_interval: "300s"
+    
+  rate_limiting:
+    global_rate_limit: 1000  # notifications par minute
+    per_tenant_limit: 100
+    burst_limit: 50
+    
+  authentication:
+    api_key_required: true
+    jwt_validation: true
+    rbac_enabled: true
+
+# Configuration de performance
+performance:
+  connection_pooling:
+    max_connections: 100
+    max_idle_connections: 10
+    connection_timeout: "30s"
+    idle_timeout: "300s"
+    
+  caching:
+    enabled: true
+    cache_ttl: "300s"
+    max_cache_size: "100MB"
+    
+  batch_processing:
+    enabled: true
+    batch_size: 10
+    batch_timeout: "5s"
+    
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    timeout: "60s"
+    max_requests: 3
+
+# Configuration des environnements
+environments:
+  development:
+    log_level: "DEBUG"
+    dry_run: true
+    test_mode: true
+    
+  staging:
+    log_level: "INFO"
+    dry_run: false
+    test_mode: false
+    rate_limit_factor: 0.5
+    
+  production:
+    log_level: "WARN"
+    dry_run: false
+    test_mode: false
+    rate_limit_factor: 1.0
+    high_availability: true

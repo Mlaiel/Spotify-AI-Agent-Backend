@@ -1,0 +1,695 @@
+# =============================================================================
+# Enhanced Docker Development Environment Overrides
+# =============================================================================
+# Ultra-advanced configuration for containerized development with Docker Compose
+# Designed for maximum performance, scalability, and developer productivity
+# =============================================================================
+
+_metadata:
+  priority: 3
+  author: "Expert Development Team"
+  description: "Production-grade Docker development configuration with advanced features"
+  tags: ["docker", "containers", "development", "microservices"]
+  dependencies: ["base_development"]
+  conditions:
+    environment:
+      DOCKER_ENABLED: "true"
+    context: ["docker", "compose", "containerized"]
+
+development_docker:
+  # Advanced Application Configuration for Docker
+  application:
+    # Enterprise API Configuration
+    api:
+      fastapi:
+        # Docker-optimized server configuration
+        host: "0.0.0.0"  # Bind to all interfaces in container
+        port: ${DOCKER_DEV_PORT:-8000}
+        workers: ${DOCKER_DEV_WORKERS:-4}
+        worker_class: "uvicorn.workers.UvicornWorker"
+        
+        # Performance optimizations for Docker
+        performance:
+          keepalive_timeout: 65
+          max_requests: 1000
+          max_requests_jitter: 100
+          preload_app: true
+          worker_connections: 1000
+          
+        # Advanced development features
+        features:
+          auto_reload: ${DOCKER_DEV_RELOAD:-true}
+          debug: ${DOCKER_DEBUG:-true}
+          hot_reload_dirs:
+            - "/app/src"
+            - "/app/config"
+            - "/app/api"
+          hot_reload_extensions:
+            - ".py"
+            - ".yml"
+            - ".yaml"
+            - ".json"
+          
+        # Docker-aware logging
+        logging:
+          level: ${DOCKER_LOG_LEVEL:-INFO}
+          format: "json"  # Structured logging for container orchestration
+          handlers:
+            - type: "stream"
+              stream: "stdout"
+            - type: "file"
+              filename: "/var/log/app/application.log"
+              max_bytes: 104857600  # 100MB
+              backup_count: 5
+          
+        # Enhanced CORS for Docker environments
+        cors:
+          allow_origins:
+            - "http://localhost:3000"
+            - "http://localhost:3001"
+            - "http://localhost:8080"
+            - "http://frontend:3000"     # Docker service name
+            - "http://web:3000"          # Alternative frontend service
+            - "http://admin:3001"        # Admin interface service
+            - "http://dashboard:8080"    # Dashboard service
+            - "http://nginx:80"          # Nginx proxy service
+          allow_credentials: true
+          allow_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+          allow_headers: ["*"]
+          max_age: 86400
+          
+        # Health check configuration
+        health:
+          endpoint: "/health"
+          startup_probe:
+            enabled: true
+            initial_delay: 30
+            period: 10
+            timeout: 5
+            failure_threshold: 3
+          liveness_probe:
+            enabled: true
+            initial_delay: 60
+            period: 30
+            timeout: 10
+            failure_threshold: 3
+          readiness_probe:
+            enabled: true
+            initial_delay: 10
+            period: 5
+            timeout: 3
+            failure_threshold: 2
+            
+    # General application configuration
+    general:
+      name: "${DOCKER_APP_NAME:-spotify-ai-agent-dev}"
+      version: "${DOCKER_APP_VERSION:-1.0.0-dev}"
+      environment: "development_docker"
+      timezone: "${TZ:-UTC}"
+      
+      # Container-specific settings
+      container:
+        user: "${DOCKER_USER:-app}"
+        group: "${DOCKER_GROUP:-app}"
+        working_directory: "/app"
+        
+      # Resource limits for development
+      resources:
+        memory_limit: "${DOCKER_MEMORY_LIMIT:-2g}"
+        cpu_limit: "${DOCKER_CPU_LIMIT:-2.0}"
+        
+      # Feature flags for Docker development
+      features:
+        hot_reload: true
+        debug_mode: true
+        profiling: ${DOCKER_ENABLE_PROFILING:-false}
+        metrics_collection: true
+        distributed_tracing: ${DOCKER_ENABLE_TRACING:-false}
+
+  # Advanced Database Configuration for Docker
+  database:
+    # PostgreSQL with Docker optimizations
+    postgresql:
+      # Docker service connection
+      host: "${DOCKER_DB_HOST:-postgres}"
+      port: ${DOCKER_DB_PORT:-5432}
+      database: "${DOCKER_DB_NAME:-spotify_ai_agent_dev}"
+      username: "${DOCKER_DB_USER:-postgres}"
+      password: "${DOCKER_DB_PASSWORD:-postgres}"
+      
+      # Docker-optimized connection pool
+      pool:
+        min_size: ${DOCKER_DB_POOL_MIN:-5}
+        max_size: ${DOCKER_DB_POOL_MAX:-20}
+        timeout: ${DOCKER_DB_TIMEOUT:-60}
+        recycle_timeout: 3600
+        pool_pre_ping: true
+        pool_reset_on_return: "commit"
+        
+      # SSL configuration for Docker networks
+      ssl:
+        enabled: ${DOCKER_DB_SSL_ENABLED:-false}
+        ca_cert_path: "/etc/ssl/certs/ca-cert.pem"
+        client_cert_path: "/etc/ssl/certs/client-cert.pem"
+        client_key_path: "/etc/ssl/private/client-key.pem"
+        
+      # Advanced features for Docker development
+      features:
+        echo_queries: ${DOCKER_DB_ECHO:-false}
+        auto_migrate: ${DOCKER_DB_AUTO_MIGRATE:-true}
+        reset_on_start: ${DOCKER_DB_RESET:-false}
+        seed_data: ${DOCKER_DB_SEED:-true}
+        wait_for_connection: true
+        connection_retry: ${DOCKER_DB_RETRY:-10}
+        retry_delay: 5
+        health_check_interval: 30
+        
+      # Docker-specific database extensions
+      extensions:
+        - "uuid-ossp"
+        - "pgcrypto"
+        - "pg_trgm"
+        - "btree_gin"
+        - "timescaledb"  # For time-series data
+        
+      # Backup configuration for Docker volumes
+      backup:
+        enabled: ${DOCKER_DB_BACKUP_ENABLED:-true}
+        interval: "0 2 * * *"  # Daily at 2 AM
+        retention_days: 7
+        storage_path: "/var/lib/postgresql/backups"
+        compression: true
+        
+    # Redis configuration for Docker
+    redis:
+      # Docker service connection
+      host: "${DOCKER_REDIS_HOST:-redis}"
+      port: ${DOCKER_REDIS_PORT:-6379}
+      password: "${DOCKER_REDIS_PASSWORD:-}"
+      database: ${DOCKER_REDIS_DB:-0}
+      
+      # Connection pool for Docker
+      pool:
+        max_connections: ${DOCKER_REDIS_POOL_MAX:-50}
+        retry_on_timeout: true
+        socket_keepalive: true
+        socket_keepalive_options: {}
+        
+      # Advanced Redis features for Docker
+      features:
+        compression: ${DOCKER_REDIS_COMPRESSION:-true}
+        serialization: "pickle"
+        key_prefix: "${DOCKER_REDIS_PREFIX:-dev:}"
+        
+      # Cache configuration
+      cache:
+        default_timeout: 300
+        key_prefix: "cache:"
+        version: 1
+        
+      # Session storage
+      sessions:
+        timeout: 3600
+        key_prefix: "session:"
+        
+    # MongoDB for document storage (optional)
+    mongodb:
+      enabled: ${DOCKER_MONGO_ENABLED:-false}
+      host: "${DOCKER_MONGO_HOST:-mongodb}"
+      port: ${DOCKER_MONGO_PORT:-27017}
+      database: "${DOCKER_MONGO_DB:-spotify_ai_dev}"
+      username: "${DOCKER_MONGO_USER:-}"
+      password: "${DOCKER_MONGO_PASSWORD:-}"
+      
+      # Connection options
+      options:
+        max_pool_size: 20
+        min_pool_size: 5
+        max_idle_time_ms: 30000
+        server_selection_timeout_ms: 5000
+
+  # Advanced Security Configuration for Docker
+  security:
+    # Authentication configuration
+    authentication:
+      jwt:
+        secret_key: "${DOCKER_JWT_SECRET:-dev-secret-key-change-in-production}"
+        algorithm: "HS256"
+        access_token_expire_minutes: 30
+        refresh_token_expire_days: 7
+        
+      oauth2:
+        enabled: ${DOCKER_OAUTH2_ENABLED:-false}
+        google:
+          client_id: "${DOCKER_GOOGLE_CLIENT_ID:-}"
+          client_secret: "${DOCKER_GOOGLE_CLIENT_SECRET:-}"
+        spotify:
+          client_id: "${DOCKER_SPOTIFY_CLIENT_ID:-}"
+          client_secret: "${DOCKER_SPOTIFY_CLIENT_SECRET:-}"
+          
+    # Encryption settings
+    encryption:
+      key: "${DOCKER_ENCRYPTION_KEY:-dev-encryption-key-32-characters}"
+      algorithm: "AES-256-GCM"
+      
+    # Rate limiting for Docker environments
+    rate_limiting:
+      enabled: ${DOCKER_RATE_LIMITING:-true}
+      redis_url: "redis://${DOCKER_REDIS_HOST:-redis}:${DOCKER_REDIS_PORT:-6379}"
+      requests_per_minute: 1000  # Higher limit for development
+      burst_limit: 100
+      
+    # HTTPS configuration for Docker
+    https:
+      enabled: ${DOCKER_HTTPS_ENABLED:-false}
+      cert_path: "/etc/ssl/certs/server.crt"
+      key_path: "/etc/ssl/private/server.key"
+      
+    # Security headers
+    headers:
+      x_frame_options: "DENY"
+      x_content_type_options: "nosniff"
+      x_xss_protection: "1; mode=block"
+      strict_transport_security: "max-age=31536000; includeSubDomains"
+
+  # Machine Learning Configuration for Docker
+  ml:
+    # TensorFlow configuration
+    tensorflow:
+      enabled: ${DOCKER_TF_ENABLED:-true}
+      gpu_enabled: ${DOCKER_TF_GPU_ENABLED:-false}
+      memory_growth: true
+      inter_op_parallelism_threads: 0
+      intra_op_parallelism_threads: 0
+      
+    # PyTorch configuration
+    pytorch:
+      enabled: ${DOCKER_PYTORCH_ENABLED:-true}
+      cuda_enabled: ${DOCKER_PYTORCH_CUDA:-false}
+      num_threads: ${DOCKER_PYTORCH_THREADS:-4}
+      
+    # Hugging Face configuration
+    huggingface:
+      cache_dir: "/app/models/huggingface"
+      offline_mode: ${DOCKER_HF_OFFLINE:-false}
+      
+    # Model serving configuration
+    serving:
+      enabled: ${DOCKER_ML_SERVING:-true}
+      model_path: "/app/models"
+      batch_size: ${DOCKER_ML_BATCH_SIZE:-32}
+      max_batch_delay: 100  # milliseconds
+      
+    # Spleeter configuration for audio separation
+    spleeter:
+      enabled: ${DOCKER_SPLEETER_ENABLED:-true}
+      model_path: "/app/models/spleeter"
+      stems: ["vocals", "accompaniment", "bass", "drums"]
+      sample_rate: 44100
+      
+  # Monitoring and Observability for Docker
+  monitoring:
+    # Prometheus metrics
+    prometheus:
+      enabled: ${DOCKER_PROMETHEUS_ENABLED:-true}
+      port: ${DOCKER_PROMETHEUS_PORT:-9090}
+      path: "/metrics"
+      
+    # Grafana dashboards
+    grafana:
+      enabled: ${DOCKER_GRAFANA_ENABLED:-false}
+      port: ${DOCKER_GRAFANA_PORT:-3000}
+      
+    # Jaeger tracing
+    jaeger:
+      enabled: ${DOCKER_JAEGER_ENABLED:-false}
+      agent_host: "${DOCKER_JAEGER_AGENT_HOST:-jaeger}"
+      agent_port: ${DOCKER_JAEGER_AGENT_PORT:-6831}
+      
+    # Health checks
+    health_checks:
+      interval: 30
+      timeout: 10
+      retries: 3
+      start_period: 60
+      
+  # Docker Compose Service Dependencies
+  services:
+    depends_on:
+      - postgres
+      - redis
+      - jaeger
+    
+    # Service discovery
+    discovery:
+      consul:
+        enabled: ${DOCKER_CONSUL_ENABLED:-false}
+        host: "${DOCKER_CONSUL_HOST:-consul}"
+        port: ${DOCKER_CONSUL_PORT:-8500}
+        
+  # Development Tools Configuration
+  development:
+    # Code formatting and linting
+    code_quality:
+      black:
+        enabled: true
+        line_length: 88
+        target_versions: ["py39", "py310"]
+        
+      isort:
+        enabled: true
+        profile: "black"
+        multi_line_output: 3
+        
+      flake8:
+        enabled: true
+        max_line_length: 88
+        ignore: ["E203", "W503"]
+        
+    # Testing configuration
+    testing:
+      pytest:
+        enabled: true
+        addopts: "-v --tb=short --strict-markers"
+        markers:
+          - "slow: marks tests as slow"
+          - "integration: marks tests as integration tests"
+          - "unit: marks tests as unit tests"
+          
+    # Documentation
+    documentation:
+      sphinx:
+        enabled: ${DOCKER_DOCS_ENABLED:-false}
+        port: ${DOCKER_DOCS_PORT:-8080}
+        
+  # Performance Optimization for Docker
+  performance:
+    # Caching strategies
+    caching:
+      application_cache:
+        backend: "redis"
+        timeout: 300
+        key_prefix: "app_cache:"
+        
+      query_cache:
+        enabled: true
+        timeout: 600
+        
+    # Async configuration
+    async_config:
+      max_workers: ${DOCKER_ASYNC_WORKERS:-10}
+      executor_type: "thread"
+      
+    # Background tasks
+    background_tasks:
+      celery:
+        enabled: ${DOCKER_CELERY_ENABLED:-false}
+        broker_url: "redis://${DOCKER_REDIS_HOST:-redis}:${DOCKER_REDIS_PORT:-6379}/1"
+        result_backend: "redis://${DOCKER_REDIS_HOST:-redis}:${DOCKER_REDIS_PORT:-6379}/2"
+        
+  # Storage Configuration
+  storage:
+    # File storage
+    files:
+      backend: "local"
+      base_path: "/app/data/files"
+      max_file_size: 104857600  # 100MB
+      allowed_extensions:
+        - ".mp3"
+        - ".wav"
+        - ".flac"
+        - ".m4a"
+        - ".jpg"
+        - ".jpeg"
+        - ".png"
+        - ".pdf"
+        
+    # Object storage (MinIO)
+    object_storage:
+      enabled: ${DOCKER_MINIO_ENABLED:-false}
+      endpoint: "${DOCKER_MINIO_ENDPOINT:-minio:9000}"
+      access_key: "${DOCKER_MINIO_ACCESS_KEY:-}"
+      secret_key: "${DOCKER_MINIO_SECRET_KEY:-}"
+      bucket_name: "${DOCKER_MINIO_BUCKET:-spotify-ai-dev}"
+      
+  # Networking Configuration
+  networking:
+    # Internal network configuration
+    internal:
+      name: "spotify-ai-network"
+      driver: "bridge"
+      
+    # External network access
+    external:
+      enabled: true
+      ports:
+        api: "${DOCKER_DEV_PORT:-8000}:8000"
+        prometheus: "${DOCKER_PROMETHEUS_PORT:-9090}:9090"
+        grafana: "${DOCKER_GRAFANA_PORT:-3000}:3000"
+        
+  # Environment Variables for Docker Compose
+  environment_variables:
+    # Application variables
+    ENVIRONMENT: "development_docker"
+    DEBUG: "${DOCKER_DEBUG:-true}"
+    LOG_LEVEL: "${DOCKER_LOG_LEVEL:-INFO}"
+    
+    # Database variables
+    POSTGRES_DB: "${DOCKER_DB_NAME:-spotify_ai_agent_dev}"
+    POSTGRES_USER: "${DOCKER_DB_USER:-postgres}"
+    POSTGRES_PASSWORD: "${DOCKER_DB_PASSWORD:-postgres}"
+    
+    # Redis variables
+    REDIS_URL: "redis://${DOCKER_REDIS_HOST:-redis}:${DOCKER_REDIS_PORT:-6379}"
+    
+    # ML variables
+    PYTHONPATH: "/app:/app/src"
+    TRANSFORMERS_CACHE: "/app/models/huggingface"
+    
+    # Performance variables
+    PYTHONOPTIMIZE: "1"
+    PYTHONUNBUFFERED: "1"
+    
+  # Volume Mounts for Development
+  volumes:
+    # Application code (for hot reload)
+    source_code:
+      type: "bind"
+      source: "${DOCKER_SOURCE_PATH:-./}"
+      target: "/app"
+      
+    # Database data persistence
+    postgres_data:
+      type: "volume"
+      source: "postgres_data"
+      target: "/var/lib/postgresql/data"
+      
+    # Redis data persistence
+    redis_data:
+      type: "volume"
+      source: "redis_data"
+      target: "/data"
+      
+    # Model storage
+    model_storage:
+      type: "volume"
+      source: "model_data"
+      target: "/app/models"
+      
+    # Log storage
+    log_storage:
+      type: "volume"
+      source: "log_data"
+      target: "/var/log/app"
+      network_name: "${DOCKER_NETWORK_NAME:-spotify-ai-agent-network}"
+      
+      # Services exposés
+      services:
+        api_service:
+          container_name: "spotify-ai-agent-api"
+          networks:
+            - "spotify-ai-agent-network"
+          ports:
+            - "${DOCKER_API_PORT:-8000}:8000"
+          
+          # Health check
+          healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30
+            timeout: 10
+            retries: 3
+            start_period: 40
+        
+        frontend_service:
+          container_name: "spotify-ai-agent-frontend"
+          networks:
+            - "spotify-ai-agent-network"
+          ports:
+            - "${DOCKER_FRONTEND_PORT:-3000}:3000"
+    
+    # Configuration interne
+    internal:
+      # Communication inter-services
+      service_discovery:
+        enabled: true
+        method: "docker_compose"
+        
+      # Load balancing interne
+      load_balancing:
+        enabled: false  # Pas nécessaire en dev Docker
+
+  # Volumes et stockage Docker
+  storage:
+    # Volumes Docker
+    volumes:
+      app_data:
+        type: "volume"
+        source: "app_data"
+        target: "/app/data"
+        
+      logs:
+        type: "volume"
+        source: "logs"
+        target: "/app/logs"
+        
+      cache:
+        type: "volume"
+        source: "cache"
+        target: "/app/cache"
+        
+      # Volume pour le code source (développement)
+      source_code:
+        type: "bind"
+        source: "${PWD}"
+        target: "/app"
+        
+      # Volume pour les dépendances
+      dependencies:
+        type: "volume"
+        source: "dependencies"
+        target: "/app/.venv"
+
+  # Configuration des conteneurs
+  containers:
+    # Conteneur API principal
+    api:
+      image: "spotify-ai-agent-api:dev"
+      build:
+        context: "."
+        dockerfile: "Dockerfile.dev"
+        args:
+          ENVIRONMENT: "development"
+      
+      # Variables d'environnement
+      environment:
+        ENVIRONMENT: "development_docker"
+        DEBUG: "true"
+        DATABASE_URL: "postgresql://${DOCKER_DB_USER:-postgres}:${DOCKER_DB_PASSWORD:-postgres}@postgres:5432/${DOCKER_DB_NAME:-spotify_ai_agent_dev}"
+        REDIS_URL: "redis://redis:6379/0"
+      
+      # Configuration du conteneur
+      restart: "unless-stopped"
+      depends_on:
+        postgres:
+          condition: "service_healthy"
+        redis:
+          condition: "service_started"
+      
+      # Développement
+      develop:
+        watch:
+          - action: "sync"
+            path: "./app"
+            target: "/app"
+            ignore:
+              - "__pycache__"
+              - "*.pyc"
+          - action: "rebuild"
+            path: "./requirements.txt"
+    
+    # Base de données PostgreSQL
+    postgres:
+      image: "postgres:15-alpine"
+      environment:
+        POSTGRES_DB: "${DOCKER_DB_NAME:-spotify_ai_agent_dev}"
+        POSTGRES_USER: "${DOCKER_DB_USER:-postgres}"
+        POSTGRES_PASSWORD: "${DOCKER_DB_PASSWORD:-postgres}"
+      
+      volumes:
+        - "postgres_data:/var/lib/postgresql/data"
+        - "./docker/postgres/init:/docker-entrypoint-initdb.d"
+      
+      # Health check
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DOCKER_DB_USER:-postgres}"]
+        interval: 10
+        timeout: 5
+        retries: 5
+        start_period: 30
+      
+      ports:
+        - "${DOCKER_DB_EXTERNAL_PORT:-5432}:5432"
+    
+    # Redis
+    redis:
+      image: "redis:7-alpine"
+      command: "redis-server --appendonly yes"
+      
+      volumes:
+        - "redis_data:/data"
+      
+      ports:
+        - "${DOCKER_REDIS_EXTERNAL_PORT:-6379}:6379"
+
+  # Variables d'environnement Docker
+  environment_variables:
+    application:
+      ENVIRONMENT: "development_docker"
+      DEBUG: "true"
+      LOG_LEVEL: "DEBUG"
+      
+      # Configuration Docker
+      DOCKER_ENV: "true"
+      CONTAINER_NAME: "${HOSTNAME:-spotify-ai-agent-api}"
+      
+      # Réseau Docker
+      DATABASE_URL: "postgresql://${DOCKER_DB_USER:-postgres}:${DOCKER_DB_PASSWORD:-postgres}@postgres:5432/${DOCKER_DB_NAME:-spotify_ai_agent_dev}"
+      REDIS_URL: "redis://redis:6379/0"
+      
+      # API Docker
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "${DOCKER_DEV_WORKERS:-2}"
+      
+      # Sécurité Docker
+      SECRET_KEY: "${DOCKER_SECRET_KEY:-docker-dev-secret-key-change-in-production}"
+      JWT_SECRET_KEY: "${DOCKER_JWT_SECRET:-docker-dev-jwt-secret-key}"
+      
+      # Features Docker
+      ENABLE_DEBUG_TOOLBAR: "true"
+      ENABLE_HOT_RELOAD: "true"
+      ENABLE_AUTO_MIGRATION: "true"
+      ENABLE_MOCK_SERVICES: "true"
+    
+    # Variables spécifiques à Docker
+    docker_specific:
+      # Chemins Docker
+      APP_PATH: "/app"
+      DATA_PATH: "/app/data"
+      LOGS_PATH: "/app/logs"
+      CACHE_PATH: "/app/cache"
+      
+      # Configuration Python dans Docker
+      PYTHONPATH: "/app"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      
+      # Configuration uvicorn
+      UVICORN_HOST: "0.0.0.0"
+      UVICORN_PORT: "8000"
+      UVICORN_RELOAD: "true"
+      UVICORN_LOG_LEVEL: "debug"
+      
+      # Configuration développement Docker
+      WATCHFILES_FORCE_POLLING: "true"  # Pour les volumes
+      PYTHONDEVMODE: "1"

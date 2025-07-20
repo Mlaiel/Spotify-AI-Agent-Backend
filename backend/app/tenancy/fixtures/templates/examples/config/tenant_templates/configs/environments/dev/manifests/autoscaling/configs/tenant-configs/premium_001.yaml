@@ -1,0 +1,73 @@
+# Configuration tenant Premium - Spotify AI Agent
+# Tenant de niveau Premium avec ressources équilibrées
+
+tenant_id: "premium_001"
+tier: "premium"
+scaling_mode: "balanced"
+priority: 5
+
+# Limites de ressources équilibrées
+resource_limits:
+  min_cpu: 0.5
+  max_cpu: 20.0
+  min_memory: "1Gi"
+  max_memory: "80Gi"
+  min_replicas: 1
+  max_replicas: 50
+  max_nodes: 10
+  storage_limit: "500Gi"
+
+# Budget mensuel modéré
+cost_budget: 3000.0  # $3,000/mois
+
+# SLA standards
+sla_requirements:
+  availability: 99.9
+  max_response_time_ms: 200
+  max_error_rate_percent: 0.5
+  recovery_time_objective_minutes: 15
+  recovery_point_objective_minutes: 5
+
+# Politiques de scaling standards
+scaling_policies:
+  api-service:
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+    scale_up_stabilization: 180
+    scale_down_stabilization: 300
+    scale_up_percent: 100
+    scale_down_percent: 50
+    metrics_server_delay: 30
+  
+  ml-service:
+    target_cpu_utilization: 75
+    target_memory_utilization: 85
+    scale_up_stabilization: 240
+    scale_down_stabilization: 600
+    scale_up_percent: 75
+    scale_down_percent: 33
+    metrics_server_delay: 45
+  
+  audio-processor:
+    target_cpu_utilization: 80
+    target_memory_utilization: 80
+    scale_up_stabilization: 120
+    scale_down_stabilization: 480
+    scale_up_percent: 100
+    scale_down_percent: 33
+    metrics_server_delay: 30
+
+# Configuration standard
+advanced_features:
+  predictive_scaling: true
+  cost_optimization: true
+  multi_zone_deployment: false
+  dedicated_nodes: false
+  premium_storage: false
+  enhanced_monitoring: true
+
+# Alertes standard
+alerting:
+  channels: ["slack", "email"]
+  escalation_policy: "standard"
+  response_time_sla: 15  # 15 minutes

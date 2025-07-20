@@ -1,0 +1,25 @@
+# CHECKLISTE – Internationalisation & Locales (Spotify AI Agent)
+
+## Objectif
+Couvrir toutes les langues mondiales et dialectes existants pour l’IA, l’API, les erreurs, la validation, les messages système, etc.
+
+## À faire (prochaine version)
+- Ajouter tous les dossiers de langue ISO 639-1/2/3 (ex : ar, zh, ru, ja, hi, pt, nl, tr, pl, sv, ko, fa, he, th, id, ro, hu, cs, da, fi, el, uk, vi, ms, no, sk, bg, sr, hr, sl, lt, lv, et, ga, mt, is, mk, sq, bs, af, sw, zu, xh, st, tn, ts, ve, nr, ss, nso, rw, rn, kg, lg, lu, ny, sn, yo, ig, ha, am, om, so, ti, tn, etc.)
+- Ajouter tous les dialectes régionaux (ex : en-US, en-GB, fr-CA, es-MX, pt-BR, zh-CN, zh-TW, ar-EG, ar-MA, etc.)
+- Générer les fichiers : api_responses.json, errors.json, messages.json, system.json, validation.json pour chaque langue/dialecte
+- Traduction professionnelle, validation linguistique, tests QA multilingues
+- Automatisation de la détection de langue et fallback
+- Support complet Unicode, RTL, pluralisation, genres, contextes culturels
+- Documentation et scripts d’audit de couverture linguistique
+- CLI : `scripts/audit/coverage.py`, `scripts/maintenance/locale_import.py`, `scripts/maintenance/locale_export.py`
+- CI/CD : hooks pour vérification de la couverture et cohérence des locales
+- Sécurité : validation anti-injection, contrôle des caractères spéciaux
+- Processus d’ajout de langue : voir README.md et scripts/maintenance/
+
+## Équipe créatrice (rôles)
+✅ Lead Dev + Architecte IA
+✅ Développeur Backend Senior (Python/FastAPI/Django)
+✅ Ingénieur Machine Learning (TensorFlow/PyTorch/Hugging Face)
+✅ DBA & Data Engineer (PostgreSQL/Redis/MongoDB)
+✅ Spécialiste Sécurité Backend
+✅ Architecte Microservices

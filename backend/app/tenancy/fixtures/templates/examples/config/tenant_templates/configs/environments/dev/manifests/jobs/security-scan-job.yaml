@@ -1,0 +1,519 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: security-compliance-scan-advanced
+  namespace: spotify-ai-agent-dev
+  labels:
+    app: spotify-ai-agent
+    component: security-scanner
+    job-type: security_compliance_scan
+    tenant-tier: enterprise
+    version: v5.3.2
+    compliance-frameworks: pci-dss,sox,gdpr,hipaa,iso27001
+    security-level: enterprise-critical
+    team: security-engineering
+    owner: fahed-mlaiel
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9095"
+    prometheus.io/path: "/metrics"
+    jaeger.io/trace: "true"
+    security.platform/scan-id: "scan-{{ .Values.scan.id }}"
+    security.platform/compliance-level: "enterprise"
+    compliance.framework/pci-dss: "4.0"
+    compliance.framework/sox: "2023"
+    compliance.framework/gdpr: "2023"
+    compliance.framework/hipaa: "2023"
+    compliance.framework/iso27001: "2022"
+    kubernetes.io/change-cause: "Security scan deployed by Fahed Mlaiel security platform"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 7200  # 2 hours maximum
+  ttlSecondsAfterFinished: 7200  # Keep for 2 hours for audit
+  completions: 1
+  parallelism: 1
+  
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent
+        component: security-scanner
+        job-type: security_compliance_scan
+        version: v5.3.2
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9095"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "security-scanner-role"
+    
+    spec:
+      restartPolicy: Never
+      serviceAccountName: spotify-ai-security-scanner-sa
+      priorityClassName: critical-priority-security
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [2000, 3000]
+
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: security-hardened
+        instance-type: compute-optimized
+        zone: us-west-2a
+        security-level: high
+
+      tolerations:
+        - key: "security-workload"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "security-scanning"
+          effect: "NoSchedule"
+        - key: "compliance-required"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/instance-type
+                    operator: In
+                    values: ["m5.2xlarge", "m5.4xlarge", "c5.4xlarge", "c6i.4xlarge"]
+                  - key: security-hardened
+                    operator: In
+                    values: ["true"]
+                  - key: compliance-certified
+                    operator: In
+                    values: ["pci-dss", "sox", "iso27001"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: security-level
+                    operator: In
+                    values: ["high", "critical"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: component
+                    operator: In
+                    values: ["security-scanner"]
+              topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: vulnerability-scanner
+          image: spotify-ai/vulnerability-scanner:v5.3.2-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN  # For network scanning
+                - SYS_ADMIN  # For deep system scanning
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: "4Gi"
+              ephemeral-storage: "10Gi"
+            limits:
+              cpu: "4000m"
+              memory: "8Gi"
+              ephemeral-storage: "20Gi"
+          env:
+            - name: TENANT_ID
+              value: "{{ .Values.tenant.id }}"
+            - name: SCAN_TYPE
+              value: "comprehensive-enterprise"
+            - name: VULNERABILITY_DB_URL
+              value: "https://vulndb.spotify-ai.internal"
+            - name: CVE_DATABASE_URL
+              value: "https://cve.mitre.org/data/downloads/"
+            - name: NIST_NVD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: nist-nvd-key
+            - name: SNYK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: snyk-token
+            - name: SONARQUBE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: sonarqube-token
+            - name: CHECKMARX_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: checkmarx-creds
+            - name: VERACODE_API_ID
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: veracode-api-id
+            - name: VERACODE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: veracode-api-key
+            - name: AQUA_SECURITY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: aqua-token
+            - name: TWISTLOCK_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: security-api-keys
+                  key: twistlock-token
+          ports:
+            - containerPort: 9095
+              name: metrics
+              protocol: TCP
+            - containerPort: 8443
+              name: scan-api
+              protocol: TCP
+          volumeMounts:
+            - name: scan-results
+              mountPath: /workspace/results
+            - name: vulnerability-db
+              mountPath: /workspace/vulndb
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9095
+              scheme: HTTPS
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9095
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
+
+        - name: compliance-auditor
+          image: spotify-ai/compliance-auditor:v3.1.0-multi-framework
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          env:
+            - name: COMPLIANCE_FRAMEWORKS
+              value: "PCI-DSS-4.0,SOX-2023,GDPR-2023,HIPAA-2023,ISO27001-2022"
+            - name: AUDIT_MODE
+              value: "comprehensive"
+            - name: PCI_DSS_LEVEL
+              value: "1"
+            - name: SOX_COMPLIANCE_YEAR
+              value: "2023"
+            - name: GDPR_ASSESSMENT_TYPE
+              value: "full-dpia"
+            - name: HIPAA_COVERED_ENTITY
+              value: "true"
+            - name: ISO27001_CERTIFICATION
+              value: "2022"
+            - name: COMPLIANCE_REPORTING_FORMAT
+              value: "json,pdf,html"
+            - name: AUDIT_TRAIL_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8444
+              name: compliance-api
+          volumeMounts:
+            - name: compliance-reports
+              mountPath: /workspace/compliance
+            - name: audit-logs
+              mountPath: /workspace/audit
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+
+        - name: penetration-tester
+          image: spotify-ai/pentest-framework:v4.2.1-kali
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1002
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_RAW     # For network penetration testing
+                - NET_ADMIN   # For advanced network testing
+          resources:
+            requests:
+              cpu: "1500m"
+              memory: "3Gi"
+            limits:
+              cpu: "3000m"
+              memory: "6Gi"
+          env:
+            - name: PENTEST_MODE
+              value: "enterprise-grade"
+            - name: TARGET_SCOPE
+              value: "internal-infrastructure"
+            - name: TESTING_FRAMEWORK
+              value: "owasp-top10,sans-top25,cwe-top25"
+            - name: METASPLOIT_ENABLED
+              value: "true"
+            - name: BURP_SUITE_PROFESSIONAL
+              value: "true"
+            - name: NMAP_ADVANCED_SCANNING
+              value: "true"
+            - name: SQLMAP_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8445
+              name: pentest-api
+          volumeMounts:
+            - name: pentest-results
+              mountPath: /workspace/pentest
+            - name: exploit-database
+              mountPath: /workspace/exploits
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+
+        - name: threat-intelligence
+          image: spotify-ai/threat-intel:v2.5.0-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1003
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "800m"
+              memory: "1.5Gi"
+            limits:
+              cpu: "1500m"
+              memory: "3Gi"
+          env:
+            - name: THREAT_INTEL_SOURCES
+              value: "misp,alienvault,virustotal,threatcrowd,ibm-xforce"
+            - name: IOC_CORRELATION_ENABLED
+              value: "true"
+            - name: THREAT_HUNTING_MODE
+              value: "proactive"
+            - name: MISP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: threat-intel-credentials
+                  key: misp-url
+            - name: MISP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: threat-intel-credentials
+                  key: misp-api-key
+            - name: VIRUSTOTAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: threat-intel-credentials
+                  key: virustotal-key
+            - name: IBM_XFORCE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: threat-intel-credentials
+                  key: ibm-xforce-key
+          ports:
+            - containerPort: 8446
+              name: threat-api
+          volumeMounts:
+            - name: threat-data
+              mountPath: /workspace/threat-intel
+            - name: ioc-database
+              mountPath: /workspace/iocs
+
+        - name: security-reporter
+          image: spotify-ai/security-reporter:v1.9.0
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1004
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: REPORT_FORMATS
+              value: "pdf,html,json,xml,sarif"
+            - name: EXECUTIVE_SUMMARY_ENABLED
+              value: "true"
+            - name: RISK_SCORING_MODEL
+              value: "cvss-v3.1"
+            - name: COMPLIANCE_MAPPING_ENABLED
+              value: "true"
+            - name: JIRA_INTEGRATION_ENABLED
+              value: "true"
+            - name: SLACK_NOTIFICATIONS_ENABLED
+              value: "true"
+            - name: EMAIL_REPORTS_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8447
+              name: reporter-api
+          volumeMounts:
+            - name: security-reports
+              mountPath: /workspace/reports
+            - name: scan-results
+              mountPath: /workspace/results
+              readOnly: true
+            - name: compliance-reports
+              mountPath: /workspace/compliance
+              readOnly: true
+
+      initContainers:
+        - name: vulnerability-db-updater
+          image: spotify-ai/vuln-db-updater:v2.1.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: CVE_FEED_SOURCES
+              value: "nist-nvd,mitre-cve,redhat-oval,ubuntu-oval,debian-oval"
+            - name: UPDATE_FREQUENCY
+              value: "daily"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Updating vulnerability databases..."
+              /scripts/update-vulndb.sh --all-sources --verify-signatures
+              echo "Vulnerability database update completed"
+          volumeMounts:
+            - name: vulnerability-db
+              mountPath: /workspace/vulndb
+
+        - name: compliance-framework-setup
+          image: spotify-ai/compliance-setup:v1.5.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          env:
+            - name: SETUP_FRAMEWORKS
+              value: "pci-dss,sox,gdpr,hipaa,iso27001"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Setting up compliance frameworks..."
+              /scripts/setup-compliance-frameworks.sh
+              echo "Compliance framework setup completed"
+          volumeMounts:
+            - name: compliance-frameworks
+              mountPath: /workspace/frameworks
+
+      volumes:
+        - name: scan-results
+          persistentVolumeClaim:
+            claimName: security-scan-results-pvc
+        - name: compliance-reports
+          persistentVolumeClaim:
+            claimName: compliance-reports-pvc
+        - name: audit-logs
+          persistentVolumeClaim:
+            claimName: audit-logs-pvc
+        - name: pentest-results
+          persistentVolumeClaim:
+            claimName: pentest-results-pvc
+        - name: threat-data
+          persistentVolumeClaim:
+            claimName: threat-intel-pvc
+        - name: security-reports
+          persistentVolumeClaim:
+            claimName: security-reports-pvc
+        - name: vulnerability-db
+          persistentVolumeClaim:
+            claimName: vulnerability-db-pvc
+        - name: exploit-database
+          persistentVolumeClaim:
+            claimName: exploit-db-pvc
+        - name: ioc-database
+          persistentVolumeClaim:
+            claimName: ioc-database-pvc
+        - name: compliance-frameworks
+          configMap:
+            name: compliance-frameworks-config
+        - name: config
+          configMap:
+            name: security-scanner-config
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 10Gi

@@ -1,0 +1,848 @@
+# MongoDB Sharded Cluster Configuration
+# Enterprise Production-Ready Setup with Advanced Features  
+# Architecture: Multi-Shard Cluster with Replica Sets and Config Servers
+
+_metadata:
+  template_type: "mongodb_sharded_cluster"
+  template_version: "7.1.0"
+  schema_version: "2024.2"
+  created_at: "{{ current_timestamp() }}"
+  generator: "MongoDBShardedClusterGenerator"
+  tags: ["database", "mongodb", "sharding", "replica-set", "enterprise", "production"]
+  description: "MongoDB sharded cluster with replica sets, config servers, and advanced features"
+  
+cluster_id: "{{ cluster_id }}"
+tenant_id: "{{ tenant_id }}"
+environment: "{{ environment | default('production') }}"
+
+# Configuration cluster MongoDB shardé
+mongodb_sharded_cluster:
+  cluster_name: "{{ cluster_name | default('spotify-ai-agent-mongo') }}"
+  mongodb_version: "{{ mongodb_version | default('7.0.4') }}"
+  
+  # Architecture sharding
+  sharding_architecture:
+    shards_count: "{{ shards_count | default(3) }}"
+    config_servers_count: "{{ config_servers_count | default(3) }}"
+    mongos_instances_count: "{{ mongos_instances_count | default(2) }}"
+    
+    # Configuration réplique par shard
+    replica_set_config:
+      members_per_shard: "{{ members_per_shard | default(3) }}"
+      primary_count: 1
+      secondary_count: "{{ secondary_count | default(2) }}"
+      arbiter_enabled: "{{ arbiter_enabled | default(false) }}"
+      
+  # Configuration shards
+  shards_configuration:
+    # Shard 0 - Données utilisateurs et playlists
+    shard_0:
+      replica_set_name: "{{ shard0_name | default('shard0rs') }}"
+      members:
+        primary:
+          host: "{{ shard0_primary_host | default('mongo-shard0-primary') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 2
+          votes: 1
+          
+        secondary_1:
+          host: "{{ shard0_secondary1_host | default('mongo-shard0-secondary1') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+        secondary_2:
+          host: "{{ shard0_secondary2_host | default('mongo-shard0-secondary2') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+      # Configuration stockage
+      storage_config:
+        engine: "{{ storage_engine | default('wiredTiger') }}"
+        cache_size_gb: "{{ shard0_cache_size | default(8) }}"
+        
+    # Shard 1 - Données analytics et ML
+    shard_1:
+      replica_set_name: "{{ shard1_name | default('shard1rs') }}"
+      members:
+        primary:
+          host: "{{ shard1_primary_host | default('mongo-shard1-primary') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 2
+          votes: 1
+          
+        secondary_1:
+          host: "{{ shard1_secondary1_host | default('mongo-shard1-secondary1') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+        secondary_2:
+          host: "{{ shard1_secondary2_host | default('mongo-shard1-secondary2') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+      storage_config:
+        engine: "{{ storage_engine | default('wiredTiger') }}"
+        cache_size_gb: "{{ shard1_cache_size | default(8) }}"
+        
+    # Shard 2 - Logs et données temps réel
+    shard_2:
+      replica_set_name: "{{ shard2_name | default('shard2rs') }}"
+      members:
+        primary:
+          host: "{{ shard2_primary_host | default('mongo-shard2-primary') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 2
+          votes: 1
+          
+        secondary_1:
+          host: "{{ shard2_secondary1_host | default('mongo-shard2-secondary1') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+        secondary_2:
+          host: "{{ shard2_secondary2_host | default('mongo-shard2-secondary2') }}"
+          port: "{{ mongodb_port | default(27017) }}"
+          priority: 1
+          votes: 1
+          
+      storage_config:
+        engine: "{{ storage_engine | default('wiredTiger') }}"
+        cache_size_gb: "{{ shard2_cache_size | default(8) }}"
+        
+  # Configuration serveurs config
+  config_servers:
+    replica_set_name: "{{ config_rs_name | default('configrs') }}"
+    members:
+      config_1:
+        host: "{{ config1_host | default('mongo-config1') }}"
+        port: "{{ config_port | default(27019) }}"
+        priority: 1
+        votes: 1
+        
+      config_2:
+        host: "{{ config2_host | default('mongo-config2') }}"
+        port: "{{ config_port | default(27019) }}"
+        priority: 1
+        votes: 1
+        
+      config_3:
+        host: "{{ config3_host | default('mongo-config3') }}"
+        port: "{{ config_port | default(27019) }}"
+        priority: 1
+        votes: 1
+        
+    storage_config:
+      engine: "{{ storage_engine | default('wiredTiger') }}"
+      cache_size_gb: "{{ config_cache_size | default(2) }}"
+      
+  # Configuration routeurs mongos
+  mongos_routers:
+    instances:
+      mongos_1:
+        host: "{{ mongos1_host | default('mongo-mongos1') }}"
+        port: "{{ mongos_port | default(27017) }}"
+        
+      mongos_2:
+        host: "{{ mongos2_host | default('mongo-mongos2') }}"
+        port: "{{ mongos_port | default(27017) }}"
+        
+    # Configuration routage
+    routing_config:
+      chunk_size_mb: "{{ chunk_size | default(64) }}"
+      balancer_enabled: true
+      auto_split: true
+      
+  # Configuration haute disponibilité
+  high_availability:
+    enabled: true
+    
+    # Configuration réplication
+    replication:
+      oplog_size_mb: "{{ oplog_size | default(1024) }}"
+      
+      # Lecture depuis secondaires
+      read_preference:
+        mode: "{{ read_preference | default('secondaryPreferred') }}"
+        max_staleness_seconds: "{{ max_staleness | default(120) }}"
+        
+      # Configuration write concern
+      write_concern:
+        w: "{{ write_concern_w | default('majority') }}"
+        wtimeout_ms: "{{ write_concern_timeout | default(10000) }}"
+        journal: "{{ write_concern_journal | default(true) }}"
+        
+    # Gestion des pannes
+    failover_configuration:
+      election_timeout_ms: "{{ election_timeout | default(10000) }}"
+      heartbeat_interval_ms: "{{ heartbeat_interval | default(2000) }}"
+      
+      # Priorities pour election
+      priority_configuration:
+        primary_priority: 2
+        secondary_priority: 1
+        hidden_priority: 0
+        
+  # Configuration sécurité
+  security_configuration:
+    # Authentification
+    authentication:
+      enabled: true
+      auth_mechanism: "{{ auth_mechanism | default('SCRAM-SHA-256') }}"
+      
+      # Configuration RBAC
+      authorization:
+        enabled: true
+        
+        # Rôles et utilisateurs
+        users:
+          # Administrateur cluster
+          - username: "{{ admin_username | default('spotify_admin') }}"
+            password: "{{ admin_password | default('') }}"  # Via secrets
+            roles:
+              - role: "clusterAdmin"
+                db: "admin"
+              - role: "dbAdminAnyDatabase"
+                db: "admin"
+              - role: "userAdminAnyDatabase"
+                db: "admin"
+                
+          # Utilisateur application
+          - username: "{{ app_username | default('spotify_app') }}"
+            password: "{{ app_password | default('') }}"
+            roles:
+              - role: "readWrite"
+                db: "{{ app_database | default('spotify') }}"
+              - role: "read"
+                db: "{{ analytics_database | default('analytics') }}"
+                
+          # Utilisateur lecture seule
+          - username: "{{ readonly_username | default('spotify_readonly') }}"
+            password: "{{ readonly_password | default('') }}"
+            roles:
+              - role: "read"
+                db: "{{ app_database | default('spotify') }}"
+              - role: "read"
+                db: "{{ analytics_database | default('analytics') }}"
+                
+          # Utilisateur monitoring
+          - username: "{{ monitoring_username | default('mongo_exporter') }}"
+            password: "{{ monitoring_password | default('') }}"
+            roles:
+              - role: "clusterMonitor"
+                db: "admin"
+              - role: "read"
+                db: "local"
+                
+    # Chiffrement
+    encryption:
+      # Chiffrement au repos
+      at_rest:
+        enabled: true
+        key_file: "{{ encryption_key_file | default('/etc/ssl/mongodb/encryption.key') }}"
+        
+      # Chiffrement en transit (TLS)
+      in_transit:
+        enabled: true
+        tls_mode: "{{ tls_mode | default('requireTLS') }}"
+        certificate_file: "{{ tls_cert_file | default('/etc/ssl/mongodb/mongodb.pem') }}"
+        ca_file: "{{ tls_ca_file | default('/etc/ssl/mongodb/ca.pem') }}"
+        allow_invalid_certificates: false
+        allow_invalid_hostnames: false
+        
+    # Audit logging
+    audit:
+      enabled: true
+      destination: "{{ audit_destination | default('file') }}"
+      format: "{{ audit_format | default('JSON') }}"
+      path: "{{ audit_path | default('/var/log/mongodb/audit.json') }}"
+      
+      # Filtres audit
+      filter: |
+        {
+          atype: {
+            $in: ["authCheck", "authenticate", "createUser", "dropUser", "dropDatabase", "dropCollection"]
+          }
+        }
+        
+  # Configuration performance
+  performance_configuration:
+    # WiredTiger Storage Engine
+    wiredtiger:
+      cache_size_gb: "{{ wt_cache_size | default(null) }}"  # Auto si null
+      
+      # Configuration collection
+      collection_config:
+        block_compressor: "{{ block_compressor | default('snappy') }}"
+        
+      # Configuration index
+      index_config:
+        prefix_compression: true
+        
+      # Configuration journaling
+      journal:
+        compressor: "{{ journal_compressor | default('snappy') }}"
+        
+    # Configuration réseau
+    networking:
+      max_incoming_connections: "{{ max_connections | default(65536) }}"
+      
+      # Configuration socket
+      socket_timeout_seconds: "{{ socket_timeout | default(0) }}"
+      
+    # Configuration opérations
+    operation_profiling:
+      enabled: true
+      slow_operation_threshold_ms: "{{ slow_op_threshold | default(100) }}"
+      profiling_level: "{{ profiling_level | default(1) }}"  # 0=off, 1=slow, 2=all
+      
+  # Configuration bases de données et collections
+  databases_configuration:
+    # Base de données principale
+    spotify_database:
+      name: "{{ app_database | default('spotify') }}"
+      
+      collections:
+        # Collection utilisateurs
+        users:
+          shard_key: "{{ users_shard_key | default('{user_id: 1}') }}"
+          shard_key_hashed: "{{ users_shard_hashed | default(true) }}"
+          
+          # Index principaux
+          indexes:
+            - keys: "{{ users_email_index | default('{email: 1}') }}"
+              unique: true
+              sparse: false
+              
+            - keys: "{{ users_created_index | default('{created_at: 1}') }}"
+              unique: false
+              
+            - keys: "{{ users_location_index | default('{location: \"2dsphere\"}') }}"
+              sparse: true
+              
+        # Collection playlists
+        playlists:
+          shard_key: "{{ playlists_shard_key | default('{owner_id: 1}') }}"
+          shard_key_hashed: "{{ playlists_shard_hashed | default(true) }}"
+          
+          indexes:
+            - keys: "{{ playlists_owner_index | default('{owner_id: 1, created_at: -1}') }}"
+              unique: false
+              
+            - keys: "{{ playlists_search_index | default('{name: \"text\", description: \"text\"}') }}"
+              unique: false
+              
+        # Collection tracks
+        tracks:
+          shard_key: "{{ tracks_shard_key | default('{artist_id: 1}') }}"
+          shard_key_hashed: "{{ tracks_shard_hashed | default(true) }}"
+          
+          indexes:
+            - keys: "{{ tracks_artist_index | default('{artist_id: 1, album_id: 1}') }}"
+              unique: false
+              
+            - keys: "{{ tracks_duration_index | default('{duration_ms: 1}') }}"
+              unique: false
+              
+    # Base de données analytics
+    analytics_database:
+      name: "{{ analytics_database | default('analytics') }}"
+      
+      collections:
+        # Collection événements
+        events:
+          shard_key: "{{ events_shard_key | default('{timestamp: 1}') }}"
+          shard_key_hashed: "{{ events_shard_hashed | default(false) }}"
+          
+          # TTL pour rotation automatique
+          ttl_index:
+            field: "timestamp"
+            expire_after_seconds: "{{ events_ttl_seconds | default(2592000) }}"  # 30 jours
+            
+          indexes:
+            - keys: "{{ events_user_index | default('{user_id: 1, timestamp: -1}') }}"
+              unique: false
+              
+            - keys: "{{ events_type_index | default('{event_type: 1, timestamp: -1}') }}"
+              unique: false
+              
+        # Collection métriques agrégées
+        metrics:
+          shard_key: "{{ metrics_shard_key | default('{date: 1}') }}"
+          shard_key_hashed: "{{ metrics_shard_hashed | default(false) }}"
+          
+          indexes:
+            - keys: "{{ metrics_date_index | default('{date: -1, metric_type: 1}') }}"
+              unique: false
+              
+  # Configuration backup et restauration
+  backup_configuration:
+    # Backup automatisé
+    automated_backup:
+      enabled: true
+      
+      # Planification
+      schedule:
+        full_backup: "{{ full_backup_schedule | default('0 2 * * 0') }}"  # Dimanche 2h
+        incremental_backup: "{{ incremental_backup_schedule | default('0 2 * * 1-6') }}"  # Autres jours 2h
+        
+      # Rétention
+      retention:
+        daily_backups: "{{ daily_retention | default(7) }}"
+        weekly_backups: "{{ weekly_retention | default(4) }}"
+        monthly_backups: "{{ monthly_retention | default(12) }}"
+        
+    # Configuration stockage backup
+    backup_storage:
+      # Stockage S3
+      s3_configuration:
+        enabled: true
+        bucket_name: "{{ backup_s3_bucket | default('spotify-ai-agent-mongo-backups') }}"
+        region: "{{ backup_s3_region | default('us-west-2') }}"
+        encryption: true
+        storage_class: "{{ backup_storage_class | default('STANDARD_IA') }}"
+        
+      # Stockage local
+      local_storage:
+        enabled: true
+        path: "{{ local_backup_path | default('/backup/mongodb') }}"
+        max_size_gb: "{{ local_backup_max_size | default(500) }}"
+        
+    # Configuration point-in-time recovery
+    point_in_time_recovery:
+      enabled: true
+      oplog_hours: "{{ oplog_hours | default(24) }}"
+      
+  # Configuration monitoring
+  monitoring_configuration:
+    enabled: true
+    
+    # MongoDB Exporter pour Prometheus
+    mongodb_exporter:
+      enabled: true
+      port: "{{ mongo_exporter_port | default(9216) }}"
+      
+      # Métriques personnalisées
+      custom_metrics:
+        enabled: true
+        
+        # Scripts métriques personnalisées
+        scripts:
+          - name: "spotify_active_connections"
+            script: "db.serverStatus().connections"
+            
+          - name: "spotify_operations_per_second"
+            script: "db.serverStatus().opcounters"
+            
+          - name: "spotify_memory_usage"
+            script: "db.serverStatus().mem"
+            
+          - name: "spotify_replication_lag"
+            script: "rs.printReplicationInfo()"
+            
+          - name: "spotify_sharding_stats"
+            script: "sh.status()"
+            
+    # Configuration logging
+    logging:
+      # Niveau de log
+      verbosity: "{{ log_verbosity | default(0) }}"
+      
+      # Composants spécifiques
+      component_levels:
+        accessControl: "{{ access_control_log_level | default(0) }}"
+        command: "{{ command_log_level | default(0) }}"
+        control: "{{ control_log_level | default(0) }}"
+        network: "{{ network_log_level | default(0) }}"
+        replication: "{{ replication_log_level | default(0) }}"
+        sharding: "{{ sharding_log_level | default(0) }}"
+        storage: "{{ storage_log_level | default(0) }}"
+        
+      # Rotation des logs
+      log_rotation:
+        enabled: true
+        max_size_mb: "{{ log_max_size | default(100) }}"
+        max_files: "{{ log_max_files | default(10) }}"
+        
+    # Alertes Prometheus
+    alerting:
+      enabled: true
+      
+      alert_rules:
+        # Alertes critiques
+        - name: "MongoDB_Down"
+          condition: "up{job='mongodb-exporter'} == 0"
+          severity: "critical"
+          duration: "1m"
+          
+        - name: "MongoDB_Replica_Set_Member_Down"
+          condition: "mongodb_replset_member_health == 0"
+          severity: "critical"
+          duration: "2m"
+          
+        - name: "MongoDB_High_Connection_Usage"
+          condition: "mongodb_connections_current / mongodb_connections_available > 0.8"
+          severity: "warning"
+          duration: "5m"
+          
+        - name: "MongoDB_High_Memory_Usage"
+          condition: "mongodb_memory_resident_mb / 1024 > {{ memory_alert_threshold_gb | default(12) }}"
+          severity: "warning"
+          duration: "5m"
+          
+        - name: "MongoDB_Replication_Lag_High"
+          condition: "mongodb_replset_member_replication_lag > {{ replication_lag_threshold | default(10) }}"
+          severity: "warning"
+          duration: "3m"
+          
+        - name: "MongoDB_Sharded_Cluster_Balancer_Failed"
+          condition: "mongodb_sharded_cluster_balancer_enabled == 1 and mongodb_sharded_cluster_balancer_running == 0"
+          severity: "warning"
+          duration: "10m"
+
+# Configuration Kubernetes
+kubernetes_deployment:
+  namespace: "{{ k8s_namespace | default('database') }}"
+  
+  # Configuration StatefulSets pour shards
+  shards_statefulsets:
+    # Shard 0
+    shard_0:
+      name: "mongo-shard0"
+      replicas: 3
+      
+      resources:
+        requests:
+          cpu: "{{ shard_cpu_request | default('1000m') }}"
+          memory: "{{ shard_memory_request | default('4Gi') }}"
+        limits:
+          cpu: "{{ shard_cpu_limit | default('2000m') }}"
+          memory: "{{ shard_memory_limit | default('8Gi') }}"
+          
+      storage:
+        storage_class: "{{ storage_class | default('fast-ssd') }}"
+        size: "{{ shard_volume_size | default('500Gi') }}"
+        
+    # Shard 1
+    shard_1:
+      name: "mongo-shard1"
+      replicas: 3
+      
+      resources:
+        requests:
+          cpu: "{{ shard_cpu_request | default('1000m') }}"
+          memory: "{{ shard_memory_request | default('4Gi') }}"
+        limits:
+          cpu: "{{ shard_cpu_limit | default('2000m') }}"
+          memory: "{{ shard_memory_limit | default('8Gi') }}"
+          
+      storage:
+        storage_class: "{{ storage_class | default('fast-ssd') }}"
+        size: "{{ shard_volume_size | default('500Gi') }}"
+        
+    # Shard 2
+    shard_2:
+      name: "mongo-shard2"
+      replicas: 3
+      
+      resources:
+        requests:
+          cpu: "{{ shard_cpu_request | default('1000m') }}"
+          memory: "{{ shard_memory_request | default('4Gi') }}"
+        limits:
+          cpu: "{{ shard_cpu_limit | default('2000m') }}"
+          memory: "{{ shard_memory_limit | default('8Gi') }}"
+          
+      storage:
+        storage_class: "{{ storage_class | default('fast-ssd') }}"
+        size: "{{ shard_volume_size | default('500Gi') }}"
+        
+  # Configuration serveurs config
+  config_servers_statefulset:
+    name: "mongo-config"
+    replicas: 3
+    
+    resources:
+      requests:
+        cpu: "{{ config_cpu_request | default('500m') }}"
+        memory: "{{ config_memory_request | default('2Gi') }}"
+      limits:
+        cpu: "{{ config_cpu_limit | default('1000m') }}"
+        memory: "{{ config_memory_limit | default('4Gi') }}"
+        
+    storage:
+      storage_class: "{{ storage_class | default('fast-ssd') }}"
+      size: "{{ config_volume_size | default('50Gi') }}"
+      
+  # Configuration mongos
+  mongos_deployment:
+    name: "mongo-mongos"
+    replicas: 2
+    
+    resources:
+      requests:
+        cpu: "{{ mongos_cpu_request | default('500m') }}"
+        memory: "{{ mongos_memory_request | default('1Gi') }}"
+      limits:
+        cpu: "{{ mongos_cpu_limit | default('1000m') }}"
+        memory: "{{ mongos_memory_limit | default('2Gi') }}"
+        
+  # Configuration réseau
+  networking:
+    # Service headless pour shards
+    headless_services:
+      - name: "mongo-shard0-headless"
+        selector_app: "mongo-shard0"
+        
+      - name: "mongo-shard1-headless"
+        selector_app: "mongo-shard1"
+        
+      - name: "mongo-shard2-headless"
+        selector_app: "mongo-shard2"
+        
+      - name: "mongo-config-headless"
+        selector_app: "mongo-config"
+        
+    # Service pour mongos
+    mongos_service:
+      name: "mongo-mongos"
+      type: "{{ mongos_service_type | default('ClusterIP') }}"
+      port: 27017
+      
+  # Anti-affinity pour distribution
+  pod_anti_affinity:
+    enabled: true
+    topology_key: "kubernetes.io/hostname"
+    
+  # Node affinity
+  node_affinity:
+    enabled: true
+    node_selector_terms:
+      - key: "node-type"
+        operator: "In"
+        values: ["database"]
+
+# Scripts d'automatisation
+automation_scripts:
+  # Script d'initialisation cluster
+  init_cluster: |
+    #!/bin/bash
+    # Script d'initialisation cluster MongoDB shardé
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "Initialisation du cluster MongoDB shardé..."
+    
+    # Attendre que tous les pods soient prêts
+    echo "Attente des pods config servers..."
+    kubectl wait --for=condition=ready pod -l app=mongo-config -n $NAMESPACE --timeout=300s
+    
+    echo "Attente des pods shards..."
+    kubectl wait --for=condition=ready pod -l app=mongo-shard0 -n $NAMESPACE --timeout=300s
+    kubectl wait --for=condition=ready pod -l app=mongo-shard1 -n $NAMESPACE --timeout=300s
+    kubectl wait --for=condition=ready pod -l app=mongo-shard2 -n $NAMESPACE --timeout=300s
+    
+    echo "Attente des pods mongos..."
+    kubectl wait --for=condition=ready pod -l app=mongo-mongos -n $NAMESPACE --timeout=300s
+    
+    # Initialiser replica sets des config servers
+    echo "Initialisation du replica set config..."
+    kubectl exec -n $NAMESPACE mongo-config-0 -- mongo --eval "
+    rs.initiate({
+      _id: 'configrs',
+      configsvr: true,
+      members: [
+        { _id: 0, host: 'mongo-config-0.mongo-config-headless:27019' },
+        { _id: 1, host: 'mongo-config-1.mongo-config-headless:27019' },
+        { _id: 2, host: 'mongo-config-2.mongo-config-headless:27019' }
+      ]
+    })"
+    
+    # Initialiser replica sets des shards
+    echo "Initialisation du replica set shard0..."
+    kubectl exec -n $NAMESPACE mongo-shard0-0 -- mongo --eval "
+    rs.initiate({
+      _id: 'shard0rs',
+      members: [
+        { _id: 0, host: 'mongo-shard0-0.mongo-shard0-headless:27017' },
+        { _id: 1, host: 'mongo-shard0-1.mongo-shard0-headless:27017' },
+        { _id: 2, host: 'mongo-shard0-2.mongo-shard0-headless:27017' }
+      ]
+    })"
+    
+    echo "Initialisation du replica set shard1..."
+    kubectl exec -n $NAMESPACE mongo-shard1-0 -- mongo --eval "
+    rs.initiate({
+      _id: 'shard1rs',
+      members: [
+        { _id: 0, host: 'mongo-shard1-0.mongo-shard1-headless:27017' },
+        { _id: 1, host: 'mongo-shard1-1.mongo-shard1-headless:27017' },
+        { _id: 2, host: 'mongo-shard1-2.mongo-shard1-headless:27017' }
+      ]
+    })"
+    
+    echo "Initialisation du replica set shard2..."
+    kubectl exec -n $NAMESPACE mongo-shard2-0 -- mongo --eval "
+    rs.initiate({
+      _id: 'shard2rs',
+      members: [
+        { _id: 0, host: 'mongo-shard2-0.mongo-shard2-headless:27017' },
+        { _id: 1, host: 'mongo-shard2-1.mongo-shard2-headless:27017' },
+        { _id: 2, host: 'mongo-shard2-2.mongo-shard2-headless:27017' }
+      ]
+    })"
+    
+    # Attendre que les replica sets soient prêts
+    sleep 30
+    
+    # Ajouter les shards au cluster
+    echo "Ajout des shards au cluster..."
+    kubectl exec -n $NAMESPACE mongo-mongos-0 -- mongo --eval "
+    sh.addShard('shard0rs/mongo-shard0-0.mongo-shard0-headless:27017,mongo-shard0-1.mongo-shard0-headless:27017,mongo-shard0-2.mongo-shard0-headless:27017');
+    sh.addShard('shard1rs/mongo-shard1-0.mongo-shard1-headless:27017,mongo-shard1-1.mongo-shard1-headless:27017,mongo-shard1-2.mongo-shard1-headless:27017');
+    sh.addShard('shard2rs/mongo-shard2-0.mongo-shard2-headless:27017,mongo-shard2-1.mongo-shard2-headless:27017,mongo-shard2-2.mongo-shard2-headless:27017');
+    "
+    
+    echo "Cluster MongoDB shardé initialisé avec succès"
+    
+  # Script de configuration sharding
+  configure_sharding: |
+    #!/bin/bash
+    # Script de configuration du sharding
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "Configuration du sharding pour les collections..."
+    
+    kubectl exec -n $NAMESPACE mongo-mongos-0 -- mongo --eval "
+    // Activer le sharding pour la base spotify
+    sh.enableSharding('spotify');
+    
+    // Sharding collection users
+    sh.shardCollection('spotify.users', { user_id: 'hashed' });
+    
+    // Sharding collection playlists
+    sh.shardCollection('spotify.playlists', { owner_id: 'hashed' });
+    
+    // Sharding collection tracks
+    sh.shardCollection('spotify.tracks', { artist_id: 'hashed' });
+    
+    // Activer le sharding pour la base analytics
+    sh.enableSharding('analytics');
+    
+    // Sharding collection events (par timestamp pour queries temporelles)
+    sh.shardCollection('analytics.events', { timestamp: 1 });
+    
+    // Sharding collection metrics
+    sh.shardCollection('analytics.metrics', { date: 1 });
+    
+    // Afficher le statut
+    sh.status();
+    "
+    
+    echo "Configuration du sharding terminée"
+    
+  # Script de monitoring cluster
+  monitor_cluster: |
+    #!/bin/bash
+    # Script de monitoring cluster MongoDB
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "=== État du cluster MongoDB shardé ==="
+    
+    # État général du cluster
+    kubectl exec -n $NAMESPACE mongo-mongos-0 -- mongo --eval "sh.status()" | head -50
+    
+    echo -e "\n=== État des replica sets ==="
+    
+    # État replica set config
+    echo "Config servers:"
+    kubectl exec -n $NAMESPACE mongo-config-0 -- mongo --eval "rs.status()" | grep -E "(name|health|state)"
+    
+    # État replica sets shards
+    echo -e "\nShard 0:"
+    kubectl exec -n $NAMESPACE mongo-shard0-0 -- mongo --eval "rs.status()" | grep -E "(name|health|state)"
+    
+    echo -e "\nShard 1:"
+    kubectl exec -n $NAMESPACE mongo-shard1-0 -- mongo --eval "rs.status()" | grep -E "(name|health|state)"
+    
+    echo -e "\nShard 2:"
+    kubectl exec -n $NAMESPACE mongo-shard2-0 -- mongo --eval "rs.status()" | grep -E "(name|health|state)"
+    
+    echo -e "\n=== Statistiques de performance ==="
+    kubectl exec -n $NAMESPACE mongo-mongos-0 -- mongo --eval "
+    db.serverStatus().connections;
+    db.serverStatus().opcounters;
+    "
+    
+  # Script de backup cluster
+  backup_cluster: |
+    #!/bin/bash
+    # Script de backup cluster MongoDB
+    set -euo pipefail
+    
+    BACKUP_NAME="mongodb-cluster-backup-$(date +%Y%m%d-%H%M%S)"
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    S3_BUCKET="{{ backup_s3_bucket | default('spotify-ai-agent-mongo-backups') }}"
+    
+    echo "Démarrage du backup: $BACKUP_NAME"
+    
+    # Backup de chaque shard
+    for shard in shard0 shard1 shard2; do
+      echo "Backup du $shard..."
+      kubectl exec -n $NAMESPACE mongo-$shard-0 -- mongodump --host mongo-$shard-0:27017 --out /tmp/$BACKUP_NAME/$shard
+      kubectl exec -n $NAMESPACE mongo-$shard-0 -- aws s3 sync /tmp/$BACKUP_NAME/$shard s3://$S3_BUCKET/$BACKUP_NAME/$shard/
+      kubectl exec -n $NAMESPACE mongo-$shard-0 -- rm -rf /tmp/$BACKUP_NAME
+    done
+    
+    # Backup des config servers
+    echo "Backup des config servers..."
+    kubectl exec -n $NAMESPACE mongo-config-0 -- mongodump --host mongo-config-0:27019 --out /tmp/$BACKUP_NAME/config
+    kubectl exec -n $NAMESPACE mongo-config-0 -- aws s3 sync /tmp/$BACKUP_NAME/config s3://$S3_BUCKET/$BACKUP_NAME/config/
+    kubectl exec -n $NAMESPACE mongo-config-0 -- rm -rf /tmp/$BACKUP_NAME
+    
+    echo "Backup terminé: $BACKUP_NAME"
+
+# Configuration clients
+client_configuration:
+  # Chaîne de connexion pour applications
+  connection_strings:
+    # Connexion via mongos pour écriture/lecture
+    primary: "mongodb://{{ app_username }}:{{ app_password }}@mongo-mongos.{{ k8s_namespace }}.svc.cluster.local:27017/{{ app_database }}?authSource=admin&ssl=true"
+    
+    # Connexion lecture seule via secondaires
+    readonly: "mongodb://{{ readonly_username }}:{{ readonly_password }}@mongo-mongos.{{ k8s_namespace }}.svc.cluster.local:27017/{{ app_database }}?authSource=admin&ssl=true&readPreference=secondaryPreferred"
+    
+  # Configuration driver
+  driver_options:
+    max_pool_size: "{{ max_pool_size | default(100) }}"
+    max_idle_time_ms: "{{ max_idle_time | default(30000) }}"
+    connect_timeout_ms: "{{ connect_timeout | default(10000) }}"
+    socket_timeout_ms: "{{ socket_timeout | default(0) }}"
+    server_selection_timeout_ms: "{{ server_selection_timeout | default(30000) }}"
+    
+    # Write concern
+    write_concern:
+      w: "majority"
+      wtimeout: 10000
+      
+    # Read concern
+    read_concern:
+      level: "majority"
+
+# Métriques SLA et objectifs
+sla_objectives:
+  availability_target: "{{ availability_sla | default('99.95%') }}"
+  response_time_p99_ms: "{{ response_time_target | default(10) }}"
+  throughput_ops_per_second: "{{ throughput_target | default(10000) }}"
+  storage_efficiency: "{{ storage_efficiency_target | default(80) }}"
+  replication_lag_max_seconds: "{{ replication_lag_target | default(5) }}"
+  backup_success_rate: "{{ backup_success_rate | default('99.9%') }}"

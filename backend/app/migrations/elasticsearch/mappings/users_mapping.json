@@ -1,0 +1,36 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "user_id": {"type": "keyword"},
+      "email": {"type": "keyword"},
+      "role": {"type": "keyword"},
+      "status": {"type": "keyword"},
+      "preferences": {"type": "object", "enabled": true},
+      "activity": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "timestamp": {"type": "date"},
+        "ip": {"type": "ip"},
+        "device": {"type": "keyword"}
+      }},
+      "consent": {"type": "boolean"},
+      "gdpr_erased": {"type": "boolean"},
+      "tags": {"type": "keyword"},
+      "version": {"type": "integer"},
+      "audit": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "user_id": {"type": "keyword"},
+        "timestamp": {"type": "date"}
+      }},
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "lifecycle": {
+      "name": "users_policy"
+    }
+  }
+}

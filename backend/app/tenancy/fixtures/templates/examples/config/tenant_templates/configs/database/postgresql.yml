@@ -1,0 +1,499 @@
+# PostgreSQL Advanced Configuration Template for Enterprise Tenant Templates
+# =========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced PostgreSQL architecture with AI optimization
+# - Senior Backend Developer: Python/FastAPI/Django PostgreSQL enterprise patterns
+# - DBA & Data Engineer: PostgreSQL performance tuning, replication, and clustering
+# - Backend Security Specialist: PostgreSQL security hardening and encryption
+# - Microservices Architect: PostgreSQL service mesh integration and monitoring
+
+# ==========================================
+# POSTGRESQL ENTERPRISE CONFIGURATION
+# ==========================================
+
+postgresql:
+  # Connection Configuration
+  connection:
+    host: "${POSTGRES_HOST:-localhost}"
+    port: ${POSTGRES_PORT:-5432}
+    database: "${POSTGRES_DB:-spotify_ai_agent}"
+    username: "${POSTGRES_USER:-postgres}"
+    password: "${POSTGRES_PASSWORD:-postgres}"
+    
+    # Connection Pool Settings
+    pool:
+      # Basic Pool Configuration
+      min_connections: ${POSTGRES_POOL_MIN:-5}
+      max_connections: ${POSTGRES_POOL_MAX:-20}
+      max_overflow: ${POSTGRES_POOL_OVERFLOW:-30}
+      pool_timeout: ${POSTGRES_POOL_TIMEOUT:-30}
+      pool_recycle: ${POSTGRES_POOL_RECYCLE:-3600}
+      pool_pre_ping: ${POSTGRES_POOL_PRE_PING:-true}
+      
+      # Advanced Pool Settings
+      pool_reset_on_return: "commit"
+      pool_use_lifo: true
+      pool_echo: ${POSTGRES_POOL_ECHO:-false}
+      
+      # Connection Validation
+      validation_query: "SELECT 1"
+      validation_interval: 30
+      validation_timeout: 5
+    
+    # SSL/TLS Configuration
+    ssl:
+      enabled: ${POSTGRES_SSL_ENABLED:-false}
+      mode: "${POSTGRES_SSL_MODE:-prefer}"  # disable, allow, prefer, require, verify-ca, verify-full
+      cert_file: "${POSTGRES_SSL_CERT:-}"
+      key_file: "${POSTGRES_SSL_KEY:-}"
+      ca_file: "${POSTGRES_SSL_CA:-}"
+      crl_file: "${POSTGRES_SSL_CRL:-}"
+      compression: ${POSTGRES_SSL_COMPRESSION:-true}
+      
+      # SSL Cipher Configuration
+      ciphers: "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256"
+      min_protocol_version: "TLSv1.2"
+      max_protocol_version: "TLSv1.3"
+    
+    # Connection Options
+    options:
+      connect_timeout: ${POSTGRES_CONNECT_TIMEOUT:-10}
+      command_timeout: ${POSTGRES_COMMAND_TIMEOUT:-60}
+      server_side_binding: true
+      client_encoding: "UTF8"
+      timezone: "UTC"
+      statement_timeout: ${POSTGRES_STATEMENT_TIMEOUT:-30000}
+      lock_timeout: ${POSTGRES_LOCK_TIMEOUT:-10000}
+      idle_in_transaction_session_timeout: ${POSTGRES_IDLE_TIMEOUT:-60000}
+
+  # Performance Tuning
+  performance:
+    # Memory Configuration
+    memory:
+      shared_buffers: "${POSTGRES_SHARED_BUFFERS:-256MB}"
+      effective_cache_size: "${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}"
+      work_mem: "${POSTGRES_WORK_MEM:-4MB}"
+      maintenance_work_mem: "${POSTGRES_MAINTENANCE_WORK_MEM:-64MB}"
+      autovacuum_work_mem: "${POSTGRES_AUTOVACUUM_WORK_MEM:-64MB}"
+      
+      # Advanced Memory Settings
+      temp_buffers: "${POSTGRES_TEMP_BUFFERS:-8MB}"
+      max_prepared_transactions: ${POSTGRES_MAX_PREPARED_TRANSACTIONS:-0}
+      huge_pages: "${POSTGRES_HUGE_PAGES:-try}"
+      shared_preload_libraries: "${POSTGRES_SHARED_PRELOAD_LIBRARIES:-pg_stat_statements}"
+    
+    # CPU and I/O Configuration
+    cpu_io:
+      max_worker_processes: ${POSTGRES_MAX_WORKER_PROCESSES:-8}
+      max_parallel_workers: ${POSTGRES_MAX_PARALLEL_WORKERS:-8}
+      max_parallel_workers_per_gather: ${POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER:-2}
+      max_parallel_maintenance_workers: ${POSTGRES_MAX_PARALLEL_MAINTENANCE_WORKERS:-2}
+      
+      # I/O Settings
+      random_page_cost: ${POSTGRES_RANDOM_PAGE_COST:-1.1}
+      seq_page_cost: ${POSTGRES_SEQ_PAGE_COST:-1.0}
+      effective_io_concurrency: ${POSTGRES_EFFECTIVE_IO_CONCURRENCY:-200}
+      maintenance_io_concurrency: ${POSTGRES_MAINTENANCE_IO_CONCURRENCY:-10}
+    
+    # Checkpointing and WAL
+    wal:
+      # WAL Configuration
+      wal_level: "${POSTGRES_WAL_LEVEL:-replica}"
+      max_wal_size: "${POSTGRES_MAX_WAL_SIZE:-1GB}"
+      min_wal_size: "${POSTGRES_MIN_WAL_SIZE:-80MB}"
+      wal_buffers: "${POSTGRES_WAL_BUFFERS:-16MB}"
+      wal_writer_delay: "${POSTGRES_WAL_WRITER_DELAY:-200ms}"
+      wal_writer_flush_after: "${POSTGRES_WAL_WRITER_FLUSH_AFTER:-1MB}"
+      
+      # Checkpointing
+      checkpoint_completion_target: ${POSTGRES_CHECKPOINT_COMPLETION_TARGET:-0.7}
+      checkpoint_timeout: "${POSTGRES_CHECKPOINT_TIMEOUT:-5min}"
+      checkpoint_flush_after: "${POSTGRES_CHECKPOINT_FLUSH_AFTER:-256kB}"
+      checkpoint_warning: "${POSTGRES_CHECKPOINT_WARNING:-30s}"
+      
+      # Archive Settings
+      archive_mode: "${POSTGRES_ARCHIVE_MODE:-off}"
+      archive_command: "${POSTGRES_ARCHIVE_COMMAND:-}"
+      archive_timeout: "${POSTGRES_ARCHIVE_TIMEOUT:-0}"
+    
+    # Query Planning
+    query_planning:
+      # Cost-based Settings
+      cpu_tuple_cost: ${POSTGRES_CPU_TUPLE_COST:-0.01}
+      cpu_index_tuple_cost: ${POSTGRES_CPU_INDEX_TUPLE_COST:-0.005}
+      cpu_operator_cost: ${POSTGRES_CPU_OPERATOR_COST:-0.0025}
+      
+      # Planning Settings
+      default_statistics_target: ${POSTGRES_DEFAULT_STATISTICS_TARGET:-100}
+      constraint_exclusion: "${POSTGRES_CONSTRAINT_EXCLUSION:-partition}"
+      cursor_tuple_fraction: ${POSTGRES_CURSOR_TUPLE_FRACTION:-0.1}
+      from_collapse_limit: ${POSTGRES_FROM_COLLAPSE_LIMIT:-8}
+      join_collapse_limit: ${POSTGRES_JOIN_COLLAPSE_LIMIT:-8}
+      
+      # Query Execution
+      enable_bitmapscan: ${POSTGRES_ENABLE_BITMAPSCAN:-true}
+      enable_hashagg: ${POSTGRES_ENABLE_HASHAGG:-true}
+      enable_hashjoin: ${POSTGRES_ENABLE_HASHJOIN:-true}
+      enable_indexscan: ${POSTGRES_ENABLE_INDEXSCAN:-true}
+      enable_indexonlyscan: ${POSTGRES_ENABLE_INDEXONLYSCAN:-true}
+      enable_material: ${POSTGRES_ENABLE_MATERIAL:-true}
+      enable_mergejoin: ${POSTGRES_ENABLE_MERGEJOIN:-true}
+      enable_nestloop: ${POSTGRES_ENABLE_NESTLOOP:-true}
+      enable_parallel_append: ${POSTGRES_ENABLE_PARALLEL_APPEND:-true}
+      enable_parallel_hash: ${POSTGRES_ENABLE_PARALLEL_HASH:-true}
+      enable_seqscan: ${POSTGRES_ENABLE_SEQSCAN:-true}
+      enable_sort: ${POSTGRES_ENABLE_SORT:-true}
+      enable_tidscan: ${POSTGRES_ENABLE_TIDSCAN:-true}
+
+  # High Availability and Replication
+  high_availability:
+    # Streaming Replication
+    replication:
+      enabled: ${POSTGRES_REPLICATION_ENABLED:-false}
+      
+      # Master Configuration
+      master:
+        hot_standby: ${POSTGRES_HOT_STANDBY:-on}
+        max_wal_senders: ${POSTGRES_MAX_WAL_SENDERS:-10}
+        wal_keep_segments: ${POSTGRES_WAL_KEEP_SEGMENTS:-32}
+        wal_sender_timeout: "${POSTGRES_WAL_SENDER_TIMEOUT:-60s}"
+        
+        # Synchronous Replication
+        synchronous_standby_names: "${POSTGRES_SYNCHRONOUS_STANDBY_NAMES:-}"
+        synchronous_commit: "${POSTGRES_SYNCHRONOUS_COMMIT:-on}"
+      
+      # Standby Configuration
+      standby:
+        hot_standby: ${POSTGRES_HOT_STANDBY:-on}
+        hot_standby_feedback: ${POSTGRES_HOT_STANDBY_FEEDBACK:-off}
+        wal_receiver_timeout: "${POSTGRES_WAL_RECEIVER_TIMEOUT:-60s}"
+        wal_retrieve_retry_interval: "${POSTGRES_WAL_RETRIEVE_RETRY_INTERVAL:-5s}"
+        max_standby_archive_delay: "${POSTGRES_MAX_STANDBY_ARCHIVE_DELAY:-30s}"
+        max_standby_streaming_delay: "${POSTGRES_MAX_STANDBY_STREAMING_DELAY:-30s}"
+      
+      # Recovery Configuration
+      recovery:
+        restore_command: "${POSTGRES_RESTORE_COMMAND:-}"
+        recovery_target_timeline: "${POSTGRES_RECOVERY_TARGET_TIMELINE:-latest}"
+        recovery_target_action: "${POSTGRES_RECOVERY_TARGET_ACTION:-pause}"
+    
+    # Connection Failover
+    failover:
+      enabled: ${POSTGRES_FAILOVER_ENABLED:-false}
+      primary_conninfo: "${POSTGRES_PRIMARY_CONNINFO:-}"
+      primary_slot_name: "${POSTGRES_PRIMARY_SLOT_NAME:-}"
+      trigger_file: "${POSTGRES_TRIGGER_FILE:-/tmp/postgresql.trigger}"
+      
+      # Automatic Failover
+      auto_failover:
+        enabled: ${POSTGRES_AUTO_FAILOVER_ENABLED:-false}
+        check_interval: ${POSTGRES_FAILOVER_CHECK_INTERVAL:-5}
+        timeout: ${POSTGRES_FAILOVER_TIMEOUT:-30}
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # Authentication Methods
+      auth_methods:
+        local: "peer"
+        host: "md5"
+        hostssl: "md5"
+        hostnossl: "reject"
+      
+      # Password Configuration
+      password:
+        encryption: "${POSTGRES_PASSWORD_ENCRYPTION:-scram-sha-256}"
+        min_length: ${POSTGRES_PASSWORD_MIN_LENGTH:-8}
+        complexity_check: ${POSTGRES_PASSWORD_COMPLEXITY_CHECK:-true}
+      
+      # Connection Security
+      connection_security:
+        ssl_require: ${POSTGRES_SSL_REQUIRE:-false}
+        ssl_ca_file: "${POSTGRES_SSL_CA_FILE:-}"
+        ssl_cert_file: "${POSTGRES_SSL_CERT_FILE:-}"
+        ssl_key_file: "${POSTGRES_SSL_KEY_FILE:-}"
+        ssl_crl_file: "${POSTGRES_SSL_CRL_FILE:-}"
+    
+    # Access Control
+    access_control:
+      # Role-based Access Control
+      rbac:
+        enabled: ${POSTGRES_RBAC_ENABLED:-true}
+        default_role: "${POSTGRES_DEFAULT_ROLE:-readonly}"
+        admin_role: "${POSTGRES_ADMIN_ROLE:-admin}"
+        
+        # Default Privileges
+        default_privileges:
+          tables: "SELECT"
+          sequences: "SELECT"
+          functions: "EXECUTE"
+          types: "USAGE"
+      
+      # Row Level Security
+      rls:
+        enabled: ${POSTGRES_RLS_ENABLED:-false}
+        default_policy: "${POSTGRES_RLS_DEFAULT_POLICY:-RESTRICTIVE}"
+        bypass_rls_role: "${POSTGRES_BYPASS_RLS_ROLE:-postgres}"
+    
+    # Data Encryption
+    encryption:
+      # Transparent Data Encryption
+      tde:
+        enabled: ${POSTGRES_TDE_ENABLED:-false}
+        key_management: "${POSTGRES_TDE_KEY_MANAGEMENT:-file}"
+        encryption_algorithm: "${POSTGRES_TDE_ALGORITHM:-AES256}"
+      
+      # Column-level Encryption
+      column_encryption:
+        enabled: ${POSTGRES_COLUMN_ENCRYPTION_ENABLED:-false}
+        default_algorithm: "${POSTGRES_COLUMN_ENCRYPTION_ALGORITHM:-pgp_sym_encrypt}"
+      
+      # Connection Encryption
+      connection_encryption:
+        ssl_min_protocol_version: "${POSTGRES_SSL_MIN_PROTOCOL:-TLSv1.2}"
+        ssl_max_protocol_version: "${POSTGRES_SSL_MAX_PROTOCOL:-TLSv1.3}"
+        ssl_ciphers: "${POSTGRES_SSL_CIPHERS:-HIGH:!aNULL:!MD5}"
+
+  # Monitoring and Logging
+  monitoring:
+    # Logging Configuration
+    logging:
+      # Basic Logging
+      log_destination: "${POSTGRES_LOG_DESTINATION:-stderr}"
+      logging_collector: ${POSTGRES_LOGGING_COLLECTOR:-on}
+      log_directory: "${POSTGRES_LOG_DIRECTORY:-pg_log}"
+      log_filename: "${POSTGRES_LOG_FILENAME:-postgresql-%Y-%m-%d_%H%M%S.log}"
+      log_file_mode: ${POSTGRES_LOG_FILE_MODE:-0600}
+      log_rotation_age: "${POSTGRES_LOG_ROTATION_AGE:-1d}"
+      log_rotation_size: "${POSTGRES_LOG_ROTATION_SIZE:-10MB}"
+      log_truncate_on_rotation: ${POSTGRES_LOG_TRUNCATE_ON_ROTATION:-off}
+      
+      # Log Content Control
+      log_min_messages: "${POSTGRES_LOG_MIN_MESSAGES:-WARNING}"
+      log_min_error_statement: "${POSTGRES_LOG_MIN_ERROR_STATEMENT:-ERROR}"
+      log_min_duration_statement: ${POSTGRES_LOG_MIN_DURATION_STATEMENT:-1000}
+      
+      # Detailed Logging
+      log_checkpoints: ${POSTGRES_LOG_CHECKPOINTS:-on}
+      log_connections: ${POSTGRES_LOG_CONNECTIONS:-off}
+      log_disconnections: ${POSTGRES_LOG_DISCONNECTIONS:-off}
+      log_duration: ${POSTGRES_LOG_DURATION:-off}
+      log_error_verbosity: "${POSTGRES_LOG_ERROR_VERBOSITY:-default}"
+      log_hostname: ${POSTGRES_LOG_HOSTNAME:-off}
+      log_line_prefix: "${POSTGRES_LOG_LINE_PREFIX:-%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h }"
+      log_lock_waits: ${POSTGRES_LOG_LOCK_WAITS:-off}
+      log_statement: "${POSTGRES_LOG_STATEMENT:-none}"
+      log_replication_commands: ${POSTGRES_LOG_REPLICATION_COMMANDS:-off}
+      log_temp_files: ${POSTGRES_LOG_TEMP_FILES:--1}
+      log_timezone: "${POSTGRES_LOG_TIMEZONE:-UTC}"
+    
+    # Statistics Collection
+    statistics:
+      # Track Activities
+      track_activities: ${POSTGRES_TRACK_ACTIVITIES:-on}
+      track_counts: ${POSTGRES_TRACK_COUNTS:-on}
+      track_io_timing: ${POSTGRES_TRACK_IO_TIMING:-off}
+      track_functions: "${POSTGRES_TRACK_FUNCTIONS:-none}"
+      
+      # Statement Statistics
+      shared_preload_libraries: "${POSTGRES_SHARED_PRELOAD_LIBRARIES:-pg_stat_statements}"
+      pg_stat_statements:
+        max: ${POSTGRES_STAT_STATEMENTS_MAX:-5000}
+        track: "${POSTGRES_STAT_STATEMENTS_TRACK:-all}"
+        track_utility: ${POSTGRES_STAT_STATEMENTS_TRACK_UTILITY:-on}
+        save: ${POSTGRES_STAT_STATEMENTS_SAVE:-on}
+      
+      # Auto-vacuum Statistics
+      autovacuum:
+        enabled: ${POSTGRES_AUTOVACUUM:-on}
+        max_workers: ${POSTGRES_AUTOVACUUM_MAX_WORKERS:-3}
+        naptime: "${POSTGRES_AUTOVACUUM_NAPTIME:-1min}"
+        vacuum_threshold: ${POSTGRES_AUTOVACUUM_VACUUM_THRESHOLD:-50}
+        vacuum_scale_factor: ${POSTGRES_AUTOVACUUM_VACUUM_SCALE_FACTOR:-0.2}
+        analyze_threshold: ${POSTGRES_AUTOVACUUM_ANALYZE_THRESHOLD:-50}
+        analyze_scale_factor: ${POSTGRES_AUTOVACUUM_ANALYZE_SCALE_FACTOR:-0.1}
+        freeze_max_age: ${POSTGRES_AUTOVACUUM_FREEZE_MAX_AGE:-200000000}
+        multixact_freeze_max_age: ${POSTGRES_AUTOVACUUM_MULTIXACT_FREEZE_MAX_AGE:-400000000}
+        vacuum_cost_delay: "${POSTGRES_AUTOVACUUM_VACUUM_COST_DELAY:-20ms}"
+        vacuum_cost_limit: ${POSTGRES_AUTOVACUUM_VACUUM_COST_LIMIT:-200}
+
+  # Database Maintenance
+  maintenance:
+    # Vacuum Configuration
+    vacuum:
+      # Regular Vacuum
+      vacuum_cost_delay: "${POSTGRES_VACUUM_COST_DELAY:-0}"
+      vacuum_cost_page_hit: ${POSTGRES_VACUUM_COST_PAGE_HIT:-1}
+      vacuum_cost_page_miss: ${POSTGRES_VACUUM_COST_PAGE_MISS:-10}
+      vacuum_cost_page_dirty: ${POSTGRES_VACUUM_COST_PAGE_DIRTY:-20}
+      vacuum_cost_limit: ${POSTGRES_VACUUM_COST_LIMIT:-200}
+      
+      # Full Vacuum
+      vacuum_freeze_min_age: ${POSTGRES_VACUUM_FREEZE_MIN_AGE:-50000000}
+      vacuum_freeze_table_age: ${POSTGRES_VACUUM_FREEZE_TABLE_AGE:-150000000}
+      vacuum_multixact_freeze_min_age: ${POSTGRES_VACUUM_MULTIXACT_FREEZE_MIN_AGE:-5000000}
+      vacuum_multixact_freeze_table_age: ${POSTGRES_VACUUM_MULTIXACT_FREEZE_TABLE_AGE:-150000000}
+    
+    # Backup Configuration
+    backup:
+      # pg_dump Settings
+      pg_dump:
+        format: "${POSTGRES_BACKUP_FORMAT:-custom}"
+        compression: ${POSTGRES_BACKUP_COMPRESSION:-9}
+        jobs: ${POSTGRES_BACKUP_JOBS:-4}
+        verbose: ${POSTGRES_BACKUP_VERBOSE:-true}
+        
+        # Backup Options
+        options:
+          data_only: false
+          schema_only: false
+          no_owner: true
+          no_privileges: false
+          clean: true
+          create: true
+          if_exists: true
+          
+        # Scheduling
+        schedule:
+          full_backup: "0 2 * * 0"  # Weekly full backup
+          incremental_backup: "0 2 * * 1-6"  # Daily incremental
+          retention_days: 30
+      
+      # Continuous Archiving
+      wal_archiving:
+        enabled: ${POSTGRES_WAL_ARCHIVING_ENABLED:-false}
+        archive_command: "${POSTGRES_ARCHIVE_COMMAND:-}"
+        archive_timeout: "${POSTGRES_ARCHIVE_TIMEOUT:-60}"
+        
+        # Backup Storage
+        storage:
+          type: "${POSTGRES_BACKUP_STORAGE_TYPE:-s3}"
+          location: "${POSTGRES_BACKUP_STORAGE_LOCATION:-}"
+          encryption: ${POSTGRES_BACKUP_ENCRYPTION:-true}
+          compression: ${POSTGRES_BACKUP_COMPRESSION:-true}
+
+  # Extensions and Plugins
+  extensions:
+    # Core Extensions
+    core_extensions:
+      - name: "pg_stat_statements"
+        enabled: true
+        settings:
+          pg_stat_statements.max: 5000
+          pg_stat_statements.track: "all"
+      
+      - name: "pg_trgm"
+        enabled: true
+        settings: {}
+      
+      - name: "uuid-ossp"
+        enabled: true
+        settings: {}
+      
+      - name: "hstore"
+        enabled: false
+        settings: {}
+      
+      - name: "ltree"
+        enabled: false
+        settings: {}
+    
+    # AI/ML Extensions
+    ai_extensions:
+      - name: "pgvector"
+        enabled: true
+        settings:
+          vector.max_dimensions: 2000
+      
+      - name: "plpython3u"
+        enabled: false
+        settings: {}
+      
+      - name: "madlib"
+        enabled: false
+        settings: {}
+    
+    # Security Extensions
+    security_extensions:
+      - name: "pgcrypto"
+        enabled: true
+        settings: {}
+      
+      - name: "pg_audit"
+        enabled: false
+        settings:
+          pg_audit.log: "all"
+          pg_audit.log_catalog: false
+      
+      - name: "passwordcheck"
+        enabled: false
+        settings:
+          passwordcheck.minimum_length: 8
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      performance:
+        memory:
+          shared_buffers: "128MB"
+          effective_cache_size: "512MB"
+          work_mem: "2MB"
+      
+      monitoring:
+        logging:
+          log_min_messages: "INFO"
+          log_statement: "all"
+          log_duration: true
+      
+      security:
+        authentication:
+          auth_methods:
+            local: "trust"
+            host: "trust"
+    
+    production:
+      performance:
+        memory:
+          shared_buffers: "2GB"
+          effective_cache_size: "8GB"
+          work_mem: "8MB"
+      
+      monitoring:
+        logging:
+          log_min_messages: "WARNING"
+          log_statement: "ddl"
+          log_duration: false
+      
+      security:
+        authentication:
+          auth_methods:
+            local: "peer"
+            host: "scram-sha-256"
+            hostssl: "scram-sha-256"
+            hostnossl: "reject"
+        
+        encryption:
+          tde:
+            enabled: true
+          connection_encryption:
+            ssl_min_protocol_version: "TLSv1.2"
+
+# ==========================================
+# CONNECTION STRING TEMPLATES
+# ==========================================
+
+connection_strings:
+  # SQLAlchemy Connection String
+  sqlalchemy: "postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSL_MODE}&connect_timeout=${POSTGRES_CONNECT_TIMEOUT}"
+  
+  # Django Database URL
+  django: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+  
+  # Raw PostgreSQL Connection
+  raw: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} sslmode=${POSTGRES_SSL_MODE}"
+  
+  # Connection with Pool
+  pooled: "postgresql+psycopg2pool://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?pool_size=${POSTGRES_POOL_MAX}&max_overflow=${POSTGRES_POOL_OVERFLOW}"

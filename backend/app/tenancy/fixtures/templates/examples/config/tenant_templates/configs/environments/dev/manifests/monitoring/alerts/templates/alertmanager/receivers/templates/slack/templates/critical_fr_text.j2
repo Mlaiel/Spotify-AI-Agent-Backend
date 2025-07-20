@@ -1,0 +1,130 @@
+# Template d'Alerte Critique Entreprise (Français) - Grade Industriel Avancé
+{% set alert_emoji = {
+    'critical': '🚨',
+    'high': '⚠️',
+    'medium': '🔶',
+    'low': '💡',
+    'info': 'ℹ️'
+} %}
+
+{% set service_icons = {
+    'api': '🌐',
+    'database': '🗄️',
+    'ml': '🤖',
+    'audio': '🎵',
+    'auth': '🔐',
+    'storage': '💾',
+    'cache': '⚡',
+    'queue': '📬',
+    'monitoring': '📊'
+} %}
+
+{{ alert_emoji.get(alert.severity, '🚨') }} **ALERTE PRODUCTION CRITIQUE** {{ alert_emoji.get(alert.severity, '🚨') }}
+
+**{{ service_icons.get(alert.context.service_type, '⚙️') }} Analyse d'Impact Service**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Détails Principaux**
+• **Service**: `{{ alert.context.service_name }}` ({{ alert.context.service_version | default('inconnu') }})
+• **Composant**: `{{ alert.context.component }}`
+• **Environnement**: `{{ environment | upper }}` 
+• **Région**: `{{ alert.context.region | default('global') }}`
+• **Cluster**: `{{ alert.context.cluster_name | default('défaut') }}`
+
+🔥 **Informations d'Alerte**
+• **Titre**: {{ alert.title }}
+• **Description**: {{ alert.description }}
+• **Sévérité**: `{{ alert.severity.upper() }}` ({{ alert.priority_score | default(0) }}/10)
+• **Statut**: {{ alert.status | title }}
+• **Déclenchée**: {{ format_date(alert.created_at, 'full') }}
+• **Durée**: {{ alert.duration | duration_format | default('À l'instant') }}
+
+{% if alert.context.instance_id %}
+🖥️ **Contexte Infrastructure**
+• **Instance**: `{{ alert.context.instance_id }}`
+• **Nœud**: `{{ alert.context.node_name | default('N/A') }}`
+• **Pod**: `{{ alert.context.pod_name | default('N/A') }}`
+• **Namespace**: `{{ alert.context.namespace | default('défaut') }}`
+{% endif %}
+
+{% if alert.metrics %}
+📊 **Métriques de Performance**
+{% for metric_name, metric_value in alert.metrics.items() %}
+• **{{ metric_name | title }}**: {{ metric_value }}
+{% endfor %}
+{% endif %}
+
+{% if alert.business_impact %}
+💼 **Évaluation Impact Business**
+• **Niveau d'Impact**: {{ alert.business_impact.level | title }}
+• **Utilisateurs Affectés**: {{ alert.business_impact.affected_users | default('Inconnu') }}
+• **Impact Revenus**: {{ alert.business_impact.estimated_cost | default('En évaluation') }}
+• **Statut SLA**: {{ alert.business_impact.sla_breach | ternary('⚠️ VIOLATION', '✅ OK') }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🤖 **Analyse et Recommandations IA**
+{% if alert.ai_insights.root_cause_analysis %}
+**🔍 Analyse Cause Racine**:
+{{ alert.ai_insights.root_cause_analysis | truncate(200) }}
+{% endif %}
+
+{% if alert.ai_insights.recommended_actions %}
+**🛠️ Actions Immédiates** (Auto-générées):
+{% for action in alert.ai_insights.recommended_actions[:5] %}
+{{ loop.index }}. {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.similar_incidents %}
+**📈 Pattern Historique**: {{ alert.ai_insights.similar_incidents.count }} incidents similaires sur 30 jours
+**⏱️ Temps Résolution Moyen**: {{ alert.ai_insights.similar_incidents.avg_resolution_time | duration_format }}
+{% endif %}
+
+{% if alert.ai_insights.confidence_score %}
+**🎯 Confiance IA**: {{ alert.ai_insights.confidence_score }}% de précision
+{% endif %}
+{% endif %}
+
+{% if alert.runbooks %}
+📚 **Guides d'Urgence**
+{% for runbook in alert.runbooks %}
+• [{{ runbook.name }}]({{ runbook.url }}) - {{ runbook.description }}
+{% endfor %}
+{% endif %}
+
+{% if alert.related_alerts %}
+🔗 **Alertes Liées Actives** ({{ alert.related_alerts | length }})
+{% for related in alert.related_alerts[:3] %}
+• {{ related.service }} - {{ related.title }} ({{ related.severity }})
+{% endfor %}
+{% if alert.related_alerts | length > 3 %}
+• ... et {{ alert.related_alerts | length - 3 }} de plus
+{% endif %}
+{% endif %}
+
+🚀 **Actions Rapides**
+{% set base_url = dashboard_url %}
+• [🎛️ Tableau de Bord]({{ base_url }}/alerts/{{ alert.alert_id }})
+• [📊 Métriques & Graphiques]({{ metrics_url }}/d/{{ alert.context.service_name }})
+• [📋 Logs Service]({{ logs_url }}/app/{{ alert.context.service_name }})
+• [🔧 Vue Infrastructure]({{ base_url }}/infrastructure/{{ alert.context.cluster_name }})
+{% if alert.context.trace_id %}
+• [🔍 Traçage Distribué]({{ tracing_url }}/trace/{{ alert.context.trace_id }})
+{% endif %}
+
+{% if alert.escalation %}
+⚡ **Politique d'Escalade**
+• **Astreinte**: @{{ alert.escalation.primary_oncall | default('chef-équipe') }}
+• **Backup**: @{{ alert.escalation.secondary_oncall | default('équipe-backup') }}
+• **Auto-escalade dans**: {{ alert.escalation.escalation_time | default('15 minutes') }}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**ID Alerte**: `{{ alert.alert_id }}`
+**ID Corrélation**: `{{ alert.correlation_id | default('N/A') }}`
+**Tenant**: `{{ alert.tenant_id | default('système') }}`
+
+*🎵 Système de Monitoring Spotify AI Agent*
+*Généré: {{ format_date(now, 'iso') }}*
+*Environnement: {{ environment | upper }} | Version: {{ system_version | default('latest') }}*

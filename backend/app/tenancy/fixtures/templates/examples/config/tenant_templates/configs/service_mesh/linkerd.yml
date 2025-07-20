@@ -1,0 +1,804 @@
+# Linkerd Service Mesh Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Linkerd service mesh architecture with enterprise microservices
+# - Senior DevOps Engineer: Kubernetes/Linkerd enterprise deployment patterns
+# - Service Mesh Specialist: Linkerd configuration, traffic management, and security
+# - Platform Engineer: Service mesh observability, monitoring, and performance optimization
+# - Security Engineer: mTLS, RBAC, and Linkerd security hardening
+
+# ==========================================
+# LINKERD SERVICE MESH CONFIGURATION
+# ==========================================
+
+linkerd:
+  # General Settings
+  general:
+    enabled: ${LINKERD_ENABLED:-true}
+    version: "${LINKERD_VERSION:-stable-2.14.1}"
+    
+    # Installation Configuration
+    installation:
+      namespace: "${LINKERD_NAMESPACE:-linkerd}"
+      cli_version: "${LINKERD_CLI_VERSION:-stable-2.14.1}"
+      
+      # Control Plane Configuration
+      control_plane:
+        identity_trust_domain: "${LINKERD_TRUST_DOMAIN:-cluster.local}"
+        identity_trust_anchors_file: "${LINKERD_TRUST_ANCHORS_FILE:-}"
+        identity_issuer_certificate_file: "${LINKERD_ISSUER_CERT_FILE:-}"
+        identity_issuer_key_file: "${LINKERD_ISSUER_KEY_FILE:-}"
+        
+        # High Availability
+        high_availability: ${LINKERD_HIGH_AVAILABILITY:-false}
+        controller_replicas: ${LINKERD_CONTROLLER_REPLICAS:-1}
+        
+        # Resource Configuration
+        controller_resources:
+          cpu_request: "${LINKERD_CONTROLLER_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_CONTROLLER_MEMORY_REQUEST:-50Mi}"
+          cpu_limit: "${LINKERD_CONTROLLER_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_CONTROLLER_MEMORY_LIMIT:-250Mi}"
+    
+    # Mesh Configuration
+    mesh_config:
+      # Proxy Configuration
+      proxy_config:
+        proxy_version: "${LINKERD_PROXY_VERSION:-}"
+        proxy_log_level: "${LINKERD_PROXY_LOG_LEVEL:-warn,linkerd=info}"
+        proxy_log_format: "${LINKERD_PROXY_LOG_FORMAT:-plain}"
+        
+        # Resource Configuration
+        proxy_cpu_request: "${LINKERD_PROXY_CPU_REQUEST:-100m}"
+        proxy_memory_request: "${LINKERD_PROXY_MEMORY_REQUEST:-20Mi}"
+        proxy_cpu_limit: "${LINKERD_PROXY_CPU_LIMIT:-1000m}"
+        proxy_memory_limit: "${LINKERD_PROXY_MEMORY_LIMIT:-250Mi}"
+        
+        # Proxy Behavior
+        proxy_await_before_exit_seconds: ${LINKERD_PROXY_AWAIT_BEFORE_EXIT:-0}
+        proxy_outbound_connect_timeout: "${LINKERD_PROXY_OUTBOUND_CONNECT_TIMEOUT:-1000ms}"
+        proxy_inbound_connect_timeout: "${LINKERD_PROXY_INBOUND_CONNECT_TIMEOUT:-100ms}"
+        
+        # Proxy Port Configuration
+        proxy_control_port: ${LINKERD_PROXY_CONTROL_PORT:-4190}
+        proxy_inbound_port: ${LINKERD_PROXY_INBOUND_PORT:-4143}
+        proxy_outbound_port: ${LINKERD_PROXY_OUTBOUND_PORT:-4140}
+        proxy_admin_port: ${LINKERD_PROXY_ADMIN_PORT:-4191}
+
+  # Traffic Management
+  traffic_management:
+    # Traffic Policies
+    traffic_policies:
+      enabled: ${LINKERD_TRAFFIC_POLICIES_ENABLED:-true}
+      
+      # Default Traffic Policy
+      default_policy:
+        # Load Balancing
+        load_balancing:
+          algorithm: "${LINKERD_DEFAULT_LB_ALGORITHM:-ewma}"  # ewma, p2c, round_robin
+          
+        # Failure Accrual
+        failure_accrual:
+          consecutive_failures: ${LINKERD_DEFAULT_CONSECUTIVE_FAILURES:-7}
+          backoff:
+            min_penalty: "${LINKERD_DEFAULT_MIN_PENALTY:-1s}"
+            max_penalty: "${LINKERD_DEFAULT_MAX_PENALTY:-60s}"
+            jitter_ratio: ${LINKERD_DEFAULT_JITTER_RATIO:-0.1}
+        
+        # Circuit Breaker
+        circuit_breaker:
+          error_ratio: ${LINKERD_DEFAULT_ERROR_RATIO:-0.5}
+          latency_threshold: "${LINKERD_DEFAULT_LATENCY_THRESHOLD:-100ms}"
+          latency_percentile: ${LINKERD_DEFAULT_LATENCY_PERCENTILE:-0.95}
+          min_request_threshold: ${LINKERD_DEFAULT_MIN_REQUEST_THRESHOLD:-100}
+          consecutive_failures: ${LINKERD_DEFAULT_CB_CONSECUTIVE_FAILURES:-5}
+      
+      # Service-specific Traffic Policies
+      service_policies:
+        # API Service Traffic Policy
+        api_service:
+          enabled: ${LINKERD_API_SERVICE_TP_ENABLED:-true}
+          target_ref:
+            group: ""
+            kind: "Service"
+            name: "api-service"
+            namespace: "default"
+          
+          # API-specific Configuration
+          spec:
+            target_port: 8000
+            
+            # Retry Policy
+            retry:
+              max_retries: ${LINKERD_API_MAX_RETRIES:-3}
+              max_request_bytes: ${LINKERD_API_MAX_REQUEST_BYTES:-64000}
+              retry_ratio: ${LINKERD_API_RETRY_RATIO:-0.1}
+              
+              # Retry Conditions
+              retry_conditions:
+                - "5xx"
+                - "gateway-error"
+            
+            # Timeout Policy
+            timeout:
+              request: "${LINKERD_API_REQUEST_TIMEOUT:-30s}"
+              response: "${LINKERD_API_RESPONSE_TIMEOUT:-30s}"
+              idle: "${LINKERD_API_IDLE_TIMEOUT:-60s}"
+        
+        # Database Service Traffic Policy
+        database_service:
+          enabled: ${LINKERD_DATABASE_SERVICE_TP_ENABLED:-true}
+          target_ref:
+            group: ""
+            kind: "Service"
+            name: "database-service"
+            namespace: "default"
+          
+          # Database-specific Configuration
+          spec:
+            target_port: 5432
+            
+            # Connection Pool
+            connection_pool:
+              max_connections: ${LINKERD_DB_MAX_CONNECTIONS:-50}
+              connect_timeout: "${LINKERD_DB_CONNECT_TIMEOUT:-5s}"
+              idle_timeout: "${LINKERD_DB_IDLE_TIMEOUT:-300s}"
+            
+            # Circuit Breaker for Database
+            circuit_breaker:
+              error_ratio: ${LINKERD_DB_ERROR_RATIO:-0.3}
+              consecutive_failures: ${LINKERD_DB_CONSECUTIVE_FAILURES:-3}
+              min_request_threshold: ${LINKERD_DB_MIN_REQUEST_THRESHOLD:-20}
+        
+        # ML Service Traffic Policy
+        ml_service:
+          enabled: ${LINKERD_ML_SERVICE_TP_ENABLED:-true}
+          target_ref:
+            group: ""
+            kind: "Service"
+            name: "ml-service"
+            namespace: "default"
+          
+          # ML-specific Configuration
+          spec:
+            target_port: 8080
+            
+            # ML Timeout Configuration
+            timeout:
+              request: "${LINKERD_ML_REQUEST_TIMEOUT:-120s}"
+              response: "${LINKERD_ML_RESPONSE_TIMEOUT:-120s}"
+              idle: "${LINKERD_ML_IDLE_TIMEOUT:-300s}"
+            
+            # ML Retry Policy
+            retry:
+              max_retries: ${LINKERD_ML_MAX_RETRIES:-2}
+              retry_ratio: ${LINKERD_ML_RETRY_RATIO:-0.05}
+              retry_conditions:
+                - "5xx"
+                - "reset"
+    
+    # Traffic Splits
+    traffic_splits:
+      enabled: ${LINKERD_TRAFFIC_SPLITS_ENABLED:-true}
+      
+      # Service Traffic Splits
+      service_splits:
+        # API Service Traffic Split (A/B Testing)
+        api_service_split:
+          enabled: ${LINKERD_API_SERVICE_SPLIT_ENABLED:-false}
+          service: "api-service"
+          
+          # Traffic Split Configuration
+          backends:
+            - service: "api-service-v1"
+              weight: ${LINKERD_API_V1_WEIGHT:-90}
+            
+            - service: "api-service-v2"
+              weight: ${LINKERD_API_V2_WEIGHT:-10}
+        
+        # ML Service Traffic Split (Canary Deployment)
+        ml_service_split:
+          enabled: ${LINKERD_ML_SERVICE_SPLIT_ENABLED:-false}
+          service: "ml-service"
+          
+          # Canary Configuration
+          backends:
+            - service: "ml-service-stable"
+              weight: ${LINKERD_ML_STABLE_WEIGHT:-95}
+            
+            - service: "ml-service-canary"
+              weight: ${LINKERD_ML_CANARY_WEIGHT:-5}
+
+  # Security
+  security:
+    # mTLS Configuration
+    mtls:
+      enabled: ${LINKERD_MTLS_ENABLED:-true}
+      
+      # Certificate Management
+      certificates:
+        # Root Certificate
+        root_certificate:
+          validity_period: "${LINKERD_ROOT_CERT_VALIDITY:-8760h}"  # 1 year
+          key_algorithm: "${LINKERD_ROOT_CERT_KEY_ALGORITHM:-ecdsa-p256}"
+        
+        # Issuer Certificate
+        issuer_certificate:
+          validity_period: "${LINKERD_ISSUER_CERT_VALIDITY:-8760h}"  # 1 year
+          key_algorithm: "${LINKERD_ISSUER_CERT_KEY_ALGORITHM:-ecdsa-p256}"
+        
+        # Workload Certificates
+        workload_certificate:
+          validity_period: "${LINKERD_WORKLOAD_CERT_VALIDITY:-24h}"
+          refresh_before_expiry: "${LINKERD_WORKLOAD_CERT_REFRESH:-12h}"
+      
+      # Trust Policy
+      trust_policy:
+        # Default Trust Policy
+        default_policy:
+          enabled: ${LINKERD_DEFAULT_TRUST_POLICY_ENABLED:-true}
+          trust_anchors: "${LINKERD_DEFAULT_TRUST_ANCHORS:-}"
+        
+        # Service-specific Trust Policies
+        service_policies:
+          external_service:
+            enabled: ${LINKERD_EXTERNAL_TRUST_POLICY_ENABLED:-true}
+            service: "external-api"
+            trust_anchors: "${LINKERD_EXTERNAL_TRUST_ANCHORS:-}"
+    
+    # Authorization Policies
+    authorization:
+      enabled: ${LINKERD_AUTHORIZATION_ENABLED:-true}
+      
+      # Default Authorization Policy
+      default_policy: "${LINKERD_DEFAULT_AUTHZ_POLICY:-deny}"  # allow, deny, audit
+      
+      # Server Authorization
+      server_authorization:
+        # API Server Authorization
+        api_server:
+          enabled: ${LINKERD_API_SERVER_AUTHZ_ENABLED:-true}
+          server:
+            name: "api-server"
+            namespace: "default"
+            selector:
+              matchLabels:
+                app: "api-service"
+            port: 8000
+            proxy_protocol: "HTTP/2"
+          
+          # Authorization Rules
+          authorization_rules:
+            - name: "api-access"
+              source_selector:
+                matchLabels:
+                  app: "web-frontend"
+              
+              # HTTP Route Rules
+              http_route_rules:
+                - pathRegex: "/api/v1/.*"
+                  methods: ["GET", "POST", "PUT", "DELETE"]
+                  headers:
+                    - name: "authorization"
+                      present: true
+        
+        # Database Server Authorization
+        database_server:
+          enabled: ${LINKERD_DATABASE_SERVER_AUTHZ_ENABLED:-true}
+          server:
+            name: "database-server"
+            namespace: "default"
+            selector:
+              matchLabels:
+                app: "database"
+            port: 5432
+            proxy_protocol: "opaque"
+          
+          # Database Authorization Rules
+          authorization_rules:
+            - name: "database-access"
+              source_selector:
+                matchLabels:
+                  app: "api-service"
+            
+            - name: "ml-database-access"
+              source_selector:
+                matchLabels:
+                  app: "ml-service"
+        
+        # ML Server Authorization
+        ml_server:
+          enabled: ${LINKERD_ML_SERVER_AUTHZ_ENABLED:-true}
+          server:
+            name: "ml-server"
+            namespace: "default"
+            selector:
+              matchLabels:
+                app: "ml-service"
+            port: 8080
+            proxy_protocol: "HTTP/2"
+          
+          # ML Authorization Rules
+          authorization_rules:
+            - name: "ml-access"
+              source_selector:
+                matchLabels:
+                  app: "api-service"
+              
+              # ML-specific Routes
+              http_route_rules:
+                - pathRegex: "/predict.*"
+                  methods: ["POST"]
+                - pathRegex: "/health.*"
+                  methods: ["GET"]
+
+  # Observability
+  observability:
+    # Metrics Configuration
+    metrics:
+      enabled: ${LINKERD_METRICS_ENABLED:-true}
+      
+      # Prometheus Configuration
+      prometheus:
+        enabled: ${LINKERD_PROMETHEUS_ENABLED:-true}
+        retention_time: "${LINKERD_PROMETHEUS_RETENTION:-6h}"
+        
+        # Prometheus Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_PROMETHEUS_CPU_REQUEST:-300m}"
+          memory_request: "${LINKERD_PROMETHEUS_MEMORY_REQUEST:-300Mi}"
+          cpu_limit: "${LINKERD_PROMETHEUS_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_PROMETHEUS_MEMORY_LIMIT:-1Gi}"
+        
+        # Prometheus Persistence
+        persistence:
+          enabled: ${LINKERD_PROMETHEUS_PERSISTENCE_ENABLED:-false}
+          storage_class: "${LINKERD_PROMETHEUS_STORAGE_CLASS:-}"
+          size: "${LINKERD_PROMETHEUS_STORAGE_SIZE:-8Gi}"
+      
+      # Custom Metrics
+      custom_metrics:
+        enabled: ${LINKERD_CUSTOM_METRICS_ENABLED:-true}
+        
+        # Application Metrics
+        application_metrics:
+          - metric_name: "http_requests_total"
+            metric_type: "counter"
+            help: "Total number of HTTP requests"
+            labels: ["method", "status", "route"]
+          
+          - metric_name: "http_request_duration_seconds"
+            metric_type: "histogram"
+            help: "HTTP request duration in seconds"
+            labels: ["method", "status", "route"]
+            buckets: [0.001, 0.01, 0.1, 1, 10]
+          
+          - metric_name: "grpc_requests_total"
+            metric_type: "counter"
+            help: "Total number of gRPC requests"
+            labels: ["method", "status", "service"]
+    
+    # Distributed Tracing
+    tracing:
+      enabled: ${LINKERD_TRACING_ENABLED:-true}
+      
+      # Jaeger Configuration
+      jaeger:
+        enabled: ${LINKERD_JAEGER_ENABLED:-true}
+        collector_svc_addr: "${LINKERD_JAEGER_COLLECTOR:-jaeger-collector.jaeger:14268}"
+        collector_svc_account: "${LINKERD_JAEGER_COLLECTOR_SA:-jaeger-collector}"
+        
+        # Jaeger Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_JAEGER_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_JAEGER_MEMORY_REQUEST:-100Mi}"
+          cpu_limit: "${LINKERD_JAEGER_CPU_LIMIT:-500m}"
+          memory_limit: "${LINKERD_JAEGER_MEMORY_LIMIT:-500Mi}"
+      
+      # OpenTelemetry Configuration
+      opentelemetry:
+        enabled: ${LINKERD_OPENTELEMETRY_ENABLED:-false}
+        endpoint: "${LINKERD_OTEL_ENDPOINT:-otel-collector:4317}"
+    
+    # Dashboard Configuration
+    dashboard:
+      enabled: ${LINKERD_DASHBOARD_ENABLED:-true}
+      replicas: ${LINKERD_DASHBOARD_REPLICAS:-1}
+      
+      # Dashboard Resource Configuration
+      resources:
+        cpu_request: "${LINKERD_DASHBOARD_CPU_REQUEST:-100m}"
+        memory_request: "${LINKERD_DASHBOARD_MEMORY_REQUEST:-50Mi}"
+        cpu_limit: "${LINKERD_DASHBOARD_CPU_LIMIT:-1000m}"
+        memory_limit: "${LINKERD_DASHBOARD_MEMORY_LIMIT:-250Mi}"
+      
+      # External Access
+      external_access:
+        enabled: ${LINKERD_DASHBOARD_EXTERNAL_ACCESS_ENABLED:-false}
+        ingress:
+          enabled: ${LINKERD_DASHBOARD_INGRESS_ENABLED:-false}
+          host: "${LINKERD_DASHBOARD_HOST:-linkerd.spotify-ai-agent.com}"
+          tls:
+            enabled: ${LINKERD_DASHBOARD_TLS_ENABLED:-true}
+            secret_name: "${LINKERD_DASHBOARD_TLS_SECRET:-linkerd-dashboard-tls}"
+    
+    # Grafana Configuration
+    grafana:
+      enabled: ${LINKERD_GRAFANA_ENABLED:-true}
+      
+      # Grafana Resource Configuration
+      resources:
+        cpu_request: "${LINKERD_GRAFANA_CPU_REQUEST:-100m}"
+        memory_request: "${LINKERD_GRAFANA_MEMORY_REQUEST:-50Mi}"
+        cpu_limit: "${LINKERD_GRAFANA_CPU_LIMIT:-1000m}"
+        memory_limit: "${LINKERD_GRAFANA_MEMORY_LIMIT:-1Gi}"
+      
+      # Grafana Persistence
+      persistence:
+        enabled: ${LINKERD_GRAFANA_PERSISTENCE_ENABLED:-false}
+        storage_class: "${LINKERD_GRAFANA_STORAGE_CLASS:-}"
+        size: "${LINKERD_GRAFANA_STORAGE_SIZE:-2Gi}"
+      
+      # Grafana Dashboards
+      dashboards:
+        - name: "Top Line Metrics"
+          description: "High-level service mesh metrics"
+          
+        - name: "Deployment Metrics"
+          description: "Per-deployment detailed metrics"
+          
+        - name: "Pod Metrics"
+          description: "Per-pod detailed metrics"
+          
+        - name: "Service Metrics"
+          description: "Per-service detailed metrics"
+          
+        - name: "Route Metrics"
+          description: "Per-route detailed metrics"
+
+  # Performance and Scaling
+  performance:
+    # Proxy Performance Tuning
+    proxy_performance:
+      # Buffer Configuration
+      buffer_configuration:
+        socket_buffer_size: ${LINKERD_SOCKET_BUFFER_SIZE:-65536}
+        http_buffer_size: ${LINKERD_HTTP_BUFFER_SIZE:-65536}
+        
+      # Connection Configuration
+      connection_configuration:
+        max_in_flight_requests: ${LINKERD_MAX_IN_FLIGHT_REQUESTS:-10000}
+        
+      # Performance Tuning
+      performance_tuning:
+        disable_tap: ${LINKERD_DISABLE_TAP:-false}
+        
+        # CPU Affinity
+        cpu_affinity:
+          enabled: ${LINKERD_CPU_AFFINITY_ENABLED:-false}
+          cpu_set: "${LINKERD_CPU_SET:-0-1}"
+    
+    # Control Plane Performance
+    control_plane_performance:
+      # Controller Performance
+      controller:
+        # Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_CONTROLLER_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_CONTROLLER_MEMORY_REQUEST:-50Mi}"
+          cpu_limit: "${LINKERD_CONTROLLER_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_CONTROLLER_MEMORY_LIMIT:-250Mi}"
+        
+        # Performance Settings
+        settings:
+          enable_endpoint_slicing: ${LINKERD_ENABLE_ENDPOINT_SLICING:-true}
+          
+      # Identity Performance
+      identity:
+        # Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_IDENTITY_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_IDENTITY_MEMORY_REQUEST:-10Mi}"
+          cpu_limit: "${LINKERD_IDENTITY_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_IDENTITY_MEMORY_LIMIT:-250Mi}"
+      
+      # Proxy Injector Performance
+      proxy_injector:
+        # Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_PROXY_INJECTOR_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_PROXY_INJECTOR_MEMORY_REQUEST:-10Mi}"
+          cpu_limit: "${LINKERD_PROXY_INJECTOR_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_PROXY_INJECTOR_MEMORY_LIMIT:-250Mi}"
+    
+    # Horizontal Pod Autoscaling
+    hpa:
+      # Control Plane HPA
+      control_plane:
+        enabled: ${LINKERD_CONTROL_PLANE_HPA_ENABLED:-false}
+        
+        # Controller HPA
+        controller:
+          min_replicas: ${LINKERD_CONTROLLER_HPA_MIN_REPLICAS:-1}
+          max_replicas: ${LINKERD_CONTROLLER_HPA_MAX_REPLICAS:-3}
+          target_cpu_utilization: ${LINKERD_CONTROLLER_HPA_CPU_TARGET:-70}
+
+  # Multicluster Configuration
+  multicluster:
+    enabled: ${LINKERD_MULTICLUSTER_ENABLED:-false}
+    
+    # Link Configuration
+    link:
+      enabled: ${LINKERD_LINK_ENABLED:-false}
+      
+      # Remote Clusters
+      remote_clusters:
+        - name: "${LINKERD_REMOTE_CLUSTER_1_NAME:-remote1}"
+          api_server_address: "${LINKERD_REMOTE_CLUSTER_1_API_SERVER:-}"
+          service_account_token: "${LINKERD_REMOTE_CLUSTER_1_TOKEN:-}"
+          
+        - name: "${LINKERD_REMOTE_CLUSTER_2_NAME:-remote2}"
+          api_server_address: "${LINKERD_REMOTE_CLUSTER_2_API_SERVER:-}"
+          service_account_token: "${LINKERD_REMOTE_CLUSTER_2_TOKEN:-}"
+    
+    # Gateway Configuration
+    gateway:
+      enabled: ${LINKERD_MULTICLUSTER_GATEWAY_ENABLED:-false}
+      
+      # Gateway Settings
+      settings:
+        port: ${LINKERD_GATEWAY_PORT:-4143}
+        probe_port: ${LINKERD_GATEWAY_PROBE_PORT:-4191}
+        
+        # Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_GATEWAY_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_GATEWAY_MEMORY_REQUEST:-50Mi}"
+          cpu_limit: "${LINKERD_GATEWAY_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_GATEWAY_MEMORY_LIMIT:-250Mi}"
+
+  # Extensions
+  extensions:
+    # SMI Extension
+    smi:
+      enabled: ${LINKERD_SMI_ENABLED:-false}
+      
+      # SMI Configuration
+      configuration:
+        traffic_access: ${LINKERD_SMI_TRAFFIC_ACCESS:-true}
+        traffic_metrics: ${LINKERD_SMI_TRAFFIC_METRICS:-true}
+        traffic_specs: ${LINKERD_SMI_TRAFFIC_SPECS:-true}
+        traffic_split: ${LINKERD_SMI_TRAFFIC_SPLIT:-true}
+    
+    # Flagger Extension
+    flagger:
+      enabled: ${LINKERD_FLAGGER_ENABLED:-false}
+      
+      # Flagger Configuration
+      configuration:
+        mesh_provider: "linkerd"
+        metrics_server: "${LINKERD_FLAGGER_METRICS_SERVER:-http://prometheus:9090}"
+        
+        # Slack Notifications
+        slack:
+          enabled: ${LINKERD_FLAGGER_SLACK_ENABLED:-false}
+          webhook_url: "${LINKERD_FLAGGER_SLACK_WEBHOOK:-}"
+          channel: "${LINKERD_FLAGGER_SLACK_CHANNEL:-#alerts}"
+    
+    # Policy Controller
+    policy_controller:
+      enabled: ${LINKERD_POLICY_CONTROLLER_ENABLED:-true}
+      
+      # Policy Configuration
+      configuration:
+        default_policy: "${LINKERD_POLICY_DEFAULT:-allow}"  # allow, deny
+        
+        # Resource Configuration
+        resources:
+          cpu_request: "${LINKERD_POLICY_CPU_REQUEST:-100m}"
+          memory_request: "${LINKERD_POLICY_MEMORY_REQUEST:-50Mi}"
+          cpu_limit: "${LINKERD_POLICY_CPU_LIMIT:-1000m}"
+          memory_limit: "${LINKERD_POLICY_MEMORY_LIMIT:-250Mi}"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: true
+        installation:
+          high_availability: false
+          controller_replicas: 1
+      
+      security:
+        mtls:
+          enabled: true
+        
+        authorization:
+          enabled: false
+          default_policy: "allow"
+      
+      observability:
+        metrics:
+          enabled: true
+          prometheus:
+            retention_time: "2h"
+            persistence:
+              enabled: false
+        
+        tracing:
+          enabled: true
+          jaeger:
+            enabled: true
+        
+        dashboard:
+          enabled: true
+          replicas: 1
+          external_access:
+            enabled: true
+        
+        grafana:
+          enabled: true
+          persistence:
+            enabled: false
+      
+      performance:
+        proxy_performance:
+          performance_tuning:
+            disable_tap: false
+        
+        hpa:
+          control_plane:
+            enabled: false
+    
+    testing:
+      general:
+        enabled: true
+        installation:
+          high_availability: false
+          controller_replicas: 1
+      
+      traffic_management:
+        traffic_splits:
+          enabled: true
+          service_splits:
+            api_service_split:
+              enabled: true
+      
+      security:
+        mtls:
+          enabled: true
+        
+        authorization:
+          enabled: true
+          default_policy: "deny"
+      
+      observability:
+        metrics:
+          enabled: true
+          prometheus:
+            retention_time: "4h"
+        
+        tracing:
+          enabled: true
+      
+      extensions:
+        flagger:
+          enabled: true
+    
+    production:
+      general:
+        enabled: true
+        installation:
+          high_availability: true
+          controller_replicas: 3
+      
+      traffic_management:
+        traffic_policies:
+          enabled: true
+          service_policies:
+            api_service:
+              enabled: true
+            database_service:
+              enabled: true
+            ml_service:
+              enabled: true
+        
+        traffic_splits:
+          enabled: true
+      
+      security:
+        mtls:
+          enabled: true
+          certificates:
+            root_certificate:
+              validity_period: "8760h"
+            issuer_certificate:
+              validity_period: "8760h"
+            workload_certificate:
+              validity_period: "24h"
+              refresh_before_expiry: "12h"
+        
+        authorization:
+          enabled: true
+          default_policy: "deny"
+          server_authorization:
+            api_server:
+              enabled: true
+            database_server:
+              enabled: true
+            ml_server:
+              enabled: true
+      
+      observability:
+        metrics:
+          enabled: true
+          prometheus:
+            enabled: true
+            retention_time: "6h"
+            persistence:
+              enabled: true
+              storage_class: "fast-ssd"
+              size: "8Gi"
+        
+        tracing:
+          enabled: true
+          jaeger:
+            enabled: true
+        
+        dashboard:
+          enabled: true
+          replicas: 2
+          external_access:
+            enabled: true
+            ingress:
+              enabled: true
+              tls:
+                enabled: true
+        
+        grafana:
+          enabled: true
+          persistence:
+            enabled: true
+            storage_class: "fast-ssd"
+            size: "2Gi"
+      
+      performance:
+        proxy_performance:
+          performance_tuning:
+            disable_tap: true
+          cpu_affinity:
+            enabled: true
+        
+        control_plane_performance:
+          controller:
+            resources:
+              cpu_request: "200m"
+              memory_request: "100Mi"
+              cpu_limit: "2000m"
+              memory_limit: "500Mi"
+        
+        hpa:
+          control_plane:
+            enabled: true
+            controller:
+              min_replicas: 2
+              max_replicas: 5
+              target_cpu_utilization: 70
+      
+      multicluster:
+        enabled: false
+      
+      extensions:
+        smi:
+          enabled: false
+        
+        flagger:
+          enabled: true
+          configuration:
+            slack:
+              enabled: true
+        
+        policy_controller:
+          enabled: true

@@ -1,0 +1,543 @@
+{
+  "integration_endpoints": {
+    "version": "2.0.0",
+    "last_updated": "2024-01-20T18:00:00Z",
+    "created_by": "fahed.mlaiel",
+    "description": "Configuration des endpoints d'intégration enterprise ultra-avancée",
+    
+    "global_settings": {
+      "default_timeout_seconds": 30,
+      "max_retries": 3,
+      "retry_backoff_factor": 2,
+      "circuit_breaker_enabled": true,
+      "rate_limiting_enabled": true,
+      "authentication_required": true,
+      "ssl_verification": true,
+      "request_signing": true
+    },
+    
+    "external_apis": {
+      "spotify_api": {
+        "name": "Spotify Web API",
+        "base_url": "https://api.spotify.com/v1",
+        "version": "1",
+        "authentication": {
+          "type": "oauth2",
+          "client_credentials_flow": true,
+          "authorization_code_flow": true,
+          "scopes": [
+            "user-read-private",
+            "user-read-email",
+            "playlist-read-private",
+            "playlist-modify-public",
+            "playlist-modify-private"
+          ]
+        },
+        "rate_limits": {
+          "requests_per_second": 100,
+          "requests_per_hour": 10000,
+          "burst_capacity": 200
+        },
+        "endpoints": {
+          "user_profile": "/me",
+          "user_playlists": "/me/playlists",
+          "search": "/search",
+          "recommendations": "/recommendations",
+          "audio_features": "/audio-features/{id}",
+          "track_analysis": "/audio-analysis/{id}"
+        },
+        "health_check": {
+          "endpoint": "/",
+          "method": "GET",
+          "expected_status": 200,
+          "interval_seconds": 300
+        }
+      },
+      
+      "openai_api": {
+        "name": "OpenAI API",
+        "base_url": "https://api.openai.com/v1",
+        "version": "1",
+        "authentication": {
+          "type": "bearer_token",
+          "header_name": "Authorization"
+        },
+        "rate_limits": {
+          "requests_per_minute": 3000,
+          "tokens_per_minute": 250000,
+          "requests_per_day": 200000
+        },
+        "endpoints": {
+          "chat_completions": "/chat/completions",
+          "embeddings": "/embeddings",
+          "fine_tuning": "/fine_tuning/jobs",
+          "models": "/models"
+        },
+        "models": {
+          "gpt4": {
+            "name": "gpt-4-turbo-preview",
+            "context_window": 128000,
+            "cost_per_1k_tokens": 0.01
+          },
+          "embedding": {
+            "name": "text-embedding-3-large",
+            "dimensions": 3072,
+            "cost_per_1k_tokens": 0.00013
+          }
+        }
+      },
+      
+      "huggingface_api": {
+        "name": "Hugging Face API",
+        "base_url": "https://api-inference.huggingface.co",
+        "version": "1",
+        "authentication": {
+          "type": "bearer_token",
+          "header_name": "Authorization"
+        },
+        "rate_limits": {
+          "requests_per_hour": 30000,
+          "compute_time_per_month": 30000
+        },
+        "endpoints": {
+          "models": "/models",
+          "inference": "/models/{model_id}",
+          "feature_extraction": "/models/{model_id}",
+          "text_generation": "/models/{model_id}"
+        },
+        "preferred_models": {
+          "text_classification": "microsoft/DialoGPT-medium",
+          "sentiment_analysis": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "embeddings": "sentence-transformers/all-MiniLM-L6-v2"
+        }
+      }
+    },
+    
+    "enterprise_systems": {
+      "salesforce": {
+        "name": "Salesforce CRM",
+        "base_url": "https://{instance}.salesforce.com",
+        "version": "58.0",
+        "authentication": {
+          "type": "oauth2",
+          "grant_type": "client_credentials",
+          "sandbox_mode": false
+        },
+        "endpoints": {
+          "sobjects": "/services/data/v58.0/sobjects",
+          "query": "/services/data/v58.0/query",
+          "composite": "/services/data/v58.0/composite"
+        },
+        "objects": {
+          "account": "Account",
+          "contact": "Contact",
+          "opportunity": "Opportunity",
+          "lead": "Lead"
+        }
+      },
+      
+      "microsoft_graph": {
+        "name": "Microsoft Graph API",
+        "base_url": "https://graph.microsoft.com",
+        "version": "v1.0",
+        "authentication": {
+          "type": "oauth2",
+          "tenant_id_required": true,
+          "scopes": [
+            "User.Read",
+            "Mail.Read",
+            "Calendars.Read",
+            "Files.Read"
+          ]
+        },
+        "endpoints": {
+          "me": "/me",
+          "users": "/users",
+          "groups": "/groups",
+          "mail": "/me/messages",
+          "calendar": "/me/events"
+        }
+      },
+      
+      "aws_services": {
+        "name": "Amazon Web Services",
+        "base_url": "https://{service}.{region}.amazonaws.com",
+        "authentication": {
+          "type": "aws_signature_v4",
+          "access_key_required": true,
+          "secret_key_required": true,
+          "region_required": true
+        },
+        "services": {
+          "s3": {
+            "name": "Simple Storage Service",
+            "operations": ["GetObject", "PutObject", "DeleteObject", "ListBuckets"]
+          },
+          "lambda": {
+            "name": "AWS Lambda",
+            "operations": ["InvokeFunction", "CreateFunction", "UpdateFunctionCode"]
+          },
+          "secretsmanager": {
+            "name": "AWS Secrets Manager",
+            "operations": ["GetSecretValue", "PutSecretValue", "CreateSecret"]
+          }
+        }
+      }
+    },
+    
+    "internal_microservices": {
+      "user_service": {
+        "name": "User Management Service",
+        "base_url": "http://user-service.spotify-ai.svc.cluster.local:8080",
+        "version": "v1",
+        "authentication": {
+          "type": "jwt",
+          "issuer": "spotify-ai-auth",
+          "audience": "spotify-ai-services"
+        },
+        "endpoints": {
+          "users": "/api/v1/users",
+          "profiles": "/api/v1/profiles",
+          "preferences": "/api/v1/preferences",
+          "health": "/health"
+        },
+        "circuit_breaker": {
+          "failure_threshold": 5,
+          "timeout_seconds": 60,
+          "half_open_max_calls": 3
+        }
+      },
+      
+      "notification_service": {
+        "name": "Notification Service",
+        "base_url": "http://notification-service.spotify-ai.svc.cluster.local:8080",
+        "version": "v1",
+        "authentication": {
+          "type": "service_account",
+          "token_path": "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        },
+        "endpoints": {
+          "send_email": "/api/v1/notifications/email",
+          "send_sms": "/api/v1/notifications/sms",
+          "send_push": "/api/v1/notifications/push",
+          "templates": "/api/v1/templates"
+        },
+        "message_queue": {
+          "enabled": true,
+          "queue_name": "notifications",
+          "max_retries": 3,
+          "dead_letter_queue": "notifications_dlq"
+        }
+      },
+      
+      "analytics_service": {
+        "name": "Analytics and Metrics Service",
+        "base_url": "http://analytics-service.spotify-ai.svc.cluster.local:8080",
+        "version": "v2",
+        "authentication": {
+          "type": "api_key",
+          "header_name": "X-API-Key"
+        },
+        "endpoints": {
+          "events": "/api/v2/events",
+          "metrics": "/api/v2/metrics",
+          "dashboards": "/api/v2/dashboards",
+          "reports": "/api/v2/reports"
+        },
+        "data_retention": {
+          "raw_events": "30d",
+          "aggregated_metrics": "1y",
+          "reports": "7y"
+        }
+      }
+    },
+    
+    "data_sources": {
+      "postgresql_primary": {
+        "name": "Primary PostgreSQL Database",
+        "connection_string": "postgresql://{username}:{password}@{host}:{port}/{database}",
+        "host": "postgres-primary.spotify-ai.svc.cluster.local",
+        "port": 5432,
+        "database": "spotify_ai_main",
+        "ssl_mode": "require",
+        "connection_pool": {
+          "min_size": 5,
+          "max_size": 20,
+          "idle_timeout": 300,
+          "connection_timeout": 30
+        },
+        "read_replicas": [
+          {
+            "host": "postgres-replica-1.spotify-ai.svc.cluster.local",
+            "port": 5432,
+            "weight": 50
+          },
+          {
+            "host": "postgres-replica-2.spotify-ai.svc.cluster.local",
+            "port": 5432,
+            "weight": 50
+          }
+        ]
+      },
+      
+      "redis_cluster": {
+        "name": "Redis Cache Cluster",
+        "nodes": [
+          {
+            "host": "redis-node-1.spotify-ai.svc.cluster.local",
+            "port": 6379,
+            "role": "master"
+          },
+          {
+            "host": "redis-node-2.spotify-ai.svc.cluster.local",
+            "port": 6379,
+            "role": "replica"
+          },
+          {
+            "host": "redis-node-3.spotify-ai.svc.cluster.local",
+            "port": 6379,
+            "role": "master"
+          }
+        ],
+        "connection_pool": {
+          "max_connections": 100,
+          "connection_timeout": 5,
+          "socket_timeout": 5
+        },
+        "sentinel": {
+          "enabled": true,
+          "master_name": "spotify-ai-redis",
+          "sentinels": [
+            "redis-sentinel-1.spotify-ai.svc.cluster.local:26379",
+            "redis-sentinel-2.spotify-ai.svc.cluster.local:26379",
+            "redis-sentinel-3.spotify-ai.svc.cluster.local:26379"
+          ]
+        }
+      },
+      
+      "elasticsearch_cluster": {
+        "name": "Elasticsearch Search Cluster",
+        "hosts": [
+          "https://elasticsearch-master-1.spotify-ai.svc.cluster.local:9200",
+          "https://elasticsearch-master-2.spotify-ai.svc.cluster.local:9200",
+          "https://elasticsearch-master-3.spotify-ai.svc.cluster.local:9200"
+        ],
+        "authentication": {
+          "username": "elastic",
+          "password_secret": "elasticsearch-credentials",
+          "ca_cert_path": "/etc/ssl/certs/elasticsearch-ca.crt"
+        },
+        "indices": {
+          "logs": {
+            "pattern": "logs-*",
+            "shards": 3,
+            "replicas": 1,
+            "retention_days": 30
+          },
+          "metrics": {
+            "pattern": "metrics-*",
+            "shards": 5,
+            "replicas": 2,
+            "retention_days": 90
+          }
+        }
+      }
+    },
+    
+    "monitoring_and_observability": {
+      "prometheus": {
+        "name": "Prometheus Metrics Server",
+        "base_url": "http://prometheus.spotify-ai.svc.cluster.local:9090",
+        "endpoints": {
+          "query": "/api/v1/query",
+          "query_range": "/api/v1/query_range",
+          "labels": "/api/v1/labels",
+          "targets": "/api/v1/targets"
+        },
+        "federation": {
+          "enabled": true,
+          "external_url": "https://prometheus.spotify-ai.com"
+        }
+      },
+      
+      "grafana": {
+        "name": "Grafana Dashboard Server",
+        "base_url": "http://grafana.spotify-ai.svc.cluster.local:3000",
+        "authentication": {
+          "type": "basic_auth",
+          "username": "admin",
+          "password_secret": "grafana-credentials"
+        },
+        "endpoints": {
+          "dashboards": "/api/dashboards",
+          "datasources": "/api/datasources",
+          "alerts": "/api/v1/provisioning/alert-rules"
+        }
+      },
+      
+      "jaeger": {
+        "name": "Jaeger Tracing System",
+        "base_url": "http://jaeger-query.spotify-ai.svc.cluster.local:16686",
+        "collector_endpoint": "http://jaeger-collector.spotify-ai.svc.cluster.local:14268",
+        "agent_endpoint": "jaeger-agent.spotify-ai.svc.cluster.local:6831",
+        "sampling_rate": 0.1
+      }
+    },
+    
+    "security_services": {
+      "vault": {
+        "name": "HashiCorp Vault",
+        "base_url": "https://vault.spotify-ai.svc.cluster.local:8200",
+        "authentication": {
+          "type": "kubernetes",
+          "role": "spotify-ai-app",
+          "token_path": "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        },
+        "secret_engines": {
+          "kv": {
+            "path": "secret/",
+            "version": 2
+          },
+          "database": {
+            "path": "database/",
+            "dynamic_credentials": true
+          },
+          "aws": {
+            "path": "aws/",
+            "dynamic_credentials": true
+          }
+        }
+      },
+      
+      "keycloak": {
+        "name": "Keycloak Identity Provider",
+        "base_url": "https://keycloak.spotify-ai.com",
+        "realm": "spotify-ai",
+        "client_id": "spotify-ai-backend",
+        "endpoints": {
+          "token": "/realms/spotify-ai/protocol/openid-connect/token",
+          "userinfo": "/realms/spotify-ai/protocol/openid-connect/userinfo",
+          "logout": "/realms/spotify-ai/protocol/openid-connect/logout"
+        }
+      }
+    },
+    
+    "message_queues": {
+      "rabbitmq": {
+        "name": "RabbitMQ Message Broker",
+        "host": "rabbitmq.spotify-ai.svc.cluster.local",
+        "port": 5672,
+        "management_port": 15672,
+        "virtual_host": "/spotify-ai",
+        "ssl_enabled": true,
+        "exchanges": {
+          "events": {
+            "type": "topic",
+            "durable": true,
+            "auto_delete": false
+          },
+          "notifications": {
+            "type": "direct",
+            "durable": true,
+            "auto_delete": false
+          }
+        },
+        "queues": {
+          "template_processing": {
+            "durable": true,
+            "exclusive": false,
+            "auto_delete": false,
+            "max_length": 10000
+          }
+        }
+      },
+      
+      "apache_kafka": {
+        "name": "Apache Kafka",
+        "bootstrap_servers": [
+          "kafka-1.spotify-ai.svc.cluster.local:9092",
+          "kafka-2.spotify-ai.svc.cluster.local:9092",
+          "kafka-3.spotify-ai.svc.cluster.local:9092"
+        ],
+        "security_protocol": "SASL_SSL",
+        "sasl_mechanism": "SCRAM-SHA-256",
+        "topics": {
+          "user_events": {
+            "partitions": 12,
+            "replication_factor": 3,
+            "retention_ms": 604800000
+          },
+          "template_analytics": {
+            "partitions": 6,
+            "replication_factor": 3,
+            "retention_ms": 2592000000
+          }
+        }
+      }
+    },
+    
+    "file_storage": {
+      "minio": {
+        "name": "MinIO Object Storage",
+        "endpoint": "https://minio.spotify-ai.svc.cluster.local:9000",
+        "region": "us-east-1",
+        "ssl_enabled": true,
+        "buckets": {
+          "templates": {
+            "versioning": true,
+            "encryption": "AES256",
+            "lifecycle_policy": "30d"
+          },
+          "user_uploads": {
+            "versioning": false,
+            "encryption": "AES256",
+            "lifecycle_policy": "90d"
+          },
+          "backups": {
+            "versioning": true,
+            "encryption": "AES256",
+            "lifecycle_policy": "7y"
+          }
+        }
+      }
+    },
+    
+    "environment_specific_overrides": {
+      "development": {
+        "global_settings.default_timeout_seconds": 60,
+        "global_settings.ssl_verification": false,
+        "postgresql_primary.connection_pool.max_size": 5,
+        "redis_cluster.connection_pool.max_connections": 10
+      },
+      
+      "staging": {
+        "global_settings.default_timeout_seconds": 45,
+        "postgresql_primary.connection_pool.max_size": 10,
+        "redis_cluster.connection_pool.max_connections": 50
+      },
+      
+      "production": {
+        "global_settings.default_timeout_seconds": 30,
+        "global_settings.circuit_breaker_enabled": true,
+        "global_settings.rate_limiting_enabled": true,
+        "postgresql_primary.connection_pool.max_size": 20,
+        "redis_cluster.connection_pool.max_connections": 100
+      }
+    },
+    
+    "disaster_recovery": {
+      "backup_endpoints": {
+        "postgresql_backup": "postgresql://backup-postgres.spotify-ai-dr.svc.cluster.local:5432/spotify_ai_main",
+        "redis_backup": "redis://backup-redis.spotify-ai-dr.svc.cluster.local:6379",
+        "elasticsearch_backup": "https://backup-elasticsearch.spotify-ai-dr.svc.cluster.local:9200"
+      },
+      
+      "failover_strategy": {
+        "automatic": true,
+        "health_check_interval": 30,
+        "failover_threshold": 3,
+        "recovery_check_interval": 60
+      }
+    }
+  }
+}

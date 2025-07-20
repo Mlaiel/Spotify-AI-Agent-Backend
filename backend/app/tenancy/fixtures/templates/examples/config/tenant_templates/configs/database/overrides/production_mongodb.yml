@@ -1,0 +1,650 @@
+# MongoDB Production Environment Overrides
+# =======================================
+# This configuration overrides default MongoDB settings for production environments
+# Optimized for maximum performance, security, reliability, and horizontal scalability
+
+mongodb:
+  # Production cluster configuration
+  cluster:
+    # Sharded cluster setup for horizontal scaling
+    sharding:
+      enabled: true
+      
+      # Config servers (replica set)
+      config_servers:
+        replica_set: "configReplSet"
+        members:
+          - host: mongodb-config-01.internal:27019
+          - host: mongodb-config-02.internal:27019
+          - host: mongodb-config-03.internal:27019
+            
+      # Mongos routers
+      mongos_routers:
+        - host: mongodb-router-01.internal:27017
+        - host: mongodb-router-02.internal:27017
+        - host: mongodb-router-03.internal:27017
+        
+      # Shard replica sets
+      shards:
+        shard01:
+          replica_set: "shard01ReplSet"
+          members:
+            - host: mongodb-shard01-01.internal:27018
+              priority: 1.0
+              votes: 1
+            - host: mongodb-shard01-02.internal:27018
+              priority: 0.5
+              votes: 1
+            - host: mongodb-shard01-03.internal:27018
+              priority: 0.5
+              votes: 1
+              
+        shard02:
+          replica_set: "shard02ReplSet"
+          members:
+            - host: mongodb-shard02-01.internal:27018
+              priority: 1.0
+              votes: 1
+            - host: mongodb-shard02-02.internal:27018
+              priority: 0.5
+              votes: 1
+            - host: mongodb-shard02-03.internal:27018
+              priority: 0.5
+              votes: 1
+              
+        shard03:
+          replica_set: "shard03ReplSet"
+          members:
+            - host: mongodb-shard03-01.internal:27018
+              priority: 1.0
+              votes: 1
+            - host: mongodb-shard03-02.internal:27018
+              priority: 0.5
+              votes: 1
+            - host: mongodb-shard03-03.internal:27018
+              priority: 0.5
+              votes: 1
+              
+  # Production connection settings
+  connection:
+    # Connection via mongos routers
+    uri: "mongodb://${TENANT_ID}_prod_user:${MONGODB_PROD_PASSWORD}@mongodb-router-01.internal:27017,mongodb-router-02.internal:27017,mongodb-router-03.internal:27017/${TENANT_ID}_prod?authSource=admin&ssl=true&replicaSet=false"
+    
+    database: "${TENANT_ID}_prod"
+    username: "${TENANT_ID}_prod_user"
+    password: "${MONGODB_PROD_PASSWORD}"
+    auth_source: admin
+    
+    # Production connection pool settings
+    pool:
+      min_size: 20
+      max_size: 500
+      max_idle_time: 600000  # 10 minutes
+      wait_queue_timeout: 30000
+      socket_timeout: 120000
+      connect_timeout: 30000
+      server_selection_timeout: 30000
+      heartbeat_frequency: 10000
+      
+    # SSL/TLS configuration
+    ssl:
+      enabled: true
+      cert_file: "/etc/ssl/mongodb/prod-client.pem"
+      key_file: "/etc/ssl/mongodb/prod-client-key.pem"
+      ca_file: "/etc/ssl/mongodb/prod-ca.pem"
+      allow_invalid_certificates: false
+      allow_invalid_hostnames: false
+      
+    # Read preferences for production
+    read_preference: secondaryPreferred
+    read_concern: majority
+    write_concern:
+      w: majority
+      j: true
+      wtimeout: 10000
+      
+  # Production authentication and authorization
+  authentication:
+    enabled: true
+    mechanism: SCRAM-SHA-256
+    
+    # Production user roles
+    users:
+      admin:
+        username: "${TENANT_ID}_admin"
+        password: "${MONGODB_ADMIN_PASSWORD}"
+        roles:
+          - role: dbOwner
+            db: "${TENANT_ID}_prod"
+          - role: clusterAdmin
+            db: admin
+            
+      app_user:
+        username: "${TENANT_ID}_prod_user"
+        password: "${MONGODB_PROD_PASSWORD}"
+        roles:
+          - role: readWrite
+            db: "${TENANT_ID}_prod"
+            
+      readonly_user:
+        username: "${TENANT_ID}_prod_reader"
+        password: "${MONGODB_READER_PASSWORD}"
+        roles:
+          - role: read
+            db: "${TENANT_ID}_prod"
+            
+      analytics_user:
+        username: "${TENANT_ID}_analytics"
+        password: "${MONGODB_ANALYTICS_PASSWORD}"
+        roles:
+          - role: read
+            db: "${TENANT_ID}_prod"
+          - role: readWrite
+            db: "${TENANT_ID}_analytics"
+            
+      backup_user:
+        username: "${TENANT_ID}_backup"
+        password: "${MONGODB_BACKUP_PASSWORD}"
+        roles:
+          - role: backup
+            db: admin
+          - role: read
+            db: "${TENANT_ID}_prod"
+            
+  # Production performance optimization
+  performance:
+    # WiredTiger storage engine settings
+    wired_tiger:
+      cache_size_gb: 32.0  # 50% of system RAM (64GB system)
+      checkpoint_sync: true
+      directory_for_indexes: true  # Separate index directory
+      block_compressor: snappy
+      prefix_compression: true
+      
+      # Collection-level settings
+      collection_config:
+        block_compressor: snappy
+        
+      # Index-level settings
+      index_config:
+        prefix_compression: true
+        
+    # Memory management
+    memory:
+      max_memory_usage_gb: 48  # 75% of system RAM
+      
+    # Query optimization
+    query:
+      plan_cache_size: "1GB"
+      cursor_timeout: 1800000  # 30 minutes
+      max_time_ms: 60000      # 60 seconds max query time
+      
+    # Aggregation pipeline optimization
+    aggregation:
+      max_memory_usage_mb: 2048
+      allow_disk_use: true
+      
+    # Index management
+    indexes:
+      background_building: true
+      max_index_builds: 3
+      
+    # Profiling for production
+    profiling:
+      enabled: true
+      level: 1  # Profile slow operations only
+      slow_op_threshold: 1000  # 1 second
+      sample_rate: 0.01  # 1% sampling
+      
+  # Production security configuration
+  security:
+    # Strong authentication
+    authorization: enabled
+    cluster_auth_mode: x509
+    
+    # Network security
+    network:
+      bind_ip_all: false
+      bind_ip:
+        - 127.0.0.1
+        - mongodb-internal-network
+        
+      port: 27017
+      max_incoming_connections: 10000
+      
+    # Encryption at rest
+    encryption:
+      enabled: true
+      key_file: "/etc/mongodb/prod-encryption.key"
+      
+    # TLS/SSL encryption in transit
+    tls:
+      mode: requireTLS
+      certificate_key_file: "/etc/ssl/mongodb/prod-server.pem"
+      ca_file: "/etc/ssl/mongodb/prod-ca.pem"
+      certificate_key_file_password: "${MONGODB_TLS_PASSWORD}"
+      allow_invalid_certificates: false
+      allow_invalid_hostnames: false
+      
+    # Auditing for compliance
+    auditing:
+      enabled: true
+      destination: file
+      path: "/var/log/mongodb/prod-audit-${TENANT_ID}.log"
+      format: JSON
+      
+      # Audit filter for production
+      filter: |
+        {
+          $or: [
+            { "atype": "authenticate" },
+            { "atype": "logout" },
+            { "atype": "authCheck", "param.command": { $in: ["find", "insert", "update", "delete", "drop", "createIndex", "dropIndex"] } },
+            { "atype": "createUser" },
+            { "atype": "dropUser" },
+            { "atype": "createRole" },
+            { "atype": "dropRole" },
+            { "atype": "grantRolesToUser" },
+            { "atype": "revokeRolesFromUser" },
+            { "atype": "createDatabase" },
+            { "atype": "dropDatabase" },
+            { "atype": "createCollection" },
+            { "atype": "dropCollection" }
+          ]
+        }
+        
+  # Production logging configuration
+  logging:
+    # Minimal logging for production performance
+    verbosity: 0
+    
+    # Component-specific logging
+    components:
+      access_control: 1
+      command: 0
+      control: 0
+      executor: 0
+      geo: 0
+      index: 0
+      network: 0
+      query: 1
+      replication: 1
+      sharding: 1
+      storage: 0
+      write: 0
+      
+    # Log file management
+    destination: file
+    path: "/var/log/mongodb/prod-${TENANT_ID}.log"
+    log_append: true
+    log_rotate: reopen
+    
+  # Production replication settings
+  replication:
+    enabled: true
+    
+    # Replica set configuration per shard
+    replica_sets:
+      shard01ReplSet:
+        members:
+          - _id: 0
+            host: mongodb-shard01-01.internal:27018
+            priority: 1.0
+            votes: 1
+          - _id: 1
+            host: mongodb-shard01-02.internal:27018
+            priority: 0.5
+            votes: 1
+          - _id: 2
+            host: mongodb-shard01-03.internal:27018
+            priority: 0.5
+            votes: 1
+            
+    # Oplog settings
+    oplog_size_mb: 10240  # 10GB oplog
+    
+    # Read preferences
+    read_preference:
+      mode: secondaryPreferred
+      max_staleness_seconds: 120
+      tags:
+        - env: production
+        
+  # Production sharding configuration
+  sharding:
+    # Shard key strategies
+    shard_keys:
+      users:
+        key: { "user_id": "hashed" }
+        unique: false
+        
+      tracks:
+        key: { "spotify_track_id": "hashed" }
+        unique: false
+        
+      listening_history:
+        key: { "user_id": 1, "timestamp": 1 }
+        unique: false
+        
+      playlists:
+        key: { "user_id": "hashed" }
+        unique: false
+        
+      recommendations:
+        key: { "user_id": 1, "created_at": 1 }
+        unique: false
+        
+    # Balancer settings
+    balancer:
+      enabled: true
+      active_window:
+        start: "01:00"
+        stop: "05:00"
+      max_chunk_size_mb: 128
+      
+  # Production data management
+  data_management:
+    # Collections with production-optimized settings
+    collections:
+      users:
+        shard_key: { "user_id": "hashed" }
+        indexes:
+          - { "email": 1 }
+          - { "spotify_id": 1 }
+          - { "created_at": 1 }
+          - { "subscription_type": 1 }
+          - { "last_active": 1 }
+          - { "preferences.genres": 1 }
+        validation:
+          $jsonSchema:
+            bsonType: object
+            required: ["email", "spotify_id", "created_at", "user_id"]
+            properties:
+              email:
+                bsonType: string
+                pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+                
+      tracks:
+        shard_key: { "spotify_track_id": "hashed" }
+        indexes:
+          - { "spotify_track_id": 1 }
+          - { "artist": 1, "album": 1 }
+          - { "genre": 1 }
+          - { "release_date": 1 }
+          - { "audio_features.danceability": 1 }
+          - { "audio_features.energy": 1 }
+          - { "audio_features.valence": 1 }
+          - { "popularity": 1 }
+          - { "duration_ms": 1 }
+          
+      playlists:
+        shard_key: { "user_id": "hashed" }
+        indexes:
+          - { "user_id": 1 }
+          - { "created_at": 1 }
+          - { "is_public": 1 }
+          - { "collaborative": 1 }
+          - { "tracks.spotify_track_id": 1 }
+          - { "name": "text", "description": "text" }
+          
+      listening_history:
+        shard_key: { "user_id": 1, "timestamp": 1 }
+        indexes:
+          - { "user_id": 1, "timestamp": 1 }
+          - { "track_id": 1, "timestamp": 1 }
+          - { "session_id": 1 }
+          - { "device_type": 1 }
+          - { "timestamp": 1 }
+        time_series:
+          enabled: true
+          time_field: "timestamp"
+          meta_field: "user_id"
+          granularity: minutes
+          
+      recommendations:
+        shard_key: { "user_id": 1, "created_at": 1 }
+        indexes:
+          - { "user_id": 1, "created_at": 1 }
+          - { "model_version": 1 }
+          - { "recommendation_type": 1 }
+          - { "confidence_score": 1 }
+        ttl:
+          field: "expires_at"
+          seconds: 2592000  # 30 days
+          
+      analytics_events:
+        shard_key: { "user_id": 1, "event_date": 1 }
+        indexes:
+          - { "user_id": 1, "event_date": 1 }
+          - { "event_type": 1, "event_date": 1 }
+          - { "session_id": 1 }
+        time_series:
+          enabled: true
+          time_field: "event_timestamp"
+          meta_field: "user_id"
+          granularity: hours
+          
+  # Production backup strategy
+  backup:
+    enabled: true
+    
+    # Backup schedule
+    schedule:
+      full_backup: "0 2 * * 0"     # Weekly full backup
+      incremental_backup: "0 2 * * 1-6"  # Daily incremental
+      oplog_backup: "*/15 * * * *"  # Every 15 minutes
+      
+    # Backup storage
+    storage:
+      type: s3
+      bucket: "spotify-ai-prod-backups"
+      prefix: "${TENANT_ID}/mongodb"
+      region: "us-east-1"
+      encryption: true
+      encryption_key: "${BACKUP_ENCRYPTION_KEY}"
+      compression: true
+      
+    # Backup retention
+    retention:
+      full_backups: 12     # Keep 12 weekly backups (3 months)
+      incremental_backups: 30  # Keep 30 daily backups
+      oplog_backups: 7     # Keep 7 days of oplog
+      
+    # Point-in-time recovery
+    pitr:
+      enabled: true
+      oplog_replay: true
+      
+  # Production monitoring and alerting
+  monitoring:
+    enabled: true
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 30
+      retention_days: 90
+      detailed_metrics: true
+      
+    # Performance monitoring
+    performance_monitoring:
+      enabled: true
+      slow_query_threshold: 1000
+      profiling_enabled: true
+      index_stats: true
+      
+    # Health checks
+    health_checks:
+      replica_set_status: true
+      shard_status: true
+      balancer_status: true
+      connection_count: true
+      memory_usage: true
+      disk_usage: true
+      
+    # Alerting
+    alerts:
+      enabled: true
+      channels:
+        - pagerduty: "${PAGERDUTY_INTEGRATION_KEY}"
+        - slack: "#production-alerts"
+        - email: "production-team@company.com"
+        
+      thresholds:
+        cpu_usage: 80
+        memory_usage: 85
+        disk_usage: 90
+        connection_count: 8000
+        replication_lag_seconds: 300
+        query_executor_time_ms: 5000
+        shard_balancer_failed: 1
+        
+  # Production maintenance
+  maintenance:
+    # Automated maintenance tasks
+    automated_tasks:
+      index_maintenance: true
+      stats_collection: true
+      chunk_splitting: true
+      balancer_rounds: true
+      
+    # Maintenance windows
+    maintenance_windows:
+      - day: sunday
+        start_time: "02:00"
+        duration: "4h"
+        timezone: "UTC"
+        tasks:
+          - compact_collections
+          - rebuild_indexes
+          - update_statistics
+          - cleanup_orphaned_documents
+          
+  # Production operational settings
+  operations:
+    # Chunk migration settings
+    chunk_migration:
+      max_chunk_size_mb: 128
+      use_shard_chunks: true
+      
+    # Balancer configuration
+    balancer:
+      max_chunks_per_migration: 5
+      seconds_between_balancer_rounds: 10
+      
+    # Connection management
+    connections:
+      max_incoming_connections: 10000
+      max_connections_per_host: 200
+      
+# Production environment variables
+environment_variables:
+  MONGODB_PROD_PASSWORD: "${MONGODB_PROD_PASSWORD}"
+  MONGODB_ADMIN_PASSWORD: "${MONGODB_ADMIN_PASSWORD}"
+  MONGODB_READER_PASSWORD: "${MONGODB_READER_PASSWORD}"
+  MONGODB_ANALYTICS_PASSWORD: "${MONGODB_ANALYTICS_PASSWORD}"
+  MONGODB_BACKUP_PASSWORD: "${MONGODB_BACKUP_PASSWORD}"
+  MONGODB_TLS_PASSWORD: "${MONGODB_TLS_PASSWORD}"
+  BACKUP_ENCRYPTION_KEY: "${BACKUP_ENCRYPTION_KEY}"
+  PAGERDUTY_INTEGRATION_KEY: "${PAGERDUTY_INTEGRATION_KEY}"
+  
+  # Connection URIs
+  MONGODB_URI: "mongodb://${TENANT_ID}_prod_user:${MONGODB_PROD_PASSWORD}@mongodb-router-01.internal:27017,mongodb-router-02.internal:27017,mongodb-router-03.internal:27017/${TENANT_ID}_prod?authSource=admin&ssl=true"
+  MONGODB_READONLY_URI: "mongodb://${TENANT_ID}_prod_reader:${MONGODB_READER_PASSWORD}@mongodb-router-01.internal:27017,mongodb-router-02.internal:27017,mongodb-router-03.internal:27017/${TENANT_ID}_prod?authSource=admin&ssl=true&readPreference=secondaryPreferred"
+  
+# Production deployment configuration
+deployment:
+  # Infrastructure requirements
+  infrastructure:
+    # Config servers
+    config_servers:
+      instance_type: "m5.large"
+      storage_type: "gp3"
+      storage_size: "100GB"
+      replica_count: 3
+      
+    # Mongos routers
+    mongos_routers:
+      instance_type: "c5.xlarge"
+      replica_count: 3
+      
+    # Shard servers
+    shard_servers:
+      instance_type: "r5.2xlarge"  # 8 vCPU, 64 GB RAM
+      storage_type: "gp3"
+      storage_size: "2TB"
+      iops: 12000
+      replica_count: 3
+      shard_count: 3
+      
+  # Auto-scaling configuration
+  auto_scaling:
+    enabled: true
+    
+    # Storage auto-scaling
+    storage_autoscaling: true
+    max_storage: "10TB"
+    
+    # Shard auto-scaling
+    shard_scaling:
+      min_shards: 3
+      max_shards: 10
+      scale_threshold: 80  # CPU or storage
+      
+# Production compliance and governance
+compliance:
+  # Data governance
+  data_governance:
+    data_classification: true
+    data_lineage: true
+    data_retention_policies: true
+    field_level_encryption: true
+    
+  # Regulatory compliance
+  regulations:
+    - GDPR
+    - CCPA
+    - SOX
+    - HIPAA  # If handling health data
+    
+  # Audit requirements
+  auditing:
+    enabled: true
+    comprehensive_logging: true
+    retention_period: "7 years"
+    
+# Disaster recovery configuration
+disaster_recovery:
+  # Recovery objectives
+  rto: "1 hour"     # Recovery Time Objective
+  rpo: "15 minutes" # Recovery Point Objective
+  
+  # Cross-region replication
+  cross_region:
+    enabled: true
+    regions:
+      primary: "us-east-1"
+      secondary: "us-west-2"
+      
+  # Backup and restore procedures
+  backup_procedures:
+    automated_testing: true
+    testing_frequency: weekly
+    restoration_testing: monthly
+    
+# Metadata
+metadata:
+  environment: production
+  purpose: "Production MongoDB cluster serving live traffic"
+  maintainer: "Database Administration Team"
+  last_updated: "2025-07-16"
+  notes: |
+    This production configuration provides:
+    - Horizontal scaling with sharded cluster architecture
+    - High availability with replica sets across availability zones
+    - Comprehensive security with authentication, authorization, and encryption
+    - Automated backup with point-in-time recovery capabilities
+    - Advanced monitoring and alerting for operational excellence
+    - Compliance with enterprise governance and regulatory requirements
+    
+    This configuration is designed for mission-critical production
+    environments requiring maximum scalability, availability, and security.

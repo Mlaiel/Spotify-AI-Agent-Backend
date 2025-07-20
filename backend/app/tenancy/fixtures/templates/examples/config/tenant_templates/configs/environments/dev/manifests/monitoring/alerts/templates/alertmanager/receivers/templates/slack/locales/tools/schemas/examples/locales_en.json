@@ -1,0 +1,133 @@
+{
+  "alerting": {
+    "critical": {
+      "title": "🚨 CRITICAL ALERT - Immediate Action Required",
+      "severity_label": "Severity",
+      "tenant_label": "Tenant",
+      "environment_label": "Environment",
+      "service_label": "Service",
+      "instance_label": "Instance",
+      "started_at_label": "Started At",
+      "description_label": "Description",
+      "actions": {
+        "view_grafana": "🔍 View Grafana",
+        "view_prometheus": "📊 Prometheus",
+        "view_runbook": "🔧 Runbook"
+      }
+    },
+    "warning": {
+      "title": "⚠️ WARNING ALERT",
+      "metric_label": "Metric",
+      "current_value_label": "Current Value"
+    },
+    "info": {
+      "title": "ℹ️ INFORMATION NOTIFICATION",
+      "type_label": "Type"
+    },
+    "security": {
+      "title": "🛡️ SECURITY INCIDENT DETECTED",
+      "incident_type_label": "Incident Type",
+      "source_ip_label": "Source IP",
+      "user_label": "User",
+      "timestamp_label": "Timestamp",
+      "auto_actions_label": "Automatic Actions"
+    },
+    "performance": {
+      "title": "📉 PERFORMANCE DEGRADATION DETECTED",
+      "affected_tenant_label": "Affected Tenant",
+      "threshold_label": "Threshold",
+      "impact_level_label": "Estimated Impact",
+      "recommended_action_label": "Recommended Action"
+    },
+    "backup": {
+      "title": "💾 BACKUP STATUS",
+      "success_title": "Backup Successful",
+      "failure_title": "Backup Failed",
+      "type_label": "Backup Type",
+      "size_label": "Size",
+      "duration_label": "Duration",
+      "location_label": "Location"
+    },
+    "ai_model": {
+      "title": "🤖 AI MODEL PERFORMANCE",
+      "model_label": "Model",
+      "accuracy_label": "Accuracy",
+      "avg_latency_label": "Average Latency",
+      "requests_per_minute_label": "Requests/min",
+      "gpu_usage_label": "GPU Usage"
+    },
+    "tenant_onboarding": {
+      "title": "🚀 NEW TENANT CREATED",
+      "success_message": "Tenant {{tenant.name}} configured successfully",
+      "tenant_id_label": "Tenant ID",
+      "subscription_tier_label": "Subscription Tier",
+      "environment_label": "Environment",
+      "allocated_resources_label": "Allocated Resources"
+    }
+  },
+  "common": {
+    "tenant": "Tenant",
+    "environment": "Environment",
+    "severity": "Severity",
+    "service": "Service",
+    "timestamp": "Timestamp",
+    "description": "Description",
+    "status": "Status",
+    "success": "Success",
+    "failure": "Failure",
+    "warning": "Warning",
+    "critical": "Critical",
+    "info": "Information",
+    "unknown": "Unknown"
+  },
+  "environments": {
+    "dev": "Development",
+    "staging": "Staging", 
+    "prod": "Production",
+    "test": "Test"
+  },
+  "subscription_tiers": {
+    "free": "Free",
+    "premium": "Premium",
+    "enterprise": "Enterprise",
+    "enterprise_plus": "Enterprise Plus"
+  },
+  "services": {
+    "api": "API Service",
+    "database": "Database",
+    "cache": "Cache",
+    "ml_model": "ML Model",
+    "file_storage": "File Storage",
+    "authentication": "Authentication",
+    "monitoring": "Monitoring",
+    "logging": "Logging"
+  },
+  "metrics": {
+    "cpu_usage": "CPU Usage",
+    "memory_usage": "Memory Usage",
+    "disk_usage": "Disk Usage",
+    "network_io": "Network I/O",
+    "api_latency": "API Latency",
+    "request_rate": "Request Rate",
+    "error_rate": "Error Rate",
+    "ml_inference_time": "ML Inference Time",
+    "model_accuracy": "Model Accuracy"
+  },
+  "actions": {
+    "acknowledge": "Acknowledge",
+    "silence": "Silence",
+    "escalate": "Escalate",
+    "resolve": "Resolve",
+    "investigate": "Investigate",
+    "restart_service": "Restart Service",
+    "scale_up": "Scale Up",
+    "contact_support": "Contact Support"
+  },
+  "notifications": {
+    "footer": "Spotify AI Agent Monitoring",
+    "powered_by": "Powered by Prometheus & Grafana",
+    "documentation": "Documentation",
+    "support": "Support",
+    "dashboard": "Dashboard"
+  }
+}

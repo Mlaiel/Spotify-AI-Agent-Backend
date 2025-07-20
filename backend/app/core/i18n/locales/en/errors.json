@@ -1,0 +1,11 @@
+{
+  "validation_error": "Validation error.",
+  "authentication_failed": "Authentication failed.",
+  "permission_denied": "Permission denied.",
+  "resource_not_found": "Resource not found.",
+  "rate_limited": "Too many requests. Please wait.",
+  "internal_error": "Internal error. Contact support.",
+  "timeout": "Timeout. Please try again.",
+  "conflict": "Data conflict detected.",
+  "quota_exceeded": "Quota exceeded."
+}

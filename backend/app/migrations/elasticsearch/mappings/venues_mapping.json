@@ -1,0 +1,53 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "name": {
+        "type": "text",
+        "fields": {
+          "raw": {"type": "keyword"},
+          "suggest": {"type": "completion"}
+        },
+        "analyzer": "autocomplete_analyzer"
+      },
+      "address": {"type": "text"},
+      "city": {"type": "keyword"},
+      "country": {"type": "keyword"},
+      "geo": {"type": "geo_point"},
+      "area": {"type": "geo_shape"},
+      "tags": {"type": "keyword"},
+      "capacity": {"type": "integer"},
+      "audit": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "user_id": {"type": "keyword"},
+        "timestamp": {"type": "date"}
+      }},
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "autocomplete_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "edge_ngram"]
+        },
+        "default": {"type": "standard"}
+      },
+      "filter": {
+        "edge_ngram": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    },
+    "lifecycle": {
+      "name": "venues_policy"
+    }
+  }
+}

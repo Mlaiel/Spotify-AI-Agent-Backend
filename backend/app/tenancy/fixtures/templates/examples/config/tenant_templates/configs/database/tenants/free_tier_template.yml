@@ -1,0 +1,313 @@
+# Free Tier Tenant Configuration
+# =============================
+# Minimal configuration for free tier tenants with limited resources
+
+tenant_config:
+  # Basic tenant information
+  tenant_info:
+    tenant_id: "${TENANT_ID}"
+    tenant_name: "${TENANT_NAME}"
+    tenant_type: "free"
+    
+    # Basic metadata
+    metadata:
+      created_at: "${TENANT_CREATED_AT}"
+      updated_at: "${TENANT_UPDATED_AT}"
+      contact_email: "${TENANT_CONTACT_EMAIL}"
+      region: "${TENANT_REGION:-us-east-1}"
+      timezone: "${TENANT_TIMEZONE:-UTC}"
+      
+    # Free tier limitations
+    subscription:
+      plan: "free"
+      billing_cycle: "none"
+      max_users: 10
+      max_storage_gb: 1
+      max_api_calls_per_month: 10000
+      rate_limit_per_minute: 100
+      
+  # Minimal database allocation
+  databases:
+    # Shared PostgreSQL with limited resources
+    postgresql:
+      enabled: true
+      database_name: "shared_free_${TENANT_ID}"
+      
+      # Schema isolation in shared database
+      schemas:
+        tenant_data: "free_${TENANT_ID}_data"
+        
+      # Minimal resource allocation
+      resources:
+        cpu_cores: 0.25
+        memory_gb: 0.5
+        storage_gb: 1
+        max_connections: 5
+        connection_timeout: 30
+        
+      # Resource limits
+      limits:
+        max_tables: 10
+        max_indexes: 20
+        max_rows_per_table: 10000
+        
+    # Shared MongoDB with collection-level isolation
+    mongodb:
+      enabled: true
+      database_name: "shared_free"
+      
+      # Limited collections
+      collections:
+        users: "free_${TENANT_ID}_users"
+        tracks: "free_${TENANT_ID}_tracks"
+        playlists: "free_${TENANT_ID}_playlists"
+        
+      # No sharding for free tier
+      sharding:
+        enabled: false
+        
+      resources:
+        cpu_cores: 0.25
+        memory_gb: 0.5
+        storage_gb: 1
+        
+      # Collection limits
+      limits:
+        max_documents_per_collection: 1000
+        max_collections: 5
+        
+    # Shared Redis with namespace isolation
+    redis:
+      enabled: true
+      
+      # Single database with namespace isolation
+      database_mapping:
+        cache: 0
+        sessions: 0
+        
+      # Namespace isolation
+      namespaces:
+        cache: "free_cache:${TENANT_ID}:"
+        session: "free_session:${TENANT_ID}:"
+        
+      resources:
+        memory_mb: 64
+        max_connections: 10
+        
+      # Redis limits
+      limits:
+        max_keys: 1000
+        key_expiry_max: 3600  # 1 hour max
+        
+    # No premium databases for free tier
+    clickhouse:
+      enabled: false
+      
+    timescaledb:
+      enabled: false
+      
+  # Basic security
+  security:
+    # No encryption for free tier
+    encryption:
+      enabled: false
+      
+    # Shared access control
+    access_control:
+      # Single app user per tenant
+      app_users:
+        - username: "free_${TENANT_ID}_app"
+          password: "${TENANT_APP_PASSWORD}"
+          roles: ["free_tenant_app"]
+          
+    # No network restrictions
+    network:
+      allowed_ips: ["0.0.0.0/0"]
+      
+    # No SSL for free tier
+    ssl:
+      enabled: false
+      
+  # No backup for free tier
+  backup:
+    enabled: false
+    
+  # Limited monitoring
+  monitoring:
+    enabled: false
+    
+    # Basic usage tracking only
+    usage_tracking:
+      enabled: true
+      metrics:
+        - "api_calls"
+        - "storage_usage"
+        - "active_users"
+        
+  # No compliance features
+  compliance:
+    data_governance:
+      classification: false
+      lineage: false
+      retention: false
+      
+    auditing:
+      enabled: false
+      
+  # Strict performance limits
+  performance_tier:
+    limits:
+      cpu_limit: "250m"
+      memory_limit: "512Mi"
+      storage_limit: "1Gi"
+      connection_limit: 5
+      concurrent_requests: 10
+      
+    # Low priority
+    qos:
+      priority: "low"
+      guaranteed_iops: 0
+      burst_iops: 0
+      
+    # Rate limiting
+    rate_limits:
+      api_calls_per_minute: 100
+      api_calls_per_hour: 1000
+      api_calls_per_day: 10000
+      
+  # Limited integrations
+  integrations:
+    # Basic Spotify API integration
+    spotify_api:
+      client_id: "${SPOTIFY_CLIENT_ID}"
+      client_secret: "${SPOTIFY_CLIENT_SECRET}"
+      redirect_uri: "${SPOTIFY_REDIRECT_URI}"
+      rate_limit_per_hour: 100
+      
+    # No analytics integration
+    analytics:
+      enabled: false
+      
+    # No ML services
+    ml_services:
+      enabled: false
+      
+  # Environment-specific settings
+  environment_overrides:
+    development:
+      # Even more relaxed for development
+      limits:
+        max_api_calls_per_month: 50000
+        max_users: 50
+        
+    staging:
+      # Same as production for free tier
+      
+    production:
+      # Standard free tier limits
+      
+# Free tier specific configurations
+free_tier_config:
+  # Data retention policies
+  data_retention:
+    user_data: "30 days"
+    analytics_data: "7 days"
+    logs: "3 days"
+    
+  # Automatic cleanup
+  cleanup:
+    enabled: true
+    inactive_tenant_threshold: "30 days"
+    cleanup_schedule: "0 2 * * *"  # Daily at 2 AM
+    
+  # Upgrade prompts
+  upgrade_prompts:
+    enabled: true
+    triggers:
+      - limit_reached: "api_calls"
+        threshold: 0.8
+      - limit_reached: "storage"
+        threshold: 0.9
+      - limit_reached: "users"
+        threshold: 0.8
+        
+  # Feature limitations
+  feature_flags:
+    advanced_analytics: false
+    ml_recommendations: false
+    priority_support: false
+    custom_integrations: false
+    export_data: false
+    api_access: "limited"
+    
+  # Shared resource pools
+  shared_resources:
+    postgresql_pool: "free_tier_pool"
+    mongodb_pool: "free_tier_pool"
+    redis_pool: "free_tier_pool"
+    
+  # Support limitations
+  support:
+    type: "community"
+    response_time: "best_effort"
+    channels: ["forum", "documentation"]
+    priority: "low"
+
+# Resource quotas enforcement
+resource_quotas:
+  # Database quotas
+  postgresql:
+    max_database_size: "1GB"
+    max_connections: 5
+    max_queries_per_minute: 1000
+    
+  mongodb:
+    max_database_size: "1GB"
+    max_collections: 5
+    max_documents: 10000
+    max_operations_per_minute: 1000
+    
+  redis:
+    max_memory: "64MB"
+    max_keys: 1000
+    max_operations_per_minute: 1000
+    
+  # API quotas
+  api:
+    max_calls_per_minute: 100
+    max_calls_per_hour: 1000
+    max_calls_per_day: 10000
+    max_calls_per_month: 10000
+    
+  # Storage quotas
+  storage:
+    max_file_size: "1MB"
+    max_total_storage: "1GB"
+    max_files: 100
+    
+# Monitoring and alerting for quota enforcement
+quota_monitoring:
+  check_interval: 300  # 5 minutes
+  
+  alert_thresholds:
+    warning: 0.8
+    critical: 0.95
+    
+  enforcement_actions:
+    warning:
+      - "log_event"
+      - "notify_tenant"
+      
+    critical:
+      - "rate_limit"
+      - "temporary_suspension"
+      
+  metrics:
+    - name: "api_calls_used"
+      type: "counter"
+      
+    - name: "storage_used"
+      type: "gauge"
+      
+    - name: "connections_active"
+      type: "gauge"

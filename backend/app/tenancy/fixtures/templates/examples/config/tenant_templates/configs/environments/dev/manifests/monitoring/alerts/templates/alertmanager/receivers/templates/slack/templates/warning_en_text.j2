@@ -1,0 +1,94 @@
+# Enterprise Warning Alert Template (English) - Advanced Industrial Grade
+{% set alert_emoji = {
+    'critical': '🚨',
+    'high': '⚠️',
+    'medium': '🔶',
+    'low': '💡',
+    'info': 'ℹ️'
+} %}
+
+{% set service_icons = {
+    'api': '🌐',
+    'database': '🗄️',
+    'ml': '🤖',
+    'audio': '🎵',
+    'auth': '🔐',
+    'storage': '💾',
+    'cache': '⚡',
+    'queue': '📬',
+    'monitoring': '📊'
+} %}
+
+{{ alert_emoji.get(alert.severity, '⚠️') }} **WARNING ALERT** {{ alert_emoji.get(alert.severity, '⚠️') }}
+
+**{{ service_icons.get(alert.context.service_type, '⚙️') }} Service Monitoring**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Alert Summary**
+• **Service**: `{{ alert.context.service_name }}` ({{ alert.context.service_version | default('unknown') }})
+• **Component**: `{{ alert.context.component }}`
+• **Environment**: `{{ environment | upper }}` 
+• **Severity**: `{{ alert.severity.upper() }}` ({{ alert.priority_score | default(0) }}/10)
+
+⚠️ **Issue Details**
+• **Alert**: {{ alert.title }}
+• **Description**: {{ alert.description }}
+• **Status**: {{ alert.status | title }}
+• **Duration**: {{ alert.duration | duration_format | default('Just started') }}
+• **First Detected**: {{ format_date(alert.created_at) }}
+
+{% if alert.context.instance_id %}
+🖥️ **System Context**
+• **Instance**: `{{ alert.context.instance_id }}`
+• **Region**: `{{ alert.context.region | default('global') }}`
+• **Cluster**: `{{ alert.context.cluster_name | default('default') }}`
+{% endif %}
+
+{% if alert.metrics %}
+📊 **Current Metrics**
+{% for metric_name, metric_value in alert.metrics.items() %}
+• **{{ metric_name | title }}**: {{ metric_value }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights %}
+🤖 **AI Analysis**
+{% if alert.ai_insights.predicted_escalation %}
+**🔮 Escalation Prediction**: {{ alert.ai_insights.predicted_escalation.probability }}% chance of becoming critical
+**⏰ Estimated Time**: {{ alert.ai_insights.predicted_escalation.time_estimate }}
+{% endif %}
+
+{% if alert.ai_insights.recommended_actions %}
+**🛠️ Recommended Actions**:
+{% for action in alert.ai_insights.recommended_actions[:3] %}
+{{ loop.index }}. {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.similar_incidents %}
+**📈 Pattern Match**: {{ alert.ai_insights.similar_incidents.count }} similar cases ({{ alert.ai_insights.similar_incidents.resolution_rate }}% auto-resolved)
+{% endif %}
+{% endif %}
+
+{% if alert.preventive_actions %}
+🛡️ **Preventive Measures Available**
+{% for action in alert.preventive_actions %}
+• {{ action.name }} - {{ action.description }}
+{% endfor %}
+{% endif %}
+
+🚀 **Quick Links**
+• [📊 Service Dashboard]({{ dashboard_url }}/services/{{ alert.context.service_name }})
+• [📈 Trend Analysis]({{ metrics_url }}/d/trends/{{ alert.context.service_name }})
+• [📋 Recent Logs]({{ logs_url }}/app/{{ alert.context.service_name }})
+
+{% if alert.escalation and alert.escalation.auto_escalation %}
+⏰ **Auto-escalation**: This alert will become critical in {{ alert.escalation.escalation_time | default('30 minutes') }} if not resolved
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Alert ID**: `{{ alert.alert_id }}`
+**Tenant**: `{{ alert.tenant_id | default('system') }}`
+
+*🎵 Spotify AI Agent Monitoring*
+*Generated: {{ format_date(now, 'short') }}*

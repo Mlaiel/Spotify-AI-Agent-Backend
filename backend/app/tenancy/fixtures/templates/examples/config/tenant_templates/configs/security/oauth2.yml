@@ -1,0 +1,777 @@
+# OAuth2 Advanced Configuration Template for Enterprise Tenant Templates
+# =====================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced OAuth2 architecture with AI-driven security optimization
+# - Senior Backend Developer: Python/FastAPI/Django OAuth2 enterprise patterns
+# - Backend Security Specialist: OAuth2 security hardening, PKCE, and token management
+# - Microservices Architect: OAuth2 service mesh integration and distributed authentication
+# - DBA & Data Engineer: OAuth2 token storage and session management optimization
+
+# ==========================================
+# OAUTH2 ENTERPRISE CONFIGURATION
+# ==========================================
+
+oauth2:
+  # Authorization Server Configuration
+  authorization_server:
+    # Basic Server Settings
+    issuer: "${OAUTH2_ISSUER:-https://auth.spotify-ai-agent.com}"
+    authorization_endpoint: "${OAUTH2_AUTHORIZATION_ENDPOINT:-https://auth.spotify-ai-agent.com/oauth2/authorize}"
+    token_endpoint: "${OAUTH2_TOKEN_ENDPOINT:-https://auth.spotify-ai-agent.com/oauth2/token}"
+    userinfo_endpoint: "${OAUTH2_USERINFO_ENDPOINT:-https://auth.spotify-ai-agent.com/oauth2/userinfo}"
+    jwks_uri: "${OAUTH2_JWKS_URI:-https://auth.spotify-ai-agent.com/.well-known/jwks.json}"
+    introspection_endpoint: "${OAUTH2_INTROSPECTION_ENDPOINT:-https://auth.spotify-ai-agent.com/oauth2/introspect}"
+    revocation_endpoint: "${OAUTH2_REVOCATION_ENDPOINT:-https://auth.spotify-ai-agent.com/oauth2/revoke}"
+    
+    # Discovery Document
+    discovery_endpoint: "${OAUTH2_DISCOVERY_ENDPOINT:-https://auth.spotify-ai-agent.com/.well-known/openid_configuration}"
+    
+    # Supported Features
+    supported_features:
+      response_types: ["code", "token", "id_token", "code token", "code id_token", "token id_token", "code token id_token"]
+      response_modes: ["query", "fragment", "form_post"]
+      grant_types: ["authorization_code", "client_credentials", "refresh_token", "password", "urn:ietf:params:oauth:grant-type:device_code"]
+      subject_types: ["public", "pairwise"]
+      id_token_signing_alg_values: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+      id_token_encryption_alg_values: ["RSA1_5", "RSA-OAEP", "RSA-OAEP-256", "A128KW", "A192KW", "A256KW", "dir", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW", "A128GCMKW", "A192GCMKW", "A256GCMKW", "PBES2-HS256+A128KW", "PBES2-HS384+A192KW", "PBES2-HS512+A256KW"]
+      id_token_encryption_enc_values: ["A128CBC-HS256", "A192CBC-HS384", "A256CBC-HS512", "A128GCM", "A192GCM", "A256GCM"]
+      userinfo_signing_alg_values: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+      userinfo_encryption_alg_values: ["RSA1_5", "RSA-OAEP", "RSA-OAEP-256", "A128KW", "A192KW", "A256KW", "dir", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW", "A128GCMKW", "A192GCMKW", "A256GCMKW", "PBES2-HS256+A128KW", "PBES2-HS384+A192KW", "PBES2-HS512+A256KW"]
+      userinfo_encryption_enc_values: ["A128CBC-HS256", "A192CBC-HS384", "A256CBC-HS512", "A128GCM", "A192GCM", "A256GCM"]
+      request_object_signing_alg_values: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+      request_object_encryption_alg_values: ["RSA1_5", "RSA-OAEP", "RSA-OAEP-256", "A128KW", "A192KW", "A256KW", "dir", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW", "A128GCMKW", "A192GCMKW", "A256GCMKW", "PBES2-HS256+A128KW", "PBES2-HS384+A192KW", "PBES2-HS512+A256KW"]
+      request_object_encryption_enc_values: ["A128CBC-HS256", "A192CBC-HS384", "A256CBC-HS512", "A128GCM", "A192GCM", "A256GCM"]
+      token_endpoint_auth_methods: ["client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt", "none"]
+      token_endpoint_auth_signing_alg_values: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+      display_values: ["page", "popup", "touch", "wap"]
+      claim_types: ["normal", "aggregated", "distributed"]
+      claims: ["sub", "name", "given_name", "family_name", "middle_name", "nickname", "preferred_username", "profile", "picture", "website", "email", "email_verified", "gender", "birthdate", "zoneinfo", "locale", "phone_number", "phone_number_verified", "address", "updated_at"]
+      scopes: ["openid", "profile", "email", "address", "phone", "offline_access"]
+      request_parameter_supported: true
+      request_uri_parameter_supported: true
+      require_request_uri_registration: false
+      claims_parameter_supported: true
+      
+    # PKCE Configuration
+    pkce:
+      enabled: ${OAUTH2_PKCE_ENABLED:-true}
+      required: ${OAUTH2_PKCE_REQUIRED:-true}
+      challenge_methods: ["S256", "plain"]
+      default_challenge_method: "S256"
+    
+    # Security Settings
+    security:
+      # CORS Configuration
+      cors:
+        enabled: ${OAUTH2_CORS_ENABLED:-true}
+        allowed_origins: 
+          - "${OAUTH2_CORS_ALLOWED_ORIGINS:-https://app.spotify-ai-agent.com}"
+          - "${OAUTH2_CORS_ALLOWED_ORIGINS_ADMIN:-https://admin.spotify-ai-agent.com}"
+        allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        allowed_headers: ["Authorization", "Content-Type", "X-Requested-With"]
+        allow_credentials: true
+        max_age: 3600
+      
+      # Rate Limiting
+      rate_limiting:
+        enabled: ${OAUTH2_RATE_LIMITING_ENABLED:-true}
+        token_endpoint:
+          requests_per_minute: ${OAUTH2_RATE_LIMIT_TOKEN_PER_MINUTE:-60}
+          burst_limit: ${OAUTH2_RATE_LIMIT_TOKEN_BURST:-10}
+        authorization_endpoint:
+          requests_per_minute: ${OAUTH2_RATE_LIMIT_AUTH_PER_MINUTE:-120}
+          burst_limit: ${OAUTH2_RATE_LIMIT_AUTH_BURST:-20}
+        userinfo_endpoint:
+          requests_per_minute: ${OAUTH2_RATE_LIMIT_USERINFO_PER_MINUTE:-300}
+          burst_limit: ${OAUTH2_RATE_LIMIT_USERINFO_BURST:-50}
+      
+      # Brute Force Protection
+      brute_force_protection:
+        enabled: ${OAUTH2_BRUTE_FORCE_PROTECTION_ENABLED:-true}
+        max_attempts: ${OAUTH2_BRUTE_FORCE_MAX_ATTEMPTS:-5}
+        lockout_duration: "${OAUTH2_BRUTE_FORCE_LOCKOUT_DURATION:-15m}"
+        sliding_window: "${OAUTH2_BRUTE_FORCE_SLIDING_WINDOW:-1h}"
+      
+      # Session Security
+      session:
+        secure_cookies: ${OAUTH2_SECURE_COOKIES:-true}
+        httponly_cookies: ${OAUTH2_HTTPONLY_COOKIES:-true}
+        samesite_cookies: "${OAUTH2_SAMESITE_COOKIES:-Strict}"
+        session_timeout: "${OAUTH2_SESSION_TIMEOUT:-30m}"
+        absolute_timeout: "${OAUTH2_ABSOLUTE_TIMEOUT:-8h}"
+
+  # Token Configuration
+  tokens:
+    # Access Tokens
+    access_token:
+      # Token Format
+      format: "${OAUTH2_ACCESS_TOKEN_FORMAT:-jwt}"  # jwt, opaque, reference
+      
+      # JWT Configuration
+      jwt:
+        signing_algorithm: "${OAUTH2_ACCESS_TOKEN_JWT_ALG:-RS256}"
+        encryption_algorithm: "${OAUTH2_ACCESS_TOKEN_JWT_ENC_ALG:-}"
+        encryption_method: "${OAUTH2_ACCESS_TOKEN_JWT_ENC_METHOD:-}"
+        issuer: "${OAUTH2_ACCESS_TOKEN_JWT_ISSUER:-https://auth.spotify-ai-agent.com}"
+        audience: ["https://api.spotify-ai-agent.com"]
+        
+        # Claims
+        claims:
+          include_user_id: ${OAUTH2_ACCESS_TOKEN_INCLUDE_USER_ID:-true}
+          include_client_id: ${OAUTH2_ACCESS_TOKEN_INCLUDE_CLIENT_ID:-true}
+          include_scope: ${OAUTH2_ACCESS_TOKEN_INCLUDE_SCOPE:-true}
+          include_custom_claims: ${OAUTH2_ACCESS_TOKEN_INCLUDE_CUSTOM_CLAIMS:-true}
+          custom_claims:
+            tenant_id: "$.tenant_id"
+            user_role: "$.user.role"
+            permissions: "$.user.permissions"
+      
+      # Lifetime Configuration
+      lifetime:
+        default_ttl: "${OAUTH2_ACCESS_TOKEN_DEFAULT_TTL:-1h}"
+        max_ttl: "${OAUTH2_ACCESS_TOKEN_MAX_TTL:-24h}"
+        min_ttl: "${OAUTH2_ACCESS_TOKEN_MIN_TTL:-5m}"
+      
+      # Revocation
+      revocation:
+        enabled: ${OAUTH2_ACCESS_TOKEN_REVOCATION_ENABLED:-true}
+        cascade_revocation: ${OAUTH2_ACCESS_TOKEN_CASCADE_REVOCATION:-true}
+    
+    # Refresh Tokens
+    refresh_token:
+      # Token Format
+      format: "${OAUTH2_REFRESH_TOKEN_FORMAT:-opaque}"  # jwt, opaque, reference
+      
+      # Lifetime Configuration
+      lifetime:
+        default_ttl: "${OAUTH2_REFRESH_TOKEN_DEFAULT_TTL:-30d}"
+        max_ttl: "${OAUTH2_REFRESH_TOKEN_MAX_TTL:-90d}"
+        min_ttl: "${OAUTH2_REFRESH_TOKEN_MIN_TTL:-1d}"
+      
+      # Rotation
+      rotation:
+        enabled: ${OAUTH2_REFRESH_TOKEN_ROTATION_ENABLED:-true}
+        grace_period: "${OAUTH2_REFRESH_TOKEN_GRACE_PERIOD:-10s}"
+        reuse_detection: ${OAUTH2_REFRESH_TOKEN_REUSE_DETECTION:-true}
+      
+      # Revocation
+      revocation:
+        enabled: ${OAUTH2_REFRESH_TOKEN_REVOCATION_ENABLED:-true}
+        cascade_revocation: ${OAUTH2_REFRESH_TOKEN_CASCADE_REVOCATION:-true}
+    
+    # ID Tokens (OpenID Connect)
+    id_token:
+      # JWT Configuration
+      jwt:
+        signing_algorithm: "${OAUTH2_ID_TOKEN_JWT_ALG:-RS256}"
+        encryption_algorithm: "${OAUTH2_ID_TOKEN_JWT_ENC_ALG:-}"
+        encryption_method: "${OAUTH2_ID_TOKEN_JWT_ENC_METHOD:-}"
+        issuer: "${OAUTH2_ID_TOKEN_JWT_ISSUER:-https://auth.spotify-ai-agent.com}"
+        
+        # Claims
+        claims:
+          include_standard_claims: ${OAUTH2_ID_TOKEN_INCLUDE_STANDARD_CLAIMS:-true}
+          include_custom_claims: ${OAUTH2_ID_TOKEN_INCLUDE_CUSTOM_CLAIMS:-true}
+          custom_claims:
+            tenant_id: "$.tenant_id"
+            user_preferences: "$.user.preferences"
+            subscription_tier: "$.user.subscription_tier"
+      
+      # Lifetime Configuration
+      lifetime:
+        default_ttl: "${OAUTH2_ID_TOKEN_DEFAULT_TTL:-1h}"
+        max_ttl: "${OAUTH2_ID_TOKEN_MAX_TTL:-24h}"
+        min_ttl: "${OAUTH2_ID_TOKEN_MIN_TTL:-5m}"
+    
+    # Authorization Codes
+    authorization_code:
+      # Lifetime Configuration
+      lifetime:
+        default_ttl: "${OAUTH2_AUTHORIZATION_CODE_DEFAULT_TTL:-10m}"
+        max_ttl: "${OAUTH2_AUTHORIZATION_CODE_MAX_TTL:-30m}"
+        min_ttl: "${OAUTH2_AUTHORIZATION_CODE_MIN_TTL:-1m}"
+      
+      # Security
+      single_use: ${OAUTH2_AUTHORIZATION_CODE_SINGLE_USE:-true}
+      binding_required: ${OAUTH2_AUTHORIZATION_CODE_BINDING_REQUIRED:-true}
+
+  # Client Configuration
+  clients:
+    # Default Client Configurations
+    default_clients:
+      # Web Application Client
+      web_app:
+        client_id: "${OAUTH2_WEB_APP_CLIENT_ID:-spotify-ai-agent-web}"
+        client_secret: "${OAUTH2_WEB_APP_CLIENT_SECRET:-}"
+        client_name: "Spotify AI Agent Web Application"
+        client_type: "confidential"
+        
+        # Redirect URIs
+        redirect_uris:
+          - "${OAUTH2_WEB_APP_REDIRECT_URI:-https://app.spotify-ai-agent.com/callback}"
+          - "${OAUTH2_WEB_APP_REDIRECT_URI_LOCALHOST:-http://localhost:3000/callback}"
+        
+        # Post Logout Redirect URIs
+        post_logout_redirect_uris:
+          - "${OAUTH2_WEB_APP_POST_LOGOUT_URI:-https://app.spotify-ai-agent.com/logout}"
+          - "${OAUTH2_WEB_APP_POST_LOGOUT_URI_LOCALHOST:-http://localhost:3000/logout}"
+        
+        # Grant Types
+        grant_types: ["authorization_code", "refresh_token"]
+        
+        # Response Types
+        response_types: ["code"]
+        
+        # Scopes
+        scopes: ["openid", "profile", "email", "spotify:read", "spotify:write", "ai:recommendations"]
+        
+        # Token Configuration
+        token_endpoint_auth_method: "client_secret_basic"
+        access_token_ttl: "${OAUTH2_WEB_APP_ACCESS_TOKEN_TTL:-1h}"
+        refresh_token_ttl: "${OAUTH2_WEB_APP_REFRESH_TOKEN_TTL:-30d}"
+        id_token_ttl: "${OAUTH2_WEB_APP_ID_TOKEN_TTL:-1h}"
+        
+        # PKCE
+        require_pkce: ${OAUTH2_WEB_APP_REQUIRE_PKCE:-true}
+        
+        # Security
+        require_auth_time: ${OAUTH2_WEB_APP_REQUIRE_AUTH_TIME:-false}
+        require_signed_request_object: ${OAUTH2_WEB_APP_REQUIRE_SIGNED_REQUEST_OBJECT:-false}
+      
+      # Mobile Application Client
+      mobile_app:
+        client_id: "${OAUTH2_MOBILE_APP_CLIENT_ID:-spotify-ai-agent-mobile}"
+        client_name: "Spotify AI Agent Mobile Application"
+        client_type: "public"
+        
+        # Redirect URIs
+        redirect_uris:
+          - "${OAUTH2_MOBILE_APP_REDIRECT_URI:-com.spotify.ai.agent://callback}"
+          - "${OAUTH2_MOBILE_APP_REDIRECT_URI_DEV:-com.spotify.ai.agent.dev://callback}"
+        
+        # Grant Types
+        grant_types: ["authorization_code", "refresh_token"]
+        
+        # Response Types
+        response_types: ["code"]
+        
+        # Scopes
+        scopes: ["openid", "profile", "email", "spotify:read", "spotify:write", "ai:recommendations", "offline_access"]
+        
+        # Token Configuration
+        token_endpoint_auth_method: "none"
+        access_token_ttl: "${OAUTH2_MOBILE_APP_ACCESS_TOKEN_TTL:-30m}"
+        refresh_token_ttl: "${OAUTH2_MOBILE_APP_REFRESH_TOKEN_TTL:-90d}"
+        id_token_ttl: "${OAUTH2_MOBILE_APP_ID_TOKEN_TTL:-30m}"
+        
+        # PKCE
+        require_pkce: ${OAUTH2_MOBILE_APP_REQUIRE_PKCE:-true}
+        
+        # Security
+        require_auth_time: ${OAUTH2_MOBILE_APP_REQUIRE_AUTH_TIME:-true}
+        require_signed_request_object: ${OAUTH2_MOBILE_APP_REQUIRE_SIGNED_REQUEST_OBJECT:-false}
+      
+      # API Client (Machine-to-Machine)
+      api_client:
+        client_id: "${OAUTH2_API_CLIENT_ID:-spotify-ai-agent-api}"
+        client_secret: "${OAUTH2_API_CLIENT_SECRET:-}"
+        client_name: "Spotify AI Agent API Client"
+        client_type: "confidential"
+        
+        # Grant Types
+        grant_types: ["client_credentials"]
+        
+        # Response Types
+        response_types: []
+        
+        # Scopes
+        scopes: ["api:read", "api:write", "ai:train", "ai:deploy", "admin:users", "admin:tenants"]
+        
+        # Token Configuration
+        token_endpoint_auth_method: "client_secret_jwt"
+        access_token_ttl: "${OAUTH2_API_CLIENT_ACCESS_TOKEN_TTL:-2h}"
+        
+        # Security
+        require_signed_request_object: ${OAUTH2_API_CLIENT_REQUIRE_SIGNED_REQUEST_OBJECT:-true}
+      
+      # Admin Dashboard Client
+      admin_dashboard:
+        client_id: "${OAUTH2_ADMIN_DASHBOARD_CLIENT_ID:-spotify-ai-agent-admin}"
+        client_secret: "${OAUTH2_ADMIN_DASHBOARD_CLIENT_SECRET:-}"
+        client_name: "Spotify AI Agent Admin Dashboard"
+        client_type: "confidential"
+        
+        # Redirect URIs
+        redirect_uris:
+          - "${OAUTH2_ADMIN_DASHBOARD_REDIRECT_URI:-https://admin.spotify-ai-agent.com/callback}"
+          - "${OAUTH2_ADMIN_DASHBOARD_REDIRECT_URI_LOCALHOST:-http://localhost:3001/callback}"
+        
+        # Grant Types
+        grant_types: ["authorization_code", "refresh_token"]
+        
+        # Response Types
+        response_types: ["code"]
+        
+        # Scopes
+        scopes: ["openid", "profile", "email", "admin:full", "admin:users", "admin:tenants", "admin:analytics", "admin:system"]
+        
+        # Token Configuration
+        token_endpoint_auth_method: "client_secret_basic"
+        access_token_ttl: "${OAUTH2_ADMIN_DASHBOARD_ACCESS_TOKEN_TTL:-30m}"
+        refresh_token_ttl: "${OAUTH2_ADMIN_DASHBOARD_REFRESH_TOKEN_TTL:-8h}"
+        id_token_ttl: "${OAUTH2_ADMIN_DASHBOARD_ID_TOKEN_TTL:-30m}"
+        
+        # PKCE
+        require_pkce: ${OAUTH2_ADMIN_DASHBOARD_REQUIRE_PKCE:-true}
+        
+        # Security
+        require_auth_time: ${OAUTH2_ADMIN_DASHBOARD_REQUIRE_AUTH_TIME:-true}
+        require_signed_request_object: ${OAUTH2_ADMIN_DASHBOARD_REQUIRE_SIGNED_REQUEST_OBJECT:-true}
+
+  # Scopes Configuration
+  scopes:
+    # OpenID Connect Scopes
+    openid:
+      name: "openid"
+      description: "OpenID Connect authentication"
+      claims: ["sub"]
+      required: true
+    
+    profile:
+      name: "profile"
+      description: "User profile information"
+      claims: ["name", "given_name", "family_name", "middle_name", "nickname", "preferred_username", "profile", "picture", "website", "gender", "birthdate", "zoneinfo", "locale", "updated_at"]
+      required: false
+    
+    email:
+      name: "email"
+      description: "User email address"
+      claims: ["email", "email_verified"]
+      required: false
+    
+    address:
+      name: "address"
+      description: "User address information"
+      claims: ["address"]
+      required: false
+    
+    phone:
+      name: "phone"
+      description: "User phone number"
+      claims: ["phone_number", "phone_number_verified"]
+      required: false
+    
+    offline_access:
+      name: "offline_access"
+      description: "Offline access via refresh tokens"
+      claims: []
+      required: false
+    
+    # Application-Specific Scopes
+    spotify_read:
+      name: "spotify:read"
+      description: "Read access to Spotify data"
+      claims: ["spotify_user_id", "spotify_playlists", "spotify_tracks"]
+      required: false
+    
+    spotify_write:
+      name: "spotify:write"
+      description: "Write access to Spotify data"
+      claims: ["spotify_user_id"]
+      required: false
+    
+    ai_recommendations:
+      name: "ai:recommendations"
+      description: "Access to AI recommendations"
+      claims: ["ai_model_access", "recommendation_history"]
+      required: false
+    
+    # API Scopes
+    api_read:
+      name: "api:read"
+      description: "Read access to API"
+      claims: []
+      required: false
+    
+    api_write:
+      name: "api:write"
+      description: "Write access to API"
+      claims: []
+      required: false
+    
+    ai_train:
+      name: "ai:train"
+      description: "Access to train AI models"
+      claims: []
+      required: false
+    
+    ai_deploy:
+      name: "ai:deploy"
+      description: "Access to deploy AI models"
+      claims: []
+      required: false
+    
+    # Admin Scopes
+    admin_full:
+      name: "admin:full"
+      description: "Full administrative access"
+      claims: []
+      required: false
+    
+    admin_users:
+      name: "admin:users"
+      description: "User management access"
+      claims: []
+      required: false
+    
+    admin_tenants:
+      name: "admin:tenants"
+      description: "Tenant management access"
+      claims: []
+      required: false
+    
+    admin_analytics:
+      name: "admin:analytics"
+      description: "Analytics and reporting access"
+      claims: []
+      required: false
+    
+    admin_system:
+      name: "admin:system"
+      description: "System configuration access"
+      claims: []
+      required: false
+
+  # Storage Configuration
+  storage:
+    # Token Storage
+    tokens:
+      # Storage Backend
+      backend: "${OAUTH2_TOKEN_STORAGE_BACKEND:-redis}"  # redis, postgresql, mongodb, memory
+      
+      # Redis Configuration
+      redis:
+        host: "${OAUTH2_TOKEN_REDIS_HOST:-localhost}"
+        port: ${OAUTH2_TOKEN_REDIS_PORT:-6379}
+        password: "${OAUTH2_TOKEN_REDIS_PASSWORD:-}"
+        database: ${OAUTH2_TOKEN_REDIS_DB:-1}
+        
+        # Connection Pool
+        pool:
+          max_connections: ${OAUTH2_TOKEN_REDIS_POOL_MAX:-20}
+          min_connections: ${OAUTH2_TOKEN_REDIS_POOL_MIN:-5}
+        
+        # Key Prefixes
+        key_prefixes:
+          access_token: "oauth2:access_token:"
+          refresh_token: "oauth2:refresh_token:"
+          authorization_code: "oauth2:auth_code:"
+          client_credentials: "oauth2:client_creds:"
+      
+      # PostgreSQL Configuration
+      postgresql:
+        host: "${OAUTH2_TOKEN_POSTGRESQL_HOST:-localhost}"
+        port: ${OAUTH2_TOKEN_POSTGRESQL_PORT:-5432}
+        database: "${OAUTH2_TOKEN_POSTGRESQL_DB:-oauth2}"
+        username: "${OAUTH2_TOKEN_POSTGRESQL_USER:-oauth2}"
+        password: "${OAUTH2_TOKEN_POSTGRESQL_PASSWORD:-oauth2}"
+        
+        # Connection Pool
+        pool:
+          max_connections: ${OAUTH2_TOKEN_POSTGRESQL_POOL_MAX:-20}
+          min_connections: ${OAUTH2_TOKEN_POSTGRESQL_POOL_MIN:-5}
+        
+        # Tables
+        tables:
+          access_tokens: "oauth2_access_tokens"
+          refresh_tokens: "oauth2_refresh_tokens"
+          authorization_codes: "oauth2_authorization_codes"
+          client_credentials: "oauth2_client_credentials"
+    
+    # Session Storage
+    sessions:
+      # Storage Backend
+      backend: "${OAUTH2_SESSION_STORAGE_BACKEND:-redis}"  # redis, postgresql, mongodb, memory
+      
+      # Redis Configuration
+      redis:
+        host: "${OAUTH2_SESSION_REDIS_HOST:-localhost}"
+        port: ${OAUTH2_SESSION_REDIS_PORT:-6379}
+        password: "${OAUTH2_SESSION_REDIS_PASSWORD:-}"
+        database: ${OAUTH2_SESSION_REDIS_DB:-2}
+        
+        # Key Prefix
+        key_prefix: "oauth2:session:"
+      
+      # Session Configuration
+      session:
+        cookie_name: "${OAUTH2_SESSION_COOKIE_NAME:-oauth2_session}"
+        secure: ${OAUTH2_SESSION_SECURE:-true}
+        httponly: ${OAUTH2_SESSION_HTTPONLY:-true}
+        samesite: "${OAUTH2_SESSION_SAMESITE:-Strict}"
+        max_age: ${OAUTH2_SESSION_MAX_AGE:-3600}
+
+  # Cryptography Configuration
+  cryptography:
+    # Signing Keys
+    signing_keys:
+      # RSA Keys
+      rsa:
+        enabled: ${OAUTH2_RSA_SIGNING_ENABLED:-true}
+        key_size: ${OAUTH2_RSA_KEY_SIZE:-2048}
+        private_key_path: "${OAUTH2_RSA_PRIVATE_KEY_PATH:-/etc/oauth2/keys/rsa_private.pem}"
+        public_key_path: "${OAUTH2_RSA_PUBLIC_KEY_PATH:-/etc/oauth2/keys/rsa_public.pem}"
+        kid: "${OAUTH2_RSA_KID:-rsa-key-1}"
+        algorithm: "RS256"
+        use: "sig"
+      
+      # ECDSA Keys
+      ecdsa:
+        enabled: ${OAUTH2_ECDSA_SIGNING_ENABLED:-false}
+        curve: "${OAUTH2_ECDSA_CURVE:-P-256}"
+        private_key_path: "${OAUTH2_ECDSA_PRIVATE_KEY_PATH:-/etc/oauth2/keys/ecdsa_private.pem}"
+        public_key_path: "${OAUTH2_ECDSA_PUBLIC_KEY_PATH:-/etc/oauth2/keys/ecdsa_public.pem}"
+        kid: "${OAUTH2_ECDSA_KID:-ecdsa-key-1}"
+        algorithm: "ES256"
+        use: "sig"
+    
+    # Encryption Keys
+    encryption_keys:
+      # RSA Encryption Keys
+      rsa_encryption:
+        enabled: ${OAUTH2_RSA_ENCRYPTION_ENABLED:-false}
+        key_size: ${OAUTH2_RSA_ENCRYPTION_KEY_SIZE:-2048}
+        private_key_path: "${OAUTH2_RSA_ENCRYPTION_PRIVATE_KEY_PATH:-/etc/oauth2/keys/rsa_enc_private.pem}"
+        public_key_path: "${OAUTH2_RSA_ENCRYPTION_PUBLIC_KEY_PATH:-/etc/oauth2/keys/rsa_enc_public.pem}"
+        kid: "${OAUTH2_RSA_ENCRYPTION_KID:-rsa-enc-key-1}"
+        algorithm: "RSA-OAEP"
+        use: "enc"
+      
+      # AES Keys
+      aes:
+        enabled: ${OAUTH2_AES_ENCRYPTION_ENABLED:-true}
+        key_size: ${OAUTH2_AES_KEY_SIZE:-256}
+        key_path: "${OAUTH2_AES_KEY_PATH:-/etc/oauth2/keys/aes.key}"
+        kid: "${OAUTH2_AES_KID:-aes-key-1}"
+        algorithm: "A256GCM"
+        use: "enc"
+    
+    # Key Rotation
+    key_rotation:
+      enabled: ${OAUTH2_KEY_ROTATION_ENABLED:-true}
+      rotation_interval: "${OAUTH2_KEY_ROTATION_INTERVAL:-30d}"
+      grace_period: "${OAUTH2_KEY_ROTATION_GRACE_PERIOD:-7d}"
+      auto_rotation: ${OAUTH2_KEY_ROTATION_AUTO:-true}
+
+  # Consent Management
+  consent:
+    # Consent Configuration
+    enabled: ${OAUTH2_CONSENT_ENABLED:-true}
+    
+    # Consent UI
+    ui:
+      template_path: "${OAUTH2_CONSENT_TEMPLATE_PATH:-/etc/oauth2/templates/consent.html}"
+      css_path: "${OAUTH2_CONSENT_CSS_PATH:-/etc/oauth2/static/consent.css}"
+      js_path: "${OAUTH2_CONSENT_JS_PATH:-/etc/oauth2/static/consent.js}"
+    
+    # Consent Storage
+    storage:
+      backend: "${OAUTH2_CONSENT_STORAGE_BACKEND:-postgresql}"
+      
+      # PostgreSQL Configuration
+      postgresql:
+        table: "oauth2_consents"
+        retention_period: "${OAUTH2_CONSENT_RETENTION_PERIOD:-2y}"
+    
+    # Consent Policies
+    policies:
+      # Default Consent Policy
+      default:
+        skip_consent_for_trusted_clients: ${OAUTH2_CONSENT_SKIP_FOR_TRUSTED:-false}
+        remember_consent: ${OAUTH2_CONSENT_REMEMBER:-true}
+        consent_lifetime: "${OAUTH2_CONSENT_LIFETIME:-30d}"
+        
+        # Scope-specific policies
+        scope_policies:
+          openid:
+            require_consent: false
+            remember_consent: true
+          profile:
+            require_consent: true
+            remember_consent: true
+          email:
+            require_consent: true
+            remember_consent: true
+          "spotify:read":
+            require_consent: true
+            remember_consent: true
+          "spotify:write":
+            require_consent: true
+            remember_consent: false
+          "ai:recommendations":
+            require_consent: true
+            remember_consent: true
+
+  # Monitoring and Logging
+  monitoring:
+    # Metrics
+    metrics:
+      enabled: ${OAUTH2_METRICS_ENABLED:-true}
+      endpoint: "${OAUTH2_METRICS_ENDPOINT:-/metrics}"
+      
+      # Prometheus Metrics
+      prometheus:
+        enabled: ${OAUTH2_PROMETHEUS_ENABLED:-true}
+        namespace: "${OAUTH2_PROMETHEUS_NAMESPACE:-oauth2}"
+        subsystem: "${OAUTH2_PROMETHEUS_SUBSYSTEM:-auth_server}"
+    
+    # Logging
+    logging:
+      level: "${OAUTH2_LOG_LEVEL:-INFO}"
+      format: "${OAUTH2_LOG_FORMAT:-json}"
+      
+      # Log Events
+      events:
+        authorization_request: ${OAUTH2_LOG_AUTHORIZATION_REQUEST:-true}
+        token_request: ${OAUTH2_LOG_TOKEN_REQUEST:-true}
+        token_introspection: ${OAUTH2_LOG_TOKEN_INTROSPECTION:-true}
+        token_revocation: ${OAUTH2_LOG_TOKEN_REVOCATION:-true}
+        consent_given: ${OAUTH2_LOG_CONSENT_GIVEN:-true}
+        consent_denied: ${OAUTH2_LOG_CONSENT_DENIED:-true}
+        authentication_success: ${OAUTH2_LOG_AUTH_SUCCESS:-true}
+        authentication_failure: ${OAUTH2_LOG_AUTH_FAILURE:-true}
+        client_authentication: ${OAUTH2_LOG_CLIENT_AUTH:-true}
+      
+      # Audit Logging
+      audit:
+        enabled: ${OAUTH2_AUDIT_ENABLED:-true}
+        destination: "${OAUTH2_AUDIT_DESTINATION:-file}"  # file, syslog, database
+        file_path: "${OAUTH2_AUDIT_FILE_PATH:-/var/log/oauth2/audit.log}"
+        retention_days: ${OAUTH2_AUDIT_RETENTION_DAYS:-90}
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      authorization_server:
+        issuer: "http://localhost:8080"
+        authorization_endpoint: "http://localhost:8080/oauth2/authorize"
+        token_endpoint: "http://localhost:8080/oauth2/token"
+        userinfo_endpoint: "http://localhost:8080/oauth2/userinfo"
+      
+      security:
+        cors:
+          allowed_origins:
+            - "http://localhost:3000"
+            - "http://localhost:3001"
+      
+      tokens:
+        access_token:
+          lifetime:
+            default_ttl: "15m"
+        refresh_token:
+          lifetime:
+            default_ttl: "7d"
+      
+      clients:
+        default_clients:
+          web_app:
+            redirect_uris:
+              - "http://localhost:3000/callback"
+            post_logout_redirect_uris:
+              - "http://localhost:3000/logout"
+            require_pkce: false
+      
+      storage:
+        tokens:
+          backend: "memory"
+        sessions:
+          backend: "memory"
+      
+      cryptography:
+        signing_keys:
+          rsa:
+            key_size: 2048
+        encryption_keys:
+          aes:
+            enabled: false
+      
+      consent:
+        policies:
+          default:
+            skip_consent_for_trusted_clients: true
+            remember_consent: false
+      
+      monitoring:
+        logging:
+          level: "DEBUG"
+          events:
+            authorization_request: true
+            token_request: true
+    
+    production:
+      authorization_server:
+        issuer: "https://auth.spotify-ai-agent.com"
+      
+      security:
+        cors:
+          allowed_origins:
+            - "https://app.spotify-ai-agent.com"
+            - "https://admin.spotify-ai-agent.com"
+        rate_limiting:
+          enabled: true
+        brute_force_protection:
+          enabled: true
+        session:
+          secure_cookies: true
+          httponly_cookies: true
+          samesite_cookies: "Strict"
+      
+      tokens:
+        access_token:
+          format: "jwt"
+          jwt:
+            encryption_algorithm: "RSA-OAEP"
+            encryption_method: "A256GCM"
+        refresh_token:
+          rotation:
+            enabled: true
+            reuse_detection: true
+      
+      storage:
+        tokens:
+          backend: "postgresql"
+        sessions:
+          backend: "redis"
+      
+      cryptography:
+        signing_keys:
+          rsa:
+            key_size: 4096
+          ecdsa:
+            enabled: true
+        encryption_keys:
+          rsa_encryption:
+            enabled: true
+          aes:
+            enabled: true
+        key_rotation:
+          enabled: true
+          auto_rotation: true
+      
+      consent:
+        enabled: true
+        policies:
+          default:
+            skip_consent_for_trusted_clients: false
+            remember_consent: true
+      
+      monitoring:
+        metrics:
+          enabled: true
+        logging:
+          level: "WARN"
+          audit:
+            enabled: true
+            retention_days: 365

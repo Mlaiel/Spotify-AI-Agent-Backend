@@ -1,0 +1,925 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spotify-ai-agent.com/schemas/environment-config.json",
+  "title": "Enterprise Environment Configuration Schema",
+  "description": "Ultra-advanced enterprise environment configuration validation schema with AI optimization and security compliance",
+  "version": "2.0.0",
+  "type": "object",
+  "required": ["development", "staging", "production"],
+  "additionalProperties": false,
+  
+  "properties": {
+    "development": {
+      "$ref": "#/definitions/environment"
+    },
+    "staging": {
+      "$ref": "#/definitions/environment"
+    },
+    "production": {
+      "$ref": "#/definitions/environment"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata"
+    }
+  },
+  
+  "definitions": {
+    "environment": {
+      "type": "object",
+      "required": [
+        "template_engine", 
+        "database", 
+        "cache", 
+        "security", 
+        "performance",
+        "ai_services",
+        "monitoring",
+        "compliance"
+      ],
+      "additionalProperties": true,
+      
+      "properties": {
+        "template_engine": {
+          "type": "object",
+          "required": ["name", "debug", "log_level"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "enum": ["jinja2", "django", "mako", "chameleon"]
+            },
+            "debug": {
+              "type": "boolean"
+            },
+            "log_level": {
+              "type": "string",
+              "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            },
+            "cache_templates": {
+              "type": "boolean",
+              "default": true
+            },
+            "auto_reload": {
+              "type": "boolean",
+              "default": false
+            },
+            "optimization_level": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3,
+              "default": 2
+            }
+          }
+        },
+        
+        "database": {
+          "type": "object",
+          "required": ["primary", "connections"],
+          "properties": {
+            "primary": {
+              "$ref": "#/definitions/database_connection"
+            },
+            "replica": {
+              "$ref": "#/definitions/database_connection"
+            },
+            "analytics": {
+              "$ref": "#/definitions/database_connection"
+            },
+            "connections": {
+              "type": "object",
+              "properties": {
+                "pool_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 20
+                },
+                "max_overflow": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50,
+                  "default": 10
+                },
+                "pool_timeout": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 300,
+                  "default": 30
+                },
+                "pool_recycle": {
+                  "type": "integer",
+                  "minimum": 300,
+                  "maximum": 3600,
+                  "default": 3600
+                }
+              }
+            },
+            "migrations": {
+              "type": "object",
+              "properties": {
+                "auto_migrate": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "backup_before_migration": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "migration_timeout": {
+                  "type": "integer",
+                  "minimum": 60,
+                  "maximum": 3600,
+                  "default": 300
+                }
+              }
+            }
+          }
+        },
+        
+        "cache": {
+          "type": "object",
+          "required": ["redis", "memcached"],
+          "properties": {
+            "redis": {
+              "$ref": "#/definitions/redis_config"
+            },
+            "memcached": {
+              "$ref": "#/definitions/memcached_config"
+            },
+            "default_ttl": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 86400,
+              "default": 3600
+            },
+            "compression": {
+              "type": "boolean",
+              "default": true
+            },
+            "serialization": {
+              "type": "string",
+              "enum": ["pickle", "json", "msgpack"],
+              "default": "msgpack"
+            }
+          }
+        },
+        
+        "security": {
+          "type": "object",
+          "required": ["authentication", "authorization", "encryption"],
+          "properties": {
+            "authentication": {
+              "$ref": "#/definitions/authentication_config"
+            },
+            "authorization": {
+              "$ref": "#/definitions/authorization_config"
+            },
+            "encryption": {
+              "$ref": "#/definitions/encryption_config"
+            },
+            "cors": {
+              "$ref": "#/definitions/cors_config"
+            },
+            "rate_limiting": {
+              "$ref": "#/definitions/rate_limiting_config"
+            },
+            "audit": {
+              "$ref": "#/definitions/audit_config"
+            }
+          }
+        },
+        
+        "performance": {
+          "type": "object",
+          "required": ["optimization", "caching", "monitoring"],
+          "properties": {
+            "optimization": {
+              "type": "object",
+              "properties": {
+                "enable_gzip": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "enable_etag": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "enable_compression": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "lazy_loading": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "preload_critical": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "caching": {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": ["lru", "lfu", "fifo", "random"],
+                  "default": "lru"
+                },
+                "cache_headers": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "cdn_enabled": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "properties": {
+                "metrics_collection": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "performance_profiling": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "slow_query_threshold": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 10.0,
+                  "default": 1.0
+                }
+              }
+            }
+          }
+        },
+        
+        "ai_services": {
+          "type": "object",
+          "required": ["ml_models", "recommendation_engine"],
+          "properties": {
+            "ml_models": {
+              "$ref": "#/definitions/ml_models_config"
+            },
+            "recommendation_engine": {
+              "$ref": "#/definitions/recommendation_config"
+            },
+            "nlp_services": {
+              "$ref": "#/definitions/nlp_config"
+            },
+            "computer_vision": {
+              "$ref": "#/definitions/cv_config"
+            }
+          }
+        },
+        
+        "monitoring": {
+          "type": "object",
+          "required": ["logging", "metrics", "tracing"],
+          "properties": {
+            "logging": {
+              "$ref": "#/definitions/logging_config"
+            },
+            "metrics": {
+              "$ref": "#/definitions/metrics_config"
+            },
+            "tracing": {
+              "$ref": "#/definitions/tracing_config"
+            },
+            "alerting": {
+              "$ref": "#/definitions/alerting_config"
+            },
+            "health_checks": {
+              "$ref": "#/definitions/health_checks_config"
+            }
+          }
+        },
+        
+        "compliance": {
+          "type": "object",
+          "required": ["gdpr", "data_retention"],
+          "properties": {
+            "gdpr": {
+              "$ref": "#/definitions/gdpr_config"
+            },
+            "data_retention": {
+              "$ref": "#/definitions/data_retention_config"
+            },
+            "privacy": {
+              "$ref": "#/definitions/privacy_config"
+            },
+            "audit_trail": {
+              "$ref": "#/definitions/audit_trail_config"
+            }
+          }
+        }
+      }
+    },
+    
+    "database_connection": {
+      "type": "object",
+      "required": ["host", "port", "name", "user"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "user": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8
+        },
+        "ssl_mode": {
+          "type": "string",
+          "enum": ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"],
+          "default": "prefer"
+        },
+        "engine": {
+          "type": "string",
+          "enum": ["postgresql", "mysql", "sqlite", "mongodb", "redis"],
+          "default": "postgresql"
+        }
+      }
+    },
+    
+    "redis_config": {
+      "type": "object",
+      "required": ["host", "port"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 6379
+        },
+        "password": {
+          "type": "string"
+        },
+        "db": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0
+        },
+        "ssl": {
+          "type": "boolean",
+          "default": false
+        },
+        "cluster_mode": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    
+    "memcached_config": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["127.0.0.1:11211"]
+        },
+        "binary_protocol": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "authentication_config": {
+      "type": "object",
+      "required": ["jwt", "oauth"],
+      "properties": {
+        "jwt": {
+          "type": "object",
+          "properties": {
+            "secret_key": {
+              "type": "string",
+              "minLength": 32
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"],
+              "default": "HS256"
+            },
+            "expiration": {
+              "type": "integer",
+              "minimum": 300,
+              "maximum": 86400,
+              "default": 3600
+            }
+          }
+        },
+        "oauth": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["google", "github", "spotify", "facebook", "apple"]
+              }
+            }
+          }
+        },
+        "mfa": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "methods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["totp", "sms", "email", "push"]
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "authorization_config": {
+      "type": "object",
+      "properties": {
+        "rbac_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "permissions_cache_ttl": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600,
+          "default": 300
+        }
+      }
+    },
+    
+    "encryption_config": {
+      "type": "object",
+      "required": ["data_at_rest", "data_in_transit"],
+      "properties": {
+        "data_at_rest": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256", "AES-192", "AES-128"],
+              "default": "AES-256"
+            },
+            "key_rotation_days": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 365,
+              "default": 90
+            }
+          }
+        },
+        "data_in_transit": {
+          "type": "object",
+          "properties": {
+            "tls_version": {
+              "type": "string",
+              "enum": ["1.2", "1.3"],
+              "default": "1.3"
+            },
+            "cipher_suites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "cors_config": {
+      "type": "object",
+      "properties": {
+        "allowed_origins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+          }
+        },
+        "allowed_headers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "max_age": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400,
+          "default": 3600
+        }
+      }
+    },
+    
+    "rate_limiting_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 60
+        },
+        "burst_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 10
+        }
+      }
+    },
+    
+    "audit_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+          "default": "INFO"
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2555,
+          "default": 90
+        }
+      }
+    },
+    
+    "ml_models_config": {
+      "type": "object",
+      "properties": {
+        "recommendation_model": {
+          "type": "object",
+          "properties": {
+            "model_type": {
+              "type": "string",
+              "enum": ["collaborative", "content_based", "hybrid"]
+            },
+            "update_frequency": {
+              "type": "string",
+              "enum": ["real_time", "hourly", "daily", "weekly"]
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 32,
+              "maximum": 1024
+            }
+          }
+        },
+        "sentiment_analysis": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string"
+            },
+            "confidence_threshold": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          }
+        }
+      }
+    },
+    
+    "recommendation_config": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["matrix_factorization", "deep_learning", "ensemble"]
+        },
+        "real_time_updates": {
+          "type": "boolean",
+          "default": true
+        },
+        "cold_start_strategy": {
+          "type": "string",
+          "enum": ["popular", "random", "content_based"]
+        }
+      }
+    },
+    
+    "nlp_config": {
+      "type": "object",
+      "properties": {
+        "language_detection": {
+          "type": "boolean",
+          "default": true
+        },
+        "supported_languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sentiment_analysis": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "cv_config": {
+      "type": "object",
+      "properties": {
+        "image_processing": {
+          "type": "boolean",
+          "default": false
+        },
+        "supported_formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["jpeg", "png", "webp", "gif"]
+          }
+        }
+      }
+    },
+    
+    "logging_config": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "structured", "plain"]
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["console", "file", "syslog", "elasticsearch"]
+          }
+        }
+      }
+    },
+    
+    "metrics_config": {
+      "type": "object",
+      "properties": {
+        "prometheus": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535,
+              "default": 9090
+            }
+          }
+        },
+        "custom_metrics": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "tracing_config": {
+      "type": "object",
+      "properties": {
+        "jaeger": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "sampling_rate": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0,
+              "default": 0.1
+            }
+          }
+        }
+      }
+    },
+    
+    "alerting_config": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["email", "slack", "webhook", "sms"]
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "error_rate": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "response_time": {
+              "type": "number",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    },
+    
+    "health_checks_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "interval_seconds": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 300,
+          "default": 30
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60,
+          "default": 5
+        }
+      }
+    },
+    
+    "gdpr_config": {
+      "type": "object",
+      "properties": {
+        "data_protection_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "right_to_be_forgotten": {
+          "type": "boolean",
+          "default": true
+        },
+        "data_portability": {
+          "type": "boolean",
+          "default": true
+        },
+        "consent_management": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "data_retention_config": {
+      "type": "object",
+      "properties": {
+        "user_data_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2555,
+          "default": 365
+        },
+        "log_data_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "default": 90
+        },
+        "analytics_data_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1095,
+          "default": 730
+        }
+      }
+    },
+    
+    "privacy_config": {
+      "type": "object",
+      "properties": {
+        "anonymization": {
+          "type": "boolean",
+          "default": true
+        },
+        "encryption_at_rest": {
+          "type": "boolean",
+          "default": true
+        },
+        "pii_detection": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "audit_trail_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "include_request_body": {
+          "type": "boolean",
+          "default": false
+        },
+        "include_response_body": {
+          "type": "boolean",
+          "default": false
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 2555,
+          "default": 365
+        }
+      }
+    },
+    
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_modified": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,345 @@
+# Enterprise Template Configuration - Advanced Industrial Grade
+# Developed by: Fahed Mlaiel (Lead Dev + AI Architect)
+
+# Template Manager Configuration
+template_manager:
+  # Version and metadata
+  version: "2.1.0"
+  environment: "production"
+  
+  # Template directories (priority order)
+  template_directories:
+    - "/app/templates/custom/"      # Custom tenant templates
+    - "/app/templates/enterprise/"  # Enterprise templates
+    - "/app/templates/standard/"    # Standard templates
+    - "/shared/templates/"          # Shared templates
+  
+  # Performance configuration
+  performance:
+    max_render_time_ms: 100         # Maximum rendering time
+    concurrent_renders: 50          # Concurrent rendering limit
+    template_cache_size: 10000      # Template cache entries
+    context_cache_size: 5000        # Context cache entries
+    enable_async_rendering: true    # Async template rendering
+    render_timeout_seconds: 5       # Rendering timeout
+    
+  # Caching configuration
+  caching:
+    enabled: true
+    provider: "redis"               # redis|memory|distributed
+    ttl_seconds: 3600              # Cache TTL
+    max_entries: 50000             # Maximum cache entries
+    compression_enabled: true       # Enable cache compression
+    invalidation_strategy: "smart"  # smart|time_based|manual
+    
+    redis_config:
+      host: "redis.monitoring.internal"
+      port: 6379
+      db: 2
+      password: "${REDIS_PASSWORD}"
+      ssl_enabled: true
+      connection_pool_size: 20
+      
+  # Security configuration
+  security:
+    validation_enabled: true        # Enable template validation
+    xss_protection: true           # XSS protection
+    injection_prevention: true     # Template injection prevention
+    input_sanitization: true      # Input sanitization
+    content_security_policy: true # CSP headers
+    rate_limiting: true           # Rate limiting
+    
+    rate_limits:
+      per_user: 1000              # Requests per user per hour
+      per_tenant: 10000           # Requests per tenant per hour
+      per_ip: 100                 # Requests per IP per minute
+      
+  # Multi-language configuration
+  internationalization:
+    enabled: true
+    default_language: "en"
+    supported_languages:
+      - code: "en"
+        name: "English"
+        fallback: null
+        quality_score: 100
+      - code: "fr"
+        name: "Français"
+        fallback: "en"
+        quality_score: 95
+      - code: "de"
+        name: "Deutsch"
+        fallback: "en"
+        quality_score: 95
+        
+    auto_detection: true           # Auto-detect user language
+    fallback_enabled: true        # Enable language fallback
+    
+  # Template selection and optimization
+  template_selection:
+    algorithm: "ai_optimized"      # ai_optimized|rule_based|simple
+    a_b_testing_enabled: true     # Enable A/B testing
+    personalization_enabled: true # Enable personalization
+    ml_optimization: true         # ML-based optimization
+    
+    ai_config:
+      model: "template-optimizer-v2"
+      confidence_threshold: 0.8
+      learning_rate: 0.001
+      retrain_interval_hours: 24
+      
+  # Quality assurance
+  quality_assurance:
+    enabled: true
+    validation_rules:
+      - "syntax_validation"
+      - "content_validation"
+      - "performance_validation"
+      - "security_validation"
+      - "accessibility_validation"
+      
+    thresholds:
+      quality_score_min: 80        # Minimum quality score
+      render_time_max_ms: 100      # Maximum render time
+      template_size_max_kb: 50     # Maximum template size
+      output_size_max_kb: 100      # Maximum output size
+      
+  # Monitoring and metrics
+  monitoring:
+    enabled: true
+    metrics_provider: "prometheus" # prometheus|datadog|custom
+    tracing_enabled: true         # Distributed tracing
+    logging_level: "INFO"         # DEBUG|INFO|WARN|ERROR
+    
+    metrics:
+      render_time: true           # Template render time
+      cache_hit_rate: true       # Cache hit rate
+      error_rate: true           # Error rate
+      usage_patterns: true       # Usage patterns
+      quality_scores: true       # Quality scores
+      
+    alerts:
+      slow_rendering_threshold_ms: 200
+      high_error_rate_threshold: 5.0
+      low_cache_hit_rate_threshold: 80.0
+      
+  # Feature flags
+  feature_flags:
+    advanced_personalization: true
+    ml_powered_optimization: true
+    real_time_a_b_testing: true
+    dynamic_template_loading: true
+    multi_tenant_isolation: true
+    advanced_caching: true
+    security_hardening: true
+    accessibility_features: true
+    
+# Environment-specific configurations
+environments:
+  production:
+    performance:
+      max_render_time_ms: 50
+      concurrent_renders: 100
+    caching:
+      ttl_seconds: 7200
+      max_entries: 100000
+    security:
+      rate_limits:
+        per_user: 5000
+        per_tenant: 50000
+        
+  staging:
+    performance:
+      max_render_time_ms: 100
+      concurrent_renders: 50
+    monitoring:
+      logging_level: "DEBUG"
+      
+  development:
+    performance:
+      max_render_time_ms: 200
+    caching:
+      enabled: false
+    monitoring:
+      logging_level: "DEBUG"
+      
+# Tenant-specific configurations
+tenants:
+  spotify-main:
+    branding:
+      primary_color: "#1DB954"
+      logo_url: "https://cdn.spotify.com/logo.png"
+      custom_footer: "🎵 Spotify AI Agent"
+      
+    preferences:
+      notification_style: "detailed"
+      show_metrics: true
+      escalation_enabled: true
+      language_preference: "en"
+      
+    limits:
+      max_alerts_per_hour: 1000
+      max_template_size_kb: 100
+      
+  enterprise-tenant:
+    branding:
+      primary_color: "#0066CC"
+      logo_url: "https://cdn.enterprise.com/logo.png"
+      custom_footer: "Enterprise Monitoring"
+      
+    features:
+      advanced_analytics: true
+      custom_templates: true
+      dedicated_support: true
+      
+# Template-specific configurations
+templates:
+  critical_alerts:
+    cache_ttl_seconds: 300        # Short cache for critical alerts
+    max_retries: 3
+    timeout_seconds: 2
+    
+  digest_reports:
+    cache_ttl_seconds: 3600       # Longer cache for digests
+    generation_schedule: "0 8 * * *"  # Daily at 8 AM
+    max_items: 50
+    
+  security_alerts:
+    encryption_required: true
+    audit_logging: true
+    immediate_delivery: true
+    
+# Integration configurations
+integrations:
+  slack:
+    webhook_timeout_seconds: 10
+    retry_attempts: 3
+    rate_limit_per_minute: 100
+    
+  microsoft_teams:
+    enabled: false
+    webhook_timeout_seconds: 15
+    
+  pagerduty:
+    enabled: true
+    integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+    
+  webhook:
+    enabled: true
+    timeout_seconds: 30
+    retry_attempts: 5
+    
+# Advanced AI/ML configurations
+ai_ml:
+  template_optimization:
+    enabled: true
+    model_path: "/models/template-optimizer"
+    inference_timeout_ms: 50
+    
+  content_generation:
+    enabled: true
+    model: "gpt-4-turbo"
+    max_tokens: 500
+    temperature: 0.7
+    
+  anomaly_detection:
+    enabled: true
+    sensitivity: "medium"
+    learning_period_days: 30
+    
+  predictive_analytics:
+    enabled: true
+    forecast_horizon_hours: 24
+    confidence_interval: 0.95
+    
+# Compliance and governance
+compliance:
+  data_retention:
+    template_cache_days: 30
+    metrics_retention_days: 90
+    audit_logs_retention_days: 365
+    
+  privacy:
+    pii_detection: true
+    data_anonymization: true
+    consent_management: true
+    
+  regulations:
+    gdpr_compliance: true
+    hipaa_compliance: false
+    sox_compliance: true
+    
+# Backup and disaster recovery
+backup:
+  enabled: true
+  frequency: "daily"
+  retention_days: 30
+  encryption: true
+  
+  destinations:
+    - type: "s3"
+      bucket: "spotify-ai-agent-backups"
+      region: "us-east-1"
+      encryption_key: "${S3_ENCRYPTION_KEY}"
+      
+disaster_recovery:
+  enabled: true
+  failover_regions:
+    - "us-west-2"
+    - "eu-west-1"
+  rpo_minutes: 15               # Recovery Point Objective
+  rto_minutes: 30              # Recovery Time Objective
+  
+# Development and testing
+development:
+  debug_mode: false
+  template_hot_reload: true
+  validation_strict_mode: true
+  
+  testing:
+    unit_tests_enabled: true
+    integration_tests_enabled: true
+    performance_tests_enabled: true
+    security_tests_enabled: true
+    
+    test_data_generation: true
+    synthetic_load_testing: false
+    
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "json"
+  
+  outputs:
+    - type: "file"
+      path: "/var/log/spotify-ai-agent/templates.log"
+      rotation: "daily"
+      retention_days: 30
+      
+    - type: "elasticsearch"
+      hosts:
+        - "elasticsearch.monitoring.internal:9200"
+      index: "spotify-ai-agent-templates"
+      
+    - type: "datadog"
+      api_key: "${DATADOG_API_KEY}"
+      service: "template-manager"
+      
+# Health checks and monitoring
+health_checks:
+  enabled: true
+  interval_seconds: 30
+  timeout_seconds: 5
+  
+  checks:
+    - name: "template_rendering"
+      type: "synthetic"
+      alert_on_failure: true
+      
+    - name: "cache_connectivity"
+      type: "dependency"
+      alert_on_failure: true
+      
+    - name: "database_connectivity"
+      type: "dependency"
+      alert_on_failure: false

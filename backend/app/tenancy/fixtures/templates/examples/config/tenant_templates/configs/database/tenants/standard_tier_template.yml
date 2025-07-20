@@ -1,0 +1,514 @@
+# Standard Tier Tenant Configuration
+# =================================
+# Balanced configuration for standard tier tenants with moderate resources
+
+tenant_config:
+  # Standard tenant information
+  tenant_info:
+    tenant_id: "${TENANT_ID}"
+    tenant_name: "${TENANT_NAME}"
+    tenant_type: "standard"
+    
+    # Complete metadata
+    metadata:
+      created_at: "${TENANT_CREATED_AT}"
+      updated_at: "${TENANT_UPDATED_AT}"
+      contact_email: "${TENANT_CONTACT_EMAIL}"
+      region: "${TENANT_REGION:-us-east-1}"
+      timezone: "${TENANT_TIMEZONE:-UTC}"
+      
+    # Standard tier subscription
+    subscription:
+      plan: "standard"
+      billing_cycle: "${BILLING_CYCLE:-monthly}"
+      max_users: 1000
+      max_storage_gb: 100
+      max_api_calls_per_month: 1000000
+      rate_limit_per_minute: 1000
+      
+  # Moderate database allocation
+  databases:
+    # Dedicated PostgreSQL instance
+    postgresql:
+      enabled: true
+      deployment_type: "dedicated"
+      database_name: "${TENANT_ID}_postgresql"
+      
+      # Schema-based isolation
+      schemas:
+        tenant_data: "${TENANT_ID}_data"
+        tenant_analytics: "${TENANT_ID}_analytics"
+        tenant_audit: "${TENANT_ID}_audit"
+        
+      # Moderate resource allocation
+      resources:
+        cpu_cores: 2
+        memory_gb: 8
+        storage_gb: 100
+        max_connections: 100
+        iops: 1000
+        
+      # Connection pooling
+      connection_pool:
+        enabled: true
+        pool_size: 50
+        max_overflow: 20
+        
+      # Performance tuning
+      performance:
+        shared_preload_libraries: ["pg_stat_statements"]
+        max_wal_size: "1GB"
+        checkpoint_completion_target: 0.9
+        effective_cache_size: "6GB"
+        
+    # Dedicated MongoDB instance
+    mongodb:
+      enabled: true
+      deployment_type: "dedicated"
+      database_name: "${TENANT_ID}_mongodb"
+      
+      # Comprehensive collections
+      collections:
+        users: "${TENANT_ID}_users"
+        tracks: "${TENANT_ID}_tracks"
+        albums: "${TENANT_ID}_albums"
+        artists: "${TENANT_ID}_artists"
+        playlists: "${TENANT_ID}_playlists"
+        listening_history: "${TENANT_ID}_listening_history"
+        recommendations: "${TENANT_ID}_recommendations"
+        analytics: "${TENANT_ID}_analytics"
+        
+      # No sharding for standard tier
+      sharding:
+        enabled: false
+        
+      resources:
+        cpu_cores: 2
+        memory_gb: 8
+        storage_gb: 100
+        
+      # Replica set for availability
+      replica_set:
+        enabled: true
+        members: 3
+        read_preference: "secondaryPreferred"
+        
+      # Performance settings
+      performance:
+        cache_size_gb: 4
+        journal_enabled: true
+        
+    # Dedicated Redis instance
+    redis:
+      enabled: true
+      deployment_type: "dedicated"
+      
+      # Multiple databases
+      database_mapping:
+        cache: 0
+        sessions: 1
+        rate_limiting: 2
+        analytics: 3
+        
+      # Namespace isolation
+      namespaces:
+        cache: "cache:${TENANT_ID}:"
+        session: "session:${TENANT_ID}:"
+        analytics: "analytics:${TENANT_ID}:"
+        rate_limit: "rate_limit:${TENANT_ID}:"
+        
+      resources:
+        memory_gb: 1
+        max_connections: 1000
+        
+      # Persistence
+      persistence:
+        enabled: true
+        strategy: "rdb_aof"
+        
+    # Optional databases (disabled by default)
+    clickhouse:
+      enabled: false
+      
+    timescaledb:
+      enabled: false
+      
+    elasticsearch:
+      enabled: false
+      
+  # Standard security
+  security:
+    # Encryption enabled
+    encryption:
+      enabled: true
+      key_management: "managed"
+      algorithm: "AES-256-GCM"
+      
+    # Role-based access control
+    access_control:
+      # Administrative access
+      admin_users:
+        - username: "${TENANT_ID}_admin"
+          password: "${TENANT_ADMIN_PASSWORD}"
+          roles: ["tenant_admin"]
+          mfa_required: false
+          
+      # Application access
+      app_users:
+        - username: "${TENANT_ID}_app"
+          password: "${TENANT_APP_PASSWORD}"
+          roles: ["tenant_app"]
+          
+        - username: "${TENANT_ID}_readonly"
+          password: "${TENANT_READONLY_PASSWORD}"
+          roles: ["tenant_readonly"]
+          
+    # Network security
+    network:
+      allowed_ips: ${TENANT_ALLOWED_IPS:-["0.0.0.0/0"]}
+      vpc_enabled: false
+      
+    # SSL/TLS enabled
+    ssl:
+      enabled: true
+      cert_type: "standard"
+      
+  # Standard backup
+  backup:
+    enabled: true
+    strategy: "standard"
+    
+    # Regular backup schedule
+    schedule:
+      full_backup: "0 2 * * 0"  # Weekly full backup
+      incremental_backup: "0 2 * * 1-6"  # Daily incremental
+      
+    # Backup storage
+    storage:
+      type: "s3"
+      location: "backup-bucket/${TENANT_ID}"
+      encryption: true
+      retention_days: 30
+      
+    # Point-in-time recovery
+    point_in_time_recovery:
+      enabled: true
+      retention_hours: 168  # 7 days
+      
+    # Cross-region backup disabled
+    cross_region:
+      enabled: false
+      
+  # Standard monitoring
+  monitoring:
+    enabled: true
+    level: "standard"
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 60
+      retention_days: 30
+      
+      # Standard metrics
+      enabled_metrics:
+        - "database_performance"
+        - "resource_usage"
+        - "connection_metrics"
+        - "query_performance"
+        
+    # Alerting
+    alerts:
+      enabled: true
+      
+      channels:
+        email: "${TENANT_ALERT_EMAIL}"
+        webhook: "${TENANT_WEBHOOK_URL}"
+        
+      # Alert rules
+      rules:
+        - name: "high_cpu_usage"
+          threshold: 80
+          duration: "5m"
+          
+        - name: "high_memory_usage"
+          threshold: 85
+          duration: "5m"
+          
+        - name: "connection_limit_reached"
+          threshold: 90
+          duration: "2m"
+          
+    # Performance monitoring
+    performance:
+      slow_query_threshold: 1000  # 1 second
+      resource_usage_alerts: true
+      
+  # Standard compliance
+  compliance:
+    # Basic data governance
+    data_governance:
+      classification: true
+      lineage: false
+      retention: true
+      
+    # Regulatory requirements
+    regulations: ${COMPLIANCE_REGULATIONS:-["GDPR"]}
+    
+    # Audit logging
+    auditing:
+      enabled: true
+      level: "standard"
+      retention_period: "1 year"
+      
+  # Standard performance tier
+  performance_tier:
+    # Resource limits
+    limits:
+      cpu_limit: "2000m"
+      memory_limit: "8Gi"
+      storage_limit: "100Gi"
+      connection_limit: 100
+      
+    # Normal priority
+    qos:
+      priority: "normal"
+      guaranteed_iops: 1000
+      burst_iops: 2000
+      
+    # Rate limiting
+    rate_limits:
+      api_calls_per_minute: 1000
+      api_calls_per_hour: 10000
+      api_calls_per_day: 100000
+      api_calls_per_month: 1000000
+      
+  # Standard integrations
+  integrations:
+    # Spotify API integration
+    spotify_api:
+      client_id: "${SPOTIFY_CLIENT_ID}"
+      client_secret: "${SPOTIFY_CLIENT_SECRET}"
+      redirect_uri: "${SPOTIFY_REDIRECT_URI}"
+      rate_limit_per_hour: 1000
+      
+    # Basic analytics
+    analytics:
+      enabled: true
+      data_warehouse: "postgresql"
+      retention_days: 90
+      
+    # No ML services for standard tier
+    ml_services:
+      enabled: false
+      
+    # API access
+    api_access:
+      enabled: true
+      rate_limit: "standard"
+      documentation: "standard"
+      
+  # Environment-specific overrides
+  environment_overrides:
+    development:
+      # Relaxed settings for development
+      security:
+        ssl:
+          enabled: false
+        encryption:
+          enabled: false
+      monitoring:
+        alerts:
+          enabled: false
+      backup:
+        enabled: false
+      resources:
+        scale_factor: 0.5
+        
+    staging:
+      # Production-like but smaller
+      resources:
+        scale_factor: 0.7
+      backup:
+        retention_days: 7
+        
+    production:
+      # Full standard configuration
+      security:
+        ssl:
+          enabled: true
+        encryption:
+          enabled: true
+      monitoring:
+        alerts:
+          enabled: true
+      backup:
+        enabled: true
+
+# Standard tier specific configurations
+standard_tier_config:
+  # Feature set
+  features:
+    advanced_analytics: false
+    ml_recommendations: false
+    priority_support: true
+    custom_integrations: false
+    data_export: true
+    api_access: "standard"
+    real_time_sync: true
+    
+  # Support level
+  support:
+    type: "standard"
+    response_time: "24 hours"
+    channels: ["email", "chat", "documentation"]
+    priority: "normal"
+    
+  # Data retention
+  data_retention:
+    user_data: "2 years"
+    analytics_data: "90 days"
+    logs: "30 days"
+    backup_data: "30 days"
+    
+  # Resource scaling
+  auto_scaling:
+    enabled: true
+    min_resources: 0.5
+    max_resources: 2.0
+    scale_up_threshold: 80
+    scale_down_threshold: 30
+    
+  # Business continuity
+  business_continuity:
+    backup_sla: "24 hours"
+    recovery_sla: "4 hours"
+    uptime_target: "99.5%"
+    
+# Resource quotas and limits
+resource_quotas:
+  # Database quotas
+  postgresql:
+    max_database_size: "100GB"
+    max_connections: 100
+    max_queries_per_minute: 10000
+    max_tables: 1000
+    max_indexes: 5000
+    
+  mongodb:
+    max_database_size: "100GB"
+    max_collections: 100
+    max_documents_per_collection: 1000000
+    max_operations_per_minute: 10000
+    
+  redis:
+    max_memory: "1GB"
+    max_keys: 1000000
+    max_operations_per_minute: 10000
+    
+  # API quotas
+  api:
+    max_calls_per_minute: 1000
+    max_calls_per_hour: 10000
+    max_calls_per_day: 100000
+    max_calls_per_month: 1000000
+    max_concurrent_requests: 50
+    
+  # Storage quotas
+  storage:
+    max_file_size: "100MB"
+    max_total_storage: "100GB"
+    max_files: 10000
+    
+# Monitoring and alerting
+monitoring_config:
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: 60
+    timeout: 10
+    
+    checks:
+      - name: "database_connectivity"
+        type: "connection"
+        targets: ["postgresql", "mongodb", "redis"]
+        
+      - name: "api_responsiveness"
+        type: "http"
+        endpoint: "/health"
+        expected_status: 200
+        
+      - name: "resource_usage"
+        type: "metrics"
+        thresholds:
+          cpu: 80
+          memory: 85
+          storage: 90
+          
+  # Performance metrics
+  performance_metrics:
+    - name: "response_time"
+      target: "< 500ms p95"
+      
+    - name: "throughput"
+      target: "> 100 rps"
+      
+    - name: "error_rate"
+      target: "< 1%"
+      
+    - name: "uptime"
+      target: "> 99.5%"
+
+# Security configuration
+security_config:
+  # Authentication
+  authentication:
+    methods: ["password", "api_key"]
+    password_policy:
+      min_length: 12
+      require_special_chars: true
+      require_numbers: true
+      require_uppercase: true
+      expiry_days: 90
+      
+  # Authorization
+  authorization:
+    rbac_enabled: true
+    default_role: "user"
+    
+  # Audit logging
+  audit_logging:
+    enabled: true
+    events:
+      - "login"
+      - "logout"
+      - "data_access"
+      - "data_modification"
+      - "admin_actions"
+    retention: "1 year"
+    
+  # Data protection
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    key_rotation_days: 90
+    
+# Integration settings
+integration_settings:
+  # Webhooks
+  webhooks:
+    enabled: true
+    max_endpoints: 10
+    retry_attempts: 3
+    timeout: 30
+    
+  # Third-party APIs
+  third_party_apis:
+    rate_limiting: true
+    monitoring: true
+    error_handling: "graceful"
+    
+  # Data synchronization
+  data_sync:
+    enabled: true
+    interval: "1 hour"
+    conflict_resolution: "last_write_wins"

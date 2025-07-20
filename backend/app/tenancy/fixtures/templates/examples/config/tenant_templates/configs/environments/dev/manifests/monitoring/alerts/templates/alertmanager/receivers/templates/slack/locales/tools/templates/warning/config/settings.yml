@@ -1,0 +1,956 @@
+# ================================================================================
+# SPOTIFY AI AGENT - WARNING ALERTS CONFIGURATION SYSTEM
+# ================================================================================
+# Configuration YAML ultra-avancée pour le système d'alertes Warning
+# Développé par l'équipe d'experts dirigée par Fahed Mlaiel
+#
+# Équipe technique:
+# - Lead Dev + Architecte IA
+# - Développeur Backend Senior (Python/FastAPI/Django)
+# - Ingénieur Machine Learning (TensorFlow/PyTorch/Hugging Face)
+# - DBA & Data Engineer (PostgreSQL/Redis/MongoDB)
+# - Spécialiste Sécurité Backend
+# - Architecte Microservices
+# ================================================================================
+
+# === CONFIGURATION GÉNÉRALE ===
+general:
+  name: "Spotify AI Agent Warning System"
+  version: "1.0.0"
+  environment: "dev"
+  debug: true
+  timezone: "UTC"
+  default_locale: "en_US"
+  supported_locales: ["en_US", "fr_FR", "de_DE", "es_ES"]
+  service_name: "spotify-ai-warning-alerts"
+  maintainer: "Fahed Mlaiel <fahed.mlaiel@spotify-ai-agent.com>"
+  documentation_url: "https://docs.spotify-ai-agent.com/alerts/warning"
+  license: "Proprietary - Spotify AI Agent"
+
+# === CONFIGURATION DES TENANTS ===
+tenants:
+  default_config:
+    alert_retention_days: 30
+    max_alerts_per_minute: 100
+    max_alerts_per_hour: 1000
+    max_alerts_per_day: 10000
+    escalation_enabled: true
+    notifications_enabled: true
+    audit_enabled: true
+    encryption_enabled: true
+    compliance_level: "high"
+    data_residency: "EU"
+    
+  isolation:
+    strict_isolation: true
+    cross_tenant_access: false
+    tenant_specific_keys: true
+    resource_quotas_enabled: true
+    
+  profiles:
+    basic:
+      max_alerts_per_minute: 50
+      max_escalation_levels: 2
+      features:
+        - basic_alerting
+        - slack_notifications
+        - email_notifications
+        - basic_templates
+      storage_quota_gb: 1
+      retention_days: 7
+      support_level: "community"
+      
+    premium:
+      max_alerts_per_minute: 200
+      max_escalation_levels: 4
+      features:
+        - advanced_alerting
+        - slack_notifications
+        - email_notifications
+        - webhook_notifications
+        - custom_templates
+        - ml_analysis
+        - anomaly_detection
+        - trend_analysis
+      storage_quota_gb: 10
+      retention_days: 30
+      support_level: "business"
+      
+    enterprise:
+      max_alerts_per_minute: 1000
+      max_escalation_levels: 6
+      features:
+        - all_features_enabled
+        - dedicated_support
+        - custom_integrations
+        - advanced_ml
+        - predictive_analytics
+        - custom_compliance
+        - white_label
+        - api_access
+      storage_quota_gb: 100
+      retention_days: 90
+      support_level: "enterprise"
+      compliance_standards: ["SOC2", "GDPR", "HIPAA", "ISO27001"]
+
+# === CONFIGURATION DES ALERTES ===
+alerting:
+  levels:
+    - name: "CRITICAL"
+      priority: 1
+      numeric_value: 5
+      color: "#FF0000"
+      escalation_minutes: 5
+      auto_escalate: true
+      channels: ["slack_critical", "email", "pagerduty", "sms"]
+      icon: "🚨"
+      sound_alert: true
+      requires_acknowledgment: true
+      max_retry_attempts: 5
+      
+    - name: "HIGH"
+      priority: 2
+      numeric_value: 4
+      color: "#FF8C00"
+      escalation_minutes: 15
+      auto_escalate: true
+      channels: ["slack_general", "email", "teams"]
+      icon: "⚠️"
+      sound_alert: false
+      requires_acknowledgment: false
+      max_retry_attempts: 3
+      
+    - name: "WARNING"
+      priority: 3
+      numeric_value: 3
+      color: "#FFD700"
+      escalation_minutes: 60
+      auto_escalate: false
+      channels: ["slack_general"]
+      icon: "⚡"
+      sound_alert: false
+      requires_acknowledgment: false
+      max_retry_attempts: 2
+      
+    - name: "INFO"
+      priority: 4
+      numeric_value: 2
+      color: "#00CED1"
+      escalation_minutes: null
+      auto_escalate: false
+      channels: ["slack_monitoring"]
+      icon: "ℹ️"
+      sound_alert: false
+      requires_acknowledgment: false
+      max_retry_attempts: 1
+      
+    - name: "DEBUG"
+      priority: 5
+      numeric_value: 1
+      color: "#808080"
+      escalation_minutes: null
+      auto_escalate: false
+      channels: ["slack_debug"]
+      icon: "🔍"
+      sound_alert: false
+      requires_acknowledgment: false
+      max_retry_attempts: 1
+
+  # Catégories d'alertes avec patterns intelligents
+  categories:
+    performance:
+      patterns:
+        - name: "high_latency"
+          regex: "(latency|response.*time|slow|timeout|delay)"
+          severity_multiplier: 1.2
+          keywords: ["latency", "slow", "timeout", "response", "delay"]
+          escalation_factor: 1.1
+          ml_features: ["response_time", "request_count", "error_rate"]
+          
+        - name: "high_cpu"
+          regex: "(cpu.*high|processor.*load|cpu.*\\d+%|cpu.*usage)"
+          severity_multiplier: 1.3
+          keywords: ["cpu", "processor", "load", "usage", "cores"]
+          escalation_factor: 1.2
+          ml_features: ["cpu_usage", "load_average", "process_count"]
+          
+        - name: "memory_issues"
+          regex: "(memory.*leak|out.*of.*memory|oom|memory.*high|ram)"
+          severity_multiplier: 1.5
+          keywords: ["memory", "leak", "oom", "ram", "heap"]
+          escalation_factor: 1.4
+          ml_features: ["memory_usage", "gc_frequency", "heap_size"]
+          
+        - name: "disk_issues"
+          regex: "(disk.*full|storage.*low|disk.*space|io.*error)"
+          severity_multiplier: 1.4
+          keywords: ["disk", "storage", "space", "io", "volume"]
+          escalation_factor: 1.3
+          ml_features: ["disk_usage", "io_wait", "disk_latency"]
+    
+    security:
+      patterns:
+        - name: "failed_auth"
+          regex: "(authentication.*failed|login.*failed|unauthorized|access.*denied)"
+          severity_multiplier: 1.4
+          keywords: ["auth", "login", "unauthorized", "access", "denied"]
+          escalation_factor: 1.5
+          ml_features: ["failed_attempts", "source_ip", "user_agent"]
+          
+        - name: "suspicious_activity"
+          regex: "(brute.*force|ddos|attack|malicious|suspicious)"
+          severity_multiplier: 1.8
+          keywords: ["brute", "force", "ddos", "attack", "malicious"]
+          escalation_factor: 1.7
+          ml_features: ["request_rate", "geographic_distribution", "user_behavior"]
+          
+        - name: "data_breach"
+          regex: "(data.*breach|leak|exposure|compromise|unauthorized.*access)"
+          severity_multiplier: 2.0
+          keywords: ["breach", "leak", "exposure", "compromise"]
+          escalation_factor: 2.0
+          ml_features: ["data_volume", "sensitivity_level", "access_pattern"]
+    
+    application:
+      patterns:
+        - name: "api_errors"
+          regex: "(api.*error|http.*5\\d\\d|service.*unavailable|internal.*error)"
+          severity_multiplier: 1.3
+          keywords: ["api", "error", "500", "503", "502", "504"]
+          escalation_factor: 1.2
+          ml_features: ["error_rate", "endpoint", "response_code"]
+          
+        - name: "database_issues"
+          regex: "(database.*error|db.*connection|query.*timeout|deadlock)"
+          severity_multiplier: 1.6
+          keywords: ["database", "db", "connection", "query", "deadlock"]
+          escalation_factor: 1.4
+          ml_features: ["connection_pool", "query_time", "lock_wait"]
+          
+        - name: "service_degradation"
+          regex: "(service.*down|degradation|outage|unavailable)"
+          severity_multiplier: 1.7
+          keywords: ["service", "down", "degradation", "outage"]
+          escalation_factor: 1.6
+          ml_features: ["availability", "response_time", "error_count"]
+
+  # Configuration de déduplication intelligente
+  deduplication:
+    enabled: true
+    window_minutes: 5
+    similarity_threshold: 0.8
+    group_by: ["source", "level", "message_hash"]
+    ml_based_grouping: true
+    fuzzy_matching: true
+    
+  # Configuration de burst detection
+  burst_detection:
+    enabled: true
+    threshold_multiplier: 3.0
+    time_window_minutes: 10
+    min_events: 5
+    adaptive_threshold: true
+
+# === CONFIGURATION ML ET IA ===
+machine_learning:
+  enabled: true
+  models:
+    alert_classifier:
+      enabled: true
+      model_type: "random_forest"
+      features: ["message_length", "source_frequency", "time_of_day", "day_of_week"]
+      training_data_days: 30
+      retrain_interval_hours: 24
+      confidence_threshold: 0.8
+      
+    anomaly_detector:
+      enabled: true
+      model_type: "isolation_forest"
+      features: ["alert_frequency", "severity_distribution", "source_diversity"]
+      contamination_rate: 0.1
+      window_size_hours: 24
+      sensitivity: "medium"
+      
+    escalation_predictor:
+      enabled: true
+      model_type: "gradient_boosting"
+      features: ["historical_escalations", "alert_pattern", "time_context"]
+      prediction_horizon_minutes: 60
+      accuracy_threshold: 0.75
+      
+  feature_engineering:
+    text_features:
+      enabled: true
+      methods: ["tfidf", "word2vec", "bert_embeddings"]
+      vocabulary_size: 10000
+      ngram_range: [1, 3]
+      
+    temporal_features:
+      enabled: true
+      time_buckets: ["hour", "day_of_week", "month"]
+      seasonal_analysis: true
+      trend_analysis: true
+      
+    behavioral_features:
+      enabled: true
+      user_patterns: true
+      system_patterns: true
+      correlation_analysis: true
+
+# === CONFIGURATION DES CANAUX DE NOTIFICATION ===
+notification_channels:
+  slack:
+    enabled: true
+    default_webhook: "${SLACK_WEBHOOK_DEFAULT}"
+    channels:
+      critical: "${SLACK_WEBHOOK_CRITICAL}"
+      general: "${SLACK_WEBHOOK_DEFAULT}"
+      monitoring: "${SLACK_WEBHOOK_MONITORING}"
+      debug: "${SLACK_WEBHOOK_DEBUG}"
+    
+    settings:
+      username: "Spotify AI Agent"
+      icon_emoji: ":robot_face:"
+      icon_url: "https://cdn.spotify-ai-agent.com/bot-avatar.png"
+      max_message_length: 3000
+      enable_threads: true
+      enable_reactions: true
+      enable_actions: true
+      unfurl_links: false
+      
+    rate_limits:
+      requests_per_minute: 60
+      burst_limit: 10
+      cooldown_seconds: 30
+      
+    formatting:
+      use_blocks: true
+      use_attachments: true
+      color_coding: true
+      emoji_reactions: true
+      mention_on_critical: true
+      
+  email:
+    enabled: true
+    smtp_config:
+      server: "${SMTP_SERVER}"
+      port: "${SMTP_PORT}"
+      use_tls: true
+      username: "${SMTP_USERNAME}"
+      password: "${SMTP_PASSWORD}"
+      
+    default_settings:
+      from_name: "Spotify AI Agent Alerts"
+      from_email: "${SMTP_FROM_EMAIL}"
+      reply_to: "noreply@spotify-ai-agent.com"
+      
+    templates:
+      html_enabled: true
+      plain_text_fallback: true
+      custom_css: true
+      responsive_design: true
+      
+    rate_limits:
+      requests_per_minute: 30
+      daily_limit: 1000
+      
+  webhook:
+    enabled: false
+    default_url: "${WEBHOOK_URL}"
+    timeout_seconds: 30
+    retry_attempts: 3
+    retry_backoff: "exponential"
+    
+    authentication:
+      type: "bearer_token"
+      token: "${WEBHOOK_AUTH_TOKEN}"
+      
+    headers:
+      content_type: "application/json"
+      user_agent: "Spotify-AI-Agent/1.0"
+      
+  pagerduty:
+    enabled: false
+    integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+    routing_key: "${PAGERDUTY_ROUTING_KEY}"
+    severity_mapping:
+      CRITICAL: "critical"
+      HIGH: "error"
+      WARNING: "warning"
+      INFO: "info"
+      DEBUG: "info"
+
+# === CONFIGURATION DE SÉCURITÉ ===
+security:
+  encryption:
+    algorithm: "AES-256-GCM"
+    key_rotation_days: 30
+    encrypt_sensitive_data: true
+    encrypt_at_rest: true
+    encrypt_in_transit: true
+    
+  authentication:
+    require_api_key: true
+    api_key_rotation_days: 90
+    multi_factor_enabled: false
+    session_timeout_minutes: 480
+    
+  authorization:
+    rbac_enabled: true
+    tenant_isolation: "strict"
+    resource_level_permissions: true
+    audit_all_actions: true
+    
+  rate_limiting:
+    enabled: true
+    algorithm: "token_bucket"
+    global_limits:
+      requests_per_minute: 1000
+      requests_per_hour: 10000
+      burst_size: 50
+    
+    per_tenant_limits:
+      basic: 100
+      premium: 500
+      enterprise: 2000
+      
+  data_protection:
+    gdpr_compliance: true
+    data_retention_days: 365
+    anonymization_enabled: true
+    pseudonymization_enabled: true
+    right_to_deletion: true
+    
+  monitoring:
+    security_events_logging: true
+    anomaly_detection: true
+    threat_intelligence: false
+    intrusion_detection: true
+
+# === CONFIGURATION DE PERFORMANCE ===
+performance:
+  caching:
+    enabled: true
+    backend: "redis"
+    default_ttl_seconds: 3600
+    max_memory_mb: 512
+    
+    cache_levels:
+      config_cache: 7200  # 2 heures
+      template_cache: 14400  # 4 heures
+      metric_cache: 1800  # 30 minutes
+      
+  database:
+    connection_pool_size: 20
+    max_overflow: 10
+    pool_timeout_seconds: 30
+    pool_recycle_seconds: 3600
+    echo_queries: false
+    
+  async_processing:
+    enabled: true
+    max_workers: 10
+    queue_size: 10000
+    batch_size: 100
+    batch_timeout_seconds: 5
+    
+  monitoring:
+    metrics_enabled: true
+    prometheus_endpoint: "/metrics"
+    health_check_endpoint: "/health"
+    profiling_enabled: false
+
+# === CONFIGURATION DE MONITORING ===
+monitoring:
+  metrics:
+    collection_interval_seconds: 30
+    retention_days: 30
+    aggregation_intervals: ["1m", "5m", "15m", "1h", "1d"]
+    
+  alerting:
+    self_monitoring: true
+    alert_on_errors: true
+    alert_on_performance: true
+    alert_on_security: true
+    
+  dashboards:
+    enabled: true
+    auto_refresh_seconds: 30
+    default_time_range: "1h"
+    
+  logging:
+    level: "INFO"
+    format: "json"
+    structured: true
+    correlation_ids: true
+    sensitive_data_masking: true
+
+# === CONFIGURATION DE BACKUP ET RECOVERY ===
+backup:
+  enabled: true
+  interval_hours: 6
+  retention_days: 30
+  storage_type: "s3"
+  encryption_enabled: true
+  
+  s3_config:
+    bucket: "${BACKUP_S3_BUCKET}"
+    prefix: "warning-alerts/"
+    region: "eu-west-1"
+    
+  verification:
+    enabled: true
+    test_restore: true
+    integrity_checks: true
+
+# === CONFIGURATION DE DÉVELOPPEMENT ===
+development:
+  hot_reload: true
+  auto_migration: true
+  seed_data: true
+  mock_external_services: false
+  debug_mode: true
+  
+  testing:
+    unit_tests_enabled: true
+    integration_tests_enabled: true
+    load_tests_enabled: false
+    chaos_engineering: false
+    
+  documentation:
+    auto_generate: true
+    api_docs_enabled: true
+    swagger_ui: true
+        
+        - name: "suspicious_ip"
+          regex: "suspicious.*ip|blocked.*ip|malicious"
+          severity_multiplier: 1.6
+          keywords: ["suspicious", "blocked", "malicious"]
+    
+    ml_model:
+      patterns:
+        - name: "model_drift"
+          regex: "drift|model.*performance|accuracy.*drop"
+          severity_multiplier: 1.3
+          keywords: ["drift", "performance", "accuracy"]
+        
+        - name: "prediction_error"
+          regex: "prediction.*error|inference.*failed"
+          severity_multiplier: 1.2
+          keywords: ["prediction", "inference", "error"]
+
+  rate_limiting:
+    per_tenant:
+      minute: 100
+      hour: 1000
+      day: 10000
+    
+    per_service:
+      minute: 50
+      hour: 500
+    
+    global:
+      minute: 1000
+      hour: 10000
+
+# === CONFIGURATION SLACK ===
+slack:
+  enabled: true
+  default_settings:
+    username: "Spotify AI Agent"
+    icon_emoji: ":warning:"
+    unfurl_links: false
+    unfurl_media: false
+  
+  channels:
+    critical_alerts:
+      webhook_url: "${SLACK_WEBHOOK_CRITICAL}"
+      channel: "#critical-alerts"
+      mention_users: ["@here"]
+      thread_replies: true
+    
+    general_alerts:
+      webhook_url: "${SLACK_WEBHOOK_DEFAULT}"
+      channel: "#alerts"
+      mention_users: []
+      thread_replies: false
+    
+    monitoring:
+      webhook_url: "${SLACK_WEBHOOK_MONITORING}"
+      channel: "#monitoring"
+      mention_users: []
+      thread_replies: false
+    
+    ml_alerts:
+      webhook_url: "${SLACK_WEBHOOK_ML}"
+      channel: "#ml-alerts"
+      mention_users: ["@ml-team"]
+      thread_replies: true
+    
+    security_alerts:
+      webhook_url: "${SLACK_WEBHOOK_SECURITY}"
+      channel: "#security-alerts"
+      mention_users: ["@security-team"]
+      thread_replies: true
+
+  message_templates:
+    critical:
+      title: "🚨 CRITICAL Alert"
+      title_link: "${DASHBOARD_URL}/alerts/{alert_id}"
+      color: "#FF0000"
+      include_actions: true
+      actions:
+        - text: "Acknowledge"
+          type: "button"
+          style: "primary"
+        - text: "Resolve"
+          type: "button"
+          style: "good"
+        - text: "Escalate"
+          type: "button"
+          style: "danger"
+    
+    warning:
+      title: "⚠️ Warning Alert"
+      color: "#FFD700"
+      include_actions: false
+    
+    info:
+      title: "ℹ️ Information"
+      color: "#00CED1"
+      include_actions: false
+
+# === CONFIGURATION EMAIL ===
+email:
+  enabled: false
+  smtp:
+    server: "${SMTP_SERVER}"
+    port: 587
+    use_tls: true
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+  
+  defaults:
+    from_email: "Spotify AI Agent <alerts@yourcompany.com>"
+    reply_to: "noreply@yourcompany.com"
+    
+  templates:
+    critical:
+      subject: "🚨 CRITICAL Alert: {message}"
+      template_file: "critical_alert.html"
+      recipients:
+        - "critical-team@yourcompany.com"
+        - "on-call@yourcompany.com"
+    
+    high:
+      subject: "⚠️ High Priority Alert: {message}"
+      template_file: "high_alert.html"
+      recipients:
+        - "ops-team@yourcompany.com"
+    
+    general:
+      subject: "📢 Alert Notification: {message}"
+      template_file: "general_alert.html"
+      recipients:
+        - "alerts@yourcompany.com"
+
+# === CONFIGURATION WARNING PROCESSOR ===
+warning_processor:
+  nlp:
+    model: "en_core_web_sm"
+    batch_size: 32
+    max_text_length: 2000
+    enable_gpu: false
+  
+  classification:
+    enabled: true
+    confidence_threshold: 0.7
+    unknown_category_threshold: 0.5
+  
+  similarity:
+    enabled: true
+    algorithm: "cosine"
+    threshold: 0.3
+    max_similar_alerts: 5
+  
+  anomaly_detection:
+    enabled: true
+    window_size: 100
+    sensitivity: 0.8
+    algorithms:
+      - "isolation_forest"
+      - "one_class_svm"
+  
+  sentiment_analysis:
+    enabled: true
+    model: "vader"
+    weights:
+      positive: 0.1
+      neutral: 0.5
+      negative: 0.9
+
+# === CONFIGURATION LOCALE MANAGER ===
+localization:
+  enabled: true
+  auto_detection: true
+  fallback_locale: "en_US"
+  
+  supported_locales:
+    - code: "en_US"
+      name: "English (US)"
+      rtl: false
+      date_format: "MM/dd/yyyy"
+      time_format: "h:mm a"
+    
+    - code: "fr_FR"
+      name: "Français (France)"
+      rtl: false
+      date_format: "dd/MM/yyyy"
+      time_format: "HH:mm"
+    
+    - code: "de_DE"
+      name: "Deutsch (Deutschland)"
+      rtl: false
+      date_format: "dd.MM.yyyy"
+      time_format: "HH:mm"
+    
+    - code: "es_ES"
+      name: "Español (España)"
+      rtl: false
+      date_format: "dd/MM/yyyy"
+      time_format: "HH:mm"
+    
+    - code: "ja_JP"
+      name: "日本語 (日本)"
+      rtl: false
+      date_format: "yyyy/MM/dd"
+      time_format: "HH:mm"
+    
+    - code: "ar_SA"
+      name: "العربية (السعودية)"
+      rtl: true
+      date_format: "dd/MM/yyyy"
+      time_format: "HH:mm"
+
+  translation:
+    auto_translate: true
+    cache_ttl: 86400
+    providers:
+      - name: "google"
+        enabled: true
+        api_key: "${GOOGLE_TRANSLATE_API_KEY}"
+      
+      - name: "azure"
+        enabled: false
+        api_key: "${AZURE_TRANSLATE_API_KEY}"
+
+# === CONFIGURATION TEMPLATE ENGINE ===
+templates:
+  engine: "jinja2"
+  paths:
+    - "./templates/"
+    - "./custom_templates/"
+  
+  cache:
+    enabled: true
+    ttl: 3600
+    max_size: 1000
+  
+  security:
+    sandbox_enabled: true
+    max_render_time: 10
+    max_include_depth: 5
+    allowed_extensions:
+      - ".j2"
+      - ".jinja2"
+      - ".html"
+      - ".md"
+      - ".txt"
+  
+  formats:
+    jinja2:
+      enabled: true
+      auto_escape: true
+      trim_blocks: true
+      lstrip_blocks: true
+    
+    markdown:
+      enabled: true
+      extensions:
+        - "extra"
+        - "codehilite"
+        - "toc"
+    
+    html:
+      enabled: true
+      minify: false
+    
+    json:
+      enabled: true
+      pretty_print: true
+    
+    yaml:
+      enabled: true
+      default_flow_style: false
+
+# === CONFIGURATION SÉCURITÉ ===
+security:
+  encryption:
+    enabled: true
+    algorithm: "fernet"
+    key_rotation_days: 90
+  
+  authentication:
+    api_key_required: true
+    jwt_enabled: false
+    session_timeout: 3600
+  
+  validation:
+    input_sanitization: true
+    url_validation: true
+    max_input_length: 5000
+    webhook_signature_validation: true
+  
+  rate_limiting:
+    enabled: true
+    storage: "redis"
+    default_limit: "100/hour"
+    exempt_ips: []
+
+# === CONFIGURATION MONITORING ===
+monitoring:
+  prometheus:
+    enabled: true
+    port: 8000
+    path: "/metrics"
+    include_default_metrics: true
+  
+  health_checks:
+    enabled: true
+    interval: 60
+    timeout: 5
+    endpoints:
+      - name: "database"
+        check_type: "database_ping"
+      
+      - name: "redis"
+        check_type: "redis_ping"
+      
+      - name: "slack"
+        check_type: "http_get"
+        url: "https://slack.com/api/api.test"
+  
+  logging:
+    level: "INFO"
+    format: "json"
+    structured: true
+    correlation_id: true
+    file_rotation: true
+    max_file_size: "100MB"
+    backup_count: 5
+
+# === CONFIGURATION PERFORMANCE ===
+performance:
+  connection_pool:
+    size: 50
+    max_overflow: 10
+    timeout: 30
+    recycle: 3600
+  
+  cache:
+    strategy: "redis"
+    default_ttl: 3600
+    max_memory: "256MB"
+    eviction_policy: "allkeys-lru"
+  
+  async_processing:
+    worker_count: 4
+    queue_max_size: 1000
+    task_timeout: 300
+    retry_max: 3
+    retry_delay: 5
+  
+  optimization:
+    enable_compression: true
+    minify_json: false
+    batch_operations: true
+    lazy_loading: true
+
+# === CONFIGURATION INTÉGRATIONS ===
+integrations:
+  grafana:
+    enabled: false
+    url: "${GRAFANA_URL}"
+    api_key: "${GRAFANA_API_KEY}"
+    default_dashboard: "spotify-ai-agent"
+  
+  pagerduty:
+    enabled: false
+    integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+    severity_mapping:
+      CRITICAL: "critical"
+      HIGH: "error"
+      WARNING: "warning"
+      INFO: "info"
+  
+  datadog:
+    enabled: false
+    api_key: "${DATADOG_API_KEY}"
+    app_key: "${DATADOG_APP_KEY}"
+    tags:
+      - "service:spotify-ai-agent"
+      - "environment:${ENVIRONMENT}"
+  
+  webhook:
+    enabled: false
+    endpoints:
+      - name: "external_system"
+        url: "${WEBHOOK_URL_EXTERNAL}"
+        method: "POST"
+        headers:
+          Authorization: "Bearer ${WEBHOOK_TOKEN}"
+        timeout: 30
+        retry_count: 3
+
+# === CONFIGURATION FEATURES ===
+features:
+  experimental:
+    advanced_analytics: true
+    predictive_alerting: false
+    auto_resolution: false
+    smart_escalation: true
+    ml_recommendations: true
+  
+  ml_capabilities:
+    anomaly_detection: true
+    pattern_recognition: true
+    sentiment_analysis: true
+    text_classification: true
+    clustering: true
+  
+  notification_enhancements:
+    rich_formatting: true
+    interactive_buttons: true
+    threaded_responses: true
+    message_updates: true
+    bulk_operations: true
+
+# === CONFIGURATION ENVIRONNEMENTS ===
+environments:
+  development:
+    debug: true
+    mock_external_services: true
+    load_test_data: true
+    enable_debug_endpoints: true
+  
+  staging:
+    debug: false
+    mock_external_services: false
+    load_test_data: false
+    enable_debug_endpoints: false
+  
+  production:
+    debug: false
+    optimization_enabled: true
+    monitoring_enhanced: true
+    security_strict: true

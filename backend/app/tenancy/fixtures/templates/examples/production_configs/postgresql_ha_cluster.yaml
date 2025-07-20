@@ -1,0 +1,488 @@
+# PostgreSQL High Availability Cluster Configuration
+# Enterprise Production-Ready Setup with Advanced Features
+# Architecture: Master-Slave with Automatic Failover, Read Replicas, and Backup Automation
+
+_metadata:
+  template_type: "postgresql_ha_cluster"
+  template_version: "5.2.0"
+  schema_version: "2024.2"
+  created_at: "{{ current_timestamp() }}"
+  generator: "PostgreSQLHAClusterGenerator"
+  tags: ["database", "postgresql", "high-availability", "enterprise", "production"]
+  description: "PostgreSQL High Availability cluster with automatic failover, read replicas, and enterprise features"
+  
+cluster_id: "{{ cluster_id }}"
+tenant_id: "{{ tenant_id }}"
+environment: "{{ environment | default('production') }}"
+
+# Configuration du cluster PostgreSQL HA
+postgresql_cluster:
+  cluster_name: "{{ cluster_name | default('spotify-ai-agent-postgres-ha') }}"
+  postgresql_version: "{{ postgresql_version | default('15.4') }}"
+  
+  # Architecture haute disponibilité
+  high_availability:
+    enabled: true
+    topology: "{{ ha_topology | default('master_slave_with_replicas') }}"
+    automatic_failover: true
+    failover_timeout_seconds: "{{ failover_timeout | default(30) }}"
+    
+    # Configuration master
+    master:
+      instance_name: "{{ master_instance_name | default('postgres-master') }}"
+      cpu_cores: "{{ master_cpu_cores | default(8) }}"
+      memory_gb: "{{ master_memory_gb | default(32) }}"
+      storage_gb: "{{ master_storage_gb | default(1000) }}"
+      storage_type: "{{ master_storage_type | default('ssd') }}"
+      storage_iops: "{{ master_storage_iops | default(10000) }}"
+      
+      # Configuration réseau
+      network:
+        port: "{{ master_port | default(5432) }}"
+        max_connections: "{{ master_max_connections | default(500) }}"
+        ssl_enabled: true
+        ssl_mode: "require"
+        ssl_cert_path: "/etc/ssl/certs/postgres-server.crt"
+        ssl_key_path: "/etc/ssl/private/postgres-server.key"
+        ssl_ca_path: "/etc/ssl/certs/ca-certificates.crt"
+        
+      # Configuration performance
+      performance:
+        shared_buffers: "{{ master_shared_buffers | default('8GB') }}"
+        effective_cache_size: "{{ master_effective_cache_size | default('24GB') }}"
+        work_mem: "{{ master_work_mem | default('64MB') }}"
+        maintenance_work_mem: "{{ master_maintenance_work_mem | default('2GB') }}"
+        wal_buffers: "{{ master_wal_buffers | default('64MB') }}"
+        checkpoint_completion_target: "{{ master_checkpoint_completion_target | default(0.9) }}"
+        max_wal_size: "{{ master_max_wal_size | default('4GB') }}"
+        min_wal_size: "{{ master_min_wal_size | default('1GB') }}"
+        
+    # Configuration répliques synchrones
+    synchronous_replicas:
+      enabled: true
+      replica_count: "{{ sync_replica_count | default(2) }}"
+      synchronous_commit: "on"
+      
+      replica_config:
+        cpu_cores: "{{ replica_cpu_cores | default(6) }}"
+        memory_gb: "{{ replica_memory_gb | default(24) }}"
+        storage_gb: "{{ replica_storage_gb | default(1000) }}"
+        storage_type: "{{ replica_storage_type | default('ssd') }}"
+        
+        # Configuration réplication
+        replication:
+          max_standby_streaming_delay: "{{ max_standby_streaming_delay | default('30s') }}"
+          max_standby_archive_delay: "{{ max_standby_archive_delay | default('60s') }}"
+          hot_standby: true
+          hot_standby_feedback: true
+          
+    # Configuration répliques asynchrones (lecture seule)
+    async_read_replicas:
+      enabled: true
+      replica_count: "{{ async_replica_count | default(3) }}"
+      
+      replica_config:
+        cpu_cores: "{{ read_replica_cpu_cores | default(4) }}"
+        memory_gb: "{{ read_replica_memory_gb | default(16) }}"
+        storage_gb: "{{ read_replica_storage_gb | default(500) }}"
+        
+        # Load balancing pour lectures
+        load_balancing:
+          enabled: true
+          algorithm: "{{ load_balancing_algorithm | default('round_robin') }}"
+          health_check_interval: "{{ health_check_interval | default(10) }}"
+          
+  # Configuration sauvegarde et archivage
+  backup_configuration:
+    automated_backups: true
+    backup_schedule: "{{ backup_schedule | default('0 2 * * *') }}"  # 2h du matin quotidien
+    backup_retention_days: "{{ backup_retention_days | default(30) }}"
+    
+    # Configuration WAL archivage
+    wal_archiving:
+      enabled: true
+      archive_mode: "on"
+      archive_command: "{{ archive_command | default('pgbackrest --stanza=main archive-push %p') }}"
+      archive_timeout: "{{ archive_timeout | default('300s') }}"
+      
+    # Sauvegarde continue avec pgBackRest
+    pgbackrest:
+      enabled: true
+      stanza_name: "{{ pgbackrest_stanza | default('main') }}"
+      
+      # Configuration repository
+      repository:
+        type: "{{ backup_repo_type | default('s3') }}"
+        s3_bucket: "{{ backup_s3_bucket | default('spotify-ai-agent-backups') }}"
+        s3_region: "{{ backup_s3_region | default('us-west-2') }}"
+        encryption_enabled: true
+        compression_enabled: true
+        
+      # Types de sauvegarde
+      backup_types:
+        full_backup:
+          schedule: "{{ full_backup_schedule | default('0 1 * * 0') }}"  # Dimanche 1h
+          retention: "{{ full_backup_retention | default(4) }}"  # 4 semaines
+          
+        differential_backup:
+          schedule: "{{ diff_backup_schedule | default('0 1 * * 1-6') }}"  # Lundi-Samedi 1h
+          retention: "{{ diff_backup_retention | default(7) }}"  # 1 semaine
+          
+        incremental_backup:
+          schedule: "{{ incr_backup_schedule | default('0 */6 * * *') }}"  # Toutes les 6h
+          retention: "{{ incr_backup_retention | default(3) }}"  # 3 jours
+          
+    # Point-in-time recovery
+    point_in_time_recovery:
+      enabled: true
+      recovery_target_time: "{{ recovery_target_time | default('latest') }}"
+      recovery_target_timeline: "{{ recovery_target_timeline | default('latest') }}"
+      
+  # Configuration sécurité
+  security_configuration:
+    # Authentification
+    authentication:
+      method: "{{ auth_method | default('md5') }}"
+      ssl_required: true
+      
+      # Configuration pg_hba.conf
+      host_based_auth:
+        - type: "hostssl"
+          database: "all"
+          user: "all"
+          address: "{{ allowed_cidr | default('10.0.0.0/8') }}"
+          method: "md5"
+        - type: "hostssl"
+          database: "replication"
+          user: "replicator"
+          address: "{{ replica_cidr | default('10.0.0.0/8') }}"
+          method: "md5"
+          
+    # Chiffrement
+    encryption:
+      at_rest: true
+      in_transit: true
+      algorithm: "{{ encryption_algorithm | default('AES-256') }}"
+      
+    # Audit et logging
+    audit_logging:
+      enabled: true
+      log_statement: "{{ log_statement | default('all') }}"
+      log_duration: true
+      log_connections: true
+      log_disconnections: true
+      log_checkpoints: true
+      log_line_prefix: "{{ log_line_prefix | default('%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h ') }}"
+      
+    # Roles et permissions
+    database_users:
+      # Utilisateur application principal
+      - username: "{{ app_username | default('spotify_ai_agent') }}"
+        password: "{{ app_password | default('') }}"  # À définir via secrets
+        databases: ["{{ app_database | default('spotify_ai_agent') }}"]
+        privileges: ["CONNECT", "CREATE", "USAGE"]
+        connection_limit: "{{ app_connection_limit | default(100) }}"
+        
+      # Utilisateur lecture seule
+      - username: "{{ readonly_username | default('spotify_readonly') }}"
+        password: "{{ readonly_password | default('') }}"
+        databases: ["{{ app_database | default('spotify_ai_agent') }}"]
+        privileges: ["CONNECT", "USAGE", "SELECT"]
+        connection_limit: "{{ readonly_connection_limit | default(50) }}"
+        
+      # Utilisateur réplication
+      - username: "{{ replication_username | default('replicator') }}"
+        password: "{{ replication_password | default('') }}"
+        replication: true
+        connection_limit: "{{ replication_connection_limit | default(10) }}"
+        
+  # Configuration monitoring et métriques
+  monitoring:
+    enabled: true
+    
+    # Exporteur Prometheus
+    postgres_exporter:
+      enabled: true
+      port: "{{ postgres_exporter_port | default(9187) }}"
+      
+      # Métriques personnalisées
+      custom_queries:
+        - name: "spotify_active_connections"
+          query: "SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = 'active'"
+          master: true
+          
+        - name: "spotify_database_size"
+          query: "SELECT pg_database_size('{{ app_database }}') as database_size_bytes"
+          master: true
+          
+        - name: "spotify_replication_lag"
+          query: "SELECT CASE WHEN pg_is_in_recovery() THEN extract(epoch from (now() - pg_last_xact_replay_timestamp())) ELSE 0 END as replication_lag_seconds"
+          replicas: true
+          
+    # Configuration alerting
+    alerting:
+      enabled: true
+      
+      alert_rules:
+        # Alertes critiques
+        - name: "PostgreSQL_Down"
+          condition: "up{job='postgres-exporter'} == 0"
+          severity: "critical"
+          duration: "1m"
+          
+        - name: "PostgreSQL_High_Connections"
+          condition: "pg_stat_database_numbackends / pg_settings_max_connections > 0.8"
+          severity: "warning"
+          duration: "5m"
+          
+        - name: "PostgreSQL_Replication_Lag"
+          condition: "pg_replication_lag_seconds > 300"
+          severity: "warning"
+          duration: "2m"
+          
+        - name: "PostgreSQL_Backup_Failed"
+          condition: "time() - pg_backup_last_success_timestamp > 86400"
+          severity: "critical"
+          duration: "0m"
+          
+  # Configuration performance et optimisation
+  performance_optimization:
+    # Connection pooling avec PgBouncer
+    connection_pooling:
+      enabled: true
+      pooler: "pgbouncer"
+      
+      pgbouncer_config:
+        pool_mode: "{{ pool_mode | default('transaction') }}"
+        max_client_conn: "{{ max_client_conn | default(1000) }}"
+        default_pool_size: "{{ default_pool_size | default(25) }}"
+        reserve_pool_size: "{{ reserve_pool_size | default(5) }}"
+        server_idle_timeout: "{{ server_idle_timeout | default(600) }}"
+        
+    # Configuration cache
+    caching:
+      # Extension pg_stat_statements
+      pg_stat_statements:
+        enabled: true
+        max_statements: "{{ pg_stat_statements_max | default(10000) }}"
+        track: "{{ pg_stat_statements_track | default('all') }}"
+        
+      # Buffer cache optimization
+      buffer_cache:
+        shared_preload_libraries: ["pg_stat_statements", "auto_explain"]
+        auto_explain_log_min_duration: "{{ auto_explain_min_duration | default('1s') }}"
+        
+    # Maintenance automatisée
+    automated_maintenance:
+      enabled: true
+      
+      # VACUUM et ANALYZE automatiques
+      autovacuum:
+        enabled: true
+        autovacuum_max_workers: "{{ autovacuum_max_workers | default(4) }}"
+        autovacuum_naptime: "{{ autovacuum_naptime | default('15s') }}"
+        autovacuum_vacuum_threshold: "{{ autovacuum_vacuum_threshold | default(50) }}"
+        autovacuum_analyze_threshold: "{{ autovacuum_analyze_threshold | default(50) }}"
+        
+      # Reindex automatique
+      auto_reindex:
+        enabled: true
+        schedule: "{{ auto_reindex_schedule | default('0 3 * * 0') }}"  # Dimanche 3h
+        
+  # Configuration réseau et load balancing
+  networking:
+    # Configuration cluster
+    cluster_networking:
+      cluster_ip: "{{ cluster_ip | default('10.0.1.0/24') }}"
+      service_type: "{{ service_type | default('ClusterIP') }}"
+      
+    # Load balancer pour lectures
+    read_load_balancer:
+      enabled: true
+      type: "{{ read_lb_type | default('haproxy') }}"
+      
+      haproxy_config:
+        bind_port: "{{ read_lb_port | default(5433) }}"
+        balance_algorithm: "{{ read_lb_algorithm | default('leastconn') }}"
+        health_check: "{{ read_lb_health_check | default('httpchk GET /health') }}"
+        
+    # Proxy de connexion
+    connection_proxy:
+      enabled: true
+      type: "{{ proxy_type | default('pgproxy') }}"
+      
+# Configuration Kubernetes
+kubernetes_deployment:
+  namespace: "{{ k8s_namespace | default('database') }}"
+  
+  # Ressources compute
+  resources:
+    master:
+      requests:
+        cpu: "{{ master_cpu_request | default('4000m') }}"
+        memory: "{{ master_memory_request | default('16Gi') }}"
+      limits:
+        cpu: "{{ master_cpu_limit | default('8000m') }}"
+        memory: "{{ master_memory_limit | default('32Gi') }}"
+        
+    replicas:
+      requests:
+        cpu: "{{ replica_cpu_request | default('2000m') }}"
+        memory: "{{ replica_memory_request | default('8Gi') }}"
+      limits:
+        cpu: "{{ replica_cpu_limit | default('6000m') }}"
+        memory: "{{ replica_memory_limit | default('24Gi') }}"
+        
+  # Configuration stockage persistant
+  persistent_storage:
+    storage_class: "{{ storage_class | default('fast-ssd') }}"
+    access_mode: "ReadWriteOnce"
+    
+    # Volumes master
+    master_volume:
+      size: "{{ master_volume_size | default('1000Gi') }}"
+      mount_path: "/var/lib/postgresql/data"
+      
+    # Volumes répliques
+    replica_volume:
+      size: "{{ replica_volume_size | default('1000Gi') }}"
+      mount_path: "/var/lib/postgresql/data"
+      
+  # Configuration pods
+  pod_configuration:
+    # Anti-affinity pour distribution
+    pod_anti_affinity:
+      enabled: true
+      topology_key: "kubernetes.io/hostname"
+      
+    # Node affinity pour placement optimal
+    node_affinity:
+      enabled: true
+      node_selector_terms:
+        - key: "node-type"
+          operator: "In"
+          values: ["database"]
+          
+    # Tolérances pour nœuds dédiés
+    tolerations:
+      - key: "database-node"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+        
+  # Health checks
+  health_checks:
+    liveness_probe:
+      exec:
+        command: ["pg_isready", "-U", "postgres"]
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+      
+    readiness_probe:
+      exec:
+        command: ["pg_isready", "-U", "postgres"]
+      initial_delay_seconds: 5
+      period_seconds: 5
+      timeout_seconds: 1
+      failure_threshold: 3
+
+# Configuration Helm Chart
+helm_configuration:
+  chart_name: "postgresql-ha"
+  chart_version: "{{ helm_chart_version | default('11.9.13') }}"
+  
+  values_override:
+    postgresql:
+      image:
+        tag: "{{ postgresql_version | default('15.4') }}"
+      auth:
+        enablePostgresUser: true
+        postgresPassword: "{{ postgres_admin_password }}"
+        username: "{{ app_username }}"
+        password: "{{ app_password }}"
+        database: "{{ app_database }}"
+        
+    primary:
+      persistence:
+        enabled: true
+        size: "{{ master_volume_size | default('1000Gi') }}"
+        storageClass: "{{ storage_class | default('fast-ssd') }}"
+        
+    readReplicas:
+      replicaCount: "{{ async_replica_count | default(3) }}"
+      persistence:
+        enabled: true
+        size: "{{ replica_volume_size | default('500Gi') }}"
+
+# Scripts d'automatisation
+automation_scripts:
+  # Script de failover manuel
+  manual_failover: |
+    #!/bin/bash
+    # Script de failover manuel PostgreSQL HA
+    set -euo pipefail
+    
+    MASTER_POD="postgres-master-0"
+    REPLICA_POD="postgres-replica-0"
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "Démarrage du failover PostgreSQL..."
+    
+    # Promouvoir la réplique
+    kubectl exec -n $NAMESPACE $REPLICA_POD -- pg_ctl promote -D /var/lib/postgresql/data
+    
+    # Mettre à jour les services
+    kubectl patch service postgres-master -n $NAMESPACE -p '{"spec":{"selector":{"app":"postgres-replica"}}}'
+    
+    echo "Failover terminé avec succès"
+    
+  # Script de sauvegarde manuelle
+  manual_backup: |
+    #!/bin/bash
+    # Script de sauvegarde manuelle PostgreSQL
+    set -euo pipefail
+    
+    BACKUP_NAME="manual-backup-$(date +%Y%m%d-%H%M%S)"
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "Démarrage de la sauvegarde: $BACKUP_NAME"
+    
+    # Exécuter pgBackRest backup
+    kubectl exec -n $NAMESPACE postgres-master-0 -- pgbackrest --stanza=main backup --type=full
+    
+    echo "Sauvegarde terminée: $BACKUP_NAME"
+    
+  # Script de restauration
+  restore_backup: |
+    #!/bin/bash
+    # Script de restauration PostgreSQL
+    set -euo pipefail
+    
+    RESTORE_TIME="${1:-latest}"
+    NAMESPACE="{{ k8s_namespace | default('database') }}"
+    
+    echo "Démarrage de la restauration au point: $RESTORE_TIME"
+    
+    # Arrêter PostgreSQL
+    kubectl exec -n $NAMESPACE postgres-master-0 -- pg_ctl stop -D /var/lib/postgresql/data
+    
+    # Restaurer avec pgBackRest
+    kubectl exec -n $NAMESPACE postgres-master-0 -- pgbackrest --stanza=main restore --type=time --target="$RESTORE_TIME"
+    
+    # Redémarrer PostgreSQL
+    kubectl exec -n $NAMESPACE postgres-master-0 -- pg_ctl start -D /var/lib/postgresql/data
+    
+    echo "Restauration terminée"
+
+# Métriques SLA et objectifs
+sla_objectives:
+  availability_target: "{{ availability_sla | default('99.99%') }}"
+  rpo_target_minutes: "{{ rpo_target | default(15) }}"
+  rto_target_minutes: "{{ rto_target | default(60) }}"
+  backup_success_rate: "{{ backup_success_rate | default('99.9%') }}"
+  performance_targets:
+    read_latency_p99_ms: "{{ read_latency_target | default(10) }}"
+    write_latency_p99_ms: "{{ write_latency_target | default(50) }}"
+    throughput_tps: "{{ throughput_target | default(10000) }}"

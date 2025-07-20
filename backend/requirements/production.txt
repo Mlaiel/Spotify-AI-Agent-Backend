@@ -1,0 +1,11 @@
+# Spotify AI Agent – Production Requirements
+# -----------------------------------------
+# Nur produktionsreife, geprüfte Pakete. Keine Dev-Tools, keine Test- oder Debug-Abhängigkeiten.
+# Rollen: Lead Dev, Architecte IA, Backend Senior, ML Engineer, DBA/Data Engineer, Security Specialist
+
+-r base.txt
+
+# Optional: ML/AI Serving
+# tensorflow-serving-api>=2.7
+# torchserve>=0.8
+# transformers[torch]>=4.41

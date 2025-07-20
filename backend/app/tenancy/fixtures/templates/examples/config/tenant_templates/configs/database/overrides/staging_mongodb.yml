@@ -1,0 +1,411 @@
+# MongoDB Staging Environment Overrides
+# ====================================
+# Configuration MongoDB pour environnement de staging
+# Réplique fidèle de production avec données anonymisées pour tests pré-production
+
+mongodb:
+  # Configuration replica set pour staging
+  replica_set:
+    name: "spotify-staging-rs"
+    
+    # Membres du replica set
+    members:
+      - host: mongo-staging-primary.internal
+        port: 27017
+        priority: 2
+        votes: 1
+        tags:
+          dc: "staging"
+          usage: "primary"
+          
+      - host: mongo-staging-secondary1.internal
+        port: 27017
+        priority: 1
+        votes: 1
+        tags:
+          dc: "staging"
+          usage: "secondary"
+          
+      - host: mongo-staging-secondary2.internal
+        port: 27017
+        priority: 1
+        votes: 1
+        tags:
+          dc: "staging"
+          usage: "secondary"
+          
+      # Arbiter pour décision en cas de split-brain
+      - host: mongo-staging-arbiter.internal
+        port: 27017
+        priority: 0
+        votes: 1
+        arbiter_only: true
+
+  # Configuration des connexions
+  connection:
+    # URI avec toutes les options
+    uri: "mongodb://mongo-staging-primary.internal:27017,mongo-staging-secondary1.internal:27017,mongo-staging-secondary2.internal:27017/${TENANT_ID}_staging?replicaSet=spotify-staging-rs&authSource=admin"
+    
+    # Options de connexion pour staging
+    options:
+      authMechanism: "SCRAM-SHA-256"
+      authSource: "admin"
+      readPreference: "secondaryPreferred"
+      readConcern: "majority"
+      writeConcern:
+        w: "majority"
+        wtimeout: 10000
+        j: true
+        
+    # Pool de connexions optimisé pour staging
+    pool:
+      minPoolSize: 5
+      maxPoolSize: 50
+      maxIdleTimeMS: 300000    # 5 minutes
+      waitQueueTimeoutMS: 10000
+      serverSelectionTimeoutMS: 30000
+      heartbeatFrequencyMS: 30000
+      read_only:
+        - "${TENANT_ID}_staging_reader"
+      admin:
+        - "staging_admin"
+        
+  # Performance settings optimized for staging
+  performance:
+    # WiredTiger storage engine settings
+    wired_tiger:
+      cache_size_gb: 4.0  # Staging server memory allocation
+      checkpoint_sync: true
+      directory_for_indexes: false
+      block_compressor: snappy
+      
+    # Index management
+    indexes:
+      background_building: true
+      max_index_builds: 3
+      
+    # Query performance
+    query:
+      plan_cache_size: "256MB"
+      cursor_timeout: 600000  # 10 minutes
+      max_time_ms: 30000  # 30 seconds max query time
+      
+    # Aggregation pipeline settings
+    aggregation:
+      max_memory_usage_mb: 512
+      allow_disk_use: true
+      
+  # Logging configuration for staging debugging
+  logging:
+    verbosity: 1  # Moderate verbosity for staging
+    components:
+      access_control: 0
+      command: 1
+      control: 0
+      executor: 0
+      geo: 0
+      index: 1
+      network: 0
+      query: 2  # Enhanced query logging
+      replication: 1
+      sharding: 1
+      storage: 1
+      write: 1
+      
+    # Log file settings
+    destination: file
+    path: "/var/log/mongodb/staging-${TENANT_ID}.log"
+    log_append: true
+    log_rotate: rename
+    
+  # Replication settings for staging
+  replication:
+    enabled: true
+    replica_set_name: "spotify-ai-staging-rs"
+    
+    # Replica set members
+    members:
+      - host: mongodb-staging-01:27017
+        priority: 1.0
+        votes: 1
+        arbiter: false
+      - host: mongodb-staging-02:27017
+        priority: 0.5
+        votes: 1
+        arbiter: false
+      - host: mongodb-staging-03:27017
+        priority: 0.5
+        votes: 1
+        arbiter: false
+        
+    # Read preferences for staging
+    read_preference:
+      mode: secondaryPreferred
+      max_staleness_seconds: 90
+      tags:
+        - env: staging
+        
+  # Security settings for staging
+  security:
+    # Authentication required
+    authorization: enabled
+    cluster_auth_mode: x509
+    
+    # Network security
+    bind_ip:
+      - 127.0.0.1
+      - staging-network-range
+      
+    # Encryption at rest
+    encryption:
+      enabled: true
+      key_file: "/etc/mongodb/staging-encryption.key"
+      
+    # Auditing for staging compliance
+    auditing:
+      enabled: true
+      destination: file
+      path: "/var/log/mongodb/staging-audit-${TENANT_ID}.log"
+      filter: |
+        {
+          $or: [
+            { "atype": "authenticate" },
+            { "atype": "authCheck", "param.command": { $in: ["find", "insert", "update", "delete"] } },
+            { "atype": "createUser" },
+            { "atype": "dropUser" },
+            { "atype": "createRole" },
+            { "atype": "dropRole" }
+          ]
+        }
+        
+  # Data management for staging
+  data_management:
+    # Collections specific to staging
+    collections:
+      users:
+        indexes:
+          - { "email": 1 }
+          - { "spotify_id": 1 }
+          - { "created_at": 1 }
+          - { "last_active": 1 }
+        validation:
+          $jsonSchema:
+            bsonType: object
+            required: ["email", "spotify_id", "created_at"]
+            
+      tracks:
+        indexes:
+          - { "spotify_track_id": 1 }
+          - { "artist": 1, "album": 1 }
+          - { "genre": 1 }
+          - { "audio_features.danceability": 1 }
+          - { "audio_features.energy": 1 }
+        sharding:
+          enabled: true
+          shard_key: { "spotify_track_id": 1 }
+          
+      playlists:
+        indexes:
+          - { "user_id": 1 }
+          - { "created_at": 1 }
+          - { "is_public": 1 }
+          - { "tracks.spotify_track_id": 1 }
+          
+      listening_history:
+        indexes:
+          - { "user_id": 1, "timestamp": 1 }
+          - { "track_id": 1, "timestamp": 1 }
+        time_series:
+          enabled: true
+          time_field: "timestamp"
+          meta_field: "user_id"
+          granularity: minutes
+          
+      ai_recommendations:
+        indexes:
+          - { "user_id": 1, "created_at": 1 }
+          - { "model_version": 1 }
+          - { "recommendation_type": 1 }
+        ttl:
+          field: "expires_at"
+          seconds: 604800  # 7 days
+          
+  # Backup configuration for staging
+  backup:
+    enabled: true
+    
+    # Backup schedule
+    schedule:
+      full_backup: "0 1 * * 0"  # Weekly full backup
+      incremental_backup: "0 1 * * 1-6"  # Daily incremental
+      
+    # Backup storage
+    storage:
+      type: s3
+      bucket: "spotify-ai-staging-backups"
+      prefix: "${TENANT_ID}/mongodb"
+      encryption: true
+      compression: true
+      
+    # Retention policy
+    retention:
+      full_backups: 4  # Keep 4 weekly backups
+      incremental_backups: 7  # Keep 7 daily backups
+      
+    # Point-in-time recovery
+    oplog_replay:
+      enabled: true
+      retention_hours: 168  # 7 days
+      
+  # Monitoring and metrics for staging
+  monitoring:
+    enabled: true
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 30
+      retention_days: 30
+      
+    # Performance monitoring
+    performance_monitoring:
+      slow_query_threshold: 1000  # 1 second
+      profiling_level: 1  # Profile slow operations only
+      sample_rate: 0.1  # 10% sampling
+      
+    # Alerts for staging issues
+    alerts:
+      enabled: true
+      channels:
+        - slack: "#staging-alerts"
+        - email: "staging-team@company.com"
+        
+      thresholds:
+        cpu_usage: 80
+        memory_usage: 85
+        disk_usage: 90
+        connection_count: 1000
+        replication_lag_seconds: 300
+        
+  # Development tools integration
+  tools:
+    # MongoDB Compass for staging analysis
+    compass:
+      enabled: true
+      read_only: false  # Allow modifications in staging
+      
+    # Mongo Express web interface
+    mongo_express:
+      enabled: true
+      auth_required: true
+      
+    # Query profiler
+    profiler:
+      enabled: true
+      slow_op_threshold: 1000
+      
+  # Staging-specific features
+  staging_features:
+    # Data anonymization for staging
+    data_anonymization:
+      enabled: true
+      fields_to_anonymize:
+        - "users.email"
+        - "users.phone"
+        - "users.personal_info"
+        
+    # Load testing support
+    load_testing:
+      enabled: true
+      max_connections: 500
+      rate_limiting: false
+      
+    # Feature toggles
+    features:
+      new_recommendation_algorithm: true
+      beta_playlist_features: true
+      experimental_audio_analysis: true
+      advanced_user_segmentation: true
+      
+  # Environment-specific optimizations
+  staging_optimizations:
+    # Memory management
+    memory:
+      wired_tiger_cache_ratio: 0.5
+      journal_commit_interval: 100
+      
+    # I/O optimization
+    io:
+      read_ahead_kb: 256
+      disk_queue_depth: 32
+      
+    # Network optimization
+    network:
+      tcp_keep_alive: true
+      tcp_no_delay: true
+      max_incoming_connections: 1000
+      
+  # Integration with other services
+  integrations:
+    # Spotify API integration
+    spotify_api:
+      rate_limit_buffer: 0.8
+      cache_ttl: 3600
+      
+    # Analytics pipeline
+    analytics:
+      batch_size: 5000
+      processing_interval: "10min"
+      
+    # ML model serving
+    ml_serving:
+      model_cache_size: "1GB"
+      prediction_timeout: 5000
+      
+# Staging environment variables
+environment_variables:
+  MONGODB_STAGING_PASSWORD: "${MONGODB_STAGING_PASSWORD}"
+  MONGODB_STAGING_URI: "mongodb://${TENANT_ID}_staging_user:${MONGODB_STAGING_PASSWORD}@mongodb-staging-01:27017,mongodb-staging-02:27017,mongodb-staging-03:27017/${TENANT_ID}_staging?replicaSet=spotify-ai-staging-rs"
+  MONGODB_DATABASE: "${TENANT_ID}_staging"
+  MONGODB_SSL_CERT: "/etc/ssl/mongodb/staging-client.pem"
+  MONGODB_SSL_CA: "/etc/ssl/mongodb/staging-ca.pem"
+  
+# Staging deployment configuration
+deployment:
+  # Resource allocation
+  resources:
+    cpu_cores: 4
+    memory_gb: 8
+    storage_gb: 500
+    
+  # High availability
+  availability:
+    replica_count: 3
+    availability_zones:
+      - staging-az-1
+      - staging-az-2
+      - staging-az-3
+      
+  # Auto-scaling
+  auto_scaling:
+    enabled: true
+    min_replicas: 3
+    max_replicas: 5
+    cpu_threshold: 70
+    memory_threshold: 80
+    
+# Metadata
+metadata:
+  environment: staging
+  purpose: "Pre-production testing and validation"
+  maintainer: "Platform Team"
+  last_updated: "2025-07-16"
+  notes: |
+    This staging configuration provides:
+    - Production-like replica set configuration
+    - Enhanced monitoring and alerting
+    - Data anonymization for privacy
+    - Load testing capabilities
+    - Feature toggle support
+    - Comprehensive backup strategy
+    
+    This environment serves as the final validation step before production deployment.

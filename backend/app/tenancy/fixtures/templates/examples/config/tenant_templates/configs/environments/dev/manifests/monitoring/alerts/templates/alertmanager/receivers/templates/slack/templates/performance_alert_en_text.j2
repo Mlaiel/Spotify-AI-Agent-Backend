@@ -1,0 +1,132 @@
+# Enterprise Performance Degradation Alert Template (English) - Advanced Industrial Grade
+{% set performance_icons = {
+    'latency': '⏱️',
+    'throughput': '📊',
+    'error_rate': '❌',
+    'memory': '💾',
+    'cpu': '🖥️',
+    'network': '🌐',
+    'disk': '💿'
+} %}
+
+⚠️ **PERFORMANCE DEGRADATION DETECTED** ⚠️
+
+**{{ performance_icons.get(alert.performance_context.metric_type, '📊') }} Performance Alert - {{ alert.context.service_name }}**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Performance Impact Summary**
+• **Service**: `{{ alert.context.service_name }}` ({{ alert.context.service_version | default('latest') }})
+• **Environment**: `{{ environment | upper }}`
+• **Affected Metric**: {{ alert.performance_context.metric_type | title }}
+• **Degradation Level**: {{ alert.performance_context.degradation_level }}%
+• **Detection Time**: {{ format_date(alert.created_at) }}
+
+📊 **Performance Metrics**
+• **Current Value**: {{ alert.performance_context.current_value }}
+• **Baseline/Target**: {{ alert.performance_context.baseline_value }}
+• **Deviation**: {{ alert.performance_context.deviation_percentage }}% worse than baseline
+• **Trend**: {{ alert.performance_context.trend_direction | title }} over {{ alert.performance_context.trend_duration }}
+
+{% if alert.performance_context.detailed_metrics %}
+📈 **Detailed Performance Breakdown**
+{% for metric_name, metric_data in alert.performance_context.detailed_metrics.items() %}
+• **{{ metric_name | title }}**: 
+  - Current: {{ metric_data.current }}
+  - Target: {{ metric_data.target }}
+  - Variance: {{ metric_data.variance }}%
+{% endfor %}
+{% endif %}
+
+{% if alert.performance_context.user_impact %}
+👥 **User Experience Impact**
+• **Affected Users**: {{ alert.performance_context.user_impact.affected_users_count }}
+• **User Session Impact**: {{ alert.performance_context.user_impact.session_impact_percentage }}%
+• **Bounce Rate Change**: +{{ alert.performance_context.user_impact.bounce_rate_increase }}%
+• **Customer Complaints**: {{ alert.performance_context.user_impact.complaints_count | default(0) }}
+{% endif %}
+
+{% if alert.performance_context.business_metrics %}
+💼 **Business Performance Impact**
+• **Revenue Impact**: {{ alert.performance_context.business_metrics.revenue_impact_per_hour }}
+• **Conversion Rate**: {{ alert.performance_context.business_metrics.conversion_rate_change }}% decrease
+• **Transaction Volume**: {{ alert.performance_context.business_metrics.transaction_volume_impact }}
+• **Cost Impact**: {{ alert.performance_context.business_metrics.operational_cost_increase }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🤖 **AI Performance Analysis**
+{% if alert.ai_insights.performance_prediction %}
+**🔮 Performance Prediction**: {{ alert.ai_insights.performance_prediction.trend_forecast }}
+**📈 Expected Recovery**: {{ alert.ai_insights.performance_prediction.recovery_time_estimate }}
+{% endif %}
+
+{% if alert.ai_insights.root_cause_analysis %}
+**🔍 AI Root Cause Analysis**:
+{{ alert.ai_insights.root_cause_analysis }}
+{% endif %}
+
+{% if alert.ai_insights.optimization_recommendations %}
+**⚡ Performance Optimization Recommendations**:
+{% for recommendation in alert.ai_insights.optimization_recommendations[:4] %}
+{{ loop.index }}. {{ recommendation.action }} (Impact: {{ recommendation.expected_improvement }})
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if alert.performance_context.infrastructure_correlation %}
+🏗️ **Infrastructure Correlation**
+• **CPU Utilization**: {{ alert.performance_context.infrastructure_correlation.cpu_usage }}%
+• **Memory Utilization**: {{ alert.performance_context.infrastructure_correlation.memory_usage }}%
+• **Network Latency**: {{ alert.performance_context.infrastructure_correlation.network_latency }}ms
+• **Disk I/O**: {{ alert.performance_context.infrastructure_correlation.disk_io_status }}
+• **Database Performance**: {{ alert.performance_context.infrastructure_correlation.db_performance_score }}/100
+{% endif %}
+
+{% if alert.performance_context.historical_comparison %}
+📊 **Historical Performance Context**
+• **Same Time Yesterday**: {{ alert.performance_context.historical_comparison.yesterday_same_time }}
+• **Same Day Last Week**: {{ alert.performance_context.historical_comparison.last_week_same_day }}
+• **Monthly Average**: {{ alert.performance_context.historical_comparison.monthly_average }}
+• **Worst Performance (30d)**: {{ alert.performance_context.historical_comparison.worst_30d }}
+• **Best Performance (30d)**: {{ alert.performance_context.historical_comparison.best_30d }}
+{% endif %}
+
+{% if alert.performance_context.external_factors %}
+🌍 **External Factors Analysis**
+{% for factor in alert.performance_context.external_factors %}
+• **{{ factor.type | title }}**: {{ factor.description }} (Impact: {{ factor.impact_level }})
+{% endfor %}
+{% endif %}
+
+🚀 **Performance Investigation Links**
+• [📊 Performance Dashboard]({{ dashboard_url }}/performance/{{ alert.context.service_name }})
+• [📈 Real-time Metrics]({{ metrics_url }}/d/performance/{{ alert.context.service_name }})
+• [🔍 APM Traces]({{ apm_url }}/services/{{ alert.context.service_name }})
+• [📋 Performance Logs]({{ logs_url }}/performance/{{ alert.context.service_name }})
+• [⚡ Load Testing]({{ dashboard_url }}/load-testing/{{ alert.context.service_name }})
+• [🧪 A/B Test Analysis]({{ dashboard_url }}/experiments/{{ alert.context.service_name }})
+
+{% if alert.performance_context.auto_scaling %}
+🔄 **Auto-Scaling Status**
+• **Current Instances**: {{ alert.performance_context.auto_scaling.current_instances }}
+• **Target Instances**: {{ alert.performance_context.auto_scaling.target_instances }}
+• **Scaling Event**: {{ alert.performance_context.auto_scaling.last_scaling_event }}
+• **Scaling Policy**: {{ alert.performance_context.auto_scaling.policy_status }}
+{% endif %}
+
+{% if alert.performance_context.immediate_actions %}
+⚡ **Immediate Performance Actions Available**
+{% for action in alert.performance_context.immediate_actions %}
+• {{ action.name }}: {{ action.description }} (ETA: {{ action.estimated_time }})
+{% endfor %}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Alert ID**: `{{ alert.alert_id }}`
+**Performance Baseline**: {{ alert.performance_context.baseline_period }}
+**SLA Threshold**: {{ alert.performance_context.sla_threshold }}
+**Time to SLA Breach**: {{ alert.performance_context.time_to_sla_breach | default('Not applicable') }}
+
+*🎵 Spotify AI Agent Performance Monitoring*
+*Performance degradation detected: {{ format_date(now, 'iso') }}*
+*Alert Severity: {{ alert.severity.upper() }} | Recovery target: {{ alert.performance_context.recovery_target_time }}*

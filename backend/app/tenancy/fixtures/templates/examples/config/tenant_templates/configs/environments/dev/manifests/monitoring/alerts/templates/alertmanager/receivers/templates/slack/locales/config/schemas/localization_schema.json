@@ -1,0 +1,675 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Localization Schema",
+  "description": "Schéma de configuration pour la localisation et l'internationalisation",
+  "type": "object",
+  "properties": {
+    "default_locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "description": "Locale par défaut (format ISO 639-1 avec région optionnelle)"
+    },
+    "supported_locales": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+      },
+      "minItems": 1,
+      "description": "Liste des locales supportées"
+    },
+    "fallback_locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "description": "Locale de fallback en cas d'erreur"
+    },
+    "translations": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]{2}(-[A-Z]{2})?$": {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Nom de la langue dans sa propre langue"
+                },
+                "english_name": {
+                  "type": "string",
+                  "description": "Nom de la langue en anglais"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": ["ltr", "rtl"],
+                  "description": "Direction d'écriture"
+                },
+                "completion": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Pourcentage de completion des traductions"
+                },
+                "last_updated": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "translators": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "role": {
+                        "type": "string",
+                        "enum": ["translator", "reviewer", "coordinator"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "messages": {
+              "type": "object",
+              "properties": {
+                "common": {
+                  "type": "object",
+                  "properties": {
+                    "yes": {
+                      "type": "string"
+                    },
+                    "no": {
+                      "type": "string"
+                    },
+                    "ok": {
+                      "type": "string"
+                    },
+                    "cancel": {
+                      "type": "string"
+                    },
+                    "save": {
+                      "type": "string"
+                    },
+                    "delete": {
+                      "type": "string"
+                    },
+                    "edit": {
+                      "type": "string"
+                    },
+                    "create": {
+                      "type": "string"
+                    },
+                    "update": {
+                      "type": "string"
+                    },
+                    "loading": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "string"
+                    },
+                    "warning": {
+                      "type": "string"
+                    },
+                    "info": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "navigation": {
+                  "type": "object",
+                  "properties": {
+                    "home": {
+                      "type": "string"
+                    },
+                    "dashboard": {
+                      "type": "string"
+                    },
+                    "profile": {
+                      "type": "string"
+                    },
+                    "settings": {
+                      "type": "string"
+                    },
+                    "help": {
+                      "type": "string"
+                    },
+                    "logout": {
+                      "type": "string"
+                    },
+                    "back": {
+                      "type": "string"
+                    },
+                    "next": {
+                      "type": "string"
+                    },
+                    "previous": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "authentication": {
+                  "type": "object",
+                  "properties": {
+                    "login": {
+                      "type": "string"
+                    },
+                    "logout": {
+                      "type": "string"
+                    },
+                    "register": {
+                      "type": "string"
+                    },
+                    "forgot_password": {
+                      "type": "string"
+                    },
+                    "reset_password": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "confirm_password": {
+                      "type": "string"
+                    },
+                    "remember_me": {
+                      "type": "string"
+                    },
+                    "invalid_credentials": {
+                      "type": "string"
+                    },
+                    "account_locked": {
+                      "type": "string"
+                    },
+                    "password_too_weak": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "spotify": {
+                  "type": "object",
+                  "properties": {
+                    "connect": {
+                      "type": "string"
+                    },
+                    "disconnect": {
+                      "type": "string"
+                    },
+                    "playlist": {
+                      "type": "string"
+                    },
+                    "track": {
+                      "type": "string"
+                    },
+                    "artist": {
+                      "type": "string"
+                    },
+                    "album": {
+                      "type": "string"
+                    },
+                    "play": {
+                      "type": "string"
+                    },
+                    "pause": {
+                      "type": "string"
+                    },
+                    "skip": {
+                      "type": "string"
+                    },
+                    "previous": {
+                      "type": "string"
+                    },
+                    "shuffle": {
+                      "type": "string"
+                    },
+                    "repeat": {
+                      "type": "string"
+                    },
+                    "volume": {
+                      "type": "string"
+                    },
+                    "search": {
+                      "type": "string"
+                    },
+                    "recommendations": {
+                      "type": "string"
+                    },
+                    "top_tracks": {
+                      "type": "string"
+                    },
+                    "recently_played": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "ai": {
+                  "type": "object",
+                  "properties": {
+                    "chat": {
+                      "type": "string"
+                    },
+                    "analyze": {
+                      "type": "string"
+                    },
+                    "generate": {
+                      "type": "string"
+                    },
+                    "processing": {
+                      "type": "string"
+                    },
+                    "thinking": {
+                      "type": "string"
+                    },
+                    "suggestion": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "string"
+                    },
+                    "model": {
+                      "type": "string"
+                    },
+                    "prompt": {
+                      "type": "string"
+                    },
+                    "response": {
+                      "type": "string"
+                    },
+                    "no_results": {
+                      "type": "string"
+                    },
+                    "rate_limit": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "collaboration": {
+                  "type": "object",
+                  "properties": {
+                    "share": {
+                      "type": "string"
+                    },
+                    "invite": {
+                      "type": "string"
+                    },
+                    "collaborate": {
+                      "type": "string"
+                    },
+                    "permissions": {
+                      "type": "string"
+                    },
+                    "owner": {
+                      "type": "string"
+                    },
+                    "editor": {
+                      "type": "string"
+                    },
+                    "viewer": {
+                      "type": "string"
+                    },
+                    "guest": {
+                      "type": "string"
+                    },
+                    "online": {
+                      "type": "string"
+                    },
+                    "offline": {
+                      "type": "string"
+                    },
+                    "typing": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "errors": {
+                  "type": "object",
+                  "properties": {
+                    "network_error": {
+                      "type": "string"
+                    },
+                    "server_error": {
+                      "type": "string"
+                    },
+                    "validation_error": {
+                      "type": "string"
+                    },
+                    "permission_denied": {
+                      "type": "string"
+                    },
+                    "not_found": {
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "type": "string"
+                    },
+                    "unknown_error": {
+                      "type": "string"
+                    },
+                    "maintenance": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "notifications": {
+                  "type": "object",
+                  "properties": {
+                    "new_message": {
+                      "type": "string"
+                    },
+                    "invitation_received": {
+                      "type": "string"
+                    },
+                    "file_shared": {
+                      "type": "string"
+                    },
+                    "task_completed": {
+                      "type": "string"
+                    },
+                    "system_update": {
+                      "type": "string"
+                    },
+                    "security_alert": {
+                      "type": "string"
+                    },
+                    "mark_as_read": {
+                      "type": "string"
+                    },
+                    "clear_all": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "formats": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "object",
+                  "properties": {
+                    "short": {
+                      "type": "string",
+                      "description": "Format de date court (ex: DD/MM/YYYY)"
+                    },
+                    "medium": {
+                      "type": "string",
+                      "description": "Format de date moyen (ex: DD MMM YYYY)"
+                    },
+                    "long": {
+                      "type": "string",
+                      "description": "Format de date long (ex: DD MMMM YYYY)"
+                    },
+                    "full": {
+                      "type": "string",
+                      "description": "Format de date complet (ex: DDDD DD MMMM YYYY)"
+                    }
+                  }
+                },
+                "time": {
+                  "type": "object",
+                  "properties": {
+                    "short": {
+                      "type": "string",
+                      "description": "Format d'heure court (ex: HH:mm)"
+                    },
+                    "medium": {
+                      "type": "string",
+                      "description": "Format d'heure moyen (ex: HH:mm:ss)"
+                    },
+                    "long": {
+                      "type": "string",
+                      "description": "Format d'heure long avec timezone"
+                    }
+                  }
+                },
+                "number": {
+                  "type": "object",
+                  "properties": {
+                    "decimal_separator": {
+                      "type": "string",
+                      "maxLength": 1
+                    },
+                    "thousands_separator": {
+                      "type": "string",
+                      "maxLength": 1
+                    },
+                    "currency_symbol": {
+                      "type": "string"
+                    },
+                    "currency_position": {
+                      "type": "string",
+                      "enum": ["before", "after"]
+                    }
+                  }
+                }
+              }
+            },
+            "pluralization": {
+              "type": "object",
+              "properties": {
+                "rules": {
+                  "type": "object",
+                  "description": "Règles de pluralisation spécifiques à la langue"
+                },
+                "examples": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "zero": {
+                        "type": "string"
+                      },
+                      "one": {
+                        "type": "string"
+                      },
+                      "two": {
+                        "type": "string"
+                      },
+                      "few": {
+                        "type": "string"
+                      },
+                      "many": {
+                        "type": "string"
+                      },
+                      "other": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["metadata", "messages", "formats"]
+        }
+      }
+    },
+    "regions": {
+      "type": "object",
+      "properties": {
+        "timezone_mapping": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z]{2}(-[A-Z]{2})?$": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Timezone IANA (ex: Europe/Paris)"
+              }
+            }
+          }
+        },
+        "currency_mapping": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z]{2}(-[A-Z]{2})?$": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "description": "Code de devise ISO 4217"
+            }
+          }
+        },
+        "legal_compliance": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z]{2}(-[A-Z]{2})?$": {
+              "type": "object",
+              "properties": {
+                "gdpr_applicable": {
+                  "type": "boolean"
+                },
+                "ccpa_applicable": {
+                  "type": "boolean"
+                },
+                "data_retention_days": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "cookie_consent_required": {
+                  "type": "boolean"
+                },
+                "age_verification_required": {
+                  "type": "boolean"
+                },
+                "minimum_age": {
+                  "type": "integer",
+                  "minimum": 13
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "automatic_detection": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "methods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["browser", "ip", "user_preference", "accept_language"]
+              }
+            },
+            "fallback_strategy": {
+              "type": "string",
+              "enum": ["default", "browser", "closest_match"]
+            }
+          }
+        },
+        "dynamic_loading": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "cache_duration": {
+              "type": "integer",
+              "minimum": 300,
+              "description": "Durée de cache en secondes"
+            },
+            "lazy_loading": {
+              "type": "boolean"
+            }
+          }
+        },
+        "rtl_support": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "css_class": {
+              "type": "string"
+            },
+            "mirror_layout": {
+              "type": "boolean"
+            }
+          }
+        },
+        "interpolation": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "escape_html": {
+              "type": "boolean"
+            },
+            "allowed_tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "required_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Clés de traduction obligatoires"
+        },
+        "max_length": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Longueur maximale par clé"
+        },
+        "forbidden_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Patterns regex interdits"
+        },
+        "consistency_checks": {
+          "type": "object",
+          "properties": {
+            "check_placeholders": {
+              "type": "boolean"
+            },
+            "check_html_tags": {
+              "type": "boolean"
+            },
+            "check_special_chars": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["default_locale", "supported_locales", "translations"],
+  "additionalProperties": false
+}

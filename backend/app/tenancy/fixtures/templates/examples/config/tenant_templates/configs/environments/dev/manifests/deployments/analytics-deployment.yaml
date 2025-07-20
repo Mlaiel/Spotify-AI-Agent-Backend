@@ -1,0 +1,406 @@
+# Analytics Service Deployment - Real-time Data Processing
+# Developed by Fahed Mlaiel - Senior ML Engineer & Analytics Architect
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-ai-analytics-service
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v2.0.0
+    app.kubernetes.io/component: analytics-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: advanced-deployment-manager
+    service-type: analytics-service
+    tenant-tier: enterprise
+    environment: development
+    data-processing: real-time
+    analytics-engine: spark-kafka
+    team: spotify-ai-agent-dev
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    created-by: "Fahed Mlaiel - Analytics Architect"
+    description: "Real-time analytics and data processing service"
+    analytics-framework: "apache-spark-kafka-redis"
+    processing-mode: "streaming"
+    data-retention: "7d"
+    batch-size: "1000"
+    window-size: "5m"
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: spotify-ai-analytics-service
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-analytics-service
+        app.kubernetes.io/name: spotify-ai-agent
+        app.kubernetes.io/component: analytics-service
+        service-type: analytics-service
+        tenant-tier: enterprise
+        environment: development
+        version: v2.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/metrics"
+        jaeger.io/sampling-type: "probabilistic"
+        jaeger.io/sampling-param: "0.2"
+        fluentd.io/log-format: "json"
+        config-hash: "abc123def456"
+        created-at: "2025-07-17T00:00:00Z"
+    spec:
+      serviceAccountName: spotify-ai-analytics-sa
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 60
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+        sysctls:
+        - name: net.core.somaxconn
+          value: "2048"
+        - name: net.ipv4.tcp_keepalive_time
+          value: "300"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values: ["spotify-ai-analytics-service"]
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 80
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values: ["memory-optimized"]
+          - weight: 60
+            preference:
+              matchExpressions:
+              - key: instance-type
+                operator: In
+                values: ["r5.2xlarge", "r5.4xlarge"]
+      tolerations:
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: analytics-workload
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      containers:
+      - name: analytics-service
+        image: spotify-ai-agent/analytics-service:dev-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+        - containerPort: 7070
+          name: spark-ui
+          protocol: TCP
+        - containerPort: 6066
+          name: spark-rest
+          protocol: TCP
+        env:
+        # Base Configuration
+        - name: ENVIRONMENT
+          value: "development"
+        - name: SERVICE_NAME
+          value: "spotify-ai-analytics-service"
+        - name: SERVICE_TYPE
+          value: "analytics-service"
+        - name: TENANT_TIER
+          value: "enterprise"
+        # Kubernetes Integration
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        # Resource Limits
+        - name: CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.cpu
+        - name: MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        # Analytics Configuration
+        - name: SPARK_MASTER_URL
+          value: "spark://spark-master:7077"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-cluster:9092"
+        - name: REDIS_CLUSTER_NODES
+          value: "redis-cluster:6379"
+        - name: ELASTICSEARCH_HOSTS
+          value: "elasticsearch-cluster:9200"
+        - name: PROCESSING_BATCH_SIZE
+          value: "1000"
+        - name: STREAM_WINDOW_SIZE
+          value: "5m"
+        - name: CHECKPOINT_INTERVAL
+          value: "30s"
+        - name: MAX_CONCURRENT_STREAMS
+          value: "100"
+        # Database Connections
+        - name: ANALYTICS_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: analytics-db-credentials
+              key: url
+        - name: TIMESERIES_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: timeseries-db-credentials
+              key: url
+        # Security & API Keys
+        - name: ANALYTICS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: analytics-credentials
+              key: api_key
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: encryption-keys
+              key: analytics_key
+        # Monitoring & Tracing
+        - name: JAEGER_AGENT_HOST
+          value: "localhost"
+        - name: JAEGER_AGENT_PORT
+          value: "6831"
+        - name: PROMETHEUS_GATEWAY
+          value: "pushgateway:9091"
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "4Gi"
+            ephemeral-storage: "500Mi"
+          limits:
+            cpu: "4000m"
+            memory: "16Gi"
+            ephemeral-storage: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 12
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 30"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          capabilities:
+            drop: ["ALL"]
+            add: ["NET_BIND_SERVICE"]
+        volumeMounts:
+        - name: analytics-data
+          mountPath: /data/analytics
+        - name: checkpoint-storage
+          mountPath: /data/checkpoints
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/analytics
+        - name: config-volume
+          mountPath: /etc/analytics
+          readOnly: true
+      # Monitoring Sidecar
+      - name: monitoring-agent
+        image: prometheus/node-exporter:v1.6.1
+        ports:
+        - containerPort: 9100
+          name: node-metrics
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "32Mi"
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+      # Jaeger Tracing Sidecar
+      - name: jaeger-agent
+        image: jaegertracing/jaeger-agent:1.48
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+        - containerPort: 6831
+          protocol: UDP
+        - containerPort: 6832
+          protocol: UDP
+        - containerPort: 5778
+          protocol: TCP
+        env:
+        - name: REPORTER_GRPC_HOST_PORT
+          value: "jaeger-collector:14250"
+        - name: REPORTER_TYPE
+          value: "grpc"
+        - name: AGENT_TAGS
+          value: "service=analytics,environment=dev"
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "32Mi"
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+      # Log Aggregation Sidecar
+      - name: fluentd-logger
+        image: fluent/fluentd:v1.16-debian-1
+        env:
+        - name: FLUENTD_CONF
+          value: "fluentd.conf"
+        - name: ELASTICSEARCH_HOST
+          value: "elasticsearch-cluster"
+        - name: ELASTICSEARCH_PORT
+          value: "9200"
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+        volumeMounts:
+        - name: logs-storage
+          mountPath: /var/log/analytics
+          readOnly: true
+        - name: fluentd-config
+          mountPath: /fluentd/etc
+          readOnly: true
+      volumes:
+      - name: analytics-data
+        persistentVolumeClaim:
+          claimName: analytics-data-pvc
+      - name: checkpoint-storage
+        persistentVolumeClaim:
+          claimName: checkpoint-storage-pvc
+      - name: tmp-storage
+        emptyDir:
+          sizeLimit: "1Gi"
+      - name: logs-storage
+        emptyDir:
+          sizeLimit: "500Mi"
+      - name: config-volume
+        configMap:
+          name: analytics-config
+      - name: fluentd-config
+        configMap:
+          name: fluentd-config
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+      initContainers:
+      - name: analytics-init
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Initializing analytics service..."
+          mkdir -p /data/analytics/streams /data/checkpoints
+          chown -R 10001:10001 /data
+          echo "Analytics service initialized successfully"
+        volumeMounts:
+        - name: analytics-data
+          mountPath: /data/analytics
+        - name: checkpoint-storage
+          mountPath: /data/checkpoints
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0

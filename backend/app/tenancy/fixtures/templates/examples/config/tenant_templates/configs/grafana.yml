@@ -1,0 +1,752 @@
+# Grafana Advanced Dashboard Configuration for Enterprise Tenant Templates
+# ========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced Grafana architecture with AI monitoring optimization
+# - Senior Backend Developer: Python/FastAPI/Django Grafana enterprise patterns
+# - DBA & Data Engineer: Database and analytics dashboard optimization
+# - Backend Security Specialist: Grafana security hardening and access control
+# - Microservices Architect: Grafana service mesh integration and monitoring
+
+# ==========================================
+# GRAFANA ENTERPRISE CONFIGURATION
+# ==========================================
+
+grafana:
+  # Server Configuration
+  server:
+    # Basic Server Settings
+    protocol: "${GRAFANA_PROTOCOL:-http}"
+    http_addr: "${GRAFANA_HTTP_ADDR:-0.0.0.0}"
+    http_port: ${GRAFANA_HTTP_PORT:-3000}
+    domain: "${GRAFANA_DOMAIN:-localhost}"
+    root_url: "${GRAFANA_ROOT_URL:-http://localhost:3000/}"
+    serve_from_sub_path: ${GRAFANA_SERVE_FROM_SUB_PATH:-false}
+    
+    # Router Configuration
+    router_logging: ${GRAFANA_ROUTER_LOGGING:-false}
+    static_root_path: "${GRAFANA_STATIC_ROOT_PATH:-public}"
+    enable_gzip: ${GRAFANA_ENABLE_GZIP:-false}
+    
+    # Certificate Configuration (HTTPS)
+    cert_file: "${GRAFANA_CERT_FILE:-}"
+    cert_key: "${GRAFANA_CERT_KEY:-}"
+    socket: "${GRAFANA_SOCKET:-}"
+    socket_gid: "${GRAFANA_SOCKET_GID:-}"
+    socket_mode: "${GRAFANA_SOCKET_MODE:-}"
+    
+    # CDN Configuration
+    cdn_url: "${GRAFANA_CDN_URL:-}"
+    read_timeout: "${GRAFANA_READ_TIMEOUT:-0}"
+
+  # Database Configuration
+  database:
+    # Database Settings
+    type: "${GRAFANA_DB_TYPE:-sqlite3}"
+    host: "${GRAFANA_DB_HOST:-127.0.0.1:3306}"
+    name: "${GRAFANA_DB_NAME:-grafana}"
+    user: "${GRAFANA_DB_USER:-root}"
+    password: "${GRAFANA_DB_PASSWORD:-}"
+    
+    # Advanced Database Settings
+    url: "${GRAFANA_DB_URL:-}"
+    ssl_mode: "${GRAFANA_DB_SSL_MODE:-disable}"
+    ca_cert_path: "${GRAFANA_DB_CA_CERT_PATH:-}"
+    client_key_path: "${GRAFANA_DB_CLIENT_KEY_PATH:-}"
+    client_cert_path: "${GRAFANA_DB_CLIENT_CERT_PATH:-}"
+    server_cert_name: "${GRAFANA_DB_SERVER_CERT_NAME:-}"
+    path: "${GRAFANA_DB_PATH:-grafana.db}"
+    
+    # Connection Pool
+    max_idle_conn: ${GRAFANA_DB_MAX_IDLE_CONN:-2}
+    max_open_conn: ${GRAFANA_DB_MAX_OPEN_CONN:-0}
+    conn_max_lifetime: ${GRAFANA_DB_CONN_MAX_LIFETIME:-14400}
+    
+    # Query Settings
+    log_queries: ${GRAFANA_DB_LOG_QUERIES:-false}
+    query_retries: ${GRAFANA_DB_QUERY_RETRIES:-0}
+    
+    # Cache Settings
+    cache_mode: "${GRAFANA_DB_CACHE_MODE:-private}"
+
+  # Remote Cache Configuration
+  remote_cache:
+    type: "${GRAFANA_REMOTE_CACHE_TYPE:-database}"
+    
+    # Redis Configuration
+    connstr: "${GRAFANA_REDIS_CONNSTR:-addr=127.0.0.1:6379,pool_size=100,db=0}"
+    
+    # Memcached Configuration
+    connstr_memcached: "${GRAFANA_MEMCACHED_CONNSTR:-127.0.0.1:11211}"
+
+  # Security Configuration
+  security:
+    # Admin User
+    admin_user: "${GRAFANA_ADMIN_USER:-admin}"
+    admin_password: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+    admin_email: "${GRAFANA_ADMIN_EMAIL:-admin@localhost}"
+    
+    # Secret Key
+    secret_key: "${GRAFANA_SECRET_KEY:-SW2YcwTIb9zpOOhoPsMm}"
+    
+    # Login Settings
+    login_remember_days: ${GRAFANA_LOGIN_REMEMBER_DAYS:-7}
+    cookie_username: "${GRAFANA_COOKIE_USERNAME:-grafana_user}"
+    cookie_remember_name: "${GRAFANA_COOKIE_REMEMBER_NAME:-grafana_remember}"
+    
+    # Security Headers
+    disable_gravatar: ${GRAFANA_DISABLE_GRAVATAR:-false}
+    data_source_proxy_whitelist: "${GRAFANA_DATA_SOURCE_PROXY_WHITELIST:-}"
+    disable_brute_force_login_protection: ${GRAFANA_DISABLE_BRUTE_FORCE_PROTECTION:-false}
+    cookie_secure: ${GRAFANA_COOKIE_SECURE:-false}
+    cookie_samesite: "${GRAFANA_COOKIE_SAMESITE:-lax}"
+    allow_embedding: ${GRAFANA_ALLOW_EMBEDDING:-false}
+    strict_transport_security: ${GRAFANA_STRICT_TRANSPORT_SECURITY:-false}
+    strict_transport_security_max_age_seconds: ${GRAFANA_STRICT_TRANSPORT_SECURITY_MAX_AGE:-86400}
+    strict_transport_security_preload: ${GRAFANA_STRICT_TRANSPORT_SECURITY_PRELOAD:-false}
+    strict_transport_security_subdomains: ${GRAFANA_STRICT_TRANSPORT_SECURITY_SUBDOMAINS:-false}
+    x_content_type_options: ${GRAFANA_X_CONTENT_TYPE_OPTIONS:-true}
+    x_xss_protection: ${GRAFANA_X_XSS_PROTECTION:-true}
+    
+    # Content Security Policy
+    content_security_policy: ${GRAFANA_CONTENT_SECURITY_POLICY:-false}
+    content_security_policy_template: "${GRAFANA_CONTENT_SECURITY_POLICY_TEMPLATE:-}"
+
+  # Users Configuration
+  users:
+    # User Registration
+    allow_sign_up: ${GRAFANA_ALLOW_SIGN_UP:-false}
+    allow_org_create: ${GRAFANA_ALLOW_ORG_CREATE:-false}
+    auto_assign_org: ${GRAFANA_AUTO_ASSIGN_ORG:-true}
+    auto_assign_org_id: ${GRAFANA_AUTO_ASSIGN_ORG_ID:-1}
+    auto_assign_org_role: "${GRAFANA_AUTO_ASSIGN_ORG_ROLE:-Viewer}"
+    
+    # User Verification
+    verify_email_enabled: ${GRAFANA_VERIFY_EMAIL_ENABLED:-false}
+    login_hint: "${GRAFANA_LOGIN_HINT:-email or username}"
+    password_hint: "${GRAFANA_PASSWORD_HINT:-password}"
+    
+    # Default Theme
+    default_theme: "${GRAFANA_DEFAULT_THEME:-dark}"
+    
+    # External User Management
+    external_manage_link_url: "${GRAFANA_EXTERNAL_MANAGE_LINK_URL:-}"
+    external_manage_link_name: "${GRAFANA_EXTERNAL_MANAGE_LINK_NAME:-}"
+    external_manage_info: "${GRAFANA_EXTERNAL_MANAGE_INFO:-}"
+    
+    # User Permissions
+    viewers_can_edit: ${GRAFANA_VIEWERS_CAN_EDIT:-false}
+    editors_can_admin: ${GRAFANA_EDITORS_CAN_ADMIN:-false}
+    
+    # User Search
+    user_search_filters: "${GRAFANA_USER_SEARCH_FILTERS:-}"
+
+  # Authentication Configuration
+  auth:
+    # Authentication Settings
+    login_cookie_name: "${GRAFANA_LOGIN_COOKIE_NAME:-grafana_session}"
+    login_maximum_inactive_lifetime_duration: "${GRAFANA_LOGIN_MAX_INACTIVE_LIFETIME:-7d}"
+    login_maximum_lifetime_duration: "${GRAFANA_LOGIN_MAX_LIFETIME:-30d}"
+    token_rotation_interval_minutes: ${GRAFANA_TOKEN_ROTATION_INTERVAL:-10}
+    
+    # Basic Auth
+    basic:
+      enabled: ${GRAFANA_AUTH_BASIC_ENABLED:-true}
+    
+    # Anonymous Auth
+    anonymous:
+      enabled: ${GRAFANA_AUTH_ANONYMOUS_ENABLED:-false}
+      org_name: "${GRAFANA_AUTH_ANONYMOUS_ORG_NAME:-Main Org.}"
+      org_role: "${GRAFANA_AUTH_ANONYMOUS_ORG_ROLE:-Viewer}"
+      hide_version: ${GRAFANA_AUTH_ANONYMOUS_HIDE_VERSION:-false}
+    
+    # GitHub OAuth
+    github:
+      enabled: ${GRAFANA_AUTH_GITHUB_ENABLED:-false}
+      allow_sign_up: ${GRAFANA_AUTH_GITHUB_ALLOW_SIGN_UP:-true}
+      client_id: "${GRAFANA_AUTH_GITHUB_CLIENT_ID:-}"
+      client_secret: "${GRAFANA_AUTH_GITHUB_CLIENT_SECRET:-}"
+      scopes: "${GRAFANA_AUTH_GITHUB_SCOPES:-user:email,read:org}"
+      auth_url: "${GRAFANA_AUTH_GITHUB_AUTH_URL:-https://github.com/login/oauth/authorize}"
+      token_url: "${GRAFANA_AUTH_GITHUB_TOKEN_URL:-https://github.com/login/oauth/access_token}"
+      api_url: "${GRAFANA_AUTH_GITHUB_API_URL:-https://api.github.com/user}"
+      allowed_domains: "${GRAFANA_AUTH_GITHUB_ALLOWED_DOMAINS:-}"
+      team_ids: "${GRAFANA_AUTH_GITHUB_TEAM_IDS:-}"
+      allowed_organizations: "${GRAFANA_AUTH_GITHUB_ALLOWED_ORGS:-}"
+    
+    # Google OAuth
+    google:
+      enabled: ${GRAFANA_AUTH_GOOGLE_ENABLED:-false}
+      allow_sign_up: ${GRAFANA_AUTH_GOOGLE_ALLOW_SIGN_UP:-true}
+      client_id: "${GRAFANA_AUTH_GOOGLE_CLIENT_ID:-}"
+      client_secret: "${GRAFANA_AUTH_GOOGLE_CLIENT_SECRET:-}"
+      scopes: "${GRAFANA_AUTH_GOOGLE_SCOPES:-openid email profile}"
+      auth_url: "${GRAFANA_AUTH_GOOGLE_AUTH_URL:-https://accounts.google.com/o/oauth2/auth}"
+      token_url: "${GRAFANA_AUTH_GOOGLE_TOKEN_URL:-https://oauth2.googleapis.com/token}"
+      api_url: "${GRAFANA_AUTH_GOOGLE_API_URL:-https://openidconnect.googleapis.com/v1/userinfo}"
+      allowed_domains: "${GRAFANA_AUTH_GOOGLE_ALLOWED_DOMAINS:-}"
+      hosted_domain: "${GRAFANA_AUTH_GOOGLE_HOSTED_DOMAIN:-}"
+    
+    # Generic OAuth
+    generic_oauth:
+      enabled: ${GRAFANA_AUTH_GENERIC_OAUTH_ENABLED:-false}
+      name: "${GRAFANA_AUTH_GENERIC_OAUTH_NAME:-OAuth}"
+      allow_sign_up: ${GRAFANA_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP:-true}
+      client_id: "${GRAFANA_AUTH_GENERIC_OAUTH_CLIENT_ID:-}"
+      client_secret: "${GRAFANA_AUTH_GENERIC_OAUTH_CLIENT_SECRET:-}"
+      scopes: "${GRAFANA_AUTH_GENERIC_OAUTH_SCOPES:-user:email}"
+      email_attribute_name: "${GRAFANA_AUTH_GENERIC_OAUTH_EMAIL_ATTR:-email:primary}"
+      email_attribute_path: "${GRAFANA_AUTH_GENERIC_OAUTH_EMAIL_PATH:-}"
+      login_attribute_path: "${GRAFANA_AUTH_GENERIC_OAUTH_LOGIN_PATH:-}"
+      name_attribute_path: "${GRAFANA_AUTH_GENERIC_OAUTH_NAME_PATH:-}"
+      id_token_attribute_name: "${GRAFANA_AUTH_GENERIC_OAUTH_ID_TOKEN_ATTR:-}"
+      auth_url: "${GRAFANA_AUTH_GENERIC_OAUTH_AUTH_URL:-}"
+      token_url: "${GRAFANA_AUTH_GENERIC_OAUTH_TOKEN_URL:-}"
+      api_url: "${GRAFANA_AUTH_GENERIC_OAUTH_API_URL:-}"
+      team_ids: "${GRAFANA_AUTH_GENERIC_OAUTH_TEAM_IDS:-}"
+      allowed_organizations: "${GRAFANA_AUTH_GENERIC_OAUTH_ALLOWED_ORGS:-}"
+      role_attribute_path: "${GRAFANA_AUTH_GENERIC_OAUTH_ROLE_ATTR_PATH:-}"
+      role_attribute_strict: ${GRAFANA_AUTH_GENERIC_OAUTH_ROLE_ATTR_STRICT:-false}
+      tls_skip_verify_insecure: ${GRAFANA_AUTH_GENERIC_OAUTH_TLS_SKIP_VERIFY:-false}
+      tls_client_cert: "${GRAFANA_AUTH_GENERIC_OAUTH_TLS_CLIENT_CERT:-}"
+      tls_client_key: "${GRAFANA_AUTH_GENERIC_OAUTH_TLS_CLIENT_KEY:-}"
+      tls_client_ca: "${GRAFANA_AUTH_GENERIC_OAUTH_TLS_CLIENT_CA:-}"
+    
+    # LDAP Configuration
+    ldap:
+      enabled: ${GRAFANA_AUTH_LDAP_ENABLED:-false}
+      config_file: "${GRAFANA_AUTH_LDAP_CONFIG_FILE:-/etc/grafana/ldap.toml}"
+      allow_sign_up: ${GRAFANA_AUTH_LDAP_ALLOW_SIGN_UP:-true}
+      sync_cron: "${GRAFANA_AUTH_LDAP_SYNC_CRON:-0 0 1 * * *}"
+      active_sync_enabled: ${GRAFANA_AUTH_LDAP_ACTIVE_SYNC_ENABLED:-true}
+
+  # SMTP Configuration
+  smtp:
+    enabled: ${GRAFANA_SMTP_ENABLED:-false}
+    host: "${GRAFANA_SMTP_HOST:-localhost:587}"
+    user: "${GRAFANA_SMTP_USER:-}"
+    password: "${GRAFANA_SMTP_PASSWORD:-}"
+    cert_file: "${GRAFANA_SMTP_CERT_FILE:-}"
+    key_file: "${GRAFANA_SMTP_KEY_FILE:-}"
+    skip_verify: ${GRAFANA_SMTP_SKIP_VERIFY:-false}
+    from_address: "${GRAFANA_SMTP_FROM_ADDRESS:-admin@grafana.localhost}"
+    from_name: "${GRAFANA_SMTP_FROM_NAME:-Grafana}"
+    ehlo_identity: "${GRAFANA_SMTP_EHLO_IDENTITY:-dashboard.example.com}"
+    startTLS_policy: "${GRAFANA_SMTP_STARTTLS_POLICY:-}"
+    
+    # Email Templates
+    templates_pattern: "${GRAFANA_SMTP_TEMPLATES_PATTERN:-emails/*.html}"
+
+  # Logging Configuration
+  log:
+    # Basic Logging
+    mode: "${GRAFANA_LOG_MODE:-console file}"
+    level: "${GRAFANA_LOG_LEVEL:-info}"
+    filters: "${GRAFANA_LOG_FILTERS:-}"
+    
+    # Console Logging
+    console:
+      level: "${GRAFANA_LOG_CONSOLE_LEVEL:-}"
+      format: "${GRAFANA_LOG_CONSOLE_FORMAT:-console}"
+    
+    # File Logging
+    file:
+      level: "${GRAFANA_LOG_FILE_LEVEL:-}"
+      format: "${GRAFANA_LOG_FILE_FORMAT:-text}"
+      log_rotate: ${GRAFANA_LOG_FILE_ROTATE:-true}
+      max_lines: ${GRAFANA_LOG_FILE_MAX_LINES:-1000000}
+      max_size_shift: ${GRAFANA_LOG_FILE_MAX_SIZE_SHIFT:-28}
+      daily_rotate: ${GRAFANA_LOG_FILE_DAILY_ROTATE:-true}
+      max_days: ${GRAFANA_LOG_FILE_MAX_DAYS:-7}
+    
+    # Syslog
+    syslog:
+      level: "${GRAFANA_LOG_SYSLOG_LEVEL:-}"
+      format: "${GRAFANA_LOG_SYSLOG_FORMAT:-text}"
+      network: "${GRAFANA_LOG_SYSLOG_NETWORK:-}"
+      address: "${GRAFANA_LOG_SYSLOG_ADDRESS:-}"
+      facility: "${GRAFANA_LOG_SYSLOG_FACILITY:-}"
+      tag: "${GRAFANA_LOG_SYSLOG_TAG:-}"
+
+  # Metrics Configuration
+  metrics:
+    enabled: ${GRAFANA_METRICS_ENABLED:-true}
+    interval_seconds: ${GRAFANA_METRICS_INTERVAL:-10}
+    
+    # Basic Authentication for Metrics
+    basic_auth_username: "${GRAFANA_METRICS_BASIC_AUTH_USERNAME:-}"
+    basic_auth_password: "${GRAFANA_METRICS_BASIC_AUTH_PASSWORD:-}"
+    
+    # Graphite
+    graphite:
+      address: "${GRAFANA_METRICS_GRAPHITE_ADDRESS:-}"
+      prefix: "${GRAFANA_METRICS_GRAPHITE_PREFIX:-prod.grafana.%(instance_name)s.}"
+
+  # Distributed Tracing
+  tracing:
+    # Jaeger
+    jaeger:
+      address: "${GRAFANA_TRACING_JAEGER_ADDRESS:-http://localhost:14268/api/traces}"
+      always_included_tag: "${GRAFANA_TRACING_JAEGER_ALWAYS_INCLUDED_TAG:-}"
+      sampler_type: "${GRAFANA_TRACING_JAEGER_SAMPLER_TYPE:-const}"
+      sampler_param: ${GRAFANA_TRACING_JAEGER_SAMPLER_PARAM:-1}
+      sampling_strategy_reload_interval: "${GRAFANA_TRACING_JAEGER_SAMPLING_RELOAD_INTERVAL:-1m}"
+      disable_shared_zipkin_spans: ${GRAFANA_TRACING_JAEGER_DISABLE_SHARED_ZIPKIN_SPANS:-false}
+    
+    # OpenTelemetry
+    opentelemetry:
+      address: "${GRAFANA_TRACING_OPENTELEMETRY_ADDRESS:-127.0.0.1:4317}"
+      propagation: "${GRAFANA_TRACING_OPENTELEMETRY_PROPAGATION:-jaeger}"
+      sampler_type: "${GRAFANA_TRACING_OPENTELEMETRY_SAMPLER_TYPE:-const}"
+      sampler_param: ${GRAFANA_TRACING_OPENTELEMETRY_SAMPLER_PARAM:-1}
+      sampling_strategy_reload_interval: "${GRAFANA_TRACING_OPENTELEMETRY_SAMPLING_RELOAD_INTERVAL:-1m}"
+
+  # Snapshots Configuration
+  snapshots:
+    external_enabled: ${GRAFANA_SNAPSHOTS_EXTERNAL_ENABLED:-true}
+    external_snapshot_url: "${GRAFANA_SNAPSHOTS_EXTERNAL_URL:-https://snapshots-origin.raintank.io}"
+    external_snapshot_name: "${GRAFANA_SNAPSHOTS_EXTERNAL_NAME:-Publish to snapshot.raintank.io}"
+    snapshot_remove_expired: ${GRAFANA_SNAPSHOTS_REMOVE_EXPIRED:-true}
+    snapshot_TTL_days: ${GRAFANA_SNAPSHOTS_TTL_DAYS:-90}
+
+  # External Image Storage
+  external_image_storage:
+    provider: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_PROVIDER:-}"
+    
+    # S3 Configuration
+    s3:
+      endpoint: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_ENDPOINT:-}"
+      path_style_access: ${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_PATH_STYLE:-false}
+      bucket_url: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_BUCKET_URL:-}"
+      bucket: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_BUCKET:-}"
+      region: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_REGION:-us-east-1}"
+      path: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_PATH:-}"
+      access_key: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_ACCESS_KEY:-}"
+      secret_key: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_S3_SECRET_KEY:-}"
+    
+    # WebDAV Configuration
+    webdav:
+      url: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_WEBDAV_URL:-}"
+      public_url: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_WEBDAV_PUBLIC_URL:-}"
+      username: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_WEBDAV_USERNAME:-}"
+      password: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_WEBDAV_PASSWORD:-}"
+    
+    # GCS Configuration
+    gcs:
+      key_file: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_GCS_KEY_FILE:-}"
+      bucket: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_GCS_BUCKET:-}"
+      path: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_GCS_PATH:-}"
+    
+    # Azure Blob Configuration
+    azure_blob:
+      account_name: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_AZURE_ACCOUNT_NAME:-}"
+      account_key: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_AZURE_ACCOUNT_KEY:-}"
+      container_name: "${GRAFANA_EXTERNAL_IMAGE_STORAGE_AZURE_CONTAINER:-}"
+
+  # Alerting Configuration
+  alerting:
+    # Basic Alerting Settings
+    enabled: ${GRAFANA_ALERTING_ENABLED:-true}
+    execute_alerts: ${GRAFANA_ALERTING_EXECUTE_ALERTS:-true}
+    error_or_timeout: "${GRAFANA_ALERTING_ERROR_OR_TIMEOUT:-alerting}"
+    nodata_or_nullvalues: "${GRAFANA_ALERTING_NODATA_OR_NULLVALUES:-no_data}"
+    concurrent_render_limit: ${GRAFANA_ALERTING_CONCURRENT_RENDER_LIMIT:-5}
+    
+    # Evaluation Settings
+    evaluation_timeout_seconds: ${GRAFANA_ALERTING_EVALUATION_TIMEOUT:-30}
+    notification_timeout_seconds: ${GRAFANA_ALERTING_NOTIFICATION_TIMEOUT:-30}
+    max_attempts: ${GRAFANA_ALERTING_MAX_ATTEMPTS:-3}
+    
+    # Image Rendering
+    min_interval_seconds: ${GRAFANA_ALERTING_MIN_INTERVAL:-1}
+    max_annotation_age: "${GRAFANA_ALERTING_MAX_ANNOTATION_AGE:-}"
+
+  # Explore Configuration
+  explore:
+    enabled: ${GRAFANA_EXPLORE_ENABLED:-true}
+
+  # Help Configuration
+  help:
+    enabled: ${GRAFANA_HELP_ENABLED:-true}
+
+  # Panels Configuration
+  panels:
+    enable_alpha: ${GRAFANA_PANELS_ENABLE_ALPHA:-false}
+    disable_sanitize_html: ${GRAFANA_PANELS_DISABLE_SANITIZE_HTML:-false}
+
+  # Plugins Configuration
+  plugins:
+    enable_alpha: ${GRAFANA_PLUGINS_ENABLE_ALPHA:-false}
+    app_tls_skip_verify_insecure: ${GRAFANA_PLUGINS_APP_TLS_SKIP_VERIFY:-false}
+    allow_loading_unsigned_plugins: "${GRAFANA_PLUGINS_ALLOW_LOADING_UNSIGNED:-}"
+    marketplace_url: "${GRAFANA_PLUGINS_MARKETPLACE_URL:-https://grafana.com/api/plugins}"
+
+  # Enterprise Configuration
+  enterprise:
+    license_path: "${GRAFANA_ENTERPRISE_LICENSE_PATH:-}"
+    
+    # Enterprise Features
+    reporting:
+      enabled: ${GRAFANA_ENTERPRISE_REPORTING_ENABLED:-false}
+    
+    white_labeling:
+      enabled: ${GRAFANA_ENTERPRISE_WHITE_LABELING_ENABLED:-false}
+    
+    enhanced_ldap:
+      enabled: ${GRAFANA_ENTERPRISE_ENHANCED_LDAP_ENABLED:-false}
+
+  # Date Formats
+  date_formats:
+    full_date: "${GRAFANA_DATE_FORMAT_FULL:-YYYY-MM-DD HH:mm:ss}"
+    interval_second: "${GRAFANA_DATE_FORMAT_INTERVAL_SECOND:-HH:mm:ss}"
+    interval_minute: "${GRAFANA_DATE_FORMAT_INTERVAL_MINUTE:-HH:mm}"
+    interval_hour: "${GRAFANA_DATE_FORMAT_INTERVAL_HOUR:-MM/DD HH:mm}"
+    interval_day: "${GRAFANA_DATE_FORMAT_INTERVAL_DAY:-MM/DD}"
+    interval_month: "${GRAFANA_DATE_FORMAT_INTERVAL_MONTH:-YYYY-MM}"
+    interval_year: "${GRAFANA_DATE_FORMAT_INTERVAL_YEAR:-YYYY}"
+    use_browser_locale: ${GRAFANA_DATE_FORMAT_USE_BROWSER_LOCALE:-false}
+    default_timezone: "${GRAFANA_DATE_FORMAT_DEFAULT_TIMEZONE:-browser}"
+
+  # Feature Toggles
+  feature_toggles:
+    enable: "${GRAFANA_FEATURE_TOGGLES_ENABLE:-}"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      server:
+        protocol: "http"
+        http_port: 3000
+        enable_gzip: false
+      
+      security:
+        admin_password: "admin"
+        cookie_secure: false
+        disable_gravatar: false
+      
+      users:
+        allow_sign_up: true
+        allow_org_create: true
+        default_theme: "light"
+      
+      auth:
+        anonymous:
+          enabled: true
+          org_role: "Editor"
+      
+      log:
+        level: "debug"
+        mode: "console"
+      
+      alerting:
+        enabled: false
+    
+    production:
+      server:
+        protocol: "https"
+        http_port: 443
+        enable_gzip: true
+        cert_file: "/etc/ssl/certs/grafana.crt"
+        cert_key: "/etc/ssl/private/grafana.key"
+      
+      security:
+        admin_password: "${GRAFANA_PRODUCTION_ADMIN_PASSWORD}"
+        cookie_secure: true
+        disable_gravatar: true
+        strict_transport_security: true
+        x_content_type_options: true
+        x_xss_protection: true
+        content_security_policy: true
+      
+      users:
+        allow_sign_up: false
+        allow_org_create: false
+        default_theme: "dark"
+      
+      auth:
+        anonymous:
+          enabled: false
+        basic:
+          enabled: false
+        ldap:
+          enabled: true
+      
+      log:
+        level: "warn"
+        mode: "file"
+        file:
+          log_rotate: true
+          max_days: 30
+      
+      alerting:
+        enabled: true
+        execute_alerts: true
+      
+      metrics:
+        enabled: true
+        basic_auth_username: "${GRAFANA_METRICS_USERNAME}"
+        basic_auth_password: "${GRAFANA_METRICS_PASSWORD}"
+
+# ==========================================
+# GRAFANA PROVISIONING CONFIGURATION
+# ==========================================
+
+provisioning:
+  # Datasources Provisioning
+  datasources:
+    path: "/etc/grafana/provisioning/datasources"
+    
+    # Default Datasources
+    default_datasources:
+      - name: "Prometheus"
+        type: "prometheus"
+        access: "proxy"
+        url: "${PROMETHEUS_URL:-http://localhost:9090}"
+        isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: "POST"
+          manageAlerts: true
+          prometheusType: "Prometheus"
+          prometheusVersion: "2.40.0"
+          cacheLevel: "High"
+          incrementalQuerying: true
+          exemplarTraceIdDestinations:
+            - name: "trace_id"
+              datasourceUid: "${JAEGER_DATASOURCE_UID:-jaeger}"
+      
+      - name: "Loki"
+        type: "loki"
+        access: "proxy"
+        url: "${LOKI_URL:-http://localhost:3100}"
+        editable: false
+        jsonData:
+          maxLines: 1000
+          derivedFields:
+            - datasourceUid: "${JAEGER_DATASOURCE_UID:-jaeger}"
+              matcherRegex: "trace_id=(\\w+)"
+              name: "TraceID"
+              url: "$${__value.raw}"
+      
+      - name: "Jaeger"
+        type: "jaeger"
+        access: "proxy"
+        url: "${JAEGER_URL:-http://localhost:16686}"
+        uid: "jaeger"
+        editable: false
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: "${LOKI_DATASOURCE_UID:-loki}"
+            spanStartTimeShift: "-1h"
+            spanEndTimeShift: "1h"
+            filterByTraceID: true
+            filterBySpanID: true
+            customQuery: true
+            query: "{job=\"api\"} |= \"$${__trace.traceId}\""
+  
+  # Dashboards Provisioning
+  dashboards:
+    path: "/etc/grafana/provisioning/dashboards"
+    
+    # Dashboard Providers
+    providers:
+      - name: "default"
+        orgId: 1
+        folder: ""
+        type: "file"
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: "/var/lib/grafana/dashboards"
+      
+      - name: "spotify-ai-agent"
+        orgId: 1
+        folder: "Spotify AI Agent"
+        type: "file"
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: "/var/lib/grafana/dashboards/spotify-ai-agent"
+  
+  # Notification Channels Provisioning
+  notifiers:
+    path: "/etc/grafana/provisioning/notifiers"
+    
+    # Default Notification Channels
+    default_notifiers:
+      - name: "email-notifications"
+        type: "email"
+        uid: "email-notifier"
+        isDefault: true
+        settings:
+          addresses: "${GRAFANA_NOTIFICATION_EMAIL_ADDRESSES:-admin@example.com}"
+          subject: "Grafana Alert - {{ .CommonLabels.alertname }}"
+          message: |
+            {{ range .Alerts }}
+            Alert: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            Labels: {{ range .Labels.SortedPairs }}{{ .Name }}: {{ .Value }}{{ end }}
+            {{ end }}
+      
+      - name: "slack-notifications"
+        type: "slack"
+        uid: "slack-notifier"
+        settings:
+          url: "${GRAFANA_SLACK_WEBHOOK_URL:-}"
+          channel: "${GRAFANA_SLACK_CHANNEL:-#alerts}"
+          username: "Grafana"
+          title: "Grafana Alert"
+          text: |
+            {{ range .Alerts }}
+            *Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Labels:* {{ range .Labels.SortedPairs }}{{ .Name }}: {{ .Value }}{{ end }}
+            {{ end }}
+  
+  # Alert Rules Provisioning
+  alerting:
+    path: "/etc/grafana/provisioning/alerting"
+    
+    # Contact Points
+    contactPoints:
+      - name: "email-contact-point"
+        receivers:
+          - uid: "email-receiver"
+            type: "email"
+            settings:
+              addresses:
+                - "${GRAFANA_ALERT_EMAIL:-admin@example.com}"
+              subject: "Grafana Alert - {{ .CommonLabels.alertname }}"
+    
+    # Notification Policies
+    policies:
+      - receiver: "email-contact-point"
+        group_by:
+          - "alertname"
+          - "cluster"
+          - "service"
+        group_wait: "10s"
+        group_interval: "5m"
+        repeat_interval: "12h"
+        routes:
+          - match:
+              severity: "critical"
+            receiver: "email-contact-point"
+            group_wait: "5s"
+            repeat_interval: "2m"
+
+# ==========================================
+# GRAFANA DASHBOARD TEMPLATES
+# ==========================================
+
+dashboard_templates:
+  # Application Overview Dashboard
+  application_overview:
+    title: "Spotify AI Agent - Application Overview"
+    tags: ["spotify", "ai", "application"]
+    refresh: "30s"
+    time_from: "now-1h"
+    time_to: "now"
+    
+    panels:
+      - title: "Request Rate"
+        type: "stat"
+        targets:
+          - expr: "rate(http_requests_total[5m])"
+            legendFormat: "Requests/sec"
+      
+      - title: "Error Rate"
+        type: "stat"
+        targets:
+          - expr: "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100"
+            legendFormat: "Error %"
+      
+      - title: "Response Time"
+        type: "stat"
+        targets:
+          - expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+            legendFormat: "95th percentile"
+  
+  # AI/ML Monitoring Dashboard
+  ai_ml_monitoring:
+    title: "Spotify AI Agent - AI/ML Monitoring"
+    tags: ["spotify", "ai", "ml", "models"]
+    refresh: "1m"
+    time_from: "now-4h"
+    time_to: "now"
+    
+    panels:
+      - title: "Model Predictions"
+        type: "graph"
+        targets:
+          - expr: "rate(ai_model_predictions_total[5m])"
+            legendFormat: "{{ model_name }}"
+      
+      - title: "Model Latency"
+        type: "graph"
+        targets:
+          - expr: "histogram_quantile(0.95, rate(ai_model_prediction_duration_seconds_bucket[5m]))"
+            legendFormat: "{{ model_name }} - 95th percentile"
+      
+      - title: "Model Accuracy"
+        type: "stat"
+        targets:
+          - expr: "ai_model_accuracy"
+            legendFormat: "{{ model_name }}"
+  
+  # Infrastructure Dashboard
+  infrastructure:
+    title: "Spotify AI Agent - Infrastructure"
+    tags: ["spotify", "infrastructure", "system"]
+    refresh: "30s"
+    time_from: "now-1h"
+    time_to: "now"
+    
+    panels:
+      - title: "CPU Usage"
+        type: "graph"
+        targets:
+          - expr: "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+            legendFormat: "{{ instance }}"
+      
+      - title: "Memory Usage"
+        type: "graph"
+        targets:
+          - expr: "100 * (1 - ((node_memory_MemAvailable_bytes) / (node_memory_MemTotal_bytes)))"
+            legendFormat: "{{ instance }}"
+      
+      - title: "Disk Usage"
+        type: "graph"
+        targets:
+          - expr: "100 - ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes)"
+            legendFormat: "{{ instance }} - {{ mountpoint }}"
+  
+  # Database Performance Dashboard
+  database_performance:
+    title: "Spotify AI Agent - Database Performance"
+    tags: ["spotify", "database", "performance"]
+    refresh: "30s"
+    time_from: "now-2h"
+    time_to: "now"
+    
+    panels:
+      - title: "Database Connections"
+        type: "graph"
+        targets:
+          - expr: "pg_stat_database_numbackends"
+            legendFormat: "{{ datname }}"
+      
+      - title: "Query Duration"
+        type: "graph"
+        targets:
+          - expr: "pg_stat_statements_mean_time_ms"
+            legendFormat: "Mean query time"
+      
+      - title: "Cache Hit Ratio"
+        type: "stat"
+        targets:
+          - expr: "pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100"
+            legendFormat: "{{ datname }}"

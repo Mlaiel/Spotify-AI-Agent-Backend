@@ -1,0 +1,274 @@
+# Docker Compose pour le module Alertmanager Receivers Config Ultra-Avancé
+# Author: Spotify AI Agent Team - Fahed Mlaiel
+# Stack complète avec toutes les dépendances
+
+version: '3.8'
+
+services:
+  # Service principal Alertmanager Receivers Config
+  alertmanager-receivers-config:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: alertmanager-receivers-config
+    hostname: alertmanager-config
+    restart: unless-stopped
+    ports:
+      - "8080:8080"  # API REST
+      - "9090:9090"  # Métriques Prometheus
+    environment:
+      - ALERTMANAGER_CONFIG_PATH=/app/config
+      - ALERTMANAGER_LOG_LEVEL=INFO
+      - ALERTMANAGER_SECURITY_ENABLED=true
+      - REDIS_URL=redis://redis:6379/0
+      - POSTGRES_URL=postgresql://alertmanager:secure_password@postgres:5432/alertmanager_config
+      - PROMETHEUS_URL=http://prometheus:9090
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    volumes:
+      - ./config:/app/config:ro
+      - alertmanager_data:/app/data
+      - alertmanager_logs:/app/logs
+    networks:
+      - alertmanager_network
+    depends_on:
+      - redis
+      - postgres
+      - prometheus
+      - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # Redis pour le cache et la session
+  redis:
+    image: redis:7-alpine
+    container_name: alertmanager-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis_secure_password
+    volumes:
+      - redis_data:/data
+    networks:
+      - alertmanager_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "redis_secure_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL pour la persistance des configurations
+  postgres:
+    image: postgres:15-alpine
+    container_name: alertmanager-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: alertmanager_config
+      POSTGRES_USER: alertmanager
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - alertmanager_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alertmanager -d alertmanager_config"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus pour les métriques
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: alertmanager-prometheus
+    restart: unless-stopped
+    ports:
+      - "9091:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - alertmanager_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch pour les logs centralisés
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: alertmanager-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - alertmanager_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana pour la visualisation des logs
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: alertmanager-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - alertmanager_network
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Grafana pour les dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: alertmanager-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin_secure_password
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - alertmanager_network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger pour le tracing distribué
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: alertmanager-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # HTTP collector
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    networks:
+      - alertmanager_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service de backup automatisé
+  backup-service:
+    image: alpine:latest
+    container_name: alertmanager-backup
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/backup/postgres:ro
+      - redis_data:/backup/redis:ro
+      - alertmanager_data:/backup/alertmanager:ro
+      - ./backups:/backups
+    networks:
+      - alertmanager_network
+    command: |
+      sh -c "
+        apk add --no-cache postgresql-client redis
+        while true; do
+          echo 'Starting backup at $(date)'
+          pg_dump -h postgres -U alertmanager -d alertmanager_config > /backups/postgres_$(date +%Y%m%d_%H%M%S).sql
+          redis-cli -h redis -a redis_secure_password --rdb /backups/redis_$(date +%Y%m%d_%H%M%S).rdb
+          tar -czf /backups/alertmanager_data_$(date +%Y%m%d_%H%M%S).tar.gz -C /backup/alertmanager .
+          find /backups -name '*.sql' -mtime +7 -delete
+          find /backups -name '*.rdb' -mtime +7 -delete  
+          find /backups -name '*.tar.gz' -mtime +7 -delete
+          echo 'Backup completed at $(date)'
+          sleep 86400  # 24 heures
+        done
+      "
+
+  # Service de monitoring système
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: alertmanager-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - alertmanager_network
+
+# Réseaux
+networks:
+  alertmanager_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes persistants
+volumes:
+  alertmanager_data:
+    driver: local
+  alertmanager_logs:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  grafana_data:
+    driver: local

@@ -1,0 +1,108 @@
+# Configuration Prometheus pour le module Alertmanager Receivers Config
+# Author: Spotify AI Agent Team - Fahed Mlaiel
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'alertmanager-receivers-config'
+    environment: 'production'
+
+# Configuration des règles d'alerte
+rule_files:
+  - "rules/*.yml"
+
+# Configuration Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - localhost:9093
+
+# Configuration des jobs de scraping
+scrape_configs:
+  # Prometheus lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # Service principal Alertmanager Receivers Config  
+  - job_name: 'alertmanager-receivers-config'
+    static_configs:
+      - targets: ['alertmanager-receivers-config:9090']
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 10s
+    honor_labels: true
+    params:
+      collect[]:
+        - 'alertmanager_config'
+        - 'security_metrics'
+        - 'performance_metrics'
+        - 'tenant_metrics'
+        - 'integration_metrics'
+
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: /metrics
+
+  # PostgreSQL metrics (nécessite postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: /metrics
+
+  # Node Exporter pour les métriques système
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Elasticsearch metrics
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch:9200']
+    metrics_path: /_prometheus/metrics
+
+  # Service discovery pour les tenants dynamiques
+  - job_name: 'tenant-services'
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['alertmanager-tenant']
+    relabel_configs:
+      - source_labels: [__meta_consul_service]
+        target_label: job
+      - source_labels: [__meta_consul_service_metadata_tenant_id]
+        target_label: tenant_id
+      - source_labels: [__meta_consul_service_metadata_tier]
+        target_label: tenant_tier
+
+  # Monitoring des intégrations externes
+  - job_name: 'integration-endpoints'
+    static_configs:
+      - targets:
+        - 'slack-api:443'
+        - 'pagerduty-api:443'
+        - 'jira-api:443'
+    metrics_path: /health
+    scheme: https
+    scrape_interval: 60s
+    scrape_timeout: 30s
+
+# Configuration remote write pour la haute disponibilité
+remote_write:
+  - url: "http://victoria-metrics:8428/api/v1/write"
+    queue_config:
+      max_samples_per_send: 10000
+      max_shards: 200
+      capacity: 20000
+
+# Configuration remote read
+remote_read:
+  - url: "http://victoria-metrics:8428/api/v1/read"
+    read_recent: true

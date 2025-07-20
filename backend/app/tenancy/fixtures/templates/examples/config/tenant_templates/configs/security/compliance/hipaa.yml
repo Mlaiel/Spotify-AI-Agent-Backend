@@ -1,0 +1,1072 @@
+# HIPAA Compliance Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - HIPAA compliance architecture with AI privacy optimization
+# - Senior Backend Developer: Python/FastAPI/Django HIPAA enterprise patterns
+# - Healthcare Security Specialist: HIPAA security hardening and PHI protection
+# - DBA & Data Engineer: HIPAA data management, audit, and retention policies
+# - Legal Compliance Specialist: HIPAA regulatory requirements and healthcare compliance
+
+# ==========================================
+# HIPAA COMPLIANCE CONFIGURATION
+# ==========================================
+
+hipaa:
+  # General Settings
+  general:
+    enabled: ${HIPAA_ENABLED:-false}
+    covered_entity: ${HIPAA_COVERED_ENTITY:-false}
+    business_associate: ${HIPAA_BUSINESS_ASSOCIATE:-false}
+    
+    # Entity Information
+    entity_info:
+      name: "${HIPAA_ENTITY_NAME:-Spotify AI Agent Healthcare Solutions}"
+      type: "${HIPAA_ENTITY_TYPE:-business_associate}"
+      npi_number: "${HIPAA_NPI_NUMBER:-}"
+      tax_id: "${HIPAA_TAX_ID:-}"
+      
+      # Contact Information
+      contact:
+        privacy_officer:
+          name: "${HIPAA_PRIVACY_OFFICER_NAME:-Jane Smith}"
+          email: "${HIPAA_PRIVACY_OFFICER_EMAIL:-privacy@spotify-ai-agent-health.com}"
+          phone: "${HIPAA_PRIVACY_OFFICER_PHONE:-+1-555-0124}"
+        
+        security_officer:
+          name: "${HIPAA_SECURITY_OFFICER_NAME:-Bob Johnson}"
+          email: "${HIPAA_SECURITY_OFFICER_EMAIL:-security@spotify-ai-agent-health.com}"
+          phone: "${HIPAA_SECURITY_OFFICER_PHONE:-+1-555-0125}"
+    
+    # Compliance Scope
+    compliance_scope:
+      phi_processing: ${HIPAA_PHI_PROCESSING:-false}
+      electronic_phi: ${HIPAA_EPHI_PROCESSING:-false}
+      paper_phi: ${HIPAA_PAPER_PHI_PROCESSING:-false}
+      
+      # Healthcare Functions
+      healthcare_functions:
+        - "health_analytics"
+        - "wellness_recommendations"
+        - "mental_health_tracking"
+        - "biometric_analysis"
+
+  # Administrative Safeguards
+  administrative_safeguards:
+    # Security Officer (§164.308(a)(2))
+    security_officer:
+      assigned: ${HIPAA_SECURITY_OFFICER_ASSIGNED:-true}
+      name: "${HIPAA_SECURITY_OFFICER_NAME:-Bob Johnson}"
+      responsibilities:
+        - "develop_security_policies"
+        - "conduct_security_assessments"
+        - "oversee_incident_response"
+        - "manage_workforce_training"
+        - "coordinate_compliance_audits"
+      
+      # Required Documentation
+      documentation:
+        - "security_policies_procedures"
+        - "workforce_training_records"
+        - "incident_response_plans"
+        - "risk_assessment_reports"
+        - "audit_logs_review"
+    
+    # Workforce Training (§164.308(a)(5))
+    workforce_training:
+      required: ${HIPAA_WORKFORCE_TRAINING_REQUIRED:-true}
+      frequency_months: ${HIPAA_TRAINING_FREQUENCY:-12}
+      
+      # Training Topics
+      training_topics:
+        - "hipaa_overview"
+        - "phi_handling"
+        - "minimum_necessary_standard"
+        - "patient_rights"
+        - "incident_reporting"
+        - "security_awareness"
+        - "breach_response"
+        - "password_management"
+        - "device_security"
+        - "social_engineering"
+      
+      # Training Requirements
+      requirements:
+        initial_training: ${HIPAA_INITIAL_TRAINING:-true}
+        annual_refresher: ${HIPAA_ANNUAL_REFRESHER:-true}
+        role_specific_training: ${HIPAA_ROLE_SPECIFIC_TRAINING:-true}
+        incident_based_training: ${HIPAA_INCIDENT_BASED_TRAINING:-true}
+        
+        # Training Tracking
+        tracking:
+          completion_tracking: ${HIPAA_TRAINING_TRACKING:-true}
+          certificate_issuance: ${HIPAA_TRAINING_CERTIFICATES:-true}
+          compliance_reporting: ${HIPAA_TRAINING_REPORTING:-true}
+    
+    # Information Security (§164.308(a)(1))
+    information_security:
+      # Policies and Procedures
+      policies_procedures:
+        security_policy: "${HIPAA_SECURITY_POLICY_URL:-https://spotify-ai-agent-health.com/policies/security}"
+        privacy_policy: "${HIPAA_PRIVACY_POLICY_URL:-https://spotify-ai-agent-health.com/policies/privacy}"
+        incident_response_policy: "${HIPAA_INCIDENT_RESPONSE_POLICY_URL:-https://spotify-ai-agent-health.com/policies/incident-response}"
+        breach_notification_policy: "${HIPAA_BREACH_NOTIFICATION_POLICY_URL:-https://spotify-ai-agent-health.com/policies/breach-notification}"
+        
+        # Required Policies
+        required_policies:
+          - "information_security_policy"
+          - "privacy_policies_procedures"
+          - "incident_response_procedures"
+          - "workforce_security_procedures"
+          - "information_access_management"
+          - "security_awareness_training"
+          - "security_incident_procedures"
+          - "contingency_plan"
+          - "evaluation_procedures"
+      
+      # Risk Assessment
+      risk_assessment:
+        frequency: "annually"
+        methodology: "nist_framework"
+        scope: "all_phi_processing_systems"
+        
+        # Risk Categories
+        risk_categories:
+          - "administrative_risks"
+          - "physical_risks"
+          - "technical_risks"
+          - "organizational_risks"
+          - "external_risks"
+        
+        # Risk Levels
+        risk_levels:
+          low: "1-3"
+          medium: "4-6"
+          high: "7-9"
+          critical: "10"
+    
+    # Workforce Security (§164.308(a)(3))
+    workforce_security:
+      # Access Management
+      access_management:
+        authorization_procedures: ${HIPAA_AUTHORIZATION_PROCEDURES:-true}
+        workforce_clearance: ${HIPAA_WORKFORCE_CLEARANCE:-true}
+        termination_procedures: ${HIPAA_TERMINATION_PROCEDURES:-true}
+        
+        # Background Checks
+        background_checks:
+          required: ${HIPAA_BACKGROUND_CHECKS:-true}
+          frequency: "pre_employment"
+          scope: ["criminal_history", "employment_verification", "education_verification"]
+        
+        # Access Authorization
+        access_authorization:
+          role_based_access: ${HIPAA_RBAC:-true}
+          minimum_necessary: ${HIPAA_MINIMUM_NECESSARY:-true}
+          regular_review: ${HIPAA_ACCESS_REVIEW:-true}
+          review_frequency_months: ${HIPAA_ACCESS_REVIEW_FREQUENCY:-6}
+      
+      # Sanctions Policy
+      sanctions_policy:
+        policy_exists: ${HIPAA_SANCTIONS_POLICY:-true}
+        enforcement: ${HIPAA_SANCTIONS_ENFORCEMENT:-true}
+        
+        # Violation Categories
+        violation_categories:
+          minor:
+            examples: ["password_sharing", "unlocked_workstation"]
+            sanctions: ["verbal_warning", "additional_training"]
+          
+          moderate:
+            examples: ["unauthorized_access", "improper_disclosure"]
+            sanctions: ["written_warning", "suspension", "retraining"]
+          
+          severe:
+            examples: ["intentional_breach", "malicious_access"]
+            sanctions: ["termination", "legal_action"]
+    
+    # Information Access Management (§164.308(a)(4))
+    information_access_management:
+      # Access Control Procedures
+      access_control:
+        unique_user_identification: ${HIPAA_UNIQUE_USER_ID:-true}
+        emergency_access_procedures: ${HIPAA_EMERGENCY_ACCESS:-true}
+        automatic_logoff: ${HIPAA_AUTOMATIC_LOGOFF:-true}
+        encryption_decryption: ${HIPAA_ENCRYPTION_REQUIRED:-true}
+        
+        # Access Levels
+        access_levels:
+          read_only:
+            description: "View PHI only"
+            permissions: ["read"]
+          
+          standard_user:
+            description: "Standard healthcare worker access"
+            permissions: ["read", "update"]
+          
+          privileged_user:
+            description: "Healthcare provider access"
+            permissions: ["read", "update", "create"]
+          
+          administrator:
+            description: "System administrator access"
+            permissions: ["read", "update", "create", "delete", "admin"]
+      
+      # Access Review
+      access_review:
+        periodic_review: ${HIPAA_PERIODIC_ACCESS_REVIEW:-true}
+        review_frequency_months: ${HIPAA_ACCESS_REVIEW_FREQUENCY:-6}
+        automated_review: ${HIPAA_AUTOMATED_ACCESS_REVIEW:-true}
+        
+        # Review Triggers
+        review_triggers:
+          - "role_change"
+          - "department_transfer"
+          - "privilege_escalation"
+          - "suspicious_activity"
+          - "scheduled_review"
+    
+    # Security Incident Procedures (§164.308(a)(6))
+    security_incident_procedures:
+      # Incident Response
+      incident_response:
+        response_team: ${HIPAA_INCIDENT_RESPONSE_TEAM:-true}
+        response_plan: "${HIPAA_INCIDENT_RESPONSE_PLAN_URL:-https://spotify-ai-agent-health.com/policies/incident-response}"
+        
+        # Response Timeline
+        timeline:
+          detection_to_assessment: "15_minutes"
+          assessment_to_containment: "1_hour"
+          containment_to_investigation: "4_hours"
+          investigation_to_resolution: "24_hours"
+          resolution_to_documentation: "48_hours"
+        
+        # Incident Categories
+        incident_categories:
+          privacy_incident:
+            description: "Unauthorized access or disclosure of PHI"
+            escalation_level: "high"
+            notification_required: true
+          
+          security_incident:
+            description: "Security breach or system compromise"
+            escalation_level: "critical"
+            notification_required: true
+          
+          operational_incident:
+            description: "System outage or performance issue"
+            escalation_level: "medium"
+            notification_required: false
+      
+      # Incident Documentation
+      incident_documentation:
+        documentation_required: ${HIPAA_INCIDENT_DOCUMENTATION:-true}
+        retention_years: ${HIPAA_INCIDENT_RETENTION:-6}
+        
+        # Required Information
+        required_information:
+          - "incident_description"
+          - "affected_systems"
+          - "phi_involved"
+          - "individuals_affected"
+          - "discovery_method"
+          - "response_actions"
+          - "lessons_learned"
+          - "preventive_measures"
+    
+    # Contingency Plan (§164.308(a)(7))
+    contingency_plan:
+      # Business Continuity
+      business_continuity:
+        plan_exists: ${HIPAA_CONTINGENCY_PLAN:-true}
+        testing_frequency_months: ${HIPAA_CONTINGENCY_TESTING:-6}
+        
+        # Plan Components
+        plan_components:
+          - "data_backup_plan"
+          - "disaster_recovery_plan"
+          - "emergency_mode_operation"
+          - "testing_procedures"
+          - "plan_revision_procedures"
+        
+        # Recovery Objectives
+        recovery_objectives:
+          rpo: "${HIPAA_RPO:-4h}"  # Recovery Point Objective
+          rto: "${HIPAA_RTO:-24h}"  # Recovery Time Objective
+          mtpd: "${HIPAA_MTPD:-48h}"  # Maximum Tolerable Period of Disruption
+      
+      # Data Backup
+      data_backup:
+        automated_backup: ${HIPAA_AUTOMATED_BACKUP:-true}
+        backup_frequency: "${HIPAA_BACKUP_FREQUENCY:-daily}"
+        backup_retention_days: ${HIPAA_BACKUP_RETENTION:-2555}  # 7 years
+        offsite_backup: ${HIPAA_OFFSITE_BACKUP:-true}
+        backup_encryption: ${HIPAA_BACKUP_ENCRYPTION:-true}
+        
+        # Backup Testing
+        backup_testing:
+          test_frequency_months: ${HIPAA_BACKUP_TEST_FREQUENCY:-3}
+          restore_testing: ${HIPAA_RESTORE_TESTING:-true}
+          integrity_verification: ${HIPAA_BACKUP_INTEGRITY:-true}
+    
+    # Evaluation (§164.308(a)(8))
+    evaluation:
+      # Compliance Evaluation
+      compliance_evaluation:
+        evaluation_frequency_months: ${HIPAA_EVALUATION_FREQUENCY:-12}
+        internal_audit: ${HIPAA_INTERNAL_AUDIT:-true}
+        external_audit: ${HIPAA_EXTERNAL_AUDIT:-true}
+        
+        # Evaluation Scope
+        evaluation_scope:
+          - "administrative_safeguards"
+          - "physical_safeguards"
+          - "technical_safeguards"
+          - "policies_procedures"
+          - "workforce_compliance"
+        
+        # Evaluation Methods
+        evaluation_methods:
+          - "document_review"
+          - "system_testing"
+          - "workflow_analysis"
+          - "staff_interviews"
+          - "technical_assessment"
+
+  # Physical Safeguards
+  physical_safeguards:
+    # Facility Security (§164.310(a)(1))
+    facility_security:
+      # Physical Access Controls
+      physical_access_controls:
+        controlled_access: ${HIPAA_CONTROLLED_ACCESS:-true}
+        access_card_system: ${HIPAA_ACCESS_CARD_SYSTEM:-true}
+        visitor_management: ${HIPAA_VISITOR_MANAGEMENT:-true}
+        security_cameras: ${HIPAA_SECURITY_CAMERAS:-true}
+        
+        # Access Zones
+        access_zones:
+          public_zone:
+            description: "General public areas"
+            restrictions: "none"
+          
+          restricted_zone:
+            description: "Employee work areas"
+            restrictions: "employee_access_only"
+          
+          secure_zone:
+            description: "Server rooms and data centers"
+            restrictions: "authorized_personnel_only"
+          
+          highly_secure_zone:
+            description: "PHI processing areas"
+            restrictions: "need_to_know_basis"
+      
+      # Environmental Controls
+      environmental_controls:
+        temperature_monitoring: ${HIPAA_TEMPERATURE_MONITORING:-true}
+        humidity_monitoring: ${HIPAA_HUMIDITY_MONITORING:-true}
+        fire_suppression: ${HIPAA_FIRE_SUPPRESSION:-true}
+        power_backup: ${HIPAA_POWER_BACKUP:-true}
+        
+        # Monitoring Thresholds
+        thresholds:
+          temperature:
+            min_celsius: 18
+            max_celsius: 24
+            alert_variance: 2
+          
+          humidity:
+            min_percent: 40
+            max_percent: 60
+            alert_variance: 5
+    
+    # Workstation Security (§164.310(b))
+    workstation_security:
+      # Workstation Controls
+      workstation_controls:
+        secure_workstations: ${HIPAA_SECURE_WORKSTATIONS:-true}
+        screen_locks: ${HIPAA_SCREEN_LOCKS:-true}
+        clean_desk_policy: ${HIPAA_CLEAN_DESK_POLICY:-true}
+        
+        # Security Settings
+        security_settings:
+          automatic_screen_lock_minutes: ${HIPAA_SCREEN_LOCK_TIMEOUT:-10}
+          password_complexity: ${HIPAA_PASSWORD_COMPLEXITY:-true}
+          software_restriction: ${HIPAA_SOFTWARE_RESTRICTION:-true}
+          usb_port_control: ${HIPAA_USB_PORT_CONTROL:-true}
+        
+        # Workstation Types
+        workstation_types:
+          clinical_workstation:
+            description: "Workstations in patient care areas"
+            security_level: "high"
+            phi_access: true
+          
+          administrative_workstation:
+            description: "Administrative and billing workstations"
+            security_level: "medium"
+            phi_access: true
+          
+          public_workstation:
+            description: "Public kiosks and information terminals"
+            security_level: "low"
+            phi_access: false
+    
+    # Device and Media Security (§164.310(d))
+    device_media_security:
+      # Device Controls
+      device_controls:
+        device_inventory: ${HIPAA_DEVICE_INVENTORY:-true}
+        device_encryption: ${HIPAA_DEVICE_ENCRYPTION:-true}
+        mobile_device_management: ${HIPAA_MDM:-true}
+        remote_wipe_capability: ${HIPAA_REMOTE_WIPE:-true}
+        
+        # Approved Devices
+        approved_devices:
+          laptops:
+            - "Dell Latitude with BitLocker"
+            - "MacBook Pro with FileVault"
+          
+          mobile_devices:
+            - "iPhone with iOS encryption"
+            - "Samsung Galaxy with Knox"
+          
+          tablets:
+            - "iPad with encryption"
+            - "Surface Pro with BitLocker"
+      
+      # Media Controls
+      media_controls:
+        media_reuse: ${HIPAA_MEDIA_REUSE:-true}
+        secure_disposal: ${HIPAA_SECURE_DISPOSAL:-true}
+        data_backup: ${HIPAA_DATA_BACKUP:-true}
+        
+        # Disposal Methods
+        disposal_methods:
+          electronic_media:
+            - "cryptographic_erasure"
+            - "degaussing"
+            - "physical_destruction"
+          
+          paper_media:
+            - "cross_cut_shredding"
+            - "pulping"
+            - "burning"
+          
+          optical_media:
+            - "physical_destruction"
+            - "laser_ablation"
+
+  # Technical Safeguards
+  technical_safeguards:
+    # Access Control (§164.312(a))
+    access_control:
+      # User Authentication
+      user_authentication:
+        unique_user_identification: ${HIPAA_UNIQUE_USER_ID:-true}
+        multi_factor_authentication: ${HIPAA_MFA_REQUIRED:-true}
+        password_requirements: ${HIPAA_PASSWORD_REQUIREMENTS:-true}
+        
+        # Authentication Methods
+        authentication_methods:
+          primary:
+            - "username_password"
+            - "smart_card"
+            - "biometric"
+          
+          secondary:
+            - "sms_token"
+            - "authenticator_app"
+            - "hardware_token"
+        
+        # Password Policy
+        password_policy:
+          minimum_length: ${HIPAA_PASSWORD_MIN_LENGTH:-12}
+          complexity_required: ${HIPAA_PASSWORD_COMPLEXITY:-true}
+          expiration_days: ${HIPAA_PASSWORD_EXPIRATION:-90}
+          history_count: ${HIPAA_PASSWORD_HISTORY:-12}
+          lockout_attempts: ${HIPAA_PASSWORD_LOCKOUT_ATTEMPTS:-5}
+          lockout_duration_minutes: ${HIPAA_PASSWORD_LOCKOUT_DURATION:-30}
+      
+      # Automatic Logoff
+      automatic_logoff:
+        enabled: ${HIPAA_AUTOMATIC_LOGOFF:-true}
+        idle_timeout_minutes: ${HIPAA_IDLE_TIMEOUT:-15}
+        session_timeout_hours: ${HIPAA_SESSION_TIMEOUT:-8}
+        
+        # Logoff Triggers
+        logoff_triggers:
+          - "idle_timeout"
+          - "session_timeout"
+          - "manual_logout"
+          - "system_shutdown"
+          - "security_violation"
+    
+    # Audit Controls (§164.312(b))
+    audit_controls:
+      # Audit Logging
+      audit_logging:
+        enabled: ${HIPAA_AUDIT_LOGGING:-true}
+        log_retention_years: ${HIPAA_AUDIT_LOG_RETENTION:-6}
+        real_time_monitoring: ${HIPAA_REAL_TIME_MONITORING:-true}
+        
+        # Audited Events
+        audited_events:
+          authentication:
+            - "login_success"
+            - "login_failure"
+            - "logout"
+            - "password_change"
+          
+          data_access:
+            - "phi_view"
+            - "phi_create"
+            - "phi_update"
+            - "phi_delete"
+            - "phi_export"
+          
+          system_events:
+            - "system_startup"
+            - "system_shutdown"
+            - "configuration_change"
+            - "software_installation"
+          
+          security_events:
+            - "access_violation"
+            - "privilege_escalation"
+            - "suspicious_activity"
+        
+        # Log Content
+        log_content:
+          required_fields:
+            - "timestamp"
+            - "user_id"
+            - "event_type"
+            - "resource_accessed"
+            - "source_ip"
+            - "user_agent"
+            - "result_status"
+          
+          optional_fields:
+            - "session_id"
+            - "transaction_id"
+            - "additional_context"
+      
+      # Audit Review
+      audit_review:
+        review_frequency: "weekly"
+        automated_analysis: ${HIPAA_AUTOMATED_AUDIT_ANALYSIS:-true}
+        anomaly_detection: ${HIPAA_AUDIT_ANOMALY_DETECTION:-true}
+        
+        # Review Procedures
+        review_procedures:
+          - "failed_login_attempts"
+          - "after_hours_access"
+          - "bulk_data_access"
+          - "administrative_actions"
+          - "privilege_changes"
+    
+    # Integrity (§164.312(c))
+    integrity:
+      # Data Integrity
+      data_integrity:
+        integrity_controls: ${HIPAA_INTEGRITY_CONTROLS:-true}
+        checksum_verification: ${HIPAA_CHECKSUM_VERIFICATION:-true}
+        digital_signatures: ${HIPAA_DIGITAL_SIGNATURES:-true}
+        
+        # Integrity Mechanisms
+        integrity_mechanisms:
+          - "hash_functions"
+          - "digital_signatures"
+          - "checksums"
+          - "version_control"
+          - "audit_trails"
+        
+        # Integrity Monitoring
+        monitoring:
+          continuous_monitoring: ${HIPAA_CONTINUOUS_INTEGRITY_MONITORING:-true}
+          integrity_alerts: ${HIPAA_INTEGRITY_ALERTS:-true}
+          automated_verification: ${HIPAA_AUTOMATED_INTEGRITY_VERIFICATION:-true}
+    
+    # Transmission Security (§164.312(e))
+    transmission_security:
+      # Encryption in Transit
+      encryption_in_transit:
+        required: ${HIPAA_ENCRYPTION_IN_TRANSIT:-true}
+        protocols: ["TLS_1.3", "TLS_1.2"]
+        cipher_suites: ["ECDHE-RSA-AES256-GCM-SHA384", "ECDHE-RSA-AES128-GCM-SHA256"]
+        
+        # Transmission Methods
+        transmission_methods:
+          web_traffic:
+            encryption: "TLS_1.3"
+            certificate_validation: true
+            hsts_enabled: true
+          
+          email:
+            encryption: "S/MIME"
+            pgp_supported: true
+            secure_email_gateway: true
+          
+          file_transfer:
+            encryption: "SFTP"
+            protocols: ["SFTP", "FTPS", "HTTPS"]
+          
+          database_connections:
+            encryption: "TLS"
+            certificate_validation: true
+            connection_pooling: "encrypted"
+      
+      # End-to-End Encryption
+      end_to_end_encryption:
+        enabled: ${HIPAA_END_TO_END_ENCRYPTION:-true}
+        key_management: "vault"
+        key_rotation_days: ${HIPAA_KEY_ROTATION_DAYS:-90}
+
+  # PHI Protection
+  phi_protection:
+    # Data Classification
+    data_classification:
+      # PHI Categories
+      phi_categories:
+        demographic_phi:
+          description: "Names, addresses, birth dates, SSNs"
+          sensitivity: "high"
+          retention_years: 6
+        
+        clinical_phi:
+          description: "Medical records, diagnoses, treatments"
+          sensitivity: "critical"
+          retention_years: 6
+        
+        financial_phi:
+          description: "Billing information, insurance details"
+          sensitivity: "high"
+          retention_years: 7
+        
+        biometric_phi:
+          description: "Fingerprints, retinal scans, voice prints"
+          sensitivity: "critical"
+          retention_years: 6
+      
+      # Data Handling Rules
+      handling_rules:
+        minimum_necessary:
+          enabled: ${HIPAA_MINIMUM_NECESSARY:-true}
+          role_based_limits: ${HIPAA_ROLE_BASED_LIMITS:-true}
+          purpose_based_limits: ${HIPAA_PURPOSE_BASED_LIMITS:-true}
+        
+        use_limitations:
+          treatment_only: ${HIPAA_TREATMENT_ONLY:-false}
+          payment_operations: ${HIPAA_PAYMENT_OPERATIONS:-true}
+          healthcare_operations: ${HIPAA_HEALTHCARE_OPERATIONS:-true}
+          research_permitted: ${HIPAA_RESEARCH_PERMITTED:-false}
+    
+    # De-identification
+    de_identification:
+      # Safe Harbor Method
+      safe_harbor:
+        enabled: ${HIPAA_SAFE_HARBOR_ENABLED:-true}
+        
+        # Identifiers to Remove
+        identifiers_to_remove:
+          - "names"
+          - "geographic_subdivisions"
+          - "dates"
+          - "telephone_numbers"
+          - "fax_numbers"
+          - "email_addresses"
+          - "social_security_numbers"
+          - "medical_record_numbers"
+          - "health_plan_numbers"
+          - "account_numbers"
+          - "certificate_license_numbers"
+          - "vehicle_identifiers"
+          - "device_identifiers"
+          - "web_urls"
+          - "ip_addresses"
+          - "biometric_identifiers"
+          - "photographs"
+          - "unique_characteristics"
+        
+        # Date Handling
+        date_handling:
+          year_only: true
+          age_over_89_handling: "group_as_90_plus"
+          date_shifting: ${HIPAA_DATE_SHIFTING:-true}
+          shift_range_days: 365
+      
+      # Expert Determination
+      expert_determination:
+        enabled: ${HIPAA_EXPERT_DETERMINATION_ENABLED:-false}
+        statistical_methods: ["k_anonymity", "l_diversity", "t_closeness"]
+        risk_threshold: 0.05
+    
+    # Access Logging for PHI
+    phi_access_logging:
+      # Enhanced Logging
+      enhanced_logging:
+        enabled: ${HIPAA_ENHANCED_PHI_LOGGING:-true}
+        log_all_access: ${HIPAA_LOG_ALL_PHI_ACCESS:-true}
+        include_data_viewed: ${HIPAA_LOG_DATA_VIEWED:-true}
+        
+        # Patient Access Tracking
+        patient_access_tracking:
+          track_by_patient: ${HIPAA_TRACK_BY_PATIENT:-true}
+          access_history: ${HIPAA_ACCESS_HISTORY:-true}
+          access_alerts: ${HIPAA_ACCESS_ALERTS:-true}
+          
+          # Alert Triggers
+          alert_triggers:
+            - "bulk_access"
+            - "after_hours_access"
+            - "unusual_patterns"
+            - "vip_patient_access"
+            - "employee_own_record"
+
+  # Business Associate Agreements
+  business_associate_agreements:
+    # BAA Requirements
+    baa_requirements:
+      required: ${HIPAA_BAA_REQUIRED:-true}
+      template: "${HIPAA_BAA_TEMPLATE_URL:-https://spotify-ai-agent-health.com/legal/baa-template}"
+      
+      # Required Provisions
+      required_provisions:
+        - "permitted_uses_disclosures"
+        - "prohibited_uses_disclosures"
+        - "safeguards_requirement"
+        - "subcontractor_agreements"
+        - "individual_rights"
+        - "breach_notification"
+        - "termination_provisions"
+        - "return_destruction_phi"
+      
+      # Monitoring and Compliance
+      monitoring:
+        compliance_reviews: ${HIPAA_BA_COMPLIANCE_REVIEWS:-true}
+        review_frequency_months: ${HIPAA_BA_REVIEW_FREQUENCY:-12}
+        performance_monitoring: ${HIPAA_BA_PERFORMANCE_MONITORING:-true}
+    
+    # Vendor Management
+    vendor_management:
+      # Vendor Assessment
+      vendor_assessment:
+        security_assessment: ${HIPAA_VENDOR_SECURITY_ASSESSMENT:-true}
+        compliance_verification: ${HIPAA_VENDOR_COMPLIANCE_VERIFICATION:-true}
+        reference_checks: ${HIPAA_VENDOR_REFERENCE_CHECKS:-true}
+        
+        # Assessment Criteria
+        assessment_criteria:
+          - "hipaa_compliance_history"
+          - "security_certifications"
+          - "incident_history"
+          - "financial_stability"
+          - "technical_capabilities"
+      
+      # Ongoing Management
+      ongoing_management:
+        regular_reviews: ${HIPAA_VENDOR_REGULAR_REVIEWS:-true}
+        performance_metrics: ${HIPAA_VENDOR_PERFORMANCE_METRICS:-true}
+        contract_management: ${HIPAA_VENDOR_CONTRACT_MANAGEMENT:-true}
+
+  # Breach Notification
+  breach_notification:
+    # Breach Definition
+    breach_definition:
+      # Risk Assessment Factors
+      risk_factors:
+        - "nature_extent_phi"
+        - "person_who_used_disclosed"
+        - "phi_actually_acquired"
+        - "extent_risk_mitigated"
+      
+      # Breach Thresholds
+      thresholds:
+        individuals_affected: 500
+        risk_level: "low_probability_of_compromise"
+        notification_required: "reasonable_likelihood_of_harm"
+    
+    # Notification Requirements
+    notification_requirements:
+      # Individual Notification
+      individual_notification:
+        timeline_days: 60
+        method: "written_notice"
+        
+        # Required Content
+        content_requirements:
+          - "brief_description"
+          - "types_of_phi"
+          - "steps_individuals_should_take"
+          - "what_entity_is_doing"
+          - "contact_procedures"
+        
+        # Notification Methods
+        notification_methods:
+          first_choice: "written_notice"
+          urgent_situations: "telephone_call"
+          insufficient_contact_info: "substitute_notice"
+      
+      # HHS Notification
+      hhs_notification:
+        timeline_days: 60
+        method: "electronic_submission"
+        contact: "${HIPAA_HHS_CONTACT:-https://ocrportal.hhs.gov/ocr/breach/wizard_breach.jsf}"
+        
+        # Required Information
+        required_information:
+          - "entity_information"
+          - "breach_details"
+          - "individuals_affected"
+          - "phi_involved"
+          - "discovery_date"
+          - "notification_date"
+          - "safeguards_in_place"
+          - "corrective_actions"
+      
+      # Media Notification
+      media_notification:
+        threshold_individuals: 500
+        same_state_jurisdiction: true
+        timeline_days: 60
+        
+        # Media Outlets
+        media_outlets:
+          - "major_newspapers"
+          - "television_stations"
+          - "radio_stations"
+          - "online_news_outlets"
+    
+    # Breach Response
+    breach_response:
+      # Response Team
+      response_team:
+        privacy_officer: true
+        security_officer: true
+        legal_counsel: true
+        it_security: true
+        public_relations: false
+      
+      # Response Procedures
+      response_procedures:
+        immediate_containment: "within_1_hour"
+        risk_assessment: "within_24_hours"
+        notification_decision: "within_48_hours"
+        documentation: "within_72_hours"
+        
+        # Investigation Steps
+        investigation_steps:
+          - "identify_scope"
+          - "determine_cause"
+          - "assess_risk"
+          - "implement_containment"
+          - "preserve_evidence"
+          - "document_findings"
+          - "implement_corrective_actions"
+
+  # Patient Rights
+  patient_rights:
+    # Right of Access
+    right_of_access:
+      response_time_days: 30
+      extension_days: 30
+      fee_allowed: ${HIPAA_ACCESS_FEE_ALLOWED:-true}
+      
+      # Access Methods
+      access_methods:
+        - "electronic_copy"
+        - "paper_copy"
+        - "summary_explanation"
+      
+      # Fees
+      fees:
+        labor_cost_only: true
+        supplies_postage: true
+        preparation_summary: true
+        electronic_media_cost: false
+    
+    # Right to Amendment
+    right_to_amendment:
+      response_time_days: 60
+      extension_days: 30
+      denial_reasons: ["not_created_by_entity", "not_part_of_record", "inaccurate_incomplete"]
+      
+      # Amendment Process
+      amendment_process:
+        written_request_required: true
+        reason_required: true
+        denial_explanation_required: true
+        appeal_process: true
+    
+    # Right to Accounting of Disclosures
+    right_to_accounting:
+      response_time_days: 60
+      extension_days: 30
+      period_years: 6
+      fee_for_additional: true
+      
+      # Tracked Disclosures
+      tracked_disclosures:
+        - "disclosures_for_public_health"
+        - "disclosures_to_law_enforcement"
+        - "disclosures_for_research"
+        - "disclosures_required_by_law"
+        - "disclosures_for_specialized_purposes"
+    
+    # Right to Request Restrictions
+    right_to_restrictions:
+      accommodation_required: false
+      payment_restriction_required: true
+      
+      # Restriction Types
+      restriction_types:
+        - "use_disclosure_restrictions"
+        - "communication_restrictions"
+        - "payment_restrictions"
+
+  # Monitoring and Compliance
+  monitoring:
+    # Compliance Monitoring
+    compliance_monitoring:
+      enabled: ${HIPAA_COMPLIANCE_MONITORING:-true}
+      monitoring_frequency: "monthly"
+      
+      # Key Performance Indicators
+      kpis:
+        - metric: "breach_response_time"
+          target: "1_hour"
+          threshold: "95%"
+        
+        - metric: "access_request_response_time"
+          target: "30_days"
+          threshold: "100%"
+        
+        - metric: "workforce_training_completion"
+          target: "100%"
+          threshold: "100%"
+        
+        - metric: "vendor_compliance_rate"
+          target: "100%"
+          threshold: "95%"
+        
+        - metric: "audit_log_review_frequency"
+          target: "weekly"
+          threshold: "100%"
+    
+    # Risk Assessment
+    risk_assessment:
+      frequency: "annually"
+      methodology: "nist_cybersecurity_framework"
+      scope: "all_phi_systems"
+      
+      # Assessment Components
+      assessment_components:
+        - "asset_inventory"
+        - "threat_identification"
+        - "vulnerability_assessment"
+        - "risk_analysis"
+        - "control_effectiveness"
+        - "residual_risk_evaluation"
+    
+    # Audit and Review
+    audit_review:
+      internal_audit:
+        frequency: "quarterly"
+        scope: "full_hipaa_compliance"
+        auditor: "internal_audit_team"
+      
+      external_audit:
+        frequency: "annually"
+        scope: "hipaa_compliance_assessment"
+        auditor: "external_healthcare_consultant"
+      
+      regulatory_cooperation:
+        hhs_cooperation: ${HIPAA_HHS_COOPERATION:-true}
+        ocr_cooperation: ${HIPAA_OCR_COOPERATION:-true}
+        response_commitment: "5_business_days"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: false
+        phi_processing: false
+      
+      technical_safeguards:
+        access_control:
+          user_authentication:
+            multi_factor_authentication: false
+            password_requirements: false
+        
+        audit_controls:
+          audit_logging:
+            enabled: true
+            real_time_monitoring: false
+      
+      phi_protection:
+        data_classification:
+          handling_rules:
+            minimum_necessary:
+              enabled: false
+    
+    testing:
+      general:
+        enabled: true
+        phi_processing: false
+      
+      phi_protection:
+        de_identification:
+          safe_harbor:
+            enabled: true
+        
+        data_classification:
+          phi_categories:
+            demographic_phi:
+              sensitivity: "low"
+            clinical_phi:
+              sensitivity: "low"
+    
+    production:
+      general:
+        enabled: true
+        phi_processing: true
+      
+      administrative_safeguards:
+        workforce_training:
+          required: true
+          frequency_months: 12
+        
+        information_access_management:
+          access_control:
+            unique_user_identification: true
+            emergency_access_procedures: true
+      
+      technical_safeguards:
+        access_control:
+          user_authentication:
+            multi_factor_authentication: true
+            password_requirements: true
+        
+        audit_controls:
+          audit_logging:
+            enabled: true
+            real_time_monitoring: true
+        
+        transmission_security:
+          encryption_in_transit:
+            required: true
+            protocols: ["TLS_1.3"]
+      
+      monitoring:
+        compliance_monitoring:
+          enabled: true
+          monitoring_frequency: "weekly"
+        
+        audit_review:
+          internal_audit:
+            frequency: "monthly"
+          external_audit:
+            frequency: "quarterly"

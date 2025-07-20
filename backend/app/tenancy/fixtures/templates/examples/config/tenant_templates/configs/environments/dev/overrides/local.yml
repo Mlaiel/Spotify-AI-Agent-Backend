@@ -1,0 +1,850 @@
+# =============================================================================
+# Enhanced Local Development Environment Overrides
+# =============================================================================
+# Ultra-advanced configuration for local development workstation
+# Optimized for developer productivity and rapid iteration
+# =============================================================================
+
+_metadata:
+  priority: 2
+  author: "Expert Development Team"
+  description: "High-performance local development configuration with hot-reload and debugging"
+  tags: ["local", "development", "workstation", "productivity"]
+  dependencies: ["base_development"]
+  conditions:
+    environment:
+      LOCAL_DEV: "true"
+    context: ["local", "workstation", "personal"]
+
+development_local:
+  # Advanced Application Configuration for Local Development
+  application:
+    # High-Performance API Configuration
+    api:
+      fastapi:
+        # Local development server configuration
+        host: "${DEV_LOCAL_HOST:-127.0.0.1}"
+        port: ${DEV_LOCAL_PORT:-8001}
+        workers: ${DEV_LOCAL_WORKERS:-1}  # Single worker for debugging
+        worker_class: "uvicorn.workers.UvicornWorker"
+        
+        # Performance optimizations for local development
+        performance:
+          keepalive_timeout: 30
+          max_requests: 0  # No limit for development
+          max_requests_jitter: 0
+          preload_app: false  # Allow hot reload
+          worker_connections: 100
+          
+        # Advanced development features
+        features:
+          auto_reload: ${DEV_LOCAL_RELOAD:-true}
+          debug: ${DEV_LOCAL_DEBUG:-true}
+          hot_reload_dirs:
+            - "./app"
+            - "./config"
+            - "./api"
+            - "./services"
+            - "./models"
+          hot_reload_extensions:
+            - ".py"
+            - ".yml"
+            - ".yaml"
+            - ".json"
+            - ".toml"
+          reload_delay: 0.25  # Fast reload for development
+          
+        # Enhanced logging for local development
+        logging:
+          level: ${DEV_LOCAL_LOG_LEVEL:-DEBUG}
+          format: "colored"  # Rich colored output for terminal
+          handlers:
+            - type: "stream"
+              stream: "stdout"
+              formatter: "colored"
+            - type: "file"
+              filename: "./logs/application.log"
+              max_bytes: 52428800  # 50MB
+              backup_count: 3
+              formatter: "detailed"
+          
+        # Comprehensive CORS for local development
+        cors:
+          allow_origins:
+            - "http://localhost:3000"
+            - "http://localhost:3001"
+            - "http://localhost:3002"
+            - "http://127.0.0.1:3000"
+            - "http://127.0.0.1:3001"
+            - "http://127.0.0.1:3002"
+            - "http://localhost:8080"
+            - "http://localhost:8081"
+            - "http://localhost:5173"  # Vite dev server
+            - "http://localhost:5174"  # Alternative Vite port
+            - "http://localhost:4200"  # Angular dev server
+            - "http://localhost:3333"  # Next.js alternative port
+          allow_credentials: true
+          allow_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+          allow_headers: ["*"]
+          expose_headers: ["*"]
+          max_age: 3600
+          
+        # Health check configuration for local
+        health:
+          endpoint: "/health"
+          detailed: true  # Show detailed health info in development
+          startup_probe:
+            enabled: false  # Not needed for local development
+          liveness_probe:
+            enabled: false
+          readiness_probe:
+            enabled: false
+            
+    # General application configuration
+    general:
+      name: "${DEV_LOCAL_APP_NAME:-spotify-ai-agent-local}"
+      version: "${DEV_LOCAL_APP_VERSION:-1.0.0-local}"
+      environment: "development_local"
+      timezone: "${TZ:-UTC}"
+      
+      # Local development settings
+      local:
+        user: "${USER:-developer}"
+        workspace: "${PWD:-/workspace}"
+        python_path: "${PYTHONPATH:-./}"
+        
+      # Development-specific settings
+      development:
+        auto_restart: true
+        file_watcher: true
+        code_profiling: ${DEV_LOCAL_PROFILING:-false}
+        memory_profiling: ${DEV_LOCAL_MEMORY_PROFILING:-false}
+        
+      # Feature flags for local development
+      features:
+        hot_reload: true
+        debug_mode: true
+        profiling: ${DEV_LOCAL_ENABLE_PROFILING:-true}
+        metrics_collection: true
+        distributed_tracing: ${DEV_LOCAL_ENABLE_TRACING:-true}
+        interactive_debugger: true
+
+  # Advanced Database Configuration for Local Development
+  database:
+    # PostgreSQL optimized for local development
+    postgresql:
+      # Local database connection
+      host: "${DEV_LOCAL_DB_HOST:-localhost}"
+      port: ${DEV_LOCAL_DB_PORT:-5433}  # Different port to avoid conflicts
+      database: "${DEV_LOCAL_DB_NAME:-spotify_ai_agent_local}"
+      username: "${DEV_LOCAL_DB_USER:-dev_user}"
+      password: "${DEV_LOCAL_DB_PASSWORD:-dev_local_pass}"
+      
+      # Optimized connection pool for local development
+      pool:
+        min_size: ${DEV_LOCAL_DB_POOL_MIN:-1}
+        max_size: ${DEV_LOCAL_DB_POOL_MAX:-5}
+        timeout: ${DEV_LOCAL_DB_TIMEOUT:-30}
+        recycle_timeout: 1800
+        pool_pre_ping: true
+        pool_reset_on_return: "rollback"
+        
+      # SSL configuration (typically disabled for local)
+      ssl:
+        enabled: ${DEV_LOCAL_DB_SSL_ENABLED:-false}
+        ca_cert_path: ""
+        client_cert_path: ""
+        client_key_path: ""
+        
+      # Enhanced features for local development
+      features:
+        echo_queries: ${DEV_LOCAL_DB_ECHO:-true}
+        auto_migrate: ${DEV_LOCAL_DB_AUTO_MIGRATE:-true}
+        reset_on_start: ${DEV_LOCAL_DB_RESET:-false}
+        seed_data: ${DEV_LOCAL_DB_SEED:-true}
+        create_test_data: ${DEV_LOCAL_DB_CREATE_TEST_DATA:-true}
+        wait_for_connection: false  # Fail fast for local development
+        connection_retry: 3
+        retry_delay: 1
+        health_check_interval: 60
+        query_logging: true
+        explain_analyze: ${DEV_LOCAL_DB_EXPLAIN:-false}
+        
+      # Local development database extensions
+      extensions:
+        - "uuid-ossp"
+        - "pgcrypto"
+        - "pg_trgm"
+        - "btree_gin"
+        - "pg_stat_statements"  # For query analysis
+        
+      # Backup configuration for local development
+      backup:
+        enabled: ${DEV_LOCAL_DB_BACKUP_ENABLED:-false}
+        interval: "0 */6 * * *"  # Every 6 hours
+        retention_days: 3
+        storage_path: "./backups/postgresql"
+        compression: true
+        
+    # Redis configuration for local development
+    redis:
+      # Local Redis connection
+      host: "${DEV_LOCAL_REDIS_HOST:-localhost}"
+      port: ${DEV_LOCAL_REDIS_PORT:-6380}  # Different port to avoid conflicts
+      password: "${DEV_LOCAL_REDIS_PASSWORD:-}"
+      database: ${DEV_LOCAL_REDIS_DB:-1}  # Different DB for local
+      
+      # Connection pool for local development
+      pool:
+        max_connections: ${DEV_LOCAL_REDIS_POOL_MAX:-10}
+        retry_on_timeout: true
+        socket_keepalive: true
+        socket_keepalive_options: {}
+        socket_connect_timeout: 5
+        socket_timeout: 5
+        
+      # Advanced Redis features for local development
+      features:
+        compression: ${DEV_LOCAL_REDIS_COMPRESSION:-false}  # Disabled for speed
+        serialization: "json"  # Human-readable for debugging
+        key_prefix: "${DEV_LOCAL_REDIS_PREFIX:-local:}"
+        
+      # Cache configuration
+      cache:
+        default_timeout: 300
+        key_prefix: "cache:"
+        version: 1
+        
+      # Session storage
+      sessions:
+        timeout: 3600
+        key_prefix: "session:"
+        cookie_secure: false  # HTTP for local development
+        
+    # SQLite for lightweight local development (optional)
+    sqlite:
+      enabled: ${DEV_LOCAL_SQLITE_ENABLED:-false}
+      database_path: "./data/local_dev.db"
+      
+      # SQLite-specific features
+      features:
+        wal_mode: true
+        foreign_keys: true
+        auto_vacuum: "FULL"
+        
+    # MongoDB for document storage (optional)
+    mongodb:
+      enabled: ${DEV_LOCAL_MONGO_ENABLED:-false}
+      host: "${DEV_LOCAL_MONGO_HOST:-localhost}"
+      port: ${DEV_LOCAL_MONGO_PORT:-27018}  # Different port
+      database: "${DEV_LOCAL_MONGO_DB:-spotify_ai_local}"
+      username: "${DEV_LOCAL_MONGO_USER:-}"
+      password: "${DEV_LOCAL_MONGO_PASSWORD:-}"
+      
+      # Connection options
+      options:
+        max_pool_size: 10
+        min_pool_size: 1
+        max_idle_time_ms: 30000
+        server_selection_timeout_ms: 3000
+
+  # Advanced Security Configuration for Local Development
+  security:
+    # Authentication configuration
+    authentication:
+      jwt:
+        secret_key: "${DEV_LOCAL_JWT_SECRET:-local-dev-secret-key-not-for-production}"
+        algorithm: "HS256"
+        access_token_expire_minutes: 60  # Longer for development
+        refresh_token_expire_days: 30    # Longer for development
+        
+      oauth2:
+        enabled: ${DEV_LOCAL_OAUTH2_ENABLED:-true}
+        google:
+          client_id: "${DEV_LOCAL_GOOGLE_CLIENT_ID:-}"
+          client_secret: "${DEV_LOCAL_GOOGLE_CLIENT_SECRET:-}"
+        spotify:
+          client_id: "${DEV_LOCAL_SPOTIFY_CLIENT_ID:-}"
+          client_secret: "${DEV_LOCAL_SPOTIFY_CLIENT_SECRET:-}"
+          
+    # Encryption settings (relaxed for local development)
+    encryption:
+      key: "${DEV_LOCAL_ENCRYPTION_KEY:-local-dev-encryption-key-32-chars}"
+      algorithm: "AES-256-GCM"
+      
+    # Rate limiting (relaxed for local development)
+    rate_limiting:
+      enabled: ${DEV_LOCAL_RATE_LIMITING:-false}
+      redis_url: "redis://${DEV_LOCAL_REDIS_HOST:-localhost}:${DEV_LOCAL_REDIS_PORT:-6380}"
+      requests_per_minute: 10000  # Very high limit for development
+      burst_limit: 1000
+      
+    # HTTPS configuration (typically disabled for local)
+    https:
+      enabled: ${DEV_LOCAL_HTTPS_ENABLED:-false}
+      cert_path: "./certs/local-dev.crt"
+      key_path: "./certs/local-dev.key"
+      
+    # Security headers (relaxed for local development)
+    headers:
+      x_frame_options: "SAMEORIGIN"
+      x_content_type_options: "nosniff"
+      x_xss_protection: "1; mode=block"
+      strict_transport_security: ""  # Disabled for HTTP
+
+  # Machine Learning Configuration for Local Development
+  ml:
+    # TensorFlow configuration
+    tensorflow:
+      enabled: ${DEV_LOCAL_TF_ENABLED:-true}
+      gpu_enabled: ${DEV_LOCAL_TF_GPU_ENABLED:-false}
+      memory_growth: true
+      inter_op_parallelism_threads: 2
+      intra_op_parallelism_threads: 4
+      log_device_placement: ${DEV_LOCAL_TF_LOG_DEVICES:-false}
+      
+    # PyTorch configuration
+    pytorch:
+      enabled: ${DEV_LOCAL_PYTORCH_ENABLED:-true}
+      cuda_enabled: ${DEV_LOCAL_PYTORCH_CUDA:-false}
+      num_threads: ${DEV_LOCAL_PYTORCH_THREADS:-4}
+      
+    # Hugging Face configuration
+    huggingface:
+      cache_dir: "./models/huggingface"
+      offline_mode: ${DEV_LOCAL_HF_OFFLINE:-false}
+      
+    # Model serving configuration
+    serving:
+      enabled: ${DEV_LOCAL_ML_SERVING:-true}
+      model_path: "./models"
+      batch_size: ${DEV_LOCAL_ML_BATCH_SIZE:-16}
+      max_batch_delay: 50  # milliseconds
+      
+    # Spleeter configuration for audio separation
+    spleeter:
+      enabled: ${DEV_LOCAL_SPLEETER_ENABLED:-true}
+      model_path: "./models/spleeter"
+      stems: ["vocals", "accompaniment"]  # Reduced for faster processing
+      sample_rate: 22050  # Reduced for faster processing in development
+      
+  # Enhanced Monitoring and Observability for Local Development
+  monitoring:
+    # Prometheus metrics
+    prometheus:
+      enabled: ${DEV_LOCAL_PROMETHEUS_ENABLED:-true}
+      port: ${DEV_LOCAL_PROMETHEUS_PORT:-9091}  # Different port
+      path: "/metrics"
+      
+    # Grafana dashboards
+    grafana:
+      enabled: ${DEV_LOCAL_GRAFANA_ENABLED:-false}
+      port: ${DEV_LOCAL_GRAFANA_PORT:-3001}
+      
+    # Jaeger tracing
+    jaeger:
+      enabled: ${DEV_LOCAL_JAEGER_ENABLED:-false}
+      agent_host: "${DEV_LOCAL_JAEGER_AGENT_HOST:-localhost}"
+      agent_port: ${DEV_LOCAL_JAEGER_AGENT_PORT:-6832}
+      
+    # Enhanced health checks
+    health_checks:
+      interval: 60  # Less frequent for local
+      timeout: 5
+      retries: 2
+      start_period: 30
+      
+  # Advanced Development Tools Configuration
+  development:
+    # Code quality tools
+    code_quality:
+      black:
+        enabled: true
+        line_length: 88
+        target_versions: ["py39", "py310", "py311"]
+        skip_string_normalization: false
+        
+      isort:
+        enabled: true
+        profile: "black"
+        multi_line_output: 3
+        line_length: 88
+        
+      flake8:
+        enabled: true
+        max_line_length: 88
+        ignore: ["E203", "W503", "E501"]
+        
+      mypy:
+        enabled: ${DEV_LOCAL_MYPY_ENABLED:-true}
+        strict: false
+        ignore_missing_imports: true
+        
+    # Testing configuration
+    testing:
+      pytest:
+        enabled: true
+        addopts: "-v --tb=short --strict-markers --durations=10"
+        markers:
+          - "slow: marks tests as slow"
+          - "integration: marks tests as integration tests"
+          - "unit: marks tests as unit tests"
+          - "local: marks tests for local development only"
+        
+      coverage:
+        enabled: true
+        min_percentage: 80
+        exclude_lines:
+          - "pragma: no cover"
+          - "def __repr__"
+          - "raise AssertionError"
+          - "raise NotImplementedError"
+          
+    # Documentation
+    documentation:
+      sphinx:
+        enabled: ${DEV_LOCAL_DOCS_ENABLED:-true}
+        port: ${DEV_LOCAL_DOCS_PORT:-8082}
+        auto_build: true
+        
+  # Performance Optimization for Local Development
+  performance:
+    # Caching strategies
+    caching:
+      application_cache:
+        backend: "memory"  # Fast memory cache for local
+        timeout: 300
+        key_prefix: "app_cache:"
+        
+      query_cache:
+        enabled: true
+        timeout: 600
+        
+    # Async configuration
+    async_config:
+      max_workers: ${DEV_LOCAL_ASYNC_WORKERS:-5}
+      executor_type: "thread"
+      
+    # Background tasks
+    background_tasks:
+      celery:
+        enabled: ${DEV_LOCAL_CELERY_ENABLED:-false}
+        broker_url: "redis://${DEV_LOCAL_REDIS_HOST:-localhost}:${DEV_LOCAL_REDIS_PORT:-6380}/3"
+        result_backend: "redis://${DEV_LOCAL_REDIS_HOST:-localhost}:${DEV_LOCAL_REDIS_PORT:-6380}/4"
+        
+  # Storage Configuration
+  storage:
+    # File storage
+    files:
+      backend: "local"
+      base_path: "./data/files"
+      max_file_size: 52428800  # 50MB
+      allowed_extensions:
+        - ".mp3"
+        - ".wav"
+        - ".flac"
+        - ".m4a"
+        - ".aac"
+        - ".ogg"
+        - ".jpg"
+        - ".jpeg"
+        - ".png"
+        - ".gif"
+        - ".pdf"
+        - ".txt"
+        - ".json"
+        - ".yaml"
+        - ".yml"
+        
+    # Temporary file storage
+    temp_storage:
+      enabled: true
+      base_path: "./tmp"
+      cleanup_interval: 3600  # 1 hour
+      max_age: 86400  # 24 hours
+      
+  # External Services Configuration
+  external_services:
+    # Spotify API
+    spotify_api:
+      enabled: ${DEV_LOCAL_SPOTIFY_API_ENABLED:-true}
+      mock_enabled: ${DEV_LOCAL_SPOTIFY_MOCK:-true}
+      mock_data_path: "./fixtures/spotify_mock_data_local.json"
+      timeout: 30
+      
+    # ML Services
+    ml_services:
+      enabled: ${DEV_LOCAL_ML_SERVICES_ENABLED:-true}
+      
+      spleeter:
+        enabled: ${DEV_LOCAL_SPLEETER_SERVICE_ENABLED:-false}
+        endpoint: "${DEV_LOCAL_SPLEETER_ENDPOINT:-http://localhost:8080}"
+        mock_enabled: true
+        timeout: 60
+        
+  # Debugging Configuration
+  debugging:
+    # Debugger settings
+    debugger:
+      enabled: ${DEV_LOCAL_DEBUGGER_ENABLED:-true}
+      type: "pdb"  # Can be 'pdb', 'ipdb', or 'pudb'
+      
+    # Profiling settings
+    profiling:
+      enabled: ${DEV_LOCAL_PROFILING_ENABLED:-false}
+      profiler: "cProfile"
+      output_dir: "./profiles"
+      
+    # Memory debugging
+    memory_debugging:
+      enabled: ${DEV_LOCAL_MEMORY_DEBUG:-false}
+      profiler: "tracemalloc"
+      
+  # Environment Variables for Local Development
+  environment_variables:
+    # Application variables
+    ENVIRONMENT: "development_local"
+    DEBUG: "${DEV_LOCAL_DEBUG:-true}"
+    LOG_LEVEL: "${DEV_LOCAL_LOG_LEVEL:-DEBUG}"
+    
+    # Python variables
+    PYTHONPATH: "${PWD}/app:${PWD}/src:${PYTHONPATH:-}"
+    PYTHONDONTWRITEBYTECODE: "1"
+    PYTHONUNBUFFERED: "1"
+    
+    # Development variables
+    FLASK_ENV: "development"
+    DJANGO_SETTINGS_MODULE: "config.settings.local"
+    
+    # ML variables
+    TRANSFORMERS_CACHE: "./models/huggingface"
+    TORCH_HOME: "./models/pytorch"
+    
+  # Hot Reload Configuration
+  hot_reload:
+    # File watching
+    file_watcher:
+      enabled: true
+      polling: false  # Use native file system events
+      polling_interval: 1.0
+      
+    # Watched directories
+    watch_directories:
+      - "./app"
+      - "./config"
+      - "./api"
+      - "./services"
+      - "./models"
+      - "./utils"
+      
+    # Ignored patterns
+    ignore_patterns:
+      - "*.pyc"
+      - "__pycache__"
+      - "*.log"
+      - ".git"
+      - ".pytest_cache"
+      - "node_modules"
+      - ".vscode"
+      
+    # Reload triggers
+    reload_triggers:
+      - "*.py"
+      - "*.yml"
+      - "*.yaml"
+      - "*.json"
+      - "*.toml"
+    
+    # Redis local
+    redis:
+      host: "${DEV_LOCAL_REDIS_HOST:-localhost}"
+      port: ${DEV_LOCAL_REDIS_PORT:-6380}  # Port différent
+      database: ${DEV_LOCAL_REDIS_DB:-1}
+      password: "${DEV_LOCAL_REDIS_PASSWORD:-}"
+      
+      # Configuration locale
+      configuration:
+        decode_responses: true
+        max_connections: 5
+
+  # Sécurité allégée pour développement local
+  security:
+    authentication:
+      jwt:
+        secret_key: "${DEV_LOCAL_JWT_SECRET:-local-dev-secret-key-very-long-for-security}"
+        algorithm: "HS256"
+        access_token_expire: 7200  # 2 heures pour développement
+        refresh_token_expire: 1209600  # 14 jours
+        
+        # Features de développement local
+        features:
+          debug_tokens: true
+          long_expiry: true
+          skip_verification: false  # Même en local, on garde la vérification
+    
+    # Chiffrement simplifié pour développement local
+    encryption:
+      data_encryption:
+        enabled: false  # Désactivé pour simplicité en local
+        key: "${DEV_LOCAL_ENCRYPTION_KEY:-local-dev-encryption-key}"
+      
+      tls:
+        enabled: false  # HTTP en local
+        verify: false
+
+  # Monitoring local
+  observability:
+    metrics:
+      enabled: true
+      
+      prometheus:
+        enabled: false  # Pas de Prometheus en local
+        port: ${DEV_LOCAL_PROMETHEUS_PORT:-9091}
+    
+    logging:
+      level: "DEBUG"
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      
+      outputs:
+        console:
+          enabled: true
+          colorize: true
+          
+        file:
+          enabled: true
+          path: "logs/dev_local.log"
+          rotation: true
+      
+      # Loggers spécifiques au développement local
+      loggers:
+        root:
+          level: "DEBUG"
+        
+        sqlalchemy:
+          level: "DEBUG"  # Affiche toutes les requêtes SQL
+        
+        uvicorn:
+          level: "DEBUG"
+        
+        fastapi:
+          level: "DEBUG"
+        
+        # Logger personnalisé pour le développement
+        "spotify_ai_agent":
+          level: "DEBUG"
+
+  # Outils de développement local
+  development_tools:
+    # Configuration spécifique au développement local
+    code_quality:
+      linting:
+        enabled: true
+        
+        python:
+          flake8: true
+          black: true
+          isort: true
+          mypy: true
+          pylint: true  # Ajout de pylint pour développement local
+    
+    # Tests en développement local
+    testing:
+      enabled: true
+      
+      configuration:
+        auto_run: false  # Pas d'auto-run en local pour éviter la confusion
+        coverage: true
+        parallel: false  # Sequential pour debugging
+        verbose: true
+        
+        # Base de données de test
+        test_databases:
+          enabled: true
+          reset_between_tests: true
+          use_transactions: true
+    
+    # Serveur de développement local
+    development_server:
+      hot_reload:
+        enabled: true
+        watch_dirs:
+          - "app"
+          - "config"
+          - "tests"
+          - "migrations"  # Ajout pour surveillance des migrations
+        exclude_patterns:
+          - "*.pyc"
+          - "__pycache__"
+          - ".git"
+          - "*.log"
+          - ".pytest_cache"
+        
+        # Polling interval pour le rechargement
+        poll_interval: 1.0
+      
+      # Auto-migration en développement local
+      auto_migration:
+        enabled: true
+        create_migration: false  # Évite la création automatique
+        apply_migration: true
+        backup_before_migration: true
+    
+    # Debugging avancé pour développement local
+    debugging:
+      debug_server:
+        enabled: true
+        port: ${DEV_LOCAL_DEBUG_PORT:-5679}
+        host: "127.0.0.1"
+        
+      profiling:
+        enabled: true
+        profiler: "py-spy"
+        output_dir: "profiling_output"
+        
+      memory_debugging:
+        enabled: true
+        tracker: "tracemalloc"
+        
+      # Debug spécifique au développement local
+      local_features:
+        request_logging: true
+        response_logging: true
+        sql_query_logging: true
+        cache_debugging: true
+
+  # Services externes mockés pour développement local
+  external_services:
+    spotify_api:
+      enabled: true
+      
+      configuration:
+        # Mock complet en développement local
+        mock_enabled: true
+        mock_data_path: "fixtures/spotify_mock_data_local.json"
+        mock_delay: 0.1  # Simulation de latence réseau
+        
+        # Configuration réelle pour tests occasionnels
+        real_api:
+          enabled: false
+          base_url: "https://api.spotify.com/v1"
+          timeout: 10
+    
+    ml_services:
+      enabled: true
+      
+      spleeter:
+        enabled: true
+        
+        # Mock en développement local
+        mock_enabled: true
+        mock_processing_time: 2.0  # Simulation du temps de traitement
+        mock_data_path: "fixtures/spleeter_mock_data_local.json"
+        
+        # Service réel pour tests
+        real_service:
+          enabled: false
+          endpoint: "http://localhost:8082"
+
+  # Configuration réseau locale
+  networking:
+    services:
+      api_service:
+        type: "ClusterIP"
+        port: ${DEV_LOCAL_PORT:-8001}
+        target_port: ${DEV_LOCAL_PORT:-8001}
+        
+        # Features de développement local
+        features:
+          debug_endpoints: true
+          health_check_endpoint: true
+          metrics_endpoint: true
+          admin_endpoints: true  # Endpoints d'administration pour développement
+      
+      # Service frontend local
+      frontend_service:
+        type: "ClusterIP"
+        port: ${DEV_LOCAL_FRONTEND_PORT:-3001}
+        target_port: ${DEV_LOCAL_FRONTEND_PORT:-3001}
+
+  # Gestion des données locales
+  data_management:
+    test_data:
+      enabled: true
+      
+      data_sources:
+        seed_data:
+          enabled: true
+          path: "fixtures/seed_data_local.sql"
+          
+        sample_data:
+          enabled: true
+          path: "fixtures/sample_data_local"
+          auto_refresh: true  # Refresh automatique des données de test
+          
+        mock_data:
+          enabled: true
+          path: "fixtures/mock_data_local"
+          
+        # Données spécifiques au développement local
+        local_data:
+          enabled: true
+          path: "fixtures/local_dev_data"
+          custom_scenarios: true
+
+  # Variables d'environnement spécifiques au développement local
+  environment_variables:
+    application:
+      ENVIRONMENT: "development_local"
+      DEBUG: "true"
+      LOG_LEVEL: "DEBUG"
+      
+      # Configuration locale
+      LOCAL_DEV_MODE: "true"
+      DEV_USER_NAME: "${USER:-developer}"
+      DEV_WORKSPACE: "${PWD:-/workspace}"
+      
+      # API locale
+      API_HOST: "127.0.0.1"
+      API_PORT: "${DEV_LOCAL_PORT:-8001}"
+      API_WORKERS: "1"
+      
+      # Base de données locale
+      DATABASE_URL: "postgresql://${DEV_LOCAL_DB_USER:-dev_user}:${DEV_LOCAL_DB_PASSWORD:-dev_local_pass}@${DEV_LOCAL_DB_HOST:-localhost}:${DEV_LOCAL_DB_PORT:-5433}/${DEV_LOCAL_DB_NAME:-spotify_ai_agent_local}"
+      REDIS_URL: "redis://${DEV_LOCAL_REDIS_HOST:-localhost}:${DEV_LOCAL_REDIS_PORT:-6380}/${DEV_LOCAL_REDIS_DB:-1}"
+      
+      # Sécurité locale
+      SECRET_KEY: "${DEV_LOCAL_SECRET_KEY:-local-dev-secret-key-change-for-your-setup}"
+      JWT_SECRET_KEY: "${DEV_LOCAL_JWT_SECRET:-local-dev-jwt-secret-key}"
+      
+      # Features locales
+      ENABLE_DEBUG_TOOLBAR: "true"
+      ENABLE_HOT_RELOAD: "true"
+      ENABLE_AUTO_MIGRATION: "true"
+      ENABLE_MOCK_SERVICES: "true"
+      ENABLE_SQL_LOGGING: "true"
+      ENABLE_REQUEST_LOGGING: "true"
+    
+    # Variables spécifiques au développement local
+    local_development:
+      # Outils de développement
+      PYTHONPATH: "./app:./config:./tests:./fixtures"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      
+      # Debugging
+      PYTHONDEBUG: "1"
+      DEBUG_MODE: "true"
+      VERBOSE_LOGGING: "true"
+      
+      # Configuration IDE
+      IDE_PROJECT_PATH: "${PWD}"
+      IDE_PYTHON_PATH: "${VIRTUAL_ENV}/bin/python"
+      
+      # Configuration de développement
+      DEV_RELOAD_INCLUDES: "app,config,tests"
+      DEV_RELOAD_EXCLUDES: "logs,__pycache__,.git"
+      
+      # Performance locale
+      DEV_ASYNC_POOL_SIZE: "5"
+      DEV_SYNC_POOL_SIZE: "3"
+      DEV_REQUEST_TIMEOUT: "30"

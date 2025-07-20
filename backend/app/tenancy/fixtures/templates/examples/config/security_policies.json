@@ -1,0 +1,508 @@
+{
+  "security_policies": {
+    "version": "1.0.0",
+    "last_updated": "2024-01-15T10:00:00Z",
+    "created_by": "fahed.mlaiel",
+    "description": "Politiques de sécurité enterprise pour le système de gestion de templates",
+    
+    "access_control": {
+      "authentication": {
+        "methods": ["oauth2", "jwt", "api_key", "mtls"],
+        "multi_factor_required": true,
+        "session_timeout_minutes": 30,
+        "password_policy": {
+          "min_length": 12,
+          "require_uppercase": true,
+          "require_lowercase": true,
+          "require_numbers": true,
+          "require_special_chars": true,
+          "password_history": 12,
+          "max_age_days": 90
+        },
+        "account_lockout": {
+          "max_failed_attempts": 3,
+          "lockout_duration_minutes": 30,
+          "progressive_delays": true
+        }
+      },
+      
+      "authorization": {
+        "model": "rbac",
+        "roles": {
+          "template_admin": {
+            "description": "Administrateur des templates avec accès complet",
+            "permissions": [
+              "template:create",
+              "template:read",
+              "template:update",
+              "template:delete",
+              "template:deploy",
+              "template:validate",
+              "registry:manage",
+              "security:configure",
+              "audit:view"
+            ]
+          },
+          "template_developer": {
+            "description": "Développeur de templates avec permissions de création/modification",
+            "permissions": [
+              "template:create",
+              "template:read",
+              "template:update",
+              "template:validate",
+              "template:test"
+            ]
+          },
+          "template_operator": {
+            "description": "Opérateur avec permissions de déploiement et monitoring",
+            "permissions": [
+              "template:read",
+              "template:deploy",
+              "template:validate",
+              "monitoring:view",
+              "health:check"
+            ]
+          },
+          "template_viewer": {
+            "description": "Utilisateur en lecture seule",
+            "permissions": [
+              "template:read",
+              "template:list"
+            ]
+          }
+        },
+        "permissions": {
+          "template:create": "Créer de nouveaux templates",
+          "template:read": "Lire les templates existants",
+          "template:update": "Modifier les templates",
+          "template:delete": "Supprimer les templates",
+          "template:deploy": "Déployer les templates",
+          "template:validate": "Valider les templates",
+          "template:test": "Tester les templates",
+          "template:list": "Lister les templates",
+          "registry:manage": "Gérer le registre des templates",
+          "security:configure": "Configurer les paramètres de sécurité",
+          "audit:view": "Consulter les logs d'audit",
+          "monitoring:view": "Consulter les métriques de monitoring",
+          "health:check": "Vérifier l'état de santé du système"
+        }
+      },
+      
+      "api_security": {
+        "rate_limiting": {
+          "enabled": true,
+          "global_limits": {
+            "requests_per_minute": 1000,
+            "requests_per_hour": 10000,
+            "requests_per_day": 100000
+          },
+          "per_user_limits": {
+            "requests_per_minute": 100,
+            "requests_per_hour": 1000,
+            "requests_per_day": 10000
+          },
+          "endpoint_limits": {
+            "/api/v1/templates/create": {
+              "requests_per_minute": 10,
+              "requests_per_hour": 100
+            },
+            "/api/v1/templates/deploy": {
+              "requests_per_minute": 5,
+              "requests_per_hour": 50
+            }
+          }
+        },
+        
+        "input_validation": {
+          "strict_mode": true,
+          "sanitization": true,
+          "max_request_size_mb": 10,
+          "allowed_file_types": [".json", ".yaml", ".yml"],
+          "blocked_patterns": [
+            "eval\\(",
+            "exec\\(",
+            "system\\(",
+            "__import__",
+            "subprocess",
+            "<script",
+            "javascript:",
+            "data:text/html"
+          ]
+        },
+        
+        "output_filtering": {
+          "sensitive_data_masking": true,
+          "pii_detection": true,
+          "error_message_sanitization": true,
+          "debug_info_removal": true
+        }
+      }
+    },
+    
+    "data_protection": {
+      "encryption": {
+        "at_rest": {
+          "enabled": true,
+          "algorithm": "AES-256-GCM",
+          "key_management": "aws_kms",
+          "key_rotation_days": 90,
+          "backup_encryption": true
+        },
+        "in_transit": {
+          "enabled": true,
+          "tls_version": "1.3",
+          "cipher_suites": [
+            "TLS_AES_256_GCM_SHA384",
+            "TLS_CHACHA20_POLY1305_SHA256",
+            "TLS_AES_128_GCM_SHA256"
+          ],
+          "certificate_validation": true,
+          "hsts_enabled": true
+        },
+        "in_memory": {
+          "enabled": true,
+          "secure_heap": true,
+          "memory_clearing": true
+        }
+      },
+      
+      "data_classification": {
+        "levels": {
+          "public": {
+            "description": "Données publiques sans restriction",
+            "encryption_required": false,
+            "access_logging": false
+          },
+          "internal": {
+            "description": "Données internes à l'organisation",
+            "encryption_required": true,
+            "access_logging": true
+          },
+          "confidential": {
+            "description": "Données confidentielles avec accès restreint",
+            "encryption_required": true,
+            "access_logging": true,
+            "approval_required": true
+          },
+          "restricted": {
+            "description": "Données hautement sensibles",
+            "encryption_required": true,
+            "access_logging": true,
+            "approval_required": true,
+            "time_limited_access": true
+          }
+        },
+        
+        "auto_classification": {
+          "enabled": true,
+          "patterns": {
+            "email": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b",
+            "phone": "\\b\\d{3}-\\d{3}-\\d{4}\\b",
+            "ssn": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+            "credit_card": "\\b\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}\\b",
+            "api_key": "\\b[A-Za-z0-9]{32,}\\b"
+          }
+        }
+      },
+      
+      "data_retention": {
+        "policies": {
+          "templates": {
+            "active_retention_days": 2555,
+            "archived_retention_days": 3650,
+            "deletion_method": "secure_wipe"
+          },
+          "audit_logs": {
+            "retention_days": 2555,
+            "archival_after_days": 365,
+            "deletion_method": "secure_wipe"
+          },
+          "user_data": {
+            "retention_days": 1095,
+            "deletion_on_request": true,
+            "deletion_method": "secure_wipe"
+          }
+        },
+        
+        "automated_cleanup": {
+          "enabled": true,
+          "schedule": "daily",
+          "notification_before_days": 30,
+          "backup_before_deletion": true
+        }
+      }
+    },
+    
+    "compliance": {
+      "frameworks": {
+        "gdpr": {
+          "enabled": true,
+          "data_controller": "Spotify AI Agent Platform",
+          "data_protection_officer": "dpo@spotify-ai.com",
+          "lawful_basis": "legitimate_interest",
+          "consent_management": true,
+          "right_to_erasure": true,
+          "data_portability": true,
+          "privacy_by_design": true
+        },
+        
+        "soc2": {
+          "enabled": true,
+          "type": "type_ii",
+          "trust_services_criteria": [
+            "security",
+            "availability",
+            "processing_integrity",
+            "confidentiality"
+          ],
+          "annual_audit": true,
+          "continuous_monitoring": true
+        },
+        
+        "iso27001": {
+          "enabled": true,
+          "certification_scope": "Template Management System",
+          "risk_assessment": "annual",
+          "security_controls": true,
+          "incident_management": true,
+          "business_continuity": true
+        },
+        
+        "hipaa": {
+          "enabled": false,
+          "business_associate_agreement": false,
+          "phi_handling": false,
+          "access_controls": true,
+          "audit_trails": true,
+          "encryption": true
+        }
+      },
+      
+      "privacy_controls": {
+        "data_minimization": true,
+        "purpose_limitation": true,
+        "consent_granularity": "granular",
+        "opt_out_mechanisms": true,
+        "privacy_notices": true,
+        "cookie_management": true
+      }
+    },
+    
+    "incident_response": {
+      "security_incident": {
+        "severity_levels": {
+          "critical": {
+            "description": "Violation de sécurité majeure avec impact élevé",
+            "response_time_minutes": 15,
+            "escalation_required": true,
+            "external_notification": true
+          },
+          "high": {
+            "description": "Violation de sécurité importante",
+            "response_time_minutes": 60,
+            "escalation_required": true,
+            "external_notification": false
+          },
+          "medium": {
+            "description": "Violation de sécurité modérée",
+            "response_time_minutes": 240,
+            "escalation_required": false,
+            "external_notification": false
+          },
+          "low": {
+            "description": "Violation de sécurité mineure",
+            "response_time_minutes": 1440,
+            "escalation_required": false,
+            "external_notification": false
+          }
+        },
+        
+        "response_team": {
+          "security_lead": "security@spotify-ai.com",
+          "technical_lead": "tech@spotify-ai.com",
+          "legal_lead": "legal@spotify-ai.com",
+          "communications_lead": "comms@spotify-ai.com"
+        },
+        
+        "procedures": {
+          "detection": {
+            "automated_monitoring": true,
+            "user_reporting": true,
+            "third_party_reporting": true
+          },
+          "containment": {
+            "immediate_isolation": true,
+            "service_degradation": "acceptable",
+            "user_notification": true
+          },
+          "investigation": {
+            "forensic_analysis": true,
+            "evidence_preservation": true,
+            "timeline_reconstruction": true
+          },
+          "recovery": {
+            "service_restoration": true,
+            "data_recovery": true,
+            "security_hardening": true
+          },
+          "lessons_learned": {
+            "post_incident_review": true,
+            "process_improvement": true,
+            "documentation_update": true
+          }
+        }
+      },
+      
+      "data_breach": {
+        "notification_requirements": {
+          "regulatory_notification_hours": 72,
+          "user_notification_hours": 72,
+          "internal_notification_minutes": 30
+        },
+        
+        "assessment_criteria": {
+          "personal_data_involved": true,
+          "number_of_affected_users": "threshold_based",
+          "sensitivity_of_data": "classification_based",
+          "likelihood_of_harm": "risk_based"
+        }
+      }
+    },
+    
+    "monitoring_and_logging": {
+      "security_monitoring": {
+        "real_time_monitoring": true,
+        "anomaly_detection": true,
+        "threat_intelligence": true,
+        "behavioral_analysis": true,
+        
+        "monitored_events": [
+          "authentication_failures",
+          "authorization_violations",
+          "privilege_escalations",
+          "data_access_anomalies",
+          "configuration_changes",
+          "template_modifications",
+          "suspicious_api_usage",
+          "network_anomalies"
+        ],
+        
+        "alert_thresholds": {
+          "failed_login_attempts": 5,
+          "privilege_escalation_attempts": 1,
+          "unauthorized_access_attempts": 3,
+          "data_exfiltration_indicators": 1,
+          "template_modification_without_approval": 1
+        }
+      },
+      
+      "audit_logging": {
+        "enabled": true,
+        "log_level": "detailed",
+        "retention_days": 2555,
+        "real_time_analysis": true,
+        "tamper_protection": true,
+        "digital_signatures": true,
+        
+        "logged_activities": [
+          "user_authentication",
+          "user_authorization",
+          "template_creation",
+          "template_modification",
+          "template_deletion",
+          "template_deployment",
+          "configuration_changes",
+          "security_policy_changes",
+          "data_access",
+          "system_administration",
+          "backup_operations",
+          "recovery_operations"
+        ],
+        
+        "log_format": {
+          "timestamp": "ISO8601",
+          "user_id": "required",
+          "session_id": "required",
+          "ip_address": "required",
+          "user_agent": "required",
+          "action": "required",
+          "resource": "required",
+          "result": "required",
+          "risk_score": "calculated"
+        }
+      }
+    },
+    
+    "vulnerability_management": {
+      "scanning": {
+        "automated_scanning": true,
+        "scan_frequency": "daily",
+        "scan_types": [
+          "static_code_analysis",
+          "dynamic_application_security_testing",
+          "interactive_application_security_testing",
+          "software_composition_analysis",
+          "infrastructure_scanning"
+        ],
+        
+        "vulnerability_classification": {
+          "critical": {
+            "cvss_score_range": "9.0-10.0",
+            "remediation_sla_hours": 24
+          },
+          "high": {
+            "cvss_score_range": "7.0-8.9",
+            "remediation_sla_hours": 72
+          },
+          "medium": {
+            "cvss_score_range": "4.0-6.9",
+            "remediation_sla_hours": 168
+          },
+          "low": {
+            "cvss_score_range": "0.1-3.9",
+            "remediation_sla_hours": 720
+          }
+        }
+      },
+      
+      "patch_management": {
+        "automated_patching": true,
+        "patch_testing": true,
+        "rollback_procedures": true,
+        "emergency_patching": true,
+        "patch_windows": {
+          "critical": "immediate",
+          "high": "within_72_hours",
+          "medium": "next_maintenance_window",
+          "low": "quarterly_maintenance"
+        }
+      }
+    },
+    
+    "business_continuity": {
+      "backup_strategy": {
+        "backup_frequency": "continuous",
+        "backup_retention": "3-2-1_strategy",
+        "backup_testing": "monthly",
+        "backup_encryption": true,
+        "geographic_distribution": true
+      },
+      
+      "disaster_recovery": {
+        "rpo_minutes": 15,
+        "rto_minutes": 30,
+        "failover_testing": "quarterly",
+        "geographic_redundancy": true,
+        "automated_failover": true
+      },
+      
+      "high_availability": {
+        "target_uptime": "99.99%",
+        "load_balancing": true,
+        "auto_scaling": true,
+        "health_monitoring": true,
+        "circuit_breakers": true
+      }
+    }
+  }
+}

@@ -1,0 +1,124 @@
+# Messages d'alertes en français pour templates Slack
+# Auteur: Fahed Mlaiel
+# Date: 2025-07-19
+
+# Messages pour alertes critiques
+critical:
+  title: "🚨 ALERTE CRITIQUE - Spotify AI Agent"
+  subtitle: "Intervention immédiate requise"
+  priority: "CRITIQUE"
+  urgency: "ÉLEVÉE"
+  
+  # Messages spécifiques par type d'alerte
+  api_down: "API Spotify AI Agent indisponible"
+  database_connection: "Perte de connexion à la base de données"
+  memory_high: "Utilisation mémoire critique"
+  disk_full: "Espace disque saturé"
+  security_breach: "Tentative d'intrusion détectée"
+  
+  # Actions recommandées
+  actions:
+    immediate: "Action immédiate requise"
+    escalation: "Escalade vers l'équipe de garde"
+    investigation: "Investigation approfondie nécessaire"
+
+# Messages pour alertes d'avertissement
+warning:
+  title: "⚠️ AVERTISSEMENT - Spotify AI Agent"
+  subtitle: "Surveillance renforcée recommandée"
+  priority: "MOYENNE"
+  urgency: "MODÉRÉE"
+  
+  # Messages spécifiques
+  performance_degradation: "Dégradation des performances détectée"
+  queue_backlog: "Accumulation dans les files d'attente"
+  rate_limit_approaching: "Limite de taux approchée"
+  ssl_expiring: "Certificat SSL expirant bientôt"
+  
+  # Actions recommandées
+  actions:
+    monitor: "Surveillance continue recommandée"
+    optimization: "Optimisation suggérée"
+    maintenance: "Maintenance préventive conseillée"
+
+# Messages pour alertes d'information
+info:
+  title: "ℹ️ INFORMATION - Spotify AI Agent"
+  subtitle: "Notification système"
+  priority: "BASSE"
+  urgency: "FAIBLE"
+  
+  # Messages spécifiques
+  deployment_success: "Déploiement réussi"
+  backup_completed: "Sauvegarde terminée"
+  maintenance_scheduled: "Maintenance programmée"
+  feature_enabled: "Nouvelle fonctionnalité activée"
+  
+  # Actions recommandées
+  actions:
+    acknowledge: "Accusé de réception requis"
+    review: "Révision recommandée"
+    documentation: "Mise à jour documentation"
+
+# Messages pour récupération
+resolved:
+  title: "✅ RÉSOLU - Spotify AI Agent"
+  subtitle: "Retour à la normale"
+  priority: "INFORMATION"
+  urgency: "FAIBLE"
+  
+  message: "Le problème signalé a été résolu"
+  duration: "Durée de l'incident"
+  impact: "Impact évalué"
+  
+  actions:
+    post_mortem: "Post-mortem recommandé"
+    lessons_learned: "Retour d'expérience"
+    documentation_update: "Mise à jour procédures"
+
+# Statuts système
+status:
+  healthy: "Système en bonne santé"
+  degraded: "Performances dégradées"
+  critical: "État critique"
+  maintenance: "En maintenance"
+  recovering: "En cours de récupération"
+
+# Niveaux de service
+sla:
+  p1: "Incident P1 - SLA 15 minutes"
+  p2: "Incident P2 - SLA 1 heure"
+  p3: "Incident P3 - SLA 4 heures"
+  p4: "Incident P4 - SLA 24 heures"
+
+# Messages d'escalade
+escalation:
+  level1: "Escalade niveau 1 - Équipe technique"
+  level2: "Escalade niveau 2 - Manager technique"
+  level3: "Escalade niveau 3 - Direction technique"
+  emergency: "Escalade d'urgence - Astreinte"
+
+# Tenant spécifique
+tenant:
+  identification: "Tenant ID"
+  environment: "Environnement"
+  region: "Région"
+  cluster: "Cluster"
+
+# Métriques et seuils
+metrics:
+  cpu_usage: "Utilisation CPU"
+  memory_usage: "Utilisation mémoire"
+  disk_usage: "Utilisation disque"
+  network_latency: "Latence réseau"
+  error_rate: "Taux d'erreur"
+  throughput: "Débit"
+  response_time: "Temps de réponse"
+
+# URLs et liens
+links:
+  dashboard: "Tableau de bord"
+  logs: "Journaux système"
+  metrics: "Métriques détaillées"
+  runbook: "Guide d'intervention"
+  escalation_guide: "Guide d'escalade"

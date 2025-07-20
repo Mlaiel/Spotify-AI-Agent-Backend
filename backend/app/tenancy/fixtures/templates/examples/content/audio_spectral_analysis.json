@@ -1,0 +1,440 @@
+{
+  "_metadata": {
+    "template_type": "audio_analysis",
+    "template_version": "2.3.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "AudioAnalysisTemplateGenerator",
+    "tags": ["audio", "analysis", "spectral", "ai", "real-time", "ml"],
+    "description": "Advanced spectral audio analysis template with ML-powered feature extraction"
+  },
+  "analysis_id": "{{ analysis_id }}",
+  "track_id": "{{ track_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "user_id": "{{ user_id }}",
+  "basic_info": {
+    "track_name": "{{ track_name }}",
+    "artist_name": "{{ artist_name }}",
+    "album_name": "{{ album_name | default('') }}",
+    "duration_ms": "{{ duration_ms }}",
+    "file_format": "{{ audio_format | default('mp3') }}",
+    "sample_rate": "{{ sample_rate | default(44100) }}",
+    "bit_depth": "{{ bit_depth | default(16) }}",
+    "bitrate_kbps": "{{ bitrate | default(320) }}",
+    "channels": "{{ channels | default(2) }}"
+  },
+  "analysis_configuration": {
+    "analysis_type": "{{ analysis_type | default('full_spectral') }}",
+    "processing_mode": "{{ processing_mode | default('real_time') }}",
+    "quality_level": "{{ quality_level | default('high') }}",
+    "ai_models_enabled": "{{ ai_models_enabled | default(true) }}",
+    "real_time_streaming": "{{ real_time_streaming | default(false) }}",
+    "batch_processing": "{{ batch_processing | default(true) }}",
+    "feature_extraction": {
+      "spectral_features": "{{ extract_spectral | default(true) }}",
+      "temporal_features": "{{ extract_temporal | default(true) }}",
+      "harmonic_features": "{{ extract_harmonic | default(true) }}",
+      "rhythmic_features": "{{ extract_rhythmic | default(true) }}",
+      "timbral_features": "{{ extract_timbral | default(true) }}",
+      "perceptual_features": "{{ extract_perceptual | default(true) }}"
+    },
+    "analysis_window": {
+      "window_size": "{{ window_size | default(2048) }}",
+      "hop_length": "{{ hop_length | default(512) }}",
+      "window_function": "{{ window_function | default('hann') }}",
+      "overlap_percentage": "{{ overlap_percentage | default(75) }}"
+    },
+    "frequency_analysis": {
+      "fft_size": "{{ fft_size | default(4096) }}",
+      "frequency_range": {
+        "min_hz": "{{ min_frequency | default(20) }}",
+        "max_hz": "{{ max_frequency | default(20000) }}"
+      },
+      "mel_scale": "{{ use_mel_scale | default(true) }}",
+      "log_magnitude": "{{ use_log_magnitude | default(true) }}"
+    }
+  },
+  "spectral_analysis": {
+    "frequency_spectrum": {
+      "fundamental_frequency": "{{ fundamental_frequency | default(0.0) }}",
+      "harmonic_series": [],
+      "spectral_centroid": "{{ spectral_centroid | default(0.0) }}",
+      "spectral_rolloff": "{{ spectral_rolloff | default(0.0) }}",
+      "spectral_flux": "{{ spectral_flux | default(0.0) }}",
+      "spectral_flatness": "{{ spectral_flatness | default(0.0) }}",
+      "spectral_kurtosis": "{{ spectral_kurtosis | default(0.0) }}",
+      "spectral_skewness": "{{ spectral_skewness | default(0.0) }}",
+      "zero_crossing_rate": "{{ zero_crossing_rate | default(0.0) }}"
+    },
+    "mel_frequency_analysis": {
+      "mfcc_coefficients": [],
+      "mel_spectrogram": {
+        "n_mels": "{{ n_mels | default(128) }}",
+        "mel_bands": [],
+        "mel_energy_distribution": []
+      },
+      "chroma_features": {
+        "chroma_vector": [],
+        "key_strength": "{{ key_strength | default(0.0) }}",
+        "estimated_key": "{{ estimated_key | default('C') }}",
+        "mode_confidence": "{{ mode_confidence | default(0.0) }}"
+      }
+    },
+    "harmonic_analysis": {
+      "pitch_class_profile": [],
+      "harmonic_content": "{{ harmonic_content | default(0.0) }}",
+      "percussive_content": "{{ percussive_content | default(0.0) }}",
+      "harmonic_percussive_ratio": "{{ hp_ratio | default(0.0) }}",
+      "inharmonicity": "{{ inharmonicity | default(0.0) }}",
+      "consonance_score": "{{ consonance_score | default(0.0) }}"
+    },
+    "frequency_bands": {
+      "sub_bass": {
+        "range_hz": "20-60",
+        "energy": "{{ sub_bass_energy | default(0.0) }}",
+        "peak_frequency": "{{ sub_bass_peak | default(0.0) }}",
+        "rms_level": "{{ sub_bass_rms | default(0.0) }}"
+      },
+      "bass": {
+        "range_hz": "60-250",
+        "energy": "{{ bass_energy | default(0.0) }}",
+        "peak_frequency": "{{ bass_peak | default(0.0) }}",
+        "rms_level": "{{ bass_rms | default(0.0) }}"
+      },
+      "low_midrange": {
+        "range_hz": "250-500",
+        "energy": "{{ low_mid_energy | default(0.0) }}",
+        "peak_frequency": "{{ low_mid_peak | default(0.0) }}",
+        "rms_level": "{{ low_mid_rms | default(0.0) }}"
+      },
+      "midrange": {
+        "range_hz": "500-2000",
+        "energy": "{{ mid_energy | default(0.0) }}",
+        "peak_frequency": "{{ mid_peak | default(0.0) }}",
+        "rms_level": "{{ mid_rms | default(0.0) }}"
+      },
+      "high_midrange": {
+        "range_hz": "2000-4000",
+        "energy": "{{ high_mid_energy | default(0.0) }}",
+        "peak_frequency": "{{ high_mid_peak | default(0.0) }}",
+        "rms_level": "{{ high_mid_rms | default(0.0) }}"
+      },
+      "treble": {
+        "range_hz": "4000-20000",
+        "energy": "{{ treble_energy | default(0.0) }}",
+        "peak_frequency": "{{ treble_peak | default(0.0) }}",
+        "rms_level": "{{ treble_rms | default(0.0) }}"
+      }
+    }
+  },
+  "temporal_analysis": {
+    "rhythm_detection": {
+      "tempo_bpm": "{{ detected_tempo | default(120.0) }}",
+      "tempo_confidence": "{{ tempo_confidence | default(0.0) }}",
+      "beat_positions": [],
+      "bar_positions": [],
+      "downbeat_positions": [],
+      "time_signature": {
+        "numerator": "{{ time_sig_num | default(4) }}",
+        "denominator": "{{ time_sig_den | default(4) }}",
+        "confidence": "{{ time_sig_confidence | default(0.0) }}"
+      },
+      "rhythmic_complexity": "{{ rhythmic_complexity | default(0.0) }}",
+      "syncopation_index": "{{ syncopation_index | default(0.0) }}"
+    },
+    "onset_detection": {
+      "onset_times": [],
+      "onset_strengths": [],
+      "onset_density": "{{ onset_density | default(0.0) }}",
+      "attack_characteristics": {
+        "average_attack_time": "{{ avg_attack_time | default(0.0) }}",
+        "attack_sharpness": "{{ attack_sharpness | default(0.0) }}",
+        "transient_density": "{{ transient_density | default(0.0) }}"
+      }
+    },
+    "dynamic_analysis": {
+      "rms_energy": "{{ rms_energy | default(0.0) }}",
+      "peak_amplitude": "{{ peak_amplitude | default(0.0) }}",
+      "dynamic_range": "{{ dynamic_range | default(0.0) }}",
+      "loudness_lufs": "{{ loudness_lufs | default(-23.0) }}",
+      "loudness_range": "{{ loudness_range | default(0.0) }}",
+      "crest_factor": "{{ crest_factor | default(0.0) }}",
+      "envelope_analysis": {
+        "attack_time": "{{ envelope_attack | default(0.0) }}",
+        "decay_time": "{{ envelope_decay | default(0.0) }}",
+        "sustain_level": "{{ envelope_sustain | default(0.0) }}",
+        "release_time": "{{ envelope_release | default(0.0) }}"
+      }
+    }
+  },
+  "ai_analysis": {
+    "ml_models_used": [
+      {
+        "model_name": "{{ ml_model_1 | default('audio_classifier_v3') }}",
+        "model_version": "{{ ml_model_1_version | default('3.1.0') }}",
+        "confidence": "{{ ml_model_1_confidence | default(0.0) }}",
+        "processing_time_ms": "{{ ml_model_1_time | default(0) }}"
+      },
+      {
+        "model_name": "{{ ml_model_2 | default('mood_detector_v2') }}",
+        "model_version": "{{ ml_model_2_version | default('2.3.0') }}",
+        "confidence": "{{ ml_model_2_confidence | default(0.0) }}",
+        "processing_time_ms": "{{ ml_model_2_time | default(0) }}"
+      }
+    ],
+    "genre_classification": {
+      "primary_genre": "{{ primary_genre | default('unknown') }}",
+      "secondary_genres": [
+        "{{ secondary_genre_1 | default('') }}",
+        "{{ secondary_genre_2 | default('') }}"
+      ],
+      "genre_probabilities": {
+        "rock": "{{ genre_prob_rock | default(0.0) }}",
+        "pop": "{{ genre_prob_pop | default(0.0) }}",
+        "electronic": "{{ genre_prob_electronic | default(0.0) }}",
+        "jazz": "{{ genre_prob_jazz | default(0.0) }}",
+        "classical": "{{ genre_prob_classical | default(0.0) }}",
+        "hip_hop": "{{ genre_prob_hip_hop | default(0.0) }}",
+        "country": "{{ genre_prob_country | default(0.0) }}",
+        "folk": "{{ genre_prob_folk | default(0.0) }}"
+      },
+      "genre_confidence": "{{ genre_confidence | default(0.0) }}",
+      "subgenre_analysis": {
+        "detected_subgenres": [],
+        "fusion_elements": [],
+        "style_characteristics": []
+      }
+    },
+    "mood_analysis": {
+      "primary_mood": "{{ primary_mood | default('neutral') }}",
+      "mood_intensity": "{{ mood_intensity | default(0.5) }}",
+      "emotional_dimensions": {
+        "valence": "{{ valence | default(0.5) }}",
+        "arousal": "{{ arousal | default(0.5) }}",
+        "dominance": "{{ dominance | default(0.5) }}",
+        "tension": "{{ tension | default(0.5) }}"
+      },
+      "mood_progression": {
+        "mood_changes": [],
+        "emotional_arc": "{{ emotional_arc | default('stable') }}",
+        "climax_points": [],
+        "mood_stability": "{{ mood_stability | default(0.0) }}"
+      },
+      "contextual_emotions": {
+        "happiness": "{{ emotion_happiness | default(0.0) }}",
+        "sadness": "{{ emotion_sadness | default(0.0) }}",
+        "anger": "{{ emotion_anger | default(0.0) }}",
+        "fear": "{{ emotion_fear | default(0.0) }}",
+        "surprise": "{{ emotion_surprise | default(0.0) }}",
+        "disgust": "{{ emotion_disgust | default(0.0) }}"
+      }
+    },
+    "instrument_detection": {
+      "detected_instruments": [
+        {
+          "instrument": "{{ instrument_1 | default('vocals') }}",
+          "confidence": "{{ instrument_1_confidence | default(0.0) }}",
+          "prominence": "{{ instrument_1_prominence | default(0.0) }}",
+          "time_segments": []
+        },
+        {
+          "instrument": "{{ instrument_2 | default('guitar') }}",
+          "confidence": "{{ instrument_2_confidence | default(0.0) }}",
+          "prominence": "{{ instrument_2_prominence | default(0.0) }}",
+          "time_segments": []
+        },
+        {
+          "instrument": "{{ instrument_3 | default('drums') }}",
+          "confidence": "{{ instrument_3_confidence | default(0.0) }}",
+          "prominence": "{{ instrument_3_prominence | default(0.0) }}",
+          "time_segments": []
+        }
+      ],
+      "instrumental_complexity": "{{ instrumental_complexity | default(0.0) }}",
+      "orchestration_density": "{{ orchestration_density | default(0.0) }}",
+      "solo_sections": [],
+      "ensemble_sections": []
+    },
+    "vocal_analysis": {
+      "vocal_presence": "{{ vocal_presence | default(false) }}",
+      "vocal_characteristics": {
+        "gender_classification": "{{ vocal_gender | default('unknown') }}",
+        "age_estimation": "{{ vocal_age | default('unknown') }}",
+        "vocal_range": {
+          "lowest_note": "{{ vocal_lowest | default('') }}",
+          "highest_note": "{{ vocal_highest | default('') }}",
+          "range_semitones": "{{ vocal_range_semitones | default(0) }}"
+        },
+        "vocal_style": "{{ vocal_style | default('unknown') }}",
+        "singing_technique": "{{ singing_technique | default('unknown') }}",
+        "vibrato_analysis": {
+          "vibrato_present": "{{ vibrato_present | default(false) }}",
+          "vibrato_rate": "{{ vibrato_rate | default(0.0) }}",
+          "vibrato_extent": "{{ vibrato_extent | default(0.0) }}"
+        }
+      },
+      "lyrics_analysis": {
+        "vocal_rhythm": "{{ vocal_rhythm | default('unknown') }}",
+        "syllable_density": "{{ syllable_density | default(0.0) }}",
+        "vocal_delivery": "{{ vocal_delivery | default('unknown') }}",
+        "harmony_vocals": "{{ harmony_vocals | default(false) }}"
+      }
+    }
+  },
+  "quality_analysis": {
+    "audio_quality_metrics": {
+      "signal_to_noise_ratio": "{{ snr_db | default(0.0) }}",
+      "total_harmonic_distortion": "{{ thd_percent | default(0.0) }}",
+      "dynamic_range_db": "{{ dynamic_range_db | default(0.0) }}",
+      "peak_to_average_ratio": "{{ par_db | default(0.0) }}",
+      "frequency_response": {
+        "low_frequency_rolloff": "{{ lf_rolloff | default(0.0) }}",
+        "high_frequency_rolloff": "{{ hf_rolloff | default(0.0) }}",
+        "frequency_balance": "{{ frequency_balance | default(0.0) }}"
+      }
+    },
+    "mastering_analysis": {
+      "loudness_war_score": "{{ loudness_war_score | default(0.0) }}",
+      "compression_ratio": "{{ compression_ratio | default(0.0) }}",
+      "limiting_artifacts": "{{ limiting_artifacts | default(false) }}",
+      "stereo_width": "{{ stereo_width | default(0.0) }}",
+      "phase_correlation": "{{ phase_correlation | default(0.0) }}",
+      "mastering_quality": "{{ mastering_quality | default('unknown') }}"
+    },
+    "production_analysis": {
+      "production_era": "{{ production_era | default('unknown') }}",
+      "recording_quality": "{{ recording_quality | default('unknown') }}",
+      "mix_balance": "{{ mix_balance | default(0.0) }}",
+      "spatial_characteristics": {
+        "reverb_amount": "{{ reverb_amount | default(0.0) }}",
+        "room_size_estimation": "{{ room_size | default('unknown') }}",
+        "acoustic_space": "{{ acoustic_space | default('unknown') }}"
+      }
+    }
+  },
+  "advanced_features": {
+    "similarity_analysis": {
+      "acoustic_fingerprint": "{{ acoustic_fingerprint | default('') }}",
+      "audio_hash": "{{ audio_hash | default('') }}",
+      "similarity_vectors": [],
+      "reference_tracks": [
+        {
+          "track_id": "{{ similar_track_1_id | default('') }}",
+          "similarity_score": "{{ similar_track_1_score | default(0.0) }}",
+          "similarity_aspects": ["{{ similarity_aspect_1 | default('') }}"]
+        }
+      ]
+    },
+    "segmentation_analysis": {
+      "structural_segments": [
+        {
+          "segment_type": "{{ segment_1_type | default('intro') }}",
+          "start_time": "{{ segment_1_start | default(0.0) }}",
+          "end_time": "{{ segment_1_end | default(0.0) }}",
+          "characteristics": []
+        }
+      ],
+      "verse_chorus_detection": {
+        "verses": [],
+        "choruses": [],
+        "bridges": [],
+        "outros": []
+      },
+      "repetition_analysis": {
+        "repetitive_sections": [],
+        "variation_patterns": [],
+        "structure_complexity": "{{ structure_complexity | default(0.0) }}"
+      }
+    },
+    "context_analysis": {
+      "listening_context": "{{ listening_context | default('unknown') }}",
+      "activity_suitability": {
+        "workout": "{{ workout_suitability | default(0.0) }}",
+        "study": "{{ study_suitability | default(0.0) }}",
+        "party": "{{ party_suitability | default(0.0) }}",
+        "relaxation": "{{ relaxation_suitability | default(0.0) }}",
+        "focus": "{{ focus_suitability | default(0.0) }}",
+        "sleep": "{{ sleep_suitability | default(0.0) }}"
+      },
+      "time_of_day_suitability": {
+        "morning": "{{ morning_suitability | default(0.0) }}",
+        "afternoon": "{{ afternoon_suitability | default(0.0) }}",
+        "evening": "{{ evening_suitability | default(0.0) }}",
+        "night": "{{ night_suitability | default(0.0) }}"
+      }
+    }
+  },
+  "processing_metadata": {
+    "analysis_duration_ms": "{{ analysis_duration | default(0) }}",
+    "processing_timestamp": "{{ current_timestamp() }}",
+    "analysis_version": "2.3.0",
+    "processing_node": "{{ processing_node | default('audio-analysis-1') }}",
+    "cpu_usage_percent": "{{ cpu_usage | default(0.0) }}",
+    "memory_usage_mb": "{{ memory_usage | default(0.0) }}",
+    "gpu_acceleration": "{{ gpu_acceleration | default(false) }}",
+    "processing_quality": "{{ processing_quality | default('high') }}",
+    "analysis_completeness": "{{ analysis_completeness | default(100.0) }}",
+    "error_count": "{{ error_count | default(0) }}",
+    "warnings": []
+  },
+  "visualization_data": {
+    "waveform_data": {
+      "sample_points": [],
+      "zoom_levels": [1, 2, 4, 8, 16, 32],
+      "peak_indicators": []
+    },
+    "spectrogram_data": {
+      "time_bins": [],
+      "frequency_bins": [],
+      "magnitude_matrix": [],
+      "color_mapping": "viridis"
+    },
+    "chromagram_data": {
+      "time_frames": [],
+      "chroma_vectors": [],
+      "key_transitions": []
+    },
+    "onset_visualization": {
+      "onset_markers": [],
+      "strength_visualization": [],
+      "tempo_curve": []
+    }
+  },
+  "export_formats": {
+    "json_export": {
+      "available": true,
+      "full_data": true,
+      "compressed": "{{ export_compressed | default(false) }}"
+    },
+    "csv_export": {
+      "available": true,
+      "feature_summary": true,
+      "time_series_data": false
+    },
+    "midi_export": {
+      "available": "{{ midi_export_available | default(false) }}",
+      "pitch_tracking": true,
+      "rhythm_extraction": true
+    },
+    "audio_annotation": {
+      "available": true,
+      "format": "json_ld",
+      "web_annotation": true
+    }
+  },
+  "compliance_and_privacy": {
+    "data_retention_policy": "{{ data_retention_days | default(365) }} days",
+    "anonymization_level": "{{ anonymization_level | default('medium') }}",
+    "gdpr_compliant": "{{ gdpr_compliant | default(true) }}",
+    "data_sharing_permissions": {
+      "analytics": "{{ share_analytics | default(false) }}",
+      "research": "{{ share_research | default(false) }}",
+      "ml_training": "{{ share_ml_training | default(false) }}"
+    },
+    "audit_trail": {
+      "analysis_requested_by": "{{ user_id }}",
+      "analysis_purpose": "{{ analysis_purpose | default('user_request') }}",
+      "data_access_level": "{{ data_access_level | default('user') }}"
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "cpu_high": {
+    "category": "performance",
+    "severity": "high",
+    "title": "🚨 ALARM HOHE CPU-AUSLASTUNG",
+    "message": "Kritische CPU-Auslastung erkannt: {cpu_usage}% auf Tenant '{tenant_id}'. Schwellenwert: {threshold}%. Sofortige Maßnahme erforderlich, um Service-Verschlechterung zu verhindern.",
+    "action": "Ressourcen hochskalieren oder Prozesse mit hoher CPU-Auslastung sofort untersuchen.",
+    "metadata": {
+      "escalation_timeout": 300,
+      "auto_scale": true,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "memory_high": {
+    "category": "performance", 
+    "severity": "high",
+    "title": "⚠️ WARNUNG HOHE SPEICHERAUSLASTUNG",
+    "message": "Hohe Speicherauslastung erkannt: {memory_usage}% auf Instanz '{instance_id}'. Aktuelle Nutzung: {current_memory} / {total_memory}. Verstärkte Überwachung aktiviert.",
+    "action": "Erwägen Sie die Erweiterung der Speicherressourcen oder Optimierung speicherintensiver Prozesse.",
+    "metadata": {
+      "escalation_timeout": 600,
+      "auto_scale": false,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "disk_space_low": {
+    "category": "system",
+    "severity": "medium", 
+    "title": "📁 WARNUNG GERINGER FESTPLATTENSPEICHER",
+    "message": "Geringer Festplattenspeicher erkannt: Nur {free_space_percentage}% freier Speicherplatz verbleibt auf '{mount_point}' (Instanz: {instance_id}). Verfügbar: {free_space} / {total_space}.",
+    "action": "Unnötige Dateien bereinigen oder Festplattenkapazität erweitern.",
+    "metadata": {
+      "escalation_timeout": 3600,
+      "auto_cleanup": true,
+      "notification_channels": ["slack"]
+    }
+  },
+  "api_response_slow": {
+    "category": "performance",
+    "severity": "medium",
+    "title": "⚡ LANGSAME API-ANTWORTZEIT",
+    "message": "API-Antwortzeit-Verschlechterung erkannt: {avg_response_time}ms (Ziel: < {target_response_time}ms) auf Endpoint '{endpoint}'. Betroffene Anfragen: {affected_requests}.",
+    "action": "Datenbankabfragen untersuchen, Cache-Performance prüfen oder API-Instanzen skalieren erwägen.",
+    "metadata": {
+      "escalation_timeout": 900,
+      "auto_scale": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "database_connection_high": {
+    "category": "system",
+    "severity": "high",
+    "title": "🗄️ HOHE DATENBANKVERBINDUNGEN",
+    "message": "Hohe Datenbankverbindungsanzahl: {active_connections} / {max_connections} ({connection_percentage}%) auf Datenbank '{database_id}'. Risiko der Erschöpfung des Verbindungspools.",
+    "action": "Verbindungspool-Konfiguration überprüfen und Verbindungslecks untersuchen.",
+    "metadata": {
+      "escalation_timeout": 600,
+      "auto_scale": false,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "error_rate_high": {
+    "category": "system",
+    "severity": "critical",
+    "title": "🔥 KRITISCHE FEHLERRATE",
+    "message": "Kritischer Fehlerrate-Anstieg erkannt: {error_rate}% (Schwelle: {threshold}%) in den letzten {time_window} Minuten auf Service '{service_name}'. Gesamtfehler: {error_count}.",
+    "action": "Sofortige Untersuchung erforderlich. Logs prüfen und bei Bedarf kürzliche Deployments zurückrollen.",
+    "metadata": {
+      "escalation_timeout": 180,
+      "auto_rollback": true,
+      "notification_channels": ["slack", "email", "pagerduty", "sms"]
+    }
+  },
+  "user_authentication_failed": {
+    "category": "security",
+    "severity": "medium",
+    "title": "🔐 AUTHENTIFIZIERUNGSFEHLER",
+    "message": "Mehrere Authentifizierungsfehler erkannt: {failed_attempts} fehlgeschlagene Versuche in {time_window} Minuten von IP '{source_ip}' für Tenant '{tenant_id}'.",
+    "action": "Potentielle Brute-Force-Attacke untersuchen. IP-Blockierung erwägen, falls Muster anhält.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_block": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "payment_processing_error": {
+    "category": "business",
+    "severity": "high",
+    "title": "💳 ZAHLUNGSVERARBEITUNGSFEHLER",
+    "message": "Zahlungsverarbeitungsfehler erkannt: {error_count} fehlgeschlagene Transaktionen mit Gesamtwert {failed_amount} in den letzten {time_window} Minuten. Erfolgsrate: {success_rate}%.",
+    "action": "Zahlungsgateway-Konnektivität untersuchen und Finanzteam sofort benachrichtigen.",
+    "metadata": {
+      "escalation_timeout": 300,
+      "notify_finance": true,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "ai_model_prediction_accuracy_low": {
+    "category": "business",
+    "severity": "medium",
+    "title": "🤖 KI-MODELL GENAUIGKEITSVERSCHLECHTERUNG",
+    "message": "KI-Modell Vorhersagegenauigkeit unter Schwellenwert: {current_accuracy}% (Ziel: > {target_accuracy}%) für Modell '{model_name}' auf Tenant '{tenant_id}'. Betroffene Vorhersagen: {affected_predictions}.",
+    "action": "Modellleistung überprüfen, bei Bedarf neu trainieren oder zur vorherigen Modellversion zurückkehren.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_retrain": false,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "spotify_api_rate_limit": {
+    "category": "system",
+    "severity": "medium",
+    "title": "🎵 SPOTIFY API RATENLIMIT WARNUNG",
+    "message": "Annäherung an Spotify API Ratenlimit: {current_requests} / {rate_limit} Anfragen verwendet ({usage_percentage}%) im aktuellen Fenster. Tenant: '{tenant_id}'. Reset-Zeit: {reset_time}.",
+    "action": "API-Nutzungsmuster optimieren, Request-Caching implementieren oder API-Tier upgraden falls nötig.",
+    "metadata": {
+      "escalation_timeout": 3600,
+      "enable_caching": true,
+      "notification_channels": ["slack"]
+    }
+  },
+  "tenant_quota_exceeded": {
+    "category": "business",
+    "severity": "high",
+    "title": "📊 TENANT-QUOTA ÜBERSCHRITTEN",
+    "message": "Tenant-Quota überschritten: '{quota_type}' Nutzung bei {current_usage} / {quota_limit} ({usage_percentage}%) für Tenant '{tenant_id}'. Überschreitung: {overage_amount}.",
+    "action": "Tenant über Quota-Überschreitung benachrichtigen und automatische Abrechnung für Überschreitung oder Service-Drosselung erwägen.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_bill": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "ssl_certificate_expiring": {
+    "category": "security",
+    "severity": "medium",
+    "title": "🔒 SSL-ZERTIFIKAT LÄUFT AB",
+    "message": "SSL-Zertifikat läuft bald ab: Zertifikat für '{domain}' läuft in {days_until_expiry} Tagen ab ({expiry_date}). Service: '{service_name}'.",
+    "action": "SSL-Zertifikat vor Ablauf erneuern, um Service-Unterbrechung zu verhindern.",
+    "metadata": {
+      "escalation_timeout": 86400,
+      "auto_renew": true,
+      "notification_channels": ["slack", "email"]
+    }
+  }
+}

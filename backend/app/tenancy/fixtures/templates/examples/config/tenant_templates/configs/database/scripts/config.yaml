@@ -1,0 +1,571 @@
+# 🎵 Spotify AI Agent - Database Scripts Configuration
+# ==================================================
+# Configuration ultra-avancée pour le module de scripts de base de données
+# Support multi-tenant, multi-environnement, multi-bases de données
+
+# Métadonnées de configuration
+metadata:
+  version: "1.0.0"
+  created_at: "2024-12-15T14:30:00Z"
+  description: "Configuration enterprise pour scripts database Spotify AI Agent"
+  author: "Spotify Database Engineering Team"
+  environment: "production"
+  tenant_tier: "enterprise"
+
+# Configuration globale du système
+system:
+  # Gestionnaire principal
+  script_manager:
+    enabled: true
+    max_concurrent_operations: 10
+    operation_timeout_minutes: 60
+    retry_attempts: 3
+    retry_delay_seconds: 30
+    
+  # Logging et audit
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file_path: "/var/log/spotify/database_scripts.log"
+    max_file_size_mb: 100
+    backup_count: 5
+    
+  # Sécurité
+  security:
+    encryption_enabled: true
+    audit_all_operations: true
+    require_mfa_for_critical_ops: true
+    allowed_ip_ranges:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+
+# Configuration des bases de données
+databases:
+  # Base principale des utilisateurs
+  spotify_users:
+    id: "spotify_users"
+    type: "postgresql"
+    connection:
+      host: "${SPOTIFY_USERS_DB_HOST:users-db.spotify.com}"
+      port: "${SPOTIFY_USERS_DB_PORT:5432}"
+      database: "${SPOTIFY_USERS_DB_NAME:spotify_users}"
+      user: "${SPOTIFY_USERS_DB_USER:spotify_app}"
+      password: "${SPOTIFY_USERS_DB_PASSWORD}"
+      ssl_mode: "require"
+      pool_size: 20
+      max_overflow: 30
+    tenant_info:
+      tier: "enterprise"
+      environment: "production"
+      region: "eu-west-1"
+    backup:
+      enabled: true
+      schedule: "0 2 * * *"  # Daily 2 AM
+      type: "full"
+      retention_days: 90
+    monitoring:
+      enabled: true
+      check_interval_seconds: 30
+      alert_thresholds:
+        cpu_percent: 80
+        memory_percent: 85
+        disk_percent: 90
+        response_time_ms: 100
+
+  # Cache Redis pour sessions
+  spotify_cache:
+    id: "spotify_cache"
+    type: "redis"
+    connection:
+      host: "${SPOTIFY_CACHE_HOST:cache.spotify.com}"
+      port: "${SPOTIFY_CACHE_PORT:6379}"
+      database: 0
+      password: "${SPOTIFY_CACHE_PASSWORD}"
+      pool_size: 50
+    tenant_info:
+      tier: "premium"
+      environment: "production"
+      region: "eu-west-1"
+    backup:
+      enabled: true
+      schedule: "0 */6 * * *"  # Every 6 hours
+      type: "incremental"
+      retention_days: 30
+    monitoring:
+      enabled: true
+      check_interval_seconds: 15
+      alert_thresholds:
+        memory_usage_percent: 90
+        hit_rate_percent: 85
+        response_time_ms: 10
+
+  # Analytics MongoDB
+  spotify_analytics:
+    id: "spotify_analytics"
+    type: "mongodb"
+    connection:
+      host: "${SPOTIFY_ANALYTICS_HOST:analytics.spotify.com}"
+      port: "${SPOTIFY_ANALYTICS_PORT:27017}"
+      database: "${SPOTIFY_ANALYTICS_DB:spotify_events}"
+      user: "${SPOTIFY_ANALYTICS_USER:analytics_app}"
+      password: "${SPOTIFY_ANALYTICS_PASSWORD}"
+      auth_source: "admin"
+      replica_set: "spotify-analytics-rs"
+    tenant_info:
+      tier: "enterprise"
+      environment: "production"
+      region: "eu-west-1"
+    backup:
+      enabled: true
+      schedule: "0 3 * * *"  # Daily 3 AM
+      type: "full"
+      retention_days: 60
+    monitoring:
+      enabled: true
+      check_interval_seconds: 30
+      alert_thresholds:
+        cpu_percent: 75
+        memory_percent: 80
+        connection_count: 1000
+
+  # Métriques ClickHouse
+  spotify_metrics:
+    id: "spotify_metrics"
+    type: "clickhouse"
+    connection:
+      host: "${SPOTIFY_METRICS_HOST:metrics.spotify.com}"
+      port: "${SPOTIFY_METRICS_PORT:8123}"
+      database: "${SPOTIFY_METRICS_DB:spotify_metrics}"
+      user: "${SPOTIFY_METRICS_USER:metrics_app}"
+      password: "${SPOTIFY_METRICS_PASSWORD}"
+      secure: true
+    tenant_info:
+      tier: "enterprise"
+      environment: "production"
+      region: "eu-west-1"
+    backup:
+      enabled: true
+      schedule: "0 4 * * *"  # Daily 4 AM
+      type: "incremental"
+      retention_days: 365
+    monitoring:
+      enabled: true
+      check_interval_seconds: 30
+      alert_thresholds:
+        insertion_rate: 10000  # rows/second
+        query_latency_ms: 500
+
+  # Recherche Elasticsearch
+  spotify_search:
+    id: "spotify_search"
+    type: "elasticsearch"
+    connection:
+      host: "${SPOTIFY_SEARCH_HOST:search.spotify.com}"
+      port: "${SPOTIFY_SEARCH_PORT:9200}"
+      user: "${SPOTIFY_SEARCH_USER:search_app}"
+      password: "${SPOTIFY_SEARCH_PASSWORD}"
+      use_ssl: true
+      verify_certs: true
+    tenant_info:
+      tier: "premium"
+      environment: "production"
+      region: "eu-west-1"
+    backup:
+      enabled: true
+      schedule: "0 1 * * *"  # Daily 1 AM
+      type: "snapshot"
+      retention_days: 30
+    monitoring:
+      enabled: true
+      check_interval_seconds: 30
+      alert_thresholds:
+        cluster_health: "yellow"
+        search_latency_ms: 100
+
+# Configuration des scripts
+scripts:
+  # Backup et restauration
+  backup_restore:
+    enabled: true
+    default_storage:
+      type: "s3"
+      bucket: "${BACKUP_S3_BUCKET:spotify-database-backups}"
+      region: "eu-west-1"
+      encryption: "AES256"
+      storage_class: "STANDARD_IA"
+    compression:
+      enabled: true
+      algorithm: "gzip"
+      level: 6
+    validation:
+      enabled: true
+      checksum_algorithm: "sha256"
+      integrity_check: true
+    scheduling:
+      max_concurrent_backups: 3
+      backup_window_start: "01:00"
+      backup_window_end: "06:00"
+    notification:
+      on_success: false
+      on_failure: true
+      channels:
+        - "email:database-team@spotify.com"
+        - "slack:database-alerts"
+
+  # Health checks
+  health_check:
+    enabled: true
+    global_schedule: "*/5 * * * *"  # Every 5 minutes
+    comprehensive_check_schedule: "0 */6 * * *"  # Every 6 hours
+    checks:
+      connectivity: true
+      performance: true
+      disk_space: true
+      security: true
+      compliance: true
+    thresholds:
+      response_time_warning_ms: 50
+      response_time_critical_ms: 100
+      cpu_warning_percent: 70
+      cpu_critical_percent: 90
+      memory_warning_percent: 75
+      memory_critical_percent: 90
+      disk_warning_percent: 80
+      disk_critical_percent: 95
+    remediation:
+      auto_restart_on_failure: false
+      auto_scale_on_load: true
+      max_auto_actions: 3
+
+  # Performance tuning
+  performance_tuning:
+    enabled: true
+    schedule: "0 2 * * 0"  # Weekly Sunday 2 AM
+    analysis:
+      query_performance: true
+      index_optimization: true
+      cache_analysis: true
+      resource_utilization: true
+    auto_apply:
+      enabled: false  # Require manual approval
+      max_impact_operations: ["CREATE INDEX", "UPDATE STATISTICS"]
+      forbidden_operations: ["DROP INDEX", "ALTER TABLE"]
+    monitoring:
+      track_performance_changes: true
+      rollback_on_degradation: true
+      performance_threshold_percent: 10
+
+  # Audit de sécurité
+  security_audit:
+    enabled: true
+    schedule: "0 3 * * 0"  # Weekly Sunday 3 AM
+    scans:
+      vulnerability_scan: true
+      permission_audit: true
+      encryption_check: true
+      password_policy: true
+      access_pattern_analysis: true
+    compliance_standards:
+      - "GDPR"
+      - "SOX"
+      - "ISO27001"
+    reporting:
+      generate_report: true
+      include_recommendations: true
+      severity_threshold: "medium"
+    notifications:
+      critical_findings: true
+      channels:
+        - "email:security-team@spotify.com"
+        - "slack:security-alerts"
+
+  # Migration de données
+  migration:
+    enabled: true
+    default_settings:
+      batch_size: 1000
+      parallel_workers: 4
+      validation_enabled: true
+      rollback_enabled: true
+      conflict_resolution: "source_wins"
+    performance:
+      max_memory_usage_mb: 2048
+      checkpoint_interval_records: 10000
+      progress_reporting_interval_seconds: 30
+    safety:
+      dry_run_required: true
+      backup_before_migration: true
+      downtime_window_required: false
+
+  # Monitoring temps réel
+  monitoring:
+    enabled: true
+    collection_interval_seconds: 30
+    retention_hours: 72
+    prometheus:
+      enabled: true
+      port: 8000
+      metrics_path: "/metrics"
+    websocket:
+      enabled: true
+      port: 8001
+      max_connections: 100
+    alerting:
+      enabled: true
+      evaluation_interval_seconds: 60
+      notification_channels:
+        email:
+          smtp_host: "${SMTP_HOST:smtp.spotify.com}"
+          smtp_port: 587
+          username: "${SMTP_USER:alerts@spotify.com}"
+          password: "${SMTP_PASSWORD}"
+        slack:
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+        webhook:
+          url: "${WEBHOOK_URL}"
+          timeout_seconds: 30
+
+  # Conformité réglementaire
+  compliance:
+    enabled: true
+    audit_trail:
+      enabled: true
+      storage_type: "postgresql"
+      retention_days: 2555  # 7 years
+      encryption: true
+    standards:
+      gdpr:
+        enabled: true
+        data_classification: true
+        retention_policies: true
+        anonymization: true
+      sox:
+        enabled: true
+        financial_data_protection: true
+        audit_trail_immutability: true
+      hipaa:
+        enabled: false  # Not applicable for music platform
+      pci_dss:
+        enabled: true
+        payment_data_protection: true
+    scanning:
+      schedule: "0 4 * * 0"  # Weekly Sunday 4 AM
+      deep_scan_schedule: "0 5 1 * *"  # Monthly 1st day 5 AM
+
+  # Disaster recovery
+  disaster_recovery:
+    enabled: true
+    strategy: "hot_standby"
+    rto_minutes: 15
+    rpo_minutes: 5
+    sites:
+      primary:
+        name: "paris-datacenter"
+        region: "eu-west-1"
+      secondary:
+        - name: "london-datacenter"
+          region: "eu-west-2"
+          priority: 1
+        - name: "dublin-datacenter"
+          region: "eu-west-3"
+          priority: 2
+    replication:
+      sync_mode: "async"
+      lag_threshold_seconds: 300
+      monitoring_interval_seconds: 30
+    failover:
+      auto_failover_enabled: true
+      confirmation_required: false
+      max_failover_attempts: 3
+    testing:
+      schedule: "0 6 1 * *"  # Monthly 1st day 6 AM
+      test_types:
+        - "connectivity"
+        - "failover_simulation"
+        - "data_integrity"
+
+# Configuration environnement spécifique
+environments:
+  production:
+    safety_checks:
+      require_approval_for:
+        - "backup_restore"
+        - "migration"
+        - "performance_tuning"
+        - "disaster_recovery"
+      approval_timeout_minutes: 60
+    monitoring:
+      enhanced_monitoring: true
+      custom_dashboards: true
+    backup:
+      cross_region_replication: true
+      point_in_time_recovery: true
+
+  staging:
+    safety_checks:
+      require_approval_for:
+        - "migration"
+        - "disaster_recovery"
+    monitoring:
+      basic_monitoring: true
+    backup:
+      retention_days: 30
+
+  development:
+    safety_checks:
+      require_approval_for: []
+    monitoring:
+      basic_monitoring: true
+    backup:
+      retention_days: 7
+
+# Configuration par tier de tenant
+tenant_tiers:
+  enterprise:
+    features:
+      all_scripts_enabled: true
+      advanced_monitoring: true
+      custom_alerting: true
+      priority_support: true
+    limits:
+      max_databases: 50
+      max_concurrent_operations: 10
+      backup_retention_days: 365
+    sla:
+      availability_percent: 99.9
+      response_time_ms: 50
+      recovery_time_minutes: 15
+
+  premium:
+    features:
+      most_scripts_enabled: true
+      standard_monitoring: true
+      basic_alerting: true
+    limits:
+      max_databases: 20
+      max_concurrent_operations: 5
+      backup_retention_days: 90
+    sla:
+      availability_percent: 99.5
+      response_time_ms: 100
+      recovery_time_minutes: 30
+
+  free:
+    features:
+      basic_scripts_only: true
+      basic_monitoring: true
+      no_alerting: false
+    limits:
+      max_databases: 5
+      max_concurrent_operations: 2
+      backup_retention_days: 30
+    sla:
+      availability_percent: 99.0
+      response_time_ms: 200
+      recovery_time_minutes: 60
+
+# Intégrations externes
+integrations:
+  # Monitoring externe
+  prometheus:
+    enabled: true
+    scrape_interval: "30s"
+    scrape_timeout: "10s"
+  
+  grafana:
+    enabled: true
+    dashboard_provisioning: true
+    alert_integration: true
+    
+  # Notifications
+  pagerduty:
+    enabled: true
+    service_key: "${PAGERDUTY_SERVICE_KEY}"
+    severity_mapping:
+      critical: "critical"
+      error: "error"
+      warning: "warning"
+      
+  # Cloud services
+  aws:
+    enabled: true
+    region: "eu-west-1"
+    services:
+      s3: true
+      cloudwatch: true
+      sns: true
+      
+  # Observabilité
+  datadog:
+    enabled: true
+    api_key: "${DATADOG_API_KEY}"
+    metrics_collection: true
+    log_collection: true
+
+# Sécurité avancée
+security:
+  encryption:
+    at_rest: true
+    in_transit: true
+    key_rotation_days: 90
+    
+  authentication:
+    method: "oauth2"
+    token_expiry_minutes: 60
+    
+  authorization:
+    rbac_enabled: true
+    roles:
+      admin:
+        permissions: ["*"]
+      operator:
+        permissions: ["backup", "health_check", "monitoring"]
+      viewer:
+        permissions: ["health_check", "monitoring"]
+        
+  network:
+    ip_whitelist_enabled: true
+    vpn_required: true
+    firewall_rules:
+      - source: "10.0.0.0/8"
+        destination: "database_subnet"
+        action: "allow"
+
+# Configuration de développement
+development:
+  debug_mode: true
+  verbose_logging: true
+  mock_external_services: true
+  test_data_generation: true
+  
+# Métriques et observabilité
+observability:
+  metrics:
+    custom_metrics: true
+    business_metrics: true
+    technical_metrics: true
+    
+  tracing:
+    enabled: true
+    sampling_rate: 0.1
+    
+  logging:
+    structured_logging: true
+    log_aggregation: true
+    
+# Optimisations de performance
+performance:
+  caching:
+    enabled: true
+    ttl_seconds: 300
+    max_cache_size_mb: 512
+    
+  connection_pooling:
+    enabled: true
+    pool_size: 20
+    max_overflow: 30
+    
+  async_operations:
+    enabled: true
+    max_workers: 10

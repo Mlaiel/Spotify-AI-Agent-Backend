@@ -1,0 +1,402 @@
+# 🎵 Spotify AI Agent - Configuration pytest
+# ==========================================
+# 
+# Configuration centralisée pour pytest
+# avec tous les paramètres optimisés.
+#
+# 🎖️ Développé par l'équipe d'experts enterprise
+
+[tool.pytest.ini_options]
+# Répertoires de test
+testpaths = [
+    "tests_backend/spleeter",
+    "."
+]
+
+# Patterns de découverte des tests
+python_files = [
+    "test_*.py",
+    "*_test.py"
+]
+
+python_classes = [
+    "Test*",
+    "*Tests"
+]
+
+python_functions = [
+    "test_*"
+]
+
+# Marqueurs personnalisés
+markers = [
+    "slow: marque les tests lents (deselect with '-m \"not slow\"')",
+    "fast: marque les tests rapides",
+    "unit: tests unitaires",
+    "integration: tests d'intégration",
+    "performance: tests de performance",
+    "stress: tests de stress",
+    "benchmark: tests de benchmark",
+    "smoke: tests de smoke (vérification rapide)",
+    "regression: tests de régression",
+    "security: tests de sécurité",
+    "compatibility: tests de compatibilité",
+    "mock: tests utilisant des mocks",
+    "real: tests utilisant de vraies ressources",
+    "cache: tests du système de cache",
+    "io: tests d'entrée/sortie",
+    "network: tests nécessitant le réseau",
+    "gpu: tests nécessitant un GPU",
+    "cpu_intensive: tests intensifs CPU",
+    "memory_intensive: tests intensifs mémoire",
+    "requires_models: tests nécessitant des modèles ML",
+    "requires_redis: tests nécessitant Redis",
+    "requires_database: tests nécessitant une base de données",
+    "flaky: tests parfois instables",
+    "skip_ci: tests à ignorer en CI",
+    "manual: tests manuels uniquement"
+]
+
+# Options par défaut
+addopts = [
+    # Verbosité et affichage
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    
+    # Parallélisation (décommenter si pytest-xdist installé)
+    # "--numprocesses=auto",
+    
+    # Affichage des durées
+    "--durations=10",
+    
+    # Arrêt rapide en cas d'échec multiple
+    "--maxfail=3",
+    
+    # Affichage des warnings
+    "--disable-warnings",
+    
+    # Cache des résultats
+    "--cache-clear",
+    
+    # Affichage des print
+    "--capture=no",
+    
+    # Timeout par défaut
+    "--timeout=60"
+]
+
+# Répertoires à ignorer
+norecursedirs = [
+    ".*",
+    "build",
+    "dist",
+    "*.egg",
+    "__pycache__",
+    "node_modules",
+    "venv",
+    "env",
+    ".venv",
+    ".env",
+    ".git",
+    ".tox",
+    ".coverage",
+    "htmlcov",
+    "coverage_html"
+]
+
+# Fichiers à ignorer
+ignore = [
+    "setup.py",
+    "conftest.py",
+    "test_helpers.py"
+]
+
+# Filtres de warnings
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::FutureWarning",
+    "ignore:.*tensorflow.*:UserWarning",
+    "ignore:.*librosa.*:UserWarning",
+    "ignore:.*matplotlib.*:UserWarning",
+    "ignore:.*numpy.*:RuntimeWarning",
+    "ignore:.*scipy.*:RuntimeWarning",
+    "default::pytest.PytestUnraisableExceptionWarning",
+    "default::pytest.PytestUnknownMarkWarning"
+]
+
+# Configuration des logs
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+log_file = "tests.log"
+log_file_level = "DEBUG"
+log_file_format = "%(asctime)s [%(levelname)8s] %(filename)s:%(lineno)d: %(funcName)s(): %(message)s"
+log_file_date_format = "%Y-%m-%d %H:%M:%S"
+
+# Variables d'environnement pour les tests
+env = [
+    "PYTHONPATH=backend:$PYTHONPATH",
+    "SPLEETER_TEST_MODE=true",
+    "SPLEETER_LOG_LEVEL=DEBUG",
+    "SPLEETER_CACHE_DISABLED=true",
+    "SPLEETER_MODEL_PATH=/tmp/spleeter_models",
+    "SPLEETER_OUTPUT_PATH=/tmp/spleeter_output",
+    "TESTING=true",
+    "DEBUG=true"
+]
+
+# Timeout par défaut
+timeout = 60
+timeout_method = "thread"
+
+# Configuration pour pytest-benchmark
+benchmark_group_by = "group"
+benchmark_sort = "mean"
+benchmark_compare_fail = "mean:10%"
+benchmark_max_time = 1.0
+benchmark_min_rounds = 3
+benchmark_timer = "time.perf_counter"
+benchmark_warmup = true
+benchmark_warmup_iterations = 100000
+
+# Configuration pour pytest-cov
+cov_report = [
+    "term-missing",
+    "html:coverage_html",
+    "xml:coverage.xml"
+]
+cov_fail_under = 85
+cov_branch = true
+cov_context = "test"
+
+# Configuration pytest-html
+html_report = "test_report.html"
+html_self_contained = true
+
+# Configuration pytest-json-report
+json_report = "test_results.json"
+json_report_summary = true
+
+# Ordre d'exécution des tests (plugins)
+test_order = [
+    "smoke",
+    "unit", 
+    "integration",
+    "performance",
+    "stress"
+]
+
+# Configuration asyncio
+asyncio_mode = "auto"
+
+# Configuration des mocks
+mock_use_standalone_module = true
+
+# Configuration des fixtures
+fixtures_per_test = true
+
+# Configuration de la collecte
+collect_ignore = [
+    "setup.py",
+    "__pycache__",
+    ".git",
+    ".pytest_cache"
+]
+
+# Configuration du cache
+cache_dir = ".pytest_cache"
+
+# Minimum version de pytest
+minversion = "7.0"
+
+# Configuration des plugins requis
+required_plugins = [
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0"
+]
+
+# Configuration des hooks
+python_paths = [
+    "backend",
+    "backend/app",
+    "backend/spleeter"
+]
+
+# Configuration pour les tests parallèles
+workers = "auto"
+forked = false
+
+# Configuration des ressources temporaires
+tmp_path_retention_count = 3
+tmp_path_retention_policy = "failed"
+
+# Configuration de la découverte récursive
+recursive = true
+
+# Configuration des imports
+import_mode = "importlib"
+
+# Configuration de l'isolation
+run_isolated = true
+
+# Gestion des exceptions non gérées
+capture_unraisable_exceptions = true
+
+# Configuration des sessions de test
+session_timeout = 3600  # 1 heure max pour toute la session
+
+[tool.coverage.run]
+# Configuration coverage.py
+source = ["backend/spleeter"]
+branch = true
+parallel = true
+concurrency = ["thread", "multiprocessing"]
+
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/.venv/*",
+    "*/.env/*",
+    "setup.py",
+    "conftest.py"
+]
+
+include = [
+    "backend/spleeter/*"
+]
+
+[tool.coverage.report]
+# Configuration des rapports de couverture
+precision = 2
+show_missing = true
+sort = "Cover"
+skip_covered = false
+skip_empty = false
+fail_under = 85
+
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+
+[tool.coverage.html]
+# Configuration du rapport HTML
+directory = "coverage_html"
+title = "Spotify AI Agent - Couverture de Tests Spleeter"
+show_contexts = true
+
+[tool.coverage.xml]
+# Configuration du rapport XML
+output = "coverage.xml"
+
+[tool.black]
+# Configuration Black (formatage)
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+# Configuration isort (imports)
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["spleeter", "app", "backend"]
+known_third_party = ["pytest", "numpy", "tensorflow", "librosa"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+# Configuration MyPy (types)
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tensorflow.*",
+    "librosa.*",
+    "soundfile.*",
+    "scipy.*",
+    "matplotlib.*",
+    "redis.*",
+    "psutil.*"
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+# Configuration Flake8 (linting)
+max-line-length = 100
+select = ["E", "W", "F", "C", "N"]
+ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+    "F401"   # imported but unused (handled by isort)
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".venv",
+    ".env",
+    "venv",
+    "env"
+]
+per-file-ignores = [
+    "__init__.py:F401",
+    "test_*.py:F401,F811",
+    "conftest.py:F401,F811"
+]
+
+[build-system]
+# Configuration du build system
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"

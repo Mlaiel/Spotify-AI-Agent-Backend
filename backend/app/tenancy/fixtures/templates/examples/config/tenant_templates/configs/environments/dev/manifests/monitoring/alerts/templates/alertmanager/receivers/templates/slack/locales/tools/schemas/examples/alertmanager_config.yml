@@ -1,0 +1,294 @@
+global:
+  # Configuration SMTP pour les notifications email
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@spotify-ai-agent.com'
+  smtp_auth_username: 'alerts@spotify-ai-agent.com'
+  smtp_auth_password_file: '/etc/alertmanager/smtp_password'
+  smtp_require_tls: true
+  
+  # Configuration Slack globale
+  slack_api_url: 'https://hooks.slack.com/services'
+  
+  # Résolution automatique des alertes
+  resolve_timeout: 10m
+
+# Templates pour les messages d'alerte
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+  - '/etc/alertmanager/templates/tenant_specific/*.tmpl'
+
+# Configuration du routage des alertes
+route:
+  group_by: ['tenant_id', 'alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  receiver: 'default-receiver'
+  
+  # Routes spécifiques par tenant et sévérité
+  routes:
+    # Alertes critiques - notification immédiate
+    - match:
+        severity: 'critical'
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 5m
+      routes:
+        # Alertes critiques pour tenants Enterprise
+        - match:
+            tenant_tier: 'enterprise'
+          receiver: 'enterprise-critical'
+          continue: true
+        # Alertes critiques pour tenants Premium
+        - match:
+            tenant_tier: 'premium'
+          receiver: 'premium-critical'
+          continue: true
+    
+    # Alertes de sécurité
+    - match:
+        category: 'security'
+      receiver: 'security-team'
+      group_wait: 5s
+      group_interval: 30s
+      repeat_interval: 30m
+    
+    # Alertes de performance IA/ML
+    - match:
+        category: 'ml_performance'
+      receiver: 'ai-ops-team'
+      group_wait: 1m
+      group_interval: 5m
+      repeat_interval: 1h
+    
+    # Alertes par tenant spécifique
+    - match_re:
+        tenant_id: '.*-enterprise-.*'
+      receiver: 'enterprise-alerts'
+      routes:
+        - match:
+            severity: 'warning'
+          receiver: 'enterprise-warnings'
+        - match:
+            severity: 'info'
+          receiver: 'enterprise-info'
+    
+    - match_re:
+        tenant_id: '.*-premium-.*'
+      receiver: 'premium-alerts'
+      routes:
+        - match:
+            severity: 'warning'
+          receiver: 'premium-warnings'
+    
+    # Alertes infrastructure
+    - match:
+        category: 'infrastructure'
+      receiver: 'infrastructure-team'
+      group_interval: 10m
+      repeat_interval: 2h
+    
+    # Alertes base de données
+    - match:
+        category: 'database'
+      receiver: 'dba-team'
+      group_interval: 2m
+      repeat_interval: 30m
+
+# Inhibition des alertes (éviter le spam)
+inhibit_rules:
+  # Inhiber les alertes de warning si une alerte critique existe
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['tenant_id', 'alertname']
+  
+  # Inhiber les alertes d'instance si le noeud entier est down
+  - source_match:
+      alertname: 'NodeDown'
+    target_match_re:
+      alertname: '(NodeLoad|NodeMemory|NodeDisk).*'
+    equal: ['instance']
+  
+  # Inhiber les alertes tenant si l'infrastructure globale est down
+  - source_match:
+      category: 'infrastructure'
+      severity: 'critical'
+    target_match:
+      category: 'tenant_specific'
+    equal: ['cluster']
+
+# Configuration des receivers (destinations des alertes)
+receivers:
+  # Receiver par défaut
+  - name: 'default-receiver'
+    slack_configs:
+      - api_url: '{{ template "slack.default.api_url" . }}'
+        channel: '#alerts-general'
+        username: 'Spotify AI Agent'
+        icon_emoji: ':robot_face:'
+        title: 'Alerte Générale - {{ .GroupLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+          *Tenant:* {{ .Labels.tenant_id }}
+          *Sévérité:* {{ .Labels.severity }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+
+  # Alertes critiques
+  - name: 'critical-alerts'
+    slack_configs:
+      - api_url: '{{ template "slack.critical.api_url" . }}'
+        channel: '#alerts-critical'
+        username: 'Spotify AI Agent - CRITIQUE'
+        icon_emoji: ':rotating_light:'
+        color: 'danger'
+        title: '🚨 ALERTE CRITIQUE - Action Immédiate Requise'
+        title_link: '{{ template "slack.default.titlelink" . }}'
+        text: >-
+          {{ template "slack.critical.text" . }}
+        actions:
+          - type: button
+            text: 'Voir Grafana'
+            url: '{{ template "grafana.dashboard.url" . }}'
+          - type: button
+            text: 'Playbook'
+            url: '{{ template "playbook.url" . }}'
+    
+    # Notification PagerDuty pour alertes critiques
+    pagerduty_configs:
+      - routing_key: '{{ template "pagerduty.routing_key" . }}'
+        description: 'Alerte critique: {{ .GroupLabels.alertname }}'
+        details:
+          tenant_id: '{{ .GroupLabels.tenant_id }}'
+          severity: '{{ .GroupLabels.severity }}'
+          environment: '{{ .GroupLabels.environment }}'
+        links:
+          - href: '{{ template "grafana.dashboard.url" . }}'
+            text: 'Dashboard Grafana'
+          - href: '{{ template "playbook.url" . }}'
+            text: 'Runbook'
+
+  # Alertes Enterprise
+  - name: 'enterprise-critical'
+    slack_configs:
+      - api_url: '{{ template "slack.enterprise.api_url" . }}'
+        channel: '#enterprise-alerts'
+        username: 'Enterprise Alert System'
+        icon_emoji: ':warning:'
+        color: 'danger'
+        title: 'Enterprise Critical Alert - {{ .GroupLabels.alertname }}'
+        text: >-
+          {{ template "slack.enterprise.critical.text" . }}
+    
+    email_configs:
+      - to: 'enterprise-support@spotify-ai-agent.com'
+        from: 'alerts@spotify-ai-agent.com'
+        subject: 'CRITICAL: {{ .GroupLabels.alertname }} - Tenant {{ .GroupLabels.tenant_id }}'
+        html: >-
+          {{ template "email.enterprise.critical.html" . }}
+
+  # Alertes Premium
+  - name: 'premium-critical'
+    slack_configs:
+      - api_url: '{{ template "slack.premium.api_url" . }}'
+        channel: '#premium-alerts'
+        username: 'Premium Alert System'
+        icon_emoji: ':warning:'
+        color: 'danger'
+        title: 'Premium Critical Alert - {{ .GroupLabels.alertname }}'
+
+  - name: 'premium-warnings'
+    slack_configs:
+      - api_url: '{{ template "slack.premium.api_url" . }}'
+        channel: '#premium-warnings'
+        color: 'warning'
+        title: 'Premium Warning - {{ .GroupLabels.alertname }}'
+
+  # Équipe sécurité
+  - name: 'security-team'
+    slack_configs:
+      - api_url: '{{ template "slack.security.api_url" . }}'
+        channel: '#security-alerts'
+        username: 'Security Alert System'
+        icon_emoji: ':shield:'
+        color: 'danger'
+        title: '🛡️ ALERTE SÉCURITÉ - {{ .GroupLabels.alertname }}'
+        text: >-
+          {{ template "slack.security.text" . }}
+    
+    email_configs:
+      - to: 'security@spotify-ai-agent.com'
+        from: 'security-alerts@spotify-ai-agent.com'
+        subject: 'SECURITY ALERT: {{ .GroupLabels.alertname }}'
+        html: >-
+          {{ template "email.security.html" . }}
+
+  # Équipe AI/ML Ops
+  - name: 'ai-ops-team'
+    slack_configs:
+      - api_url: '{{ template "slack.aiops.api_url" . }}'
+        channel: '#ai-ops-alerts'
+        username: 'AI/ML Ops Alert System'
+        icon_emoji: ':robot_face:'
+        color: 'warning'
+        title: '🤖 Alerte Performance ML - {{ .GroupLabels.alertname }}'
+        text: >-
+          {{ template "slack.aiops.text" . }}
+
+  # Équipe infrastructure
+  - name: 'infrastructure-team'
+    slack_configs:
+      - api_url: '{{ template "slack.infrastructure.api_url" . }}'
+        channel: '#infrastructure-alerts'
+        username: 'Infrastructure Alert System'
+        icon_emoji: ':building_construction:'
+        color: 'warning'
+        title: '🏗️ Alerte Infrastructure - {{ .GroupLabels.alertname }}'
+
+  # Équipe DBA
+  - name: 'dba-team'
+    slack_configs:
+      - api_url: '{{ template "slack.dba.api_url" . }}'
+        channel: '#database-alerts'
+        username: 'Database Alert System'
+        icon_emoji: ':floppy_disk:'
+        color: 'warning'
+        title: '💾 Alerte Base de Données - {{ .GroupLabels.alertname }}'
+
+  # Receiver pour tests
+  - name: 'test-receiver'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/test'
+        channel: '#alerts-test'
+        title: 'Test Alert'
+        text: 'Test message from AlertManager'
+
+# Configuration du clustering (pour la haute disponibilité)
+peer:
+  gossip_interval: 200ms
+  push_pull_interval: 60s
+  tcp_timeout: 30s
+  probe_timeout: 500ms
+  probe_interval: 5s
+
+# Configuration du stockage des silences et notifications
+storage:
+  path: '/alertmanager/data'
+
+# Configuration des silences par défaut
+silences:
+  gc_interval: 30m
+  
+# Configuration du serveur web
+web:
+  listen_address: ':9093'
+  external_url: 'http://alertmanager.spotify-ai-agent.com'
+  route_prefix: '/'
+  
+# Logging
+log:
+  level: 'info'
+  format: 'json'

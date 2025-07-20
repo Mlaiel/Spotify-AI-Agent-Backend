@@ -1,0 +1,331 @@
+# Slack Webhook Configuration Examples
+# File: webhook_examples.yaml
+
+# Production Webhook Configuration
+production_webhook:
+  name: "Spotify Production Alerts"
+  url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+  description: "Primary webhook for production environment alerts"
+  
+  # Webhook settings
+  settings:
+    # Custom display name for messages
+    username: "Spotify AI Agent"
+    
+    # Custom icon for messages
+    icon_emoji: ":musical_note:"
+    
+    # Default channel (can be overridden per message)
+    channel: "#alerts-production"
+    
+    # Link names (convert @channel, @here, @user mentions)
+    link_names: true
+    
+    # Parse URLs and format them
+    parse: "full"
+    
+    # Unfurl links in messages
+    unfurl_links: true
+    unfurl_media: true
+  
+  # Rate limiting specific to this webhook
+  rate_limits:
+    # Slack's rate limit is 1 message per second
+    max_messages_per_second: 1
+    
+    # Burst allowance
+    burst_size: 5
+    
+    # Retry configuration
+    max_retries: 3
+    retry_delay_seconds: 2
+    exponential_backoff: true
+  
+  # Security settings
+  security:
+    # Verify SSL certificates
+    verify_ssl: true
+    
+    # Connection timeout
+    timeout_seconds: 10
+    
+    # Maximum message size (Slack limit is 40KB)
+    max_message_size_bytes: 40000
+
+# Development Webhook Configuration
+development_webhook:
+  name: "Spotify Development Alerts"
+  url: "https://hooks.slack.com/services/T00000000/B11111111/YYYYYYYYYYYYYYYYYYYYYYYY"
+  description: "Webhook for development environment alerts"
+  
+  settings:
+    username: "Spotify AI Agent [DEV]"
+    icon_emoji: ":construction:"
+    channel: "#alerts-dev"
+    link_names: true
+    parse: "full"
+  
+  rate_limits:
+    max_messages_per_second: 0.5  # Slower rate for dev
+    burst_size: 3
+    max_retries: 2
+    retry_delay_seconds: 1
+
+# Staging Webhook Configuration
+staging_webhook:
+  name: "Spotify Staging Alerts"
+  url: "https://hooks.slack.com/services/T00000000/B22222222/ZZZZZZZZZZZZZZZZZZZZZZZZ"
+  description: "Webhook for staging environment alerts"
+  
+  settings:
+    username: "Spotify AI Agent [STAGING]"
+    icon_emoji: ":test_tube:"
+    channel: "#alerts-staging"
+    link_names: true
+    parse: "full"
+  
+  rate_limits:
+    max_messages_per_second: 0.8
+    burst_size: 4
+    max_retries: 3
+    retry_delay_seconds: 1.5
+
+# Critical Alerts Webhook (High Priority)
+critical_webhook:
+  name: "Spotify Critical Alerts"
+  url: "https://hooks.slack.com/services/T00000000/B33333333/AAAAAAAAAAAAAAAAAAAAAAA"
+  description: "Dedicated webhook for critical alerts with highest priority"
+  
+  settings:
+    username: "🚨 CRITICAL ALERT 🚨"
+    icon_emoji: ":rotating_light:"
+    channel: "#critical-alerts"
+    link_names: true
+    parse: "full"
+  
+  rate_limits:
+    max_messages_per_second: 2  # Higher rate for critical
+    burst_size: 10
+    max_retries: 5
+    retry_delay_seconds: 1
+    exponential_backoff: true
+  
+  # Special handling for critical alerts
+  special_handling:
+    # Always mention @channel for critical alerts
+    mention_channel: true
+    
+    # Thread critical alert updates
+    use_threads: true
+    
+    # Send immediate follow-up if not acknowledged
+    auto_followup_minutes: 5
+
+# Team-Specific Webhooks
+team_webhooks:
+  # ML Team Webhook
+  ml_team:
+    name: "ML Team Alerts"
+    url: "https://hooks.slack.com/services/T00000000/B44444444/BBBBBBBBBBBBBBBBBBBBBBB"
+    description: "Alerts specific to ML services and models"
+    
+    settings:
+      username: "ML Alert Bot"
+      icon_emoji: ":robot_face:"
+      channel: "#ml-alerts"
+      link_names: true
+    
+    # Filters for ML-related alerts
+    filters:
+      services: ["ml-training", "recommendation-engine", "audio-analysis", "model-serving"]
+      components: ["tensorflow", "pytorch", "scikit-learn", "gpu-cluster"]
+  
+  # API Team Webhook
+  api_team:
+    name: "API Team Alerts"
+    url: "https://hooks.slack.com/services/T00000000/B55555555/CCCCCCCCCCCCCCCCCCCCCCC"
+    description: "Alerts for API services and gateways"
+    
+    settings:
+      username: "API Alert Bot"
+      icon_emoji: ":gear:"
+      channel: "#api-alerts"
+      link_names: true
+    
+    filters:
+      services: ["spotify-api", "auth-service", "user-service", "playlist-api"]
+      components: ["nginx", "redis", "postgresql", "elasticsearch"]
+  
+  # Infrastructure Team Webhook
+  infra_team:
+    name: "Infrastructure Alerts"
+    url: "https://hooks.slack.com/services/T00000000/B66666666/DDDDDDDDDDDDDDDDDDDDDDD"
+    description: "Infrastructure and platform alerts"
+    
+    settings:
+      username: "Infra Alert Bot"
+      icon_emoji: ":building_construction:"
+      channel: "#infra-alerts"
+      link_names: true
+    
+    filters:
+      components: ["kubernetes", "docker", "aws", "gcp", "terraform", "ansible"]
+      tags: ["infrastructure", "platform", "networking", "storage"]
+
+# Backup and Failover Configuration
+backup_webhooks:
+  # Primary backup webhook
+  primary_backup:
+    name: "Backup Webhook - Primary"
+    url: "https://hooks.slack.com/services/T00000000/B77777777/EEEEEEEEEEEEEEEEEEEEEEE"
+    description: "Primary backup webhook when main webhook fails"
+    
+    settings:
+      username: "Spotify AI Agent [BACKUP]"
+      icon_emoji: ":warning:"
+      channel: "#alerts-backup"
+    
+    # Trigger conditions for using backup
+    trigger_conditions:
+      - primary_webhook_failure: true
+      - consecutive_failures: 3
+      - response_time_ms: 5000
+  
+  # Secondary backup (different Slack workspace)
+  secondary_backup:
+    name: "Backup Webhook - Secondary"
+    url: "https://hooks.slack.com/services/T99999999/B88888888/FFFFFFFFFFFFFFFFFFFFF"
+    description: "Secondary backup in different Slack workspace"
+    
+    settings:
+      username: "Spotify Emergency Alerts"
+      icon_emoji: ":sos:"
+      channel: "#emergency-alerts"
+    
+    trigger_conditions:
+      - primary_backup_failure: true
+      - total_failures: 10
+      - outage_duration_minutes: 30
+
+# Webhook Health Monitoring
+health_monitoring:
+  # Test webhook configuration
+  test_webhook:
+    name: "Health Check Webhook"
+    url: "https://hooks.slack.com/services/T00000000/B99999999/GGGGGGGGGGGGGGGGGGGGGGG"
+    description: "Webhook for health check messages"
+    
+    settings:
+      username: "Health Check Bot"
+      icon_emoji: ":white_check_mark:"
+      channel: "#system-health"
+    
+    # Health check schedule
+    schedule:
+      interval_minutes: 30
+      test_message: "🟢 Slack webhook health check - All systems operational"
+      failure_threshold: 3
+      recovery_notification: true
+
+# Load Balancing Configuration
+load_balancing:
+  # Enable round-robin across multiple webhooks
+  enabled: true
+  
+  # Strategy: round_robin, least_connections, random, weighted
+  strategy: "weighted"
+  
+  # Webhook pool for load balancing
+  webhook_pool:
+    - webhook_id: "production_webhook"
+      weight: 70
+      health_check: true
+    
+    - webhook_id: "primary_backup"
+      weight: 20
+      health_check: true
+    
+    - webhook_id: "secondary_backup"
+      weight: 10
+      health_check: true
+  
+  # Health check for load balancing
+  health_check:
+    interval_seconds: 60
+    timeout_seconds: 5
+    failure_threshold: 3
+    recovery_threshold: 2
+
+# Webhook Templates and Examples
+webhook_message_examples:
+  # Simple text message
+  simple_text:
+    text: "🚨 Alert: High CPU usage detected on server-01"
+  
+  # Rich formatting with attachments
+  rich_attachment:
+    text: "🚨 Critical Alert"
+    attachments:
+      - color: "danger"
+        title: "High Memory Usage"
+        text: "Memory usage is at 95% on production server"
+        fields:
+          - title: "Server"
+            value: "prod-web-01"
+            short: true
+          - title: "Memory Usage"
+            value: "95%"
+            short: true
+        ts: 1234567890
+  
+  # Block Kit example
+  block_kit_example:
+    blocks:
+      - type: "section"
+        text:
+          type: "mrkdwn"
+          text: "🚨 *Critical Alert*: Database connection failure"
+      - type: "section"
+        fields:
+          - type: "mrkdwn"
+            text: "*Service:*\nDatabase"
+          - type: "mrkdwn"
+            text: "*Environment:*\nProduction"
+      - type: "actions"
+        elements:
+          - type: "button"
+            text:
+              type: "plain_text"
+              text: "Acknowledge"
+            style: "primary"
+            action_id: "acknowledge_alert"
+
+# Environment Variables Template
+environment_variables:
+  # Required environment variables for webhook configuration
+  required_vars:
+    - SLACK_WEBHOOK_URL_PROD
+    - SLACK_WEBHOOK_URL_DEV
+    - SLACK_WEBHOOK_URL_STAGING
+    - SLACK_WEBHOOK_URL_BACKUP
+  
+  # Optional environment variables
+  optional_vars:
+    - SLACK_WEBHOOK_TIMEOUT
+    - SLACK_MAX_RETRIES
+    - SLACK_RATE_LIMIT_PER_SECOND
+    - SLACK_ENABLE_HEALTH_CHECK
+  
+  # Example .env file content
+  env_file_example: |
+    # Slack Webhook URLs
+    SLACK_WEBHOOK_URL_PROD=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+    SLACK_WEBHOOK_URL_DEV=https://hooks.slack.com/services/YOUR/DEV/WEBHOOK
+    SLACK_WEBHOOK_URL_STAGING=https://hooks.slack.com/services/YOUR/STAGING/WEBHOOK
+    SLACK_WEBHOOK_URL_BACKUP=https://hooks.slack.com/services/YOUR/BACKUP/WEBHOOK
+    
+    # Webhook Configuration
+    SLACK_WEBHOOK_TIMEOUT=10
+    SLACK_MAX_RETRIES=3
+    SLACK_RATE_LIMIT_PER_SECOND=1
+    SLACK_ENABLE_HEALTH_CHECK=true

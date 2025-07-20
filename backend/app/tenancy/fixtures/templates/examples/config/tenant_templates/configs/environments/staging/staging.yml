@@ -1,0 +1,690 @@
+# Staging Environment Configuration Template for Enterprise Tenant Templates
+# ========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Staging environment architecture and pre-production validation
+# - Senior DevOps Engineer: Staging environment automation and deployment pipelines
+# - Platform Engineer: Staging environment infrastructure and performance testing
+# - Security Engineer: Staging environment security hardening and compliance validation
+# - QA Engineer: Staging environment testing frameworks and acceptance testing
+
+# ==========================================
+# STAGING ENVIRONMENT CONFIGURATION
+# ==========================================
+
+staging:
+  # Environment Metadata
+  metadata:
+    name: "staging"
+    description: "Staging environment for pre-production testing and validation"
+    version: "1.0.0"
+    environment_type: "staging"
+    tier: "staging"
+    
+    # Environment Labels
+    labels:
+      environment: "staging"
+      tier: "staging"
+      team: "${STAGING_TEAM:-qa}"
+      project: "${PROJECT_NAME:-spotify-ai-agent}"
+      managed_by: "tenant-templates"
+      deployment_strategy: "blue-green"
+    
+    # Environment Annotations
+    annotations:
+      last_updated: "${LAST_UPDATED:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+      created_by: "${CREATED_BY:-system}"
+      purpose: "Pre-production testing and validation environment"
+      compliance_checked: "${COMPLIANCE_CHECKED:-false}"
+
+  # Application Configuration
+  application:
+    # General Settings
+    general:
+      debug: ${STAGING_DEBUG:-false}
+      log_level: "${STAGING_LOG_LEVEL:-INFO}"
+      reload: ${STAGING_RELOAD:-false}
+      hot_reload: ${STAGING_HOT_RELOAD:-false}
+      
+      # Staging Features
+      features:
+        performance_profiling: ${STAGING_PERFORMANCE_PROFILING:-true}
+        load_testing: ${STAGING_LOAD_TESTING:-true}
+        security_scanning: ${STAGING_SECURITY_SCANNING:-true}
+        accessibility_testing: ${STAGING_ACCESSIBILITY_TESTING:-true}
+        integration_testing: ${STAGING_INTEGRATION_TESTING:-true}
+    
+    # API Configuration
+    api:
+      # FastAPI Settings
+      fastapi:
+        debug: ${STAGING_FASTAPI_DEBUG:-false}
+        reload: ${STAGING_FASTAPI_RELOAD:-false}
+        host: "${STAGING_FASTAPI_HOST:-0.0.0.0}"
+        port: ${STAGING_FASTAPI_PORT:-8000}
+        workers: ${STAGING_FASTAPI_WORKERS:-4}
+        
+        # Production-like Features
+        docs_enabled: ${STAGING_DOCS_ENABLED:-true}
+        redoc_enabled: ${STAGING_REDOC_ENABLED:-true}
+        openapi_enabled: ${STAGING_OPENAPI_ENABLED:-true}
+        
+        # CORS Configuration
+        cors:
+          enabled: ${STAGING_CORS_ENABLED:-true}
+          allow_origins:
+            - "https://staging.spotify-ai-agent.com"
+            - "https://app-staging.spotify-ai-agent.com"
+          allow_methods:
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "DELETE"
+            - "OPTIONS"
+          allow_headers:
+            - "Content-Type"
+            - "Authorization"
+            - "X-Requested-With"
+          allow_credentials: ${STAGING_CORS_ALLOW_CREDENTIALS:-true}
+      
+      # Rate Limiting
+      rate_limiting:
+        enabled: ${STAGING_RATE_LIMITING_ENABLED:-true}
+        requests_per_minute: ${STAGING_RATE_LIMIT_RPM:-300}
+        burst: ${STAGING_RATE_LIMIT_BURST:-50}
+        
+        # Advanced Rate Limiting
+        advanced:
+          per_user_limit: ${STAGING_PER_USER_LIMIT:-100}
+          per_ip_limit: ${STAGING_PER_IP_LIMIT:-200}
+          whitelist_enabled: ${STAGING_RATE_LIMIT_WHITELIST:-true}
+    
+    # Frontend Configuration
+    frontend:
+      # React/Next.js Settings
+      react:
+        development_mode: ${STAGING_REACT_DEV_MODE:-false}
+        hot_reload: ${STAGING_REACT_HOT_RELOAD:-false}
+        source_maps: ${STAGING_REACT_SOURCE_MAPS:-false}
+        minification: ${STAGING_REACT_MINIFICATION:-true}
+        
+        # Production Build
+        build:
+          optimization: ${STAGING_REACT_OPTIMIZATION:-true}
+          bundle_analysis: ${STAGING_REACT_BUNDLE_ANALYSIS:-true}
+          tree_shaking: ${STAGING_REACT_TREE_SHAKING:-true}
+
+  # Database Configuration
+  database:
+    # PostgreSQL Staging Settings
+    postgresql:
+      host: "${STAGING_DB_HOST:-staging-db.spotify-ai-agent.internal}"
+      port: ${STAGING_DB_PORT:-5432}
+      database: "${STAGING_DB_NAME:-spotify_ai_agent_staging}"
+      username: "${STAGING_DB_USER:-app_user}"
+      password: "${STAGING_DB_PASSWORD:-}"
+      
+      # Connection Pool
+      pool:
+        min_size: ${STAGING_DB_POOL_MIN:-5}
+        max_size: ${STAGING_DB_POOL_MAX:-20}
+        timeout: ${STAGING_DB_POOL_TIMEOUT:-30}
+        
+      # Performance Settings
+      performance:
+        echo_queries: ${STAGING_DB_ECHO_QUERIES:-false}
+        query_cache: ${STAGING_DB_QUERY_CACHE:-true}
+        prepared_statements: ${STAGING_DB_PREPARED_STATEMENTS:-true}
+        
+      # Backup Configuration
+      backup:
+        enabled: ${STAGING_DB_BACKUP_ENABLED:-true}
+        schedule: "${STAGING_DB_BACKUP_SCHEDULE:-0 2 * * *}"  # Daily at 2 AM
+        retention_days: ${STAGING_DB_BACKUP_RETENTION:-14}
+        
+      # Replication
+      replication:
+        enabled: ${STAGING_DB_REPLICATION_ENABLED:-true}
+        read_replicas: ${STAGING_DB_READ_REPLICAS:-2}
+        replication_lag_threshold: ${STAGING_DB_REPLICATION_LAG_THRESHOLD:-5}
+    
+    # Redis Staging Settings
+    redis:
+      host: "${STAGING_REDIS_HOST:-staging-redis.spotify-ai-agent.internal}"
+      port: ${STAGING_REDIS_PORT:-6379}
+      database: ${STAGING_REDIS_DB:-0}
+      password: "${STAGING_REDIS_PASSWORD:-}"
+      
+      # Configuration
+      configuration:
+        decode_responses: ${STAGING_REDIS_DECODE_RESPONSES:-true}
+        max_connections: ${STAGING_REDIS_MAX_CONNECTIONS:-50}
+        retry_on_timeout: ${STAGING_REDIS_RETRY_ON_TIMEOUT:-true}
+        
+      # Persistence
+      persistence:
+        enabled: ${STAGING_REDIS_PERSISTENCE_ENABLED:-true}
+        aof_enabled: ${STAGING_REDIS_AOF_ENABLED:-true}
+        rdb_enabled: ${STAGING_REDIS_RDB_ENABLED:-true}
+        
+      # Clustering
+      clustering:
+        enabled: ${STAGING_REDIS_CLUSTERING_ENABLED:-false}
+        nodes: ${STAGING_REDIS_CLUSTER_NODES:-3}
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # JWT Settings
+      jwt:
+        secret_key: "${STAGING_JWT_SECRET:-staging-jwt-secret-key}"
+        algorithm: "${STAGING_JWT_ALGORITHM:-HS256}"
+        access_token_expire: ${STAGING_JWT_ACCESS_TOKEN_EXPIRE:-1800}  # 30 minutes
+        refresh_token_expire: ${STAGING_JWT_REFRESH_TOKEN_EXPIRE:-86400}  # 24 hours
+        
+        # Security Features
+        features:
+          token_blacklist: ${STAGING_JWT_TOKEN_BLACKLIST:-true}
+          token_rotation: ${STAGING_JWT_TOKEN_ROTATION:-true}
+          secure_cookies: ${STAGING_JWT_SECURE_COOKIES:-true}
+      
+      # OAuth2 Settings
+      oauth2:
+        enabled: ${STAGING_OAUTH2_ENABLED:-true}
+        
+        # Spotify OAuth2
+        spotify:
+          client_id: "${STAGING_SPOTIFY_CLIENT_ID:-}"
+          client_secret: "${STAGING_SPOTIFY_CLIENT_SECRET:-}"
+          redirect_uri: "${STAGING_SPOTIFY_REDIRECT_URI:-https://staging.spotify-ai-agent.com/auth/spotify/callback}"
+          
+        # Multi-factor Authentication
+        mfa:
+          enabled: ${STAGING_MFA_ENABLED:-true}
+          methods:
+            - "totp"
+            - "email"
+          enforcement: "${STAGING_MFA_ENFORCEMENT:-optional}"
+    
+    # Authorization
+    authorization:
+      # RBAC Settings
+      rbac:
+        enabled: ${STAGING_RBAC_ENABLED:-true}
+        strict_mode: ${STAGING_RBAC_STRICT_MODE:-true}
+        
+        # Staging Roles
+        roles:
+          - name: "staging_admin"
+            permissions: ["*"]
+          - name: "staging_user"
+            permissions: ["read", "write"]
+          - name: "qa_tester"
+            permissions: ["read", "test"]
+      
+      # Policy Enforcement
+      policy_enforcement:
+        enabled: ${STAGING_POLICY_ENFORCEMENT_ENABLED:-true}
+        audit_logs: ${STAGING_POLICY_AUDIT_LOGS:-true}
+    
+    # Encryption
+    encryption:
+      # Data Encryption
+      data_encryption:
+        enabled: ${STAGING_DATA_ENCRYPTION_ENABLED:-true}
+        key: "${STAGING_ENCRYPTION_KEY:-}"
+        algorithm: "${STAGING_ENCRYPTION_ALGORITHM:-AES-256-GCM}"
+        
+      # TLS Settings
+      tls:
+        enabled: ${STAGING_TLS_ENABLED:-true}
+        version: "${STAGING_TLS_VERSION:-TLSv1.3}"
+        verify: ${STAGING_TLS_VERIFY:-true}
+        
+        # Certificate Management
+        certificates:
+          auto_renewal: ${STAGING_CERT_AUTO_RENEWAL:-true}
+          renewal_threshold: ${STAGING_CERT_RENEWAL_THRESHOLD:-30}  # days
+    
+    # Security Scanning
+    security_scanning:
+      enabled: ${STAGING_SECURITY_SCANNING_ENABLED:-true}
+      
+      # Vulnerability Scanning
+      vulnerability_scanning:
+        enabled: ${STAGING_VULN_SCANNING_ENABLED:-true}
+        schedule: "${STAGING_VULN_SCAN_SCHEDULE:-0 1 * * *}"  # Daily at 1 AM
+        
+      # SAST (Static Application Security Testing)
+      sast:
+        enabled: ${STAGING_SAST_ENABLED:-true}
+        tools:
+          - "bandit"
+          - "semgrep"
+          - "codeql"
+        
+      # DAST (Dynamic Application Security Testing)
+      dast:
+        enabled: ${STAGING_DAST_ENABLED:-true}
+        tools:
+          - "zap"
+          - "nikto"
+        
+      # Dependency Scanning
+      dependency_scanning:
+        enabled: ${STAGING_DEPENDENCY_SCANNING_ENABLED:-true}
+        tools:
+          - "safety"
+          - "snyk"
+
+  # Monitoring and Observability
+  observability:
+    # Metrics
+    metrics:
+      enabled: ${STAGING_METRICS_ENABLED:-true}
+      
+      # Prometheus
+      prometheus:
+        enabled: ${STAGING_PROMETHEUS_ENABLED:-true}
+        port: ${STAGING_PROMETHEUS_PORT:-9090}
+        path: "${STAGING_PROMETHEUS_PATH:-/metrics}"
+        retention: "${STAGING_PROMETHEUS_RETENTION:-7d}"
+        
+        # Alerting
+        alerting:
+          enabled: ${STAGING_PROMETHEUS_ALERTING_ENABLED:-true}
+          alertmanager_url: "${STAGING_ALERTMANAGER_URL:-http://alertmanager:9093}"
+          
+        # Custom Metrics
+        custom_metrics:
+          enabled: ${STAGING_CUSTOM_METRICS_ENABLED:-true}
+          business_metrics: ${STAGING_BUSINESS_METRICS:-true}
+          performance_metrics: ${STAGING_PERFORMANCE_METRICS:-true}
+    
+    # Logging
+    logging:
+      level: "${STAGING_LOG_LEVEL:-INFO}"
+      format: "${STAGING_LOG_FORMAT:-json}"
+      
+      # Log Outputs
+      outputs:
+        console:
+          enabled: ${STAGING_LOG_CONSOLE:-true}
+          colorize: ${STAGING_LOG_COLORIZE:-false}
+        
+        file:
+          enabled: ${STAGING_LOG_FILE:-true}
+          path: "${STAGING_LOG_FILE_PATH:-/var/log/app/staging.log}"
+          rotation: ${STAGING_LOG_ROTATION:-true}
+          max_size: "${STAGING_LOG_MAX_SIZE:-100MB}"
+          retention: ${STAGING_LOG_RETENTION:-30}  # days
+        
+        elasticsearch:
+          enabled: ${STAGING_LOG_ELASTICSEARCH:-true}
+          hosts:
+            - "${STAGING_ELASTICSEARCH_HOST:-elasticsearch:9200}"
+          index: "${STAGING_LOG_INDEX:-staging-logs}"
+      
+      # Logger Configuration
+      loggers:
+        root:
+          level: "INFO"
+        
+        sqlalchemy:
+          level: "${STAGING_SQLALCHEMY_LOG_LEVEL:-WARNING}"
+        
+        uvicorn:
+          level: "${STAGING_UVICORN_LOG_LEVEL:-INFO}"
+        
+        security:
+          level: "INFO"
+          
+        performance:
+          level: "INFO"
+    
+    # Tracing
+    tracing:
+      enabled: ${STAGING_TRACING_ENABLED:-true}
+      
+      # Jaeger
+      jaeger:
+        enabled: ${STAGING_JAEGER_ENABLED:-true}
+        endpoint: "${STAGING_JAEGER_ENDPOINT:-http://jaeger-collector:14268/api/traces}"
+        sampling_rate: ${STAGING_JAEGER_SAMPLING_RATE:-0.1}
+        
+      # OpenTelemetry
+      opentelemetry:
+        enabled: ${STAGING_OPENTELEMETRY_ENABLED:-true}
+        endpoint: "${STAGING_OTEL_ENDPOINT:-http://otel-collector:4317}"
+    
+    # Health Checks
+    health_checks:
+      enabled: ${STAGING_HEALTH_CHECKS_ENABLED:-true}
+      
+      # Check Configuration
+      checks:
+        database:
+          enabled: ${STAGING_HEALTH_CHECK_DB:-true}
+          timeout: ${STAGING_HEALTH_CHECK_DB_TIMEOUT:-5}
+          interval: ${STAGING_HEALTH_CHECK_DB_INTERVAL:-30}
+        
+        redis:
+          enabled: ${STAGING_HEALTH_CHECK_REDIS:-true}
+          timeout: ${STAGING_HEALTH_CHECK_REDIS_TIMEOUT:-3}
+          interval: ${STAGING_HEALTH_CHECK_REDIS_INTERVAL:-30}
+        
+        external_apis:
+          enabled: ${STAGING_HEALTH_CHECK_EXTERNAL_APIS:-true}
+          timeout: ${STAGING_HEALTH_CHECK_EXTERNAL_TIMEOUT:-10}
+          interval: ${STAGING_HEALTH_CHECK_EXTERNAL_INTERVAL:-60}
+        
+        dependencies:
+          enabled: ${STAGING_HEALTH_CHECK_DEPENDENCIES:-true}
+          timeout: ${STAGING_HEALTH_CHECK_DEPENDENCIES_TIMEOUT:-15}
+          interval: ${STAGING_HEALTH_CHECK_DEPENDENCIES_INTERVAL:-120}
+
+  # Performance Configuration
+  performance:
+    # Application Performance
+    application_performance:
+      # Caching
+      caching:
+        enabled: ${STAGING_CACHING_ENABLED:-true}
+        
+        # Redis Caching
+        redis_cache:
+          enabled: ${STAGING_REDIS_CACHE_ENABLED:-true}
+          ttl: ${STAGING_REDIS_CACHE_TTL:-3600}  # 1 hour
+          max_connections: ${STAGING_REDIS_CACHE_MAX_CONNECTIONS:-20}
+        
+        # Memory Caching
+        memory_cache:
+          enabled: ${STAGING_MEMORY_CACHE_ENABLED:-true}
+          size: "${STAGING_MEMORY_CACHE_SIZE:-128MB}"
+          
+        # CDN Caching
+        cdn_cache:
+          enabled: ${STAGING_CDN_CACHE_ENABLED:-true}
+          provider: "${STAGING_CDN_PROVIDER:-cloudflare}"
+          ttl: ${STAGING_CDN_CACHE_TTL:-86400}  # 24 hours
+      
+      # Connection Pooling
+      connection_pooling:
+        enabled: ${STAGING_CONNECTION_POOLING_ENABLED:-true}
+        
+        # Database Connection Pool
+        database_pool:
+          min_connections: ${STAGING_DB_POOL_MIN:-5}
+          max_connections: ${STAGING_DB_POOL_MAX:-20}
+          acquire_timeout: ${STAGING_DB_POOL_ACQUIRE_TIMEOUT:-30}
+          
+        # HTTP Connection Pool
+        http_pool:
+          max_connections: ${STAGING_HTTP_POOL_MAX:-100}
+          max_connections_per_host: ${STAGING_HTTP_POOL_MAX_PER_HOST:-20}
+    
+    # Load Testing
+    load_testing:
+      enabled: ${STAGING_LOAD_TESTING_ENABLED:-true}
+      
+      # Test Configuration
+      configuration:
+        tool: "${STAGING_LOAD_TEST_TOOL:-k6}"
+        scenarios:
+          - name: "baseline"
+            users: ${STAGING_LOAD_TEST_BASELINE_USERS:-10}
+            duration: "${STAGING_LOAD_TEST_BASELINE_DURATION:-5m}"
+          
+          - name: "stress"
+            users: ${STAGING_LOAD_TEST_STRESS_USERS:-100}
+            duration: "${STAGING_LOAD_TEST_STRESS_DURATION:-10m}"
+          
+          - name: "spike"
+            users: ${STAGING_LOAD_TEST_SPIKE_USERS:-500}
+            duration: "${STAGING_LOAD_TEST_SPIKE_DURATION:-2m}"
+    
+    # Auto-scaling
+    auto_scaling:
+      enabled: ${STAGING_AUTO_SCALING_ENABLED:-true}
+      
+      # Horizontal Pod Autoscaler
+      hpa:
+        min_replicas: ${STAGING_HPA_MIN_REPLICAS:-2}
+        max_replicas: ${STAGING_HPA_MAX_REPLICAS:-10}
+        target_cpu_utilization: ${STAGING_HPA_CPU_TARGET:-70}
+        target_memory_utilization: ${STAGING_HPA_MEMORY_TARGET:-80}
+        
+      # Vertical Pod Autoscaler
+      vpa:
+        enabled: ${STAGING_VPA_ENABLED:-false}
+        update_mode: "${STAGING_VPA_UPDATE_MODE:-Auto}"
+
+  # Resource Configuration
+  resources:
+    # Compute Resources
+    compute:
+      # CPU Configuration
+      cpu:
+        requests: "${STAGING_CPU_REQUESTS:-500m}"
+        limits: "${STAGING_CPU_LIMITS:-2000m}"
+        
+      # Memory Configuration
+      memory:
+        requests: "${STAGING_MEMORY_REQUESTS:-1Gi}"
+        limits: "${STAGING_MEMORY_LIMITS:-4Gi}"
+      
+      # Node Configuration
+      node_selection:
+        enabled: ${STAGING_NODE_SELECTION_ENABLED:-true}
+        node_selector:
+          node_type: "staging"
+          performance_tier: "standard"
+        
+        # Pod Anti-affinity
+        pod_anti_affinity:
+          enabled: ${STAGING_POD_ANTI_AFFINITY_ENABLED:-true}
+          scope: "zone"
+    
+    # Storage Resources
+    storage:
+      # Persistent Volume
+      persistent_volume:
+        enabled: ${STAGING_PV_ENABLED:-true}
+        size: "${STAGING_PV_SIZE:-20Gi}"
+        storage_class: "${STAGING_STORAGE_CLASS:-ssd}"
+        access_mode: "${STAGING_ACCESS_MODE:-ReadWriteOnce}"
+        
+      # Backup Storage
+      backup_storage:
+        enabled: ${STAGING_BACKUP_STORAGE_ENABLED:-true}
+        size: "${STAGING_BACKUP_STORAGE_SIZE:-50Gi}"
+        storage_class: "${STAGING_BACKUP_STORAGE_CLASS:-standard}"
+
+  # External Services
+  external_services:
+    # Spotify API
+    spotify_api:
+      enabled: ${STAGING_SPOTIFY_API_ENABLED:-true}
+      
+      # Configuration
+      configuration:
+        base_url: "${STAGING_SPOTIFY_BASE_URL:-https://api.spotify.com/v1}"
+        timeout: ${STAGING_SPOTIFY_TIMEOUT:-30}
+        rate_limit: ${STAGING_SPOTIFY_RATE_LIMIT:-50}
+        
+        # Circuit Breaker
+        circuit_breaker:
+          enabled: ${STAGING_SPOTIFY_CIRCUIT_BREAKER_ENABLED:-true}
+          failure_threshold: ${STAGING_SPOTIFY_FAILURE_THRESHOLD:-5}
+          reset_timeout: ${STAGING_SPOTIFY_RESET_TIMEOUT:-30}
+        
+        # Retry Configuration
+        retry:
+          enabled: ${STAGING_SPOTIFY_RETRY_ENABLED:-true}
+          max_attempts: ${STAGING_SPOTIFY_MAX_ATTEMPTS:-3}
+          backoff_factor: ${STAGING_SPOTIFY_BACKOFF_FACTOR:-2}
+    
+    # ML Services
+    ml_services:
+      enabled: ${STAGING_ML_SERVICES_ENABLED:-true}
+      
+      # TensorFlow Serving
+      tensorflow_serving:
+        enabled: ${STAGING_TF_SERVING_ENABLED:-true}
+        endpoint: "${STAGING_TF_SERVING_ENDPOINT:-http://tensorflow-serving:8501}"
+        
+        # Model Configuration
+        models:
+          - name: "music_genre_classifier"
+            version: "${STAGING_GENRE_MODEL_VERSION:-1}"
+          
+          - name: "audio_feature_extractor"
+            version: "${STAGING_AUDIO_MODEL_VERSION:-1}"
+        
+        # Performance Configuration
+        performance:
+          batch_size: ${STAGING_TF_BATCH_SIZE:-32}
+          max_batch_delay: ${STAGING_TF_MAX_BATCH_DELAY:-100}  # ms
+      
+      # Spleeter Service
+      spleeter:
+        enabled: ${STAGING_SPLEETER_ENABLED:-true}
+        endpoint: "${STAGING_SPLEETER_ENDPOINT:-http://spleeter-service:8080}"
+        
+        # Configuration
+        configuration:
+          models:
+            - "2stems-16kHz"
+            - "4stems-16kHz"
+          timeout: ${STAGING_SPLEETER_TIMEOUT:-120}
+          max_file_size: "${STAGING_SPLEETER_MAX_FILE_SIZE:-100MB}"
+
+  # Networking
+  networking:
+    # Service Configuration
+    services:
+      # API Service
+      api_service:
+        type: "ClusterIP"
+        port: 8000
+        target_port: 8000
+        
+        # Load Balancer
+        load_balancer:
+          enabled: ${STAGING_API_LB_ENABLED:-true}
+          algorithm: "${STAGING_API_LB_ALGORITHM:-round_robin}"
+          health_check:
+            enabled: ${STAGING_API_LB_HEALTH_CHECK:-true}
+            path: "/health"
+            interval: ${STAGING_API_LB_HEALTH_CHECK_INTERVAL:-30}
+      
+      # Frontend Service
+      frontend_service:
+        type: "ClusterIP"
+        port: 3000
+        target_port: 3000
+    
+    # Ingress Configuration
+    ingress:
+      enabled: ${STAGING_INGRESS_ENABLED:-true}
+      
+      # Configuration
+      configuration:
+        class: "${STAGING_INGRESS_CLASS:-nginx}"
+        
+        # TLS Configuration
+        tls:
+          enabled: ${STAGING_INGRESS_TLS_ENABLED:-true}
+          secret_name: "${STAGING_INGRESS_TLS_SECRET:-staging-tls}"
+        
+        # Rules
+        rules:
+          - host: "${STAGING_API_HOST:-api-staging.spotify-ai-agent.com}"
+            paths:
+              - path: "/"
+                service: "api-service"
+                port: 8000
+          
+          - host: "${STAGING_FRONTEND_HOST:-app-staging.spotify-ai-agent.com}"
+            paths:
+              - path: "/"
+                service: "frontend-service"
+                port: 3000
+    
+    # Network Policies
+    network_policies:
+      enabled: ${STAGING_NETWORK_POLICIES_ENABLED:-true}
+      
+      # Default Deny
+      default_deny:
+        enabled: ${STAGING_DEFAULT_DENY_ENABLED:-true}
+        
+      # Custom Policies
+      policies:
+        - name: "api-to-db"
+          from_selector:
+            matchLabels:
+              app: "api-service"
+          to_selector:
+            matchLabels:
+              app: "database"
+          ports:
+            - port: 5432
+        
+        - name: "api-to-redis"
+          from_selector:
+            matchLabels:
+              app: "api-service"
+          to_selector:
+            matchLabels:
+              app: "redis"
+          ports:
+            - port: 6379
+
+  # Environment Variables
+  environment_variables:
+    # Application Variables
+    application:
+      ENVIRONMENT: "staging"
+      DEBUG: "false"
+      LOG_LEVEL: "INFO"
+      
+      # API Variables
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "4"
+      
+      # Database Variables
+      DATABASE_URL: "postgresql://${STAGING_DB_USER}:${STAGING_DB_PASSWORD}@${STAGING_DB_HOST}:${STAGING_DB_PORT}/${STAGING_DB_NAME}"
+      REDIS_URL: "redis://${STAGING_REDIS_HOST}:${STAGING_REDIS_PORT}/${STAGING_REDIS_DB}"
+      
+      # Security Variables
+      SECRET_KEY: "${STAGING_SECRET_KEY}"
+      JWT_SECRET_KEY: "${STAGING_JWT_SECRET}"
+      
+      # Feature Flags
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      ENABLE_SECURITY_SCANNING: "true"
+      ENABLE_PERFORMANCE_MONITORING: "true"
+    
+    # Staging-specific Variables
+    staging_specific:
+      # Testing Variables
+      PYTEST_ARGS: "--cov --cov-report=xml --cov-report=term"
+      TEST_DATABASE_URL: "postgresql://${STAGING_DB_USER}:${STAGING_DB_PASSWORD}@${STAGING_DB_HOST}:${STAGING_DB_PORT}/${STAGING_DB_NAME}_test"
+      
+      # Performance Variables
+      PERFORMANCE_MONITORING: "true"
+      LOAD_TESTING_ENABLED: "true"
+      
+      # Compliance Variables
+      COMPLIANCE_MODE: "enforcing"
+      AUDIT_LOGGING: "true"
+      
+      # Deployment Variables
+      DEPLOYMENT_STRATEGY: "blue-green"
+      CANARY_ENABLED: "true"
+      ROLLBACK_ENABLED: "true"

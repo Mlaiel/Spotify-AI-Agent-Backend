@@ -1,0 +1,281 @@
+# Main Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spotify-ai-agent-config
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Main application configuration for Spotify AI Agent"
+data:
+  # Application Settings
+  DEBUG: "true"
+  LOG_LEVEL: "DEBUG"
+  ENVIRONMENT: "development"
+  API_VERSION: "v1"
+  APPLICATION_NAME: "Spotify AI Agent"
+  
+  # Server Configuration
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  MAX_WORKERS: "4"
+  WORKER_TIMEOUT: "30"
+  KEEP_ALIVE: "2"
+  
+  # Security Settings
+  CORS_ENABLED: "true"
+  ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000"
+  ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+  ALLOWED_HEADERS: "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+  SECURE_COOKIES: "false"
+  CSRF_PROTECTION: "false"
+  
+  # Rate Limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_WINDOW: "60"
+  RATE_LIMIT_STORAGE: "memory"
+  
+  # Caching
+  CACHE_ENABLED: "true"
+  CACHE_TTL: "3600"
+  CACHE_MAX_SIZE: "1000"
+  CACHE_BACKEND: "redis"
+  
+  # Database Settings
+  DB_POOL_SIZE: "10"
+  DB_MAX_OVERFLOW: "20"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+  DB_ECHO: "false"
+  
+  # File Upload
+  MAX_FILE_SIZE: "10485760"  # 10MB
+  ALLOWED_EXTENSIONS: "mp3,wav,flac,m4a,ogg"
+  UPLOAD_FOLDER: "/tmp/uploads"
+  
+  # API Configuration
+  PAGINATION_SIZE: "50"
+  MAX_PAGINATION_SIZE: "100"
+  API_TIMEOUT: "30"
+  
+  # Feature Flags
+  FEATURE_AI_ENABLED: "true"
+  FEATURE_ANALYTICS_ENABLED: "true"
+  FEATURE_COLLABORATION_ENABLED: "true"
+  FEATURE_MUSIC_GENERATION_ENABLED: "true"
+  FEATURE_SPLEETER_ENABLED: "true"
+  FEATURE_RECOMMENDATION_ENABLED: "true"
+  
+  # Monitoring & Observability
+  MONITORING_ENABLED: "true"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+  LOGGING_JSON_FORMAT: "true"
+  HEALTH_CHECK_INTERVAL: "30"
+  
+  # External Services
+  SPOTIFY_API_VERSION: "v1"
+  SPOTIFY_SCOPES: "user-read-private,user-read-email,playlist-read-private,playlist-modify-public,user-top-read"
+  
+  # Backup & Recovery
+  BACKUP_ENABLED: "false"
+  BACKUP_INTERVAL: "24h"
+  BACKUP_RETENTION: "7d"
+
+---
+# Machine Learning Model Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-model-config
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: ml-configuration
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Machine Learning model configuration"
+data:
+  # Model Paths
+  MODEL_BASE_PATH: "/app/models"
+  TENSORFLOW_MODEL_PATH: "/app/models/tensorflow"
+  PYTORCH_MODEL_PATH: "/app/models/pytorch"
+  HUGGINGFACE_MODEL_PATH: "/app/models/huggingface"
+  SPLEETER_MODEL_PATH: "/app/models/spleeter"
+  
+  # Model Settings
+  BATCH_SIZE: "32"
+  MAX_SEQUENCE_LENGTH: "512"
+  NUM_WORKERS: "2"
+  MODEL_CACHE_SIZE: "10"
+  
+  # Audio Processing
+  SAMPLE_RATE: "44100"
+  AUDIO_FORMAT: "wav"
+  CHUNK_SIZE: "1024"
+  MAX_AUDIO_DURATION: "300"  # 5 minutes
+  
+  # Recommendation Model
+  RECOMMENDATION_MODEL_NAME: "spotify_recommendation_v1"
+  RECOMMENDATION_EMBEDDING_DIM: "128"
+  RECOMMENDATION_TOP_K: "50"
+  
+  # Text Generation
+  TEXT_MODEL_NAME: "gpt-3.5-turbo"
+  MAX_TOKENS: "2048"
+  TEMPERATURE: "0.7"
+  TOP_P: "0.9"
+  
+  # Spleeter Configuration
+  SPLEETER_STEMS: "2"
+  SPLEETER_CODEC: "wav"
+  SPLEETER_BITRATE: "128k"
+  
+  # Performance Settings
+  GPU_MEMORY_FRACTION: "0.8"
+  MIXED_PRECISION: "true"
+  OPTIMIZATION_LEVEL: "O1"
+
+---
+# Feature Flags Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags-config
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: feature-flags
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Feature flags configuration for development environment"
+data:
+  # Core Features
+  ENABLE_USER_AUTHENTICATION: "true"
+  ENABLE_SPOTIFY_INTEGRATION: "true"
+  ENABLE_AI_RECOMMENDATIONS: "true"
+  ENABLE_MUSIC_GENERATION: "true"
+  ENABLE_AUDIO_SEPARATION: "true"
+  ENABLE_COLLABORATION: "true"
+  ENABLE_ANALYTICS: "true"
+  
+  # Experimental Features
+  ENABLE_VOICE_COMMANDS: "false"
+  ENABLE_REAL_TIME_COLLAB: "false"
+  ENABLE_ADVANCED_AI: "true"
+  ENABLE_CUSTOM_MODELS: "false"
+  
+  # Performance Features
+  ENABLE_CACHING: "true"
+  ENABLE_COMPRESSION: "true"
+  ENABLE_CDN: "false"
+  ENABLE_LAZY_LOADING: "true"
+  
+  # Security Features
+  ENABLE_RATE_LIMITING: "true"
+  ENABLE_IP_WHITELIST: "false"
+  ENABLE_AUDIT_LOGGING: "true"
+  ENABLE_ENCRYPTION: "true"
+  
+  # Development Features
+  ENABLE_DEBUG_MODE: "true"
+  ENABLE_PROFILING: "true"
+  ENABLE_MOCK_SERVICES: "false"
+  ENABLE_SWAGGER_UI: "true"
+
+---
+# Logging Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logging-config
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: logging
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Logging configuration for all services"
+data:
+  logging.conf: |
+    [loggers]
+    keys=root,spotify_ai_agent,uvicorn,sqlalchemy
+
+    [handlers]
+    keys=consoleHandler,fileHandler,jsonHandler
+
+    [formatters]
+    keys=standardFormatter,jsonFormatter
+
+    [logger_root]
+    level=DEBUG
+    handlers=consoleHandler,jsonHandler
+
+    [logger_spotify_ai_agent]
+    level=DEBUG
+    handlers=consoleHandler,fileHandler,jsonHandler
+    qualname=spotify_ai_agent
+    propagate=0
+
+    [logger_uvicorn]
+    level=INFO
+    handlers=consoleHandler,jsonHandler
+    qualname=uvicorn
+    propagate=0
+
+    [logger_sqlalchemy]
+    level=WARNING
+    handlers=consoleHandler,jsonHandler
+    qualname=sqlalchemy
+    propagate=0
+
+    [handler_consoleHandler]
+    class=StreamHandler
+    level=DEBUG
+    formatter=standardFormatter
+    args=(sys.stdout,)
+
+    [handler_fileHandler]
+    class=FileHandler
+    level=INFO
+    formatter=standardFormatter
+    args=('/app/logs/app.log', 'a')
+
+    [handler_jsonHandler]
+    class=StreamHandler
+    level=INFO
+    formatter=jsonFormatter
+    args=(sys.stdout,)
+
+    [formatter_standardFormatter]
+    format=%(asctime)s [%(levelname)s] %(name)s: %(message)s
+    datefmt=%Y-%m-%d %H:%M:%S
+
+    [formatter_jsonFormatter]
+    format={"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s", "module": "%(module)s", "function": "%(funcName)s", "line": %(lineno)d}
+    datefmt=%Y-%m-%dT%H:%M:%S

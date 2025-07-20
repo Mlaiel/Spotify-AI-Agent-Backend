@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "https://spotify-ai-agent.com/schemas/tenant-base-config.json",
+  "title": "Configuration Base Multi-Tenant",
+  "description": "Schéma de configuration de base pour l'architecture multi-tenant du Spotify AI Agent",
+  "type": "object",
+  "required": [
+    "tenant_id",
+    "tenant_name", 
+    "subscription_tier",
+    "isolation_config",
+    "monitoring_config",
+    "alert_config"
+  ],
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 3,
+      "maxLength": 50,
+      "description": "Identifiant unique du tenant"
+    },
+    "tenant_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Nom d'affichage du tenant"
+    },
+    "subscription_tier": {
+      "type": "string",
+      "enum": ["free", "premium", "enterprise", "enterprise_plus"],
+      "description": "Niveau d'abonnement du tenant"
+    },
+    "isolation_config": {
+      "type": "object",
+      "required": ["database_isolation", "cache_isolation", "storage_isolation"],
+      "properties": {
+        "database_isolation": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["schema", "database", "cluster"],
+              "default": "schema"
+            },
+            "connection_pool_size": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 100,
+              "default": 20
+            },
+            "read_replicas": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 5
+            },
+            "encryption_at_rest": {
+              "type": "boolean",
+              "default": true
+            },
+            "backup_retention_days": {
+              "type": "integer",
+              "minimum": 7,
+              "maximum": 365,
+              "default": 30
+            }
+          }
+        },
+        "cache_isolation": {
+          "type": "object",
+          "properties": {
+            "redis_namespace": {
+              "type": "string",
+              "pattern": "^[a-z0-9-:]+$"
+            },
+            "max_memory_mb": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 8192,
+              "default": 512
+            },
+            "ttl_default_seconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400,
+              "default": 3600
+            }
+          }
+        },
+        "storage_isolation": {
+          "type": "object",
+          "properties": {
+            "s3_bucket_prefix": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$"
+            },
+            "max_storage_gb": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "cdn_enabled": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "monitoring_config": {
+      "type": "object",
+      "required": ["prometheus_enabled", "grafana_enabled"],
+      "properties": {
+        "prometheus_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "grafana_enabled": {
+          "type": "boolean", 
+          "default": true
+        },
+        "custom_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z_][a-z0-9_]*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["counter", "gauge", "histogram", "summary"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "labels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 7,
+          "maximum": 365,
+          "default": 90
+        },
+        "scrape_interval_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300,
+          "default": 30
+        }
+      }
+    },
+    "alert_config": {
+      "type": "object",
+      "required": ["slack_enabled"],
+      "properties": {
+        "slack_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "slack_channels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "channel": {
+                "type": "string",
+                "pattern": "^#[a-z0-9-]+$"
+              },
+              "severity_levels": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["critical", "warning", "info", "debug"]
+                }
+              },
+              "webhook_url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        },
+        "email_notifications": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "pagerduty_integration": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "integration_key": {
+              "type": "string"
+            },
+            "severity_mapping": {
+              "type": "object",
+              "properties": {
+                "critical": {
+                  "type": "string",
+                  "enum": ["critical", "error", "warning", "info"]
+                },
+                "warning": {
+                  "type": "string", 
+                  "enum": ["critical", "error", "warning", "info"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security_config": {
+      "type": "object",
+      "properties": {
+        "encryption_key_rotation_days": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 365,
+          "default": 90
+        },
+        "audit_logs_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "compliance_mode": {
+          "type": "string",
+          "enum": ["none", "gdpr", "sox", "hipaa", "pci"],
+          "default": "gdpr"
+        },
+        "session_timeout_minutes": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 480,
+          "default": 60
+        },
+        "mfa_required": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "feature_flags": {
+      "type": "object",
+      "properties": {
+        "ai_features_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "advanced_analytics": {
+          "type": "boolean",
+          "default": false
+        },
+        "real_time_collaboration": {
+          "type": "boolean", 
+          "default": false
+        },
+        "api_rate_limiting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "requests_per_minute": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 10000,
+              "default": 1000
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created_by": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["dev", "staging", "prod"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "tenant_id": "spotify-premium-001",
+      "tenant_name": "Spotify Premium Customer",
+      "subscription_tier": "premium",
+      "isolation_config": {
+        "database_isolation": {
+          "type": "schema",
+          "connection_pool_size": 30,
+          "encryption_at_rest": true,
+          "backup_retention_days": 30
+        },
+        "cache_isolation": {
+          "redis_namespace": "spotify-premium-001:cache",
+          "max_memory_mb": 1024,
+          "ttl_default_seconds": 3600
+        },
+        "storage_isolation": {
+          "s3_bucket_prefix": "spotify-premium-001",
+          "max_storage_gb": 100,
+          "cdn_enabled": true
+        }
+      },
+      "monitoring_config": {
+        "prometheus_enabled": true,
+        "grafana_enabled": true,
+        "retention_days": 90,
+        "scrape_interval_seconds": 30
+      },
+      "alert_config": {
+        "slack_enabled": true,
+        "slack_channels": [
+          {
+            "channel": "#alerts-premium",
+            "severity_levels": ["critical", "warning"],
+            "webhook_url": "https://hooks.slack.com/services/..."
+          }
+        ]
+      },
+      "security_config": {
+        "compliance_mode": "gdpr",
+        "audit_logs_enabled": true,
+        "mfa_required": true
+      },
+      "feature_flags": {
+        "ai_features_enabled": true,
+        "advanced_analytics": true,
+        "real_time_collaboration": true
+      }
+    }
+  ]
+}

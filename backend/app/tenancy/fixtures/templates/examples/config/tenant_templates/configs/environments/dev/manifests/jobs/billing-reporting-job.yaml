@@ -1,0 +1,575 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: billing-revenue-reporting-advanced
+  namespace: spotify-ai-agent-dev
+  labels:
+    app: spotify-ai-agent
+    component: billing-reports
+    job-type: billing_revenue_reporting
+    tenant-tier: enterprise
+    version: v6.1.3
+    reporting-type: financial-analytics-comprehensive
+    compliance-level: enterprise-grade
+    team: finance-engineering
+    owner: fahed-mlaiel
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9096"
+    prometheus.io/path: "/metrics"
+    jaeger.io/trace: "true"
+    finance.platform/report-id: "report-{{ .Values.report.id }}"
+    finance.platform/accounting-period: "{{ .Values.accounting.period }}"
+    compliance.framework/pci-dss: "4.0"
+    compliance.framework/sox: "2023"
+    compliance.framework/gaap: "2023"
+    compliance.framework/ifrs: "2023"
+    kubernetes.io/change-cause: "Billing reporting deployed by Fahed Mlaiel finance platform"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 5400  # 1.5 hours maximum
+  ttlSecondsAfterFinished: 14400  # Keep for 4 hours for audit
+  completions: 1
+  parallelism: 1
+  
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent
+        component: billing-reports
+        job-type: billing_revenue_reporting
+        version: v6.1.3
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9096"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "billing-reporting-role"
+    
+    spec:
+      restartPolicy: Never
+      serviceAccountName: spotify-ai-billing-reports-sa
+      priorityClassName: high-priority-finance
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [2000, 3000]
+
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: compute-optimized
+        instance-type: finance-processing
+        zone: us-west-2a
+        pci-compliant: "true"
+        sox-compliant: "true"
+
+      tolerations:
+        - key: "finance-workload"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "pci-compliant"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "finance-processing"
+          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/instance-type
+                    operator: In
+                    values: ["c5.2xlarge", "c5.4xlarge", "m5.2xlarge", "m6i.2xlarge"]
+                  - key: pci-compliant
+                    operator: In
+                    values: ["true"]
+                  - key: sox-compliant
+                    operator: In
+                    values: ["true"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: finance-optimized
+                    operator: In
+                    values: ["true"]
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values: ["billing-reports"]
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: revenue-processor
+          image: spotify-ai/revenue-processor:v6.1.3-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: "4Gi"
+              ephemeral-storage: "15Gi"
+            limits:
+              cpu: "4000m"
+              memory: "8Gi"
+              ephemeral-storage: "30Gi"
+          env:
+            - name: TENANT_ID
+              value: "{{ .Values.tenant.id }}"
+            - name: REPORTING_PERIOD
+              value: "{{ .Values.reporting.period }}"
+            - name: REVENUE_RECOGNITION_STANDARD
+              value: "ASC-606"
+            - name: ACCOUNTING_METHOD
+              value: "accrual"
+            - name: MULTI_CURRENCY_ENABLED
+              value: "true"
+            - name: BASE_CURRENCY
+              value: "USD"
+            - name: SUPPORTED_CURRENCIES
+              value: "USD,EUR,GBP,JPY,CAD,AUD,CHF,SEK,NOK,DKK"
+            - name: EXCHANGE_RATE_PROVIDER
+              value: "xe-currency-api"
+            - name: TAX_CALCULATION_ENGINE
+              value: "avalara-taxcloud"
+            - name: PAYMENT_PROCESSOR_INTEGRATION
+              value: "stripe,paypal,adyen,square"
+            - name: ERP_INTEGRATION
+              value: "sap,oracle-erp,netsuite,quickbooks"
+            - name: CONSOLIDATION_RULES
+              value: "gaap-ifrs-compliant"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-finance-credentials
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-finance-credentials
+                  key: url
+            - name: STRIPE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: payment-gateway-credentials
+                  key: stripe-api-key
+            - name: PAYPAL_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: payment-gateway-credentials
+                  key: paypal-client-id
+            - name: AVALARA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tax-service-credentials
+                  key: avalara-api-key
+            - name: XE_CURRENCY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: currency-service-credentials
+                  key: xe-api-key
+            - name: SAP_ERP_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: erp-credentials
+                  key: sap-credentials
+          ports:
+            - containerPort: 9096
+              name: metrics
+              protocol: TCP
+            - containerPort: 8448
+              name: revenue-api
+              protocol: TCP
+          volumeMounts:
+            - name: revenue-data
+              mountPath: /workspace/revenue
+            - name: financial-reports
+              mountPath: /workspace/reports
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+            - name: audit-trail
+              mountPath: /workspace/audit
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9096
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9096
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
+
+        - name: payment-reconciler
+          image: spotify-ai/payment-reconciler:v4.2.1
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          env:
+            - name: RECONCILIATION_MODE
+              value: "automated-with-exceptions"
+            - name: SETTLEMENT_MATCHING_ALGORITHM
+              value: "ml-enhanced-fuzzy-matching"
+            - name: DISPUTE_HANDLING_ENABLED
+              value: "true"
+            - name: CHARGEBACK_PROCESSING
+              value: "automated"
+            - name: PAYMENT_GATEWAY_APIS
+              value: "stripe,paypal,adyen,square,authorize-net"
+            - name: BANK_INTEGRATION_MODE
+              value: "swift-mt940-mt942"
+            - name: RECONCILIATION_TOLERANCE
+              value: "0.01"
+          ports:
+            - containerPort: 8449
+              name: reconciler-api
+          volumeMounts:
+            - name: payment-data
+              mountPath: /workspace/payments
+            - name: reconciliation-reports
+              mountPath: /workspace/reconciliation
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+
+        - name: tax-calculator
+          image: spotify-ai/tax-engine:v3.5.0-multi-jurisdiction
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1002
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "800m"
+              memory: "1.5Gi"
+            limits:
+              cpu: "1500m"
+              memory: "3Gi"
+          env:
+            - name: TAX_JURISDICTIONS
+              value: "US,EU,UK,CA,AU,JP,BR,IN,SG,MX"
+            - name: VAT_MOSS_ENABLED
+              value: "true"
+            - name: US_STATE_TAX_ENABLED
+              value: "true"
+            - name: SALES_TAX_AUTOMATION
+              value: "avalara-vertex-taxjar"
+            - name: TAX_NEXUS_DETERMINATION
+              value: "automated"
+            - name: DIGITAL_SERVICES_TAX
+              value: "enabled"
+            - name: REVERSE_CHARGE_MECHANISM
+              value: "b2b-automated"
+          ports:
+            - containerPort: 8450
+              name: tax-api
+          volumeMounts:
+            - name: tax-data
+              mountPath: /workspace/tax
+            - name: tax-reports
+              mountPath: /workspace/tax-reports
+
+        - name: financial-analytics
+          image: spotify-ai/financial-analytics:v5.1.2-ml
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1003
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1200m"
+              memory: "3Gi"
+            limits:
+              cpu: "2500m"
+              memory: "6Gi"
+          env:
+            - name: ANALYTICS_ENGINE
+              value: "apache-spark-with-ml"
+            - name: FORECASTING_MODEL
+              value: "prophet-arima-lstm"
+            - name: COHORT_ANALYSIS_ENABLED
+              value: "true"
+            - name: CHURN_PREDICTION_ENABLED
+              value: "true"
+            - name: LTV_CALCULATION_MODEL
+              value: "advanced-ml-based"
+            - name: REVENUE_ATTRIBUTION_MODEL
+              value: "multi-touch-attribution"
+            - name: SEGMENT_ANALYSIS_ENABLED
+              value: "true"
+            - name: KPI_DASHBOARDS_ENABLED
+              value: "true"
+            - name: REAL_TIME_METRICS_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8451
+              name: analytics-api
+          volumeMounts:
+            - name: analytics-data
+              mountPath: /workspace/analytics
+            - name: ml-models
+              mountPath: /workspace/models
+            - name: dashboards
+              mountPath: /workspace/dashboards
+
+        - name: compliance-auditor
+          image: spotify-ai/finance-compliance:v2.8.0-multi-framework
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1004
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "600m"
+              memory: "1Gi"
+            limits:
+              cpu: "1200m"
+              memory: "2Gi"
+          env:
+            - name: COMPLIANCE_FRAMEWORKS
+              value: "SOX,PCI-DSS,GDPR,GAAP,IFRS,BASEL-III"
+            - name: AUDIT_TRAIL_RETENTION
+              value: "7-years"
+            - name: FINANCIAL_CONTROLS_TESTING
+              value: "automated"
+            - name: SEGREGATION_OF_DUTIES_CHECK
+              value: "enabled"
+            - name: APPROVAL_WORKFLOW_VALIDATION
+              value: "multi-level"
+            - name: DATA_LINEAGE_TRACKING
+              value: "end-to-end"
+            - name: COMPLIANCE_REPORTING_FORMAT
+              value: "sox-404,pci-roc,gdpr-compliance"
+          ports:
+            - containerPort: 8452
+              name: compliance-api
+          volumeMounts:
+            - name: compliance-data
+              mountPath: /workspace/compliance
+            - name: audit-trail
+              mountPath: /workspace/audit
+              readOnly: true
+
+        - name: report-generator
+          image: spotify-ai/report-generator:v3.7.0-executive
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1005
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "800m"
+              memory: "1.5Gi"
+            limits:
+              cpu: "1500m"
+              memory: "3Gi"
+          env:
+            - name: REPORT_TYPES
+              value: "executive-summary,detailed-analytics,compliance-reports,investor-reports"
+            - name: OUTPUT_FORMATS
+              value: "pdf,excel,powerpoint,html,json"
+            - name: EXECUTIVE_DASHBOARD_ENABLED
+              value: "true"
+            - name: AUTOMATED_DISTRIBUTION_ENABLED
+              value: "true"
+            - name: STAKEHOLDER_NOTIFICATIONS
+              value: "email,slack,teams,jira"
+            - name: WATERMARKING_ENABLED
+              value: "true"
+            - name: ENCRYPTION_AT_REST
+              value: "aes-256"
+            - name: DIGITAL_SIGNATURES_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8453
+              name: reports-api
+          volumeMounts:
+            - name: generated-reports
+              mountPath: /workspace/generated-reports
+            - name: financial-reports
+              mountPath: /workspace/reports
+              readOnly: true
+            - name: analytics-data
+              mountPath: /workspace/analytics
+              readOnly: true
+
+      initContainers:
+        - name: database-migration
+          image: spotify-ai/finance-db-migrator:v2.3.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "600m"
+              memory: "1Gi"
+          env:
+            - name: MIGRATION_TYPE
+              value: "finance-schema-upgrade"
+            - name: BACKUP_BEFORE_MIGRATION
+              value: "true"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Running finance database migrations..."
+              liquibase --url=$POSTGRES_URL --changeLogFile=/migrations/finance-changelog.xml update
+              echo "Finance database migrations completed"
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+              readOnly: true
+
+        - name: currency-rates-sync
+          image: spotify-ai/currency-sync:v1.4.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"
+          env:
+            - name: CURRENCY_PROVIDER
+              value: "xe-currency-api"
+            - name: UPDATE_FREQUENCY
+              value: "hourly"
+            - name: HISTORICAL_RATES_SYNC
+              value: "30-days"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Syncing currency exchange rates..."
+              /scripts/sync-currency-rates.sh --provider=xe --historical=30days
+              echo "Currency rates sync completed"
+          volumeMounts:
+            - name: currency-data
+              mountPath: /workspace/currency
+
+      volumes:
+        - name: revenue-data
+          persistentVolumeClaim:
+            claimName: revenue-data-pvc
+        - name: financial-reports
+          persistentVolumeClaim:
+            claimName: financial-reports-pvc
+        - name: payment-data
+          persistentVolumeClaim:
+            claimName: payment-data-pvc
+        - name: reconciliation-reports
+          persistentVolumeClaim:
+            claimName: reconciliation-reports-pvc
+        - name: tax-data
+          persistentVolumeClaim:
+            claimName: tax-data-pvc
+        - name: tax-reports
+          persistentVolumeClaim:
+            claimName: tax-reports-pvc
+        - name: analytics-data
+          persistentVolumeClaim:
+            claimName: analytics-data-pvc
+        - name: ml-models
+          persistentVolumeClaim:
+            claimName: ml-models-pvc
+        - name: dashboards
+          persistentVolumeClaim:
+            claimName: dashboards-pvc
+        - name: compliance-data
+          persistentVolumeClaim:
+            claimName: compliance-data-pvc
+        - name: audit-trail
+          persistentVolumeClaim:
+            claimName: audit-trail-pvc
+        - name: generated-reports
+          persistentVolumeClaim:
+            claimName: generated-reports-pvc
+        - name: currency-data
+          persistentVolumeClaim:
+            claimName: currency-data-pvc
+        - name: config
+          configMap:
+            name: billing-reporting-config
+        - name: migrations
+          configMap:
+            name: finance-migrations-config
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 10Gi

@@ -1,0 +1,360 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ml-model-training-advanced
+  namespace: spotify-ai-agent-dev
+  labels:
+    app: spotify-ai-agent
+    component: ml-training
+    job-type: ml_model_training
+    tenant-tier: enterprise
+    version: v3.2.1
+    framework: tensorflow-pytorch
+    architecture: transformer-neural
+    team: ml-engineering
+    owner: fahed-mlaiel
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+    jaeger.io/trace: "true"
+    datadog.com/logs: "true"
+    ml.platform/experiment-id: "exp-{{ .Values.experiment.id }}"
+    ml.platform/model-version: "v{{ .Values.model.version }}"
+    kubernetes.io/change-cause: "ML training job deployed by Fahed Mlaiel DevOps platform"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 28800  # 8 hours maximum
+  ttlSecondsAfterFinished: 7200  # Keep for 2 hours
+  completions: 1
+  parallelism: 1
+  
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent
+        component: ml-training
+        job-type: ml_model_training
+        version: v3.2.1
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    
+    spec:
+      restartPolicy: Never
+      serviceAccountName: spotify-ai-ml-training-sa
+      priorityClassName: high-priority-ml
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [2000, 3000]
+
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: gpu-enabled
+        instance-type: ml-optimized
+        zone: us-west-2a
+        nvidia.com/gpu.present: "true"
+
+      tolerations:
+        - key: "ml-workload"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "gpu-node"
+          operator: "Equal"
+          value: "nvidia-tesla-v100"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "ml-training"
+          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/instance-type
+                    operator: In
+                    values: ["p3.2xlarge", "p3.8xlarge", "p3.16xlarge", "p4d.24xlarge"]
+                  - key: nvidia.com/gpu.count
+                    operator: Gt
+                    values: ["1"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: nvidia.com/gpu.count
+                    operator: Gt
+                    values: ["4"]
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values: ["p4d.24xlarge"]
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: job-type
+                      operator: In
+                      values: ["ml_model_training"]
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: ml-trainer
+          image: spotify-ai/ml-training-platform:v3.2.1-gpu
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - SYS_NICE  # For GPU scheduling optimization
+          resources:
+            requests:
+              cpu: "8000m"
+              memory: "16Gi"
+              nvidia.com/gpu: "2"
+              ephemeral-storage: "50Gi"
+            limits:
+              cpu: "16000m"
+              memory: "32Gi"
+              nvidia.com/gpu: "4"
+              ephemeral-storage: "100Gi"
+          env:
+            - name: TENANT_ID
+              value: "{{ .Values.tenant.id }}"
+            - name: MODEL_TYPE
+              value: "transformer-neural-network"
+            - name: TRAINING_MODE
+              value: "distributed-multi-gpu"
+            - name: BATCH_SIZE
+              value: "512"
+            - name: LEARNING_RATE
+              value: "0.001"
+            - name: EPOCHS
+              value: "100"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0,1,2,3"
+            - name: PYTORCH_CUDA_ALLOC_CONF
+              value: "max_split_size_mb:512"
+            - name: NCCL_DEBUG
+              value: "INFO"
+            - name: WANDB_PROJECT
+              value: "spotify-ai-ml-training"
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow-server:5000"
+            - name: PROMETHEUS_GATEWAY
+              value: "http://prometheus-pushgateway:9091"
+            - name: JAEGER_AGENT_HOST
+              value: "jaeger-agent"
+            - name: AWS_S3_BUCKET
+              value: "spotify-ai-ml-models"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ml-credentials
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+            - name: WANDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wandb-credentials
+                  key: api-key
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 8888
+              name: tensorboard
+              protocol: TCP
+            - containerPort: 6006
+              name: jupyter
+              protocol: TCP
+          volumeMounts:
+            - name: model-storage
+              mountPath: /workspace/models
+            - name: dataset-storage
+              mountPath: /workspace/data
+            - name: checkpoint-storage
+              mountPath: /workspace/checkpoints
+            - name: logs-storage
+              mountPath: /workspace/logs
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: gpu-driver
+              mountPath: /usr/local/nvidia
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 300
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+        - name: tensorboard
+          image: tensorflow/tensorflow:2.13.0-gpu
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          command:
+            - tensorboard
+            - --logdir=/workspace/logs
+            - --host=0.0.0.0
+            - --port=6006
+            - --reload_interval=30
+          ports:
+            - containerPort: 6006
+              name: tensorboard
+          volumeMounts:
+            - name: logs-storage
+              mountPath: /workspace/logs
+              readOnly: true
+
+        - name: model-validator
+          image: spotify-ai/model-validator:v2.1.0
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1002
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          env:
+            - name: VALIDATION_MODE
+              value: "continuous"
+            - name: METRICS_ENDPOINT
+              value: "http://localhost:8080/metrics"
+          volumeMounts:
+            - name: model-storage
+              mountPath: /workspace/models
+              readOnly: true
+            - name: checkpoint-storage
+              mountPath: /workspace/checkpoints
+              readOnly: true
+
+      initContainers:
+        - name: data-preparation
+          image: spotify-ai/data-prep:v1.5.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          env:
+            - name: DATASET_SOURCE
+              value: "s3://spotify-ai-datasets/training-data"
+            - name: PREPROCESSING_MODE
+              value: "advanced-augmentation"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Starting advanced data preparation..."
+              python3 /scripts/data_preprocessor.py --input=/workspace/data --output=/workspace/data/processed
+              echo "Data preparation completed successfully"
+          volumeMounts:
+            - name: dataset-storage
+              mountPath: /workspace/data
+
+        - name: gpu-device-plugin-init
+          image: nvidia/k8s-device-plugin:v0.14.1
+          securityContext:
+            privileged: true
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Initializing GPU device plugin..."
+              nvidia-smi
+              echo "GPU initialization completed"
+          volumeMounts:
+            - name: gpu-driver
+              mountPath: /usr/local/nvidia
+
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: ml-model-storage-pvc
+        - name: dataset-storage
+          persistentVolumeClaim:
+            claimName: ml-dataset-storage-pvc
+        - name: checkpoint-storage
+          persistentVolumeClaim:
+            claimName: ml-checkpoint-storage-pvc
+        - name: logs-storage
+          persistentVolumeClaim:
+            claimName: ml-logs-storage-pvc
+        - name: config
+          configMap:
+            name: ml-training-config
+        - name: gpu-driver
+          hostPath:
+            path: /usr/local/nvidia
+            type: Directory
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 20Gi

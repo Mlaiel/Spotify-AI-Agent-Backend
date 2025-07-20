@@ -1,0 +1,532 @@
+{
+  "_metadata": {
+    "template_type": "analytics_dashboard",
+    "template_version": "3.1.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "AnalyticsTemplateGenerator",
+    "tags": ["analytics", "dashboard", "metrics", "insights", "ml", "real-time"],
+    "description": "Advanced listening analytics dashboard with ML-powered insights and real-time metrics"
+  },
+  "dashboard_id": "{{ dashboard_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "user_id": "{{ user_id }}",
+  "dashboard_config": {
+    "dashboard_name": "{{ dashboard_name | default('Listening Analytics Dashboard') }}",
+    "description": "{{ dashboard_description | default('Comprehensive music listening analytics and insights') }}",
+    "dashboard_type": "{{ dashboard_type | default('user_analytics') }}",
+    "visibility": "{{ dashboard_visibility | default('private') }}",
+    "refresh_interval_seconds": "{{ refresh_interval | default(30) }}",
+    "time_zone": "{{ time_zone | default('UTC') }}",
+    "language": "{{ dashboard_language | default('en') }}",
+    "theme": "{{ dashboard_theme | default('dark') }}",
+    "layout_type": "{{ layout_type | default('grid') }}",
+    "responsive_design": "{{ responsive_design | default(true) }}"
+  },
+  "time_period_settings": {
+    "default_period": "{{ default_period | default('last_7_days') }}",
+    "available_periods": [
+      "last_24_hours",
+      "last_7_days",
+      "last_30_days",
+      "last_90_days",
+      "last_year",
+      "all_time",
+      "custom_range"
+    ],
+    "custom_range": {
+      "start_date": "{{ custom_start_date | default(null) }}",
+      "end_date": "{{ custom_end_date | default(null) }}"
+    },
+    "comparison_enabled": "{{ comparison_enabled | default(true) }}",
+    "comparison_period": "{{ comparison_period | default('previous_period') }}"
+  },
+  "widgets": [
+    {
+      "widget_id": "listening_overview",
+      "widget_type": "metrics_overview",
+      "title": "Listening Overview",
+      "position": {
+        "row": 1,
+        "column": 1,
+        "width": 12,
+        "height": 2
+      },
+      "data_source": "listening_metrics",
+      "refresh_rate": 30,
+      "metrics": [
+        {
+          "metric_name": "total_listening_time",
+          "display_name": "Total Listening Time",
+          "value": "{{ total_listening_time_hours | default(0) }}",
+          "unit": "hours",
+          "change_percentage": "{{ listening_time_change | default(0) }}",
+          "trend": "{{ listening_time_trend | default('stable') }}",
+          "target_value": "{{ listening_time_target | default(20) }}"
+        },
+        {
+          "metric_name": "tracks_played",
+          "display_name": "Tracks Played",
+          "value": "{{ tracks_played_count | default(0) }}",
+          "unit": "tracks",
+          "change_percentage": "{{ tracks_played_change | default(0) }}",
+          "trend": "{{ tracks_played_trend | default('stable') }}",
+          "target_value": "{{ tracks_played_target | default(100) }}"
+        },
+        {
+          "metric_name": "unique_artists",
+          "display_name": "Unique Artists",
+          "value": "{{ unique_artists_count | default(0) }}",
+          "unit": "artists",
+          "change_percentage": "{{ unique_artists_change | default(0) }}",
+          "trend": "{{ unique_artists_trend | default('stable') }}",
+          "target_value": "{{ unique_artists_target | default(50) }}"
+        },
+        {
+          "metric_name": "discovery_rate",
+          "display_name": "Discovery Rate",
+          "value": "{{ discovery_rate_percent | default(0) }}",
+          "unit": "percent",
+          "change_percentage": "{{ discovery_rate_change | default(0) }}",
+          "trend": "{{ discovery_rate_trend | default('stable') }}",
+          "target_value": "{{ discovery_rate_target | default(25) }}"
+        }
+      ]
+    },
+    {
+      "widget_id": "listening_patterns",
+      "widget_type": "time_series_chart",
+      "title": "Listening Patterns",
+      "position": {
+        "row": 2,
+        "column": 1,
+        "width": 8,
+        "height": 4
+      },
+      "chart_config": {
+        "chart_type": "line",
+        "time_granularity": "{{ time_granularity | default('hourly') }}",
+        "show_trend_line": "{{ show_trend_line | default(true) }}",
+        "show_comparison": "{{ show_comparison | default(true) }}",
+        "y_axis_metric": "listening_minutes",
+        "color_scheme": "{{ color_scheme | default('spotify_green') }}"
+      },
+      "data_series": [
+        {
+          "series_name": "Current Period",
+          "data_points": [],
+          "color": "#1DB954",
+          "line_style": "solid"
+        },
+        {
+          "series_name": "Previous Period",
+          "data_points": [],
+          "color": "#1ED760",
+          "line_style": "dashed"
+        }
+      ]
+    },
+    {
+      "widget_id": "genre_distribution",
+      "widget_type": "pie_chart",
+      "title": "Genre Distribution",
+      "position": {
+        "row": 2,
+        "column": 9,
+        "width": 4,
+        "height": 4
+      },
+      "chart_config": {
+        "show_percentages": "{{ show_percentages | default(true) }}",
+        "show_labels": "{{ show_labels | default(true) }}",
+        "max_segments": "{{ max_segments | default(8) }}",
+        "group_others": "{{ group_others | default(true) }}"
+      },
+      "data": [
+        {
+          "label": "{{ top_genre_1 | default('Pop') }}",
+          "value": "{{ top_genre_1_percent | default(25) }}",
+          "color": "#FF6B6B"
+        },
+        {
+          "label": "{{ top_genre_2 | default('Rock') }}",
+          "value": "{{ top_genre_2_percent | default(20) }}",
+          "color": "#4ECDC4"
+        },
+        {
+          "label": "{{ top_genre_3 | default('Electronic') }}",
+          "value": "{{ top_genre_3_percent | default(18) }}",
+          "color": "#45B7D1"
+        },
+        {
+          "label": "{{ top_genre_4 | default('Hip Hop') }}",
+          "value": "{{ top_genre_4_percent | default(15) }}",
+          "color": "#96CEB4"
+        },
+        {
+          "label": "{{ top_genre_5 | default('Jazz') }}",
+          "value": "{{ top_genre_5_percent | default(12) }}",
+          "color": "#FFEAA7"
+        },
+        {
+          "label": "Others",
+          "value": "{{ other_genres_percent | default(10) }}",
+          "color": "#DDD6FE"
+        }
+      ]
+    },
+    {
+      "widget_id": "top_tracks",
+      "widget_type": "ranked_list",
+      "title": "Top Tracks",
+      "position": {
+        "row": 3,
+        "column": 1,
+        "width": 6,
+        "height": 4
+      },
+      "list_config": {
+        "max_items": "{{ max_top_tracks | default(10) }}",
+        "show_play_count": "{{ show_play_count | default(true) }}",
+        "show_duration": "{{ show_duration | default(true) }}",
+        "show_thumbnails": "{{ show_thumbnails | default(true) }}",
+        "clickable_items": "{{ clickable_items | default(true) }}"
+      },
+      "tracks": [
+        {
+          "rank": 1,
+          "track_id": "{{ top_track_1_id | default('') }}",
+          "track_name": "{{ top_track_1_name | default('') }}",
+          "artist_name": "{{ top_track_1_artist | default('') }}",
+          "play_count": "{{ top_track_1_plays | default(0) }}",
+          "duration_ms": "{{ top_track_1_duration | default(0) }}",
+          "thumbnail_url": "{{ top_track_1_thumbnail | default('') }}",
+          "spotify_url": "{{ top_track_1_spotify_url | default('') }}"
+        }
+      ]
+    },
+    {
+      "widget_id": "top_artists",
+      "widget_type": "ranked_list",
+      "title": "Top Artists",
+      "position": {
+        "row": 3,
+        "column": 7,
+        "width": 6,
+        "height": 4
+      },
+      "list_config": {
+        "max_items": "{{ max_top_artists | default(10) }}",
+        "show_play_time": "{{ show_play_time | default(true) }}",
+        "show_track_count": "{{ show_track_count | default(true) }}",
+        "show_thumbnails": "{{ show_thumbnails | default(true) }}",
+        "clickable_items": "{{ clickable_items | default(true) }}"
+      },
+      "artists": [
+        {
+          "rank": 1,
+          "artist_id": "{{ top_artist_1_id | default('') }}",
+          "artist_name": "{{ top_artist_1_name | default('') }}",
+          "total_play_time_minutes": "{{ top_artist_1_time | default(0) }}",
+          "track_count": "{{ top_artist_1_tracks | default(0) }}",
+          "thumbnail_url": "{{ top_artist_1_thumbnail | default('') }}",
+          "spotify_url": "{{ top_artist_1_spotify_url | default('') }}"
+        }
+      ]
+    },
+    {
+      "widget_id": "listening_heatmap",
+      "widget_type": "heatmap",
+      "title": "Listening Activity Heatmap",
+      "position": {
+        "row": 4,
+        "column": 1,
+        "width": 12,
+        "height": 3
+      },
+      "heatmap_config": {
+        "time_format": "{{ heatmap_time_format | default('24h') }}",
+        "days_of_week": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "color_scale": "{{ heatmap_color_scale | default('green') }}",
+        "show_values": "{{ heatmap_show_values | default(false) }}",
+        "cell_tooltip": "{{ heatmap_tooltip | default(true) }}"
+      },
+      "data_matrix": []
+    },
+    {
+      "widget_id": "mood_analysis",
+      "widget_type": "radar_chart",
+      "title": "Mood Analysis",
+      "position": {
+        "row": 5,
+        "column": 1,
+        "width": 6,
+        "height": 4
+      },
+      "radar_config": {
+        "max_value": 1.0,
+        "grid_lines": 5,
+        "show_dots": "{{ radar_show_dots | default(true) }}",
+        "fill_area": "{{ radar_fill_area | default(true) }}",
+        "fill_opacity": "{{ radar_fill_opacity | default(0.3) }}"
+      },
+      "mood_dimensions": [
+        {
+          "dimension": "Energy",
+          "value": "{{ mood_energy | default(0.5) }}",
+          "previous_value": "{{ mood_energy_prev | default(0.5) }}"
+        },
+        {
+          "dimension": "Valence",
+          "value": "{{ mood_valence | default(0.5) }}",
+          "previous_value": "{{ mood_valence_prev | default(0.5) }}"
+        },
+        {
+          "dimension": "Danceability",
+          "value": "{{ mood_danceability | default(0.5) }}",
+          "previous_value": "{{ mood_danceability_prev | default(0.5) }}"
+        },
+        {
+          "dimension": "Acousticness",
+          "value": "{{ mood_acousticness | default(0.5) }}",
+          "previous_value": "{{ mood_acousticness_prev | default(0.5) }}"
+        },
+        {
+          "dimension": "Instrumentalness",
+          "value": "{{ mood_instrumentalness | default(0.5) }}",
+          "previous_value": "{{ mood_instrumentalness_prev | default(0.5) }}"
+        },
+        {
+          "dimension": "Speechiness",
+          "value": "{{ mood_speechiness | default(0.5) }}",
+          "previous_value": "{{ mood_speechiness_prev | default(0.5) }}"
+        }
+      ]
+    },
+    {
+      "widget_id": "discovery_insights",
+      "widget_type": "insights_panel",
+      "title": "Discovery Insights",
+      "position": {
+        "row": 5,
+        "column": 7,
+        "width": 6,
+        "height": 4
+      },
+      "insights": [
+        {
+          "insight_type": "discovery_trend",
+          "title": "Discovery Trend",
+          "description": "{{ discovery_insight_text | default('Your music discovery rate has increased by 15% this week') }}",
+          "confidence": "{{ discovery_confidence | default(0.8) }}",
+          "actionable": true,
+          "recommendation": "{{ discovery_recommendation | default('Try exploring more indie genres') }}"
+        },
+        {
+          "insight_type": "listening_diversity",
+          "title": "Listening Diversity",
+          "description": "{{ diversity_insight_text | default('You explored 3 new genres this month') }}",
+          "confidence": "{{ diversity_confidence | default(0.9) }}",
+          "actionable": true,
+          "recommendation": "{{ diversity_recommendation | default('Consider Latin music for more variety') }}"
+        },
+        {
+          "insight_type": "mood_pattern",
+          "title": "Mood Patterns",
+          "description": "{{ mood_insight_text | default('Your music mood shifts positively on weekends') }}",
+          "confidence": "{{ mood_confidence | default(0.85) }}",
+          "actionable": false,
+          "recommendation": null
+        }
+      ]
+    }
+  ],
+  "ml_analytics": {
+    "predictive_models": {
+      "next_track_prediction": {
+        "model_name": "{{ next_track_model | default('track_sequence_lstm_v2') }}",
+        "model_version": "{{ next_track_model_version | default('2.1.0') }}",
+        "accuracy": "{{ next_track_accuracy | default(0.78) }}",
+        "last_trained": "{{ next_track_last_trained | default('2024-01-01') }}",
+        "prediction_horizon": "{{ prediction_horizon | default('next_5_tracks') }}"
+      },
+      "mood_prediction": {
+        "model_name": "{{ mood_model | default('mood_classifier_v3') }}",
+        "model_version": "{{ mood_model_version | default('3.0.1') }}",
+        "accuracy": "{{ mood_accuracy | default(0.82) }}",
+        "last_trained": "{{ mood_last_trained | default('2024-01-01') }}",
+        "prediction_categories": ["happy", "sad", "energetic", "calm", "angry"]
+      },
+      "churn_prediction": {
+        "model_name": "{{ churn_model | default('user_churn_xgboost_v1') }}",
+        "model_version": "{{ churn_model_version | default('1.2.0') }}",
+        "accuracy": "{{ churn_accuracy | default(0.75) }}",
+        "risk_score": "{{ churn_risk_score | default(0.2) }}",
+        "risk_level": "{{ churn_risk_level | default('low') }}"
+      }
+    },
+    "clustering_analysis": {
+      "user_segments": {
+        "current_segment": "{{ user_segment | default('Explorer') }}",
+        "segment_confidence": "{{ segment_confidence | default(0.85) }}",
+        "segment_characteristics": [
+          "{{ segment_char_1 | default('High discovery rate') }}",
+          "{{ segment_char_2 | default('Diverse genre preferences') }}",
+          "{{ segment_char_3 | default('Long listening sessions') }}"
+        ],
+        "similar_users_count": "{{ similar_users_count | default(1250) }}"
+      },
+      "listening_patterns": {
+        "primary_pattern": "{{ primary_pattern | default('Evening Deep Listener') }}",
+        "pattern_strength": "{{ pattern_strength | default(0.78) }}",
+        "pattern_description": "{{ pattern_description | default('Prefers long, focused listening sessions in the evening') }}",
+        "pattern_recommendations": [
+          "{{ pattern_rec_1 | default('Extended album listening') }}",
+          "{{ pattern_rec_2 | default('Ambient focus playlists') }}"
+        ]
+      }
+    },
+    "anomaly_detection": {
+      "listening_anomalies": [
+        {
+          "anomaly_type": "{{ anomaly_1_type | default('unusual_genre_spike') }}",
+          "description": "{{ anomaly_1_desc | default('Sudden increase in classical music listening') }}",
+          "detected_at": "{{ anomaly_1_time | default('2024-01-15T14:30:00Z') }}",
+          "severity": "{{ anomaly_1_severity | default('low') }}",
+          "explanation": "{{ anomaly_1_explanation | default('Possible mood change or external influence') }}"
+        }
+      ],
+      "behavior_changes": [
+        {
+          "change_type": "{{ change_1_type | default('listening_duration_increase') }}",
+          "description": "{{ change_1_desc | default('Average session length increased by 40%') }}",
+          "detected_at": "{{ change_1_time | default('2024-01-10T00:00:00Z') }}",
+          "confidence": "{{ change_1_confidence | default(0.9) }}",
+          "impact": "{{ change_1_impact | default('positive') }}"
+        }
+      ]
+    }
+  },
+  "real_time_metrics": {
+    "current_session": {
+      "session_active": "{{ session_active | default(false) }}",
+      "current_track": "{{ current_track_name | default('') }}",
+      "current_artist": "{{ current_artist_name | default('') }}",
+      "session_duration_minutes": "{{ session_duration | default(0) }}",
+      "tracks_played_session": "{{ tracks_played_session | default(0) }}",
+      "session_start_time": "{{ session_start_time | default(null) }}"
+    },
+    "live_stats": {
+      "plays_per_hour": "{{ plays_per_hour | default(0) }}",
+      "skips_per_hour": "{{ skips_per_hour | default(0) }}",
+      "skip_rate_percent": "{{ skip_rate_percent | default(0) }}",
+      "completion_rate_percent": "{{ completion_rate_percent | default(0) }}",
+      "repeat_rate_percent": "{{ repeat_rate_percent | default(0) }}"
+    },
+    "recommendation_performance": {
+      "recommendations_shown": "{{ recommendations_shown | default(0) }}",
+      "recommendations_clicked": "{{ recommendations_clicked | default(0) }}",
+      "click_through_rate": "{{ ctr_percent | default(0) }}",
+      "recommendations_saved": "{{ recommendations_saved | default(0) }}",
+      "save_rate": "{{ save_rate_percent | default(0) }}"
+    }
+  },
+  "comparative_analytics": {
+    "peer_comparison": {
+      "similar_users_enabled": "{{ peer_comparison_enabled | default(true) }}",
+      "anonymized_comparison": "{{ anonymized_comparison | default(true) }}",
+      "comparison_metrics": [
+        {
+          "metric": "listening_time",
+          "user_value": "{{ user_listening_time | default(0) }}",
+          "peer_average": "{{ peer_avg_listening_time | default(0) }}",
+          "percentile": "{{ listening_time_percentile | default(50) }}"
+        },
+        {
+          "metric": "discovery_rate",
+          "user_value": "{{ user_discovery_rate | default(0) }}",
+          "peer_average": "{{ peer_avg_discovery_rate | default(0) }}",
+          "percentile": "{{ discovery_rate_percentile | default(50) }}"
+        },
+        {
+          "metric": "genre_diversity",
+          "user_value": "{{ user_genre_diversity | default(0) }}",
+          "peer_average": "{{ peer_avg_genre_diversity | default(0) }}",
+          "percentile": "{{ genre_diversity_percentile | default(50) }}"
+        }
+      ]
+    },
+    "global_trends": {
+      "trending_genres": [
+        "{{ trending_genre_1 | default('') }}",
+        "{{ trending_genre_2 | default('') }}",
+        "{{ trending_genre_3 | default('') }}"
+      ],
+      "trending_artists": [
+        "{{ trending_artist_1 | default('') }}",
+        "{{ trending_artist_2 | default('') }}",
+        "{{ trending_artist_3 | default('') }}"
+      ],
+      "user_alignment_score": "{{ trend_alignment_score | default(0.5) }}",
+      "trend_following_behavior": "{{ trend_following | default('moderate') }}"
+    }
+  },
+  "export_and_sharing": {
+    "export_options": {
+      "pdf_report": "{{ pdf_export_enabled | default(true) }}",
+      "csv_data": "{{ csv_export_enabled | default(true) }}",
+      "json_data": "{{ json_export_enabled | default(true) }}",
+      "image_widgets": "{{ image_export_enabled | default(true) }}",
+      "scheduled_reports": "{{ scheduled_reports_enabled | default(false) }}"
+    },
+    "sharing_settings": {
+      "social_sharing": "{{ social_sharing_enabled | default(false) }}",
+      "public_dashboard": "{{ public_dashboard_enabled | default(false) }}",
+      "dashboard_url": "{{ public_dashboard_url | default('') }}",
+      "embed_code": "{{ embed_code_enabled | default(false) }}",
+      "api_access": "{{ api_access_enabled | default(false) }}"
+    },
+    "privacy_controls": {
+      "anonymize_data": "{{ anonymize_export_data | default(true) }}",
+      "exclude_personal_info": "{{ exclude_personal_info | default(true) }}",
+      "data_retention_days": "{{ analytics_retention_days | default(365) }}",
+      "gdpr_compliant": "{{ gdpr_compliant | default(true) }}"
+    }
+  },
+  "customization_settings": {
+    "widget_customization": {
+      "custom_widgets_enabled": "{{ custom_widgets_enabled | default(true) }}",
+      "widget_templates": [
+        "listening_streaks",
+        "mood_calendar",
+        "artist_timeline",
+        "genre_evolution",
+        "collaboration_stats"
+      ],
+      "custom_metrics": [
+        {
+          "metric_name": "{{ custom_metric_1_name | default('') }}",
+          "metric_formula": "{{ custom_metric_1_formula | default('') }}",
+          "display_format": "{{ custom_metric_1_format | default('number') }}"
+        }
+      ]
+    },
+    "dashboard_themes": {
+      "available_themes": ["dark", "light", "spotify", "minimal", "vibrant"],
+      "custom_css_enabled": "{{ custom_css_enabled | default(false) }}",
+      "custom_colors": {
+        "primary": "{{ custom_primary_color | default('#1DB954') }}",
+        "secondary": "{{ custom_secondary_color | default('#1ED760') }}",
+        "background": "{{ custom_background_color | default('#121212') }}",
+        "text": "{{ custom_text_color | default('#FFFFFF') }}"
+      }
+    },
+    "notification_settings": {
+      "insight_notifications": "{{ insight_notifications | default(true) }}",
+      "milestone_alerts": "{{ milestone_alerts | default(true) }}",
+      "weekly_summary": "{{ weekly_summary | default(true) }}",
+      "monthly_report": "{{ monthly_report | default(true) }}",
+      "notification_frequency": "{{ notification_frequency | default('weekly') }}"
+    }
+  }
+}

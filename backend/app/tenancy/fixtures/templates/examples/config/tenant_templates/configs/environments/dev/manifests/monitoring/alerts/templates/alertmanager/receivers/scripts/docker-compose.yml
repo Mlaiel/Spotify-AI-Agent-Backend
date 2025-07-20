@@ -1,0 +1,621 @@
+# Docker Compose Configuration for Advanced Scripts System
+# Version: 3.0.0
+# Developed by Spotify AI Agent Team
+# Lead Developer & AI Architect: Fahed Mlaiel
+
+version: '3.8'
+
+# ============================================================================
+# Networks Configuration
+# ============================================================================
+networks:
+  scripts-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  monitoring:
+    driver: bridge
+  backend:
+    driver: bridge
+  
+# ============================================================================
+# Volumes Configuration
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  scripts_logs:
+    driver: local
+  scripts_artifacts:
+    driver: local
+  docker_socket:
+    driver: local
+
+# ============================================================================
+# Services Configuration
+# ============================================================================
+services:
+  
+  # ==========================================================================
+  # Core Application Services
+  # ==========================================================================
+  
+  scripts-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+        VERSION: ${VERSION:-3.0.0}
+    container_name: scripts-api
+    hostname: scripts-api
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql://scripts_user:scripts_pass@postgres:5432/scripts_db
+      - REDIS_URL=redis://redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
+      - LOG_LEVEL=INFO
+      - MONITORING_ENABLED=true
+      - SECURITY_ENABLED=true
+      - AI_ENABLED=true
+      - WORKSPACE_DIR=/app/workspace
+      - REGISTRY_URL=registry:5000
+    ports:
+      - "8000:8000"
+    volumes:
+      - scripts_logs:/app/logs
+      - scripts_artifacts:/app/workspace
+      - docker_socket:/var/run/docker.sock
+      - ./configs:/app/configs:ro
+      - ./templates:/app/templates:ro
+    networks:
+      - scripts-network
+      - backend
+      - monitoring
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.scripts-api.rule=Host(`scripts.local`)"
+      - "traefik.http.services.scripts-api.loadbalancer.server.port=8000"
+      
+  scripts-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: distributed
+    container_name: scripts-worker
+    hostname: scripts-worker
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql://scripts_user:scripts_pass@postgres:5432/scripts_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - LOG_LEVEL=INFO
+      - WORKER_CONCURRENCY=4
+    volumes:
+      - scripts_logs:/app/logs
+      - scripts_artifacts:/app/workspace
+      - docker_socket:/var/run/docker.sock
+      - ./configs:/app/configs:ro
+    networks:
+      - scripts-network
+      - backend
+    depends_on:
+      - postgres
+      - redis
+    command: ["/app/start-worker.sh"]
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+  scripts-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: distributed
+    container_name: scripts-scheduler
+    hostname: scripts-scheduler
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql://scripts_user:scripts_pass@postgres:5432/scripts_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - LOG_LEVEL=INFO
+    volumes:
+      - scripts_logs:/app/logs
+      - ./configs:/app/configs:ro
+    networks:
+      - scripts-network
+      - backend
+    depends_on:
+      - postgres
+      - redis
+    command: ["/app/start-scheduler.sh"]
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  # ==========================================================================
+  # Database Services
+  # ==========================================================================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: scripts-postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=scripts_db
+      - POSTGRES_USER=scripts_user
+      - POSTGRES_PASSWORD=scripts_pass
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scripts_user -d scripts_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    command: 
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      
+  redis:
+    image: redis:7-alpine
+    container_name: scripts-redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+    
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: scripts-elasticsearch
+    hostname: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - backend
+      - monitoring
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+  
+  # ==========================================================================
+  # Monitoring and Observability
+  # ==========================================================================
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: scripts-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+    networks:
+      - monitoring
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=90d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+  
+  grafana:
+    image: grafana/grafana:latest
+    container_name: scripts-grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: scripts-jaeger
+    hostname: jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  # ==========================================================================
+  # Infrastructure Services
+  # ==========================================================================
+  
+  traefik:
+    image: traefik:v3.0
+    container_name: scripts-traefik
+    hostname: traefik
+    restart: unless-stopped
+    environment:
+      - TRAEFIK_API_DASHBOARD=true
+      - TRAEFIK_API_INSECURE=true
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configs/traefik:/etc/traefik:ro
+    networks:
+      - scripts-network
+      - monitoring
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.local`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+  
+  registry:
+    image: registry:2
+    container_name: scripts-registry
+    hostname: registry
+    restart: unless-stopped
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data/registry:/var/lib/registry
+    networks:
+      - scripts-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  minio:
+    image: minio/minio:latest
+    container_name: scripts-minio
+    hostname: minio
+    restart: unless-stopped
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - scripts-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  # ==========================================================================
+  # Message Broker and Queue
+  # ==========================================================================
+  
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: scripts-rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=scripts
+      - RABBITMQ_DEFAULT_PASS=scripts123
+      - RABBITMQ_DEFAULT_VHOST=/scripts
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+      - ./configs/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+    networks:
+      - backend
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+  
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: distributed
+    container_name: scripts-flower
+    hostname: flower
+    restart: unless-stopped
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - FLOWER_PORT=5555
+      - FLOWER_BASIC_AUTH=admin:admin123
+    ports:
+      - "5555:5555"
+    networks:
+      - backend
+      - monitoring
+    depends_on:
+      - redis
+    command: ["/app/start-flower.sh"]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.125'
+  
+  # ==========================================================================
+  # Security Services
+  # ==========================================================================
+  
+  vault:
+    image: vault:1.14
+    container_name: scripts-vault
+    hostname: vault
+    restart: unless-stopped
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./data/vault:/vault/data
+      - ./configs/vault:/vault/config:ro
+    networks:
+      - scripts-network
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.125'
+  
+  # ==========================================================================
+  # Development and Testing Services
+  # ==========================================================================
+  
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: scripts-mailhog
+    hostname: mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - scripts-network
+    profiles:
+      - development
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: scripts-pgadmin
+    hostname: pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@scripts.local
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+      - PGADMIN_DISABLE_POSTFIX=true
+    ports:
+      - "5050:80"
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    profiles:
+      - development
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.125'
+
+# ============================================================================
+# Environment-specific Configurations
+# ============================================================================
+
+# Development profile
+x-development-overrides: &development-overrides
+  environment:
+    - ENV=development
+    - DEBUG=true
+    - LOG_LEVEL=DEBUG
+  volumes:
+    - .:/app
+  command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# Production profile  
+x-production-overrides: &production-overrides
+  environment:
+    - ENV=production
+    - DEBUG=false
+    - LOG_LEVEL=INFO
+  deploy:
+    replicas: 2
+    update_config:
+      parallelism: 1
+      delay: 10s
+      order: start-first
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+
+# ============================================================================
+# Usage Examples:
+#
+# Start all services:
+# docker-compose up -d
+#
+# Start development environment:
+# docker-compose --profile development up -d
+#
+# Start only core services:
+# docker-compose up -d scripts-api postgres redis
+#
+# Scale workers:
+# docker-compose up -d --scale scripts-worker=4
+#
+# View logs:
+# docker-compose logs -f scripts-api
+#
+# Health check:
+# docker-compose ps
+#
+# Stop all services:
+# docker-compose down
+#
+# Clean everything:
+# docker-compose down -v --remove-orphans
+# ============================================================================

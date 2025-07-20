@@ -1,0 +1,136 @@
+# Enterprise Daily Alert Digest Template (English) - Advanced Industrial Grade
+{% set digest_emoji = {
+    'critical': '🚨',
+    'high': '⚠️',
+    'medium': '🔶',
+    'low': '💡',
+    'resolved': '✅',
+    'info': 'ℹ️'
+} %}
+
+📊 **DAILY ALERT DIGEST** 📊
+
+**🎵 Spotify AI Agent Monitoring Summary**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📅 **Report Period**: {{ start_time | format_date }} → {{ end_time | format_date }}
+🌍 **Environment**: `{{ environment | upper | default('PRODUCTION') }}`
+⏰ **Generated**: {{ format_date(now, 'full') }}
+
+📈 **Executive Summary**
+• **Total Alerts**: {{ total_alerts }}
+• **System Availability**: {{ system_availability | default('99.9') }}%
+• **MTTR**: {{ mttr | duration_format | default('5 minutes') }}
+• **Incidents Prevented**: {{ prevented_incidents | default(0) }}
+
+## 🎯 **Severity Breakdown**
+{% for severity, count in alert_counts.items() %}
+{{ get_severity_emoji(severity) }} **{{ severity.title() }}**: {{ count }} alerts
+{% endfor %}
+
+## 🏗️ **Service Impact Analysis**
+{% for service, count in service_counts.items() %}
+• **{{ service }}**: {{ count }} alerts
+  {% if service_health[service] %}
+  Health Score: {{ service_health[service].score }}/100 
+  {% if service_health[service].score >= 95 %}✅{% elif service_health[service].score >= 80 %}🔶{% else %}🚨{% endif %}
+  {% endif %}
+{% endfor %}
+
+## 🔥 **Top Critical Issues**
+{% for alert in top_alerts[:5] %}
+{{ loop.index }}. **{{ alert.title }}** ({{ digest_emoji.get(alert.severity, '❓') }} {{ alert.severity | title }})
+   • Service: `{{ alert.context.service_name }}`
+   • Occurrences: {{ alert.occurrence_count }}
+   • Duration: {{ alert.total_duration | duration_format | default('Ongoing') }}
+   • Business Impact: {{ alert.business_impact_level | default('Low') }}
+{% endfor %}
+
+{% if performance_metrics %}
+## 📊 **Performance Metrics Summary**
+{% for metric in performance_metrics %}
+• **{{ metric.name }}**: {{ metric.current_value }} 
+  {% if metric.trend == 'improving' %}📈{% elif metric.trend == 'degrading' %}📉{% else %}➡️{% endif %}
+  ({{ metric.change_percentage }}% vs last period)
+{% endfor %}
+{% endif %}
+
+{% if security_summary %}
+## 🛡️ **Security Overview**
+• **Security Alerts**: {{ security_summary.total_alerts }}
+• **Blocked Threats**: {{ security_summary.blocked_threats }}
+• **Failed Authentications**: {{ security_summary.failed_auth }}
+• **Compliance Score**: {{ security_summary.compliance_score }}/100
+{% endif %}
+
+{% if ml_summary %}
+## 🤖 **ML/AI Systems Health**
+• **Models Monitored**: {{ ml_summary.total_models }}
+• **Performance Degradation**: {{ ml_summary.degraded_models }} models
+• **Data Drift Detected**: {{ ml_summary.drift_alerts }}
+• **Retraining Needed**: {{ ml_summary.retrain_needed }}
+{% endif %}
+
+{% if ai_insights %}
+## 🧠 **AI-Powered Insights**
+{{ ai_insights.summary }}
+
+### 🎯 **Key Recommendations**:
+{% for rec in ai_insights.recommendations[:4] %}
+{{ loop.index }}. {{ rec }}
+{% endfor %}
+
+{% if ai_insights.predicted_issues %}
+### 🔮 **Predicted Issues (Next 24h)**:
+{% for prediction in ai_insights.predicted_issues[:3] %}
+• **{{ prediction.service }}**: {{ prediction.issue_type }} ({{ prediction.probability }}% probability)
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if team_performance %}
+## 👥 **Team Response Performance**
+• **Avg Response Time**: {{ team_performance.avg_response_time | duration_format }}
+• **Auto-Resolution Rate**: {{ team_performance.auto_resolution_rate }}%
+• **Top Responder**: @{{ team_performance.top_responder }}
+• **Escalated Issues**: {{ team_performance.escalated_count }}
+{% endif %}
+
+{% if infrastructure_health %}
+## 🏗️ **Infrastructure Health**
+• **Healthy Nodes**: {{ infrastructure_health.healthy_nodes }}/{{ infrastructure_health.total_nodes }}
+• **Resource Utilization**: CPU {{ infrastructure_health.cpu_avg }}% | Memory {{ infrastructure_health.memory_avg }}%
+• **Network Latency**: {{ infrastructure_health.avg_latency }}ms
+• **Storage Usage**: {{ infrastructure_health.storage_usage }}%
+{% endif %}
+
+🚀 **Quick Access Dashboard**
+• [📊 Executive Overview]({{ dashboard_url }}/overview/executive)
+• [📈 Detailed Analytics]({{ dashboard_url }}/analytics/daily)
+• [🔍 Alert Investigation]({{ dashboard_url }}/alerts/investigate)
+• [📋 Incident Timeline]({{ dashboard_url }}/incidents/timeline)
+• [🎯 SLA Dashboard]({{ dashboard_url }}/sla/overview)
+• [📑 Full Report]({{ dashboard_url }}/reports/{{ report_id }})
+
+{% if notable_achievements %}
+## 🏆 **Notable Achievements**
+{% for achievement in notable_achievements %}
+• {{ achievement }}
+{% endfor %}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Report ID**: `{{ report_id }}`
+**Data Coverage**: {{ data_coverage_percentage | default(100) }}%
+**Next Digest**: {{ next_digest_time | format_date }}
+
+*🎵 Spotify AI Agent Monitoring System*
+*Comprehensive Daily Intelligence Report*
+*Report Confidence: {{ report_confidence | default(95) }}%*
+
+---
+**📞 24/7 Emergency Contacts**
+• Primary On-Call: @{{ oncall_primary | default('devops-lead') }}
+• Security Team: @{{ oncall_security | default('security-team') }}
+• ML Ops Team: @{{ oncall_mlops | default('ml-ops-team') }}
+• Escalation: @{{ escalation_contact | default('engineering-director') }}

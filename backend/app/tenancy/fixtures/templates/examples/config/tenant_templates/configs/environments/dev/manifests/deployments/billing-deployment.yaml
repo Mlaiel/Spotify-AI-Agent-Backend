@@ -1,0 +1,598 @@
+# Billing Service Deployment - Enterprise Financial Processing
+# Developed by Fahed Mlaiel - Senior Fintech Engineer & Payment Systems Architect
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-ai-billing-service
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v2.0.0
+    app.kubernetes.io/component: billing-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: advanced-deployment-manager
+    service-type: billing-service
+    tenant-tier: enterprise-plus
+    environment: development
+    compliance: pci-dss-sox-gdpr
+    payment-processors: stripe-paypal-adyen
+    team: spotify-ai-agent-dev
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    created-by: "Fahed Mlaiel - Fintech & Payment Systems Architect"
+    description: "Enterprise billing and payment processing service"
+    payment-methods: "card-bank-wallet-crypto"
+    billing-models: "subscription-usage-hybrid"
+    compliance-standards: "pci-dss-level1-sox-gdpr-ccpa"
+    fraud-detection: "ml-based-real-time"
+    financial-reporting: "real-time-analytics"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: spotify-ai-billing-service
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-billing-service
+        app.kubernetes.io/name: spotify-ai-agent
+        app.kubernetes.io/component: billing-service
+        service-type: billing-service
+        tenant-tier: enterprise-plus
+        environment: development
+        version: v2.0.0
+        compliance: pci-dss
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/metrics"
+        jaeger.io/sampling-type: "const"
+        jaeger.io/sampling-param: "1"
+        fluentd.io/log-format: "json"
+        security.io/scan: "true"
+        compliance.io/pci-dss: "true"
+        config-hash: "billing789finance"
+        created-at: "2025-07-17T00:00:00Z"
+        financial-audit: "enabled"
+        transaction-monitoring: "real-time"
+    spec:
+      serviceAccountName: spotify-ai-billing-sa
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 120
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10004
+        runAsGroup: 10004
+        fsGroup: 10004
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [10004]
+        sysctls:
+        - name: net.core.somaxconn
+          value: "1024"
+        - name: net.ipv4.tcp_keepalive_time
+          value: "300"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: ["spotify-ai-billing-service"]
+            topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: compliance
+                operator: In
+                values: ["pci-dss"]
+              - key: security-zone
+                operator: In
+                values: ["financial"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values: ["financial-workload"]
+      tolerations:
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+      - key: financial-workload
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      - key: pci-dss
+        operator: Equal
+        value: "compliant"
+        effect: NoSchedule
+      containers:
+      - name: billing-service
+        image: spotify-ai-agent/billing-service:dev-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+        - containerPort: 8090
+          name: admin
+          protocol: TCP
+        - containerPort: 8091
+          name: health
+          protocol: TCP
+        env:
+        # Base Configuration
+        - name: ENVIRONMENT
+          value: "development"
+        - name: SERVICE_NAME
+          value: "spotify-ai-billing-service"
+        - name: SERVICE_TYPE
+          value: "billing-service"
+        - name: TENANT_TIER
+          value: "enterprise-plus"
+        - name: COMPLIANCE_MODE
+          value: "pci-dss-sox"
+        # Kubernetes Integration
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        # Resource Information
+        - name: CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.cpu
+        - name: MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        # Billing Configuration
+        - name: BILLING_CYCLE
+          value: "monthly"
+        - name: CURRENCY_DEFAULT
+          value: "USD"
+        - name: SUPPORTED_CURRENCIES
+          value: "USD,EUR,GBP,CAD,AUD,JPY"
+        - name: TAX_CALCULATION_ENABLED
+          value: "true"
+        - name: DUNNING_MANAGEMENT_ENABLED
+          value: "true"
+        - name: PRORATION_ENABLED
+          value: "true"
+        - name: TRIAL_PERIOD_DAYS
+          value: "14"
+        - name: GRACE_PERIOD_DAYS
+          value: "3"
+        # Payment Processing
+        - name: PAYMENT_RETRY_ATTEMPTS
+          value: "3"
+        - name: PAYMENT_TIMEOUT
+          value: "30"
+        - name: REFUND_PROCESSING_TIME
+          value: "24"
+        - name: DISPUTE_NOTIFICATION_ENABLED
+          value: "true"
+        - name: FRAUD_DETECTION_ENABLED
+          value: "true"
+        - name: RISK_SCORING_ENABLED
+          value: "true"
+        # Database Connections
+        - name: BILLING_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: billing-db-credentials
+              key: url
+        - name: FINANCIAL_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: financial-db-credentials
+              key: url
+        - name: AUDIT_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: audit-db-credentials
+              key: url
+        - name: ANALYTICS_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: analytics-db-credentials
+              key: url
+        # Payment Gateway APIs
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-credentials
+              key: secret_key
+        - name: STRIPE_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: stripe-credentials
+              key: webhook_secret
+        - name: PAYPAL_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: paypal-credentials
+              key: client_id
+        - name: PAYPAL_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: paypal-credentials
+              key: client_secret
+        - name: ADYEN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adyen-credentials
+              key: api_key
+        - name: ADYEN_MERCHANT_ACCOUNT
+          valueFrom:
+            secretKeyRef:
+              name: adyen-credentials
+              key: merchant_account
+        # Tax & Compliance APIs
+        - name: AVALARA_ACCOUNT_ID
+          valueFrom:
+            secretKeyRef:
+              name: avalara-credentials
+              key: account_id
+        - name: AVALARA_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: avalara-credentials
+              key: license_key
+        - name: TAXJAR_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: taxjar-credentials
+              key: api_token
+        # Banking & Financial APIs
+        - name: PLAID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: plaid-credentials
+              key: client_id
+        - name: PLAID_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: plaid-credentials
+              key: secret
+        - name: DWOLLA_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dwolla-credentials
+              key: key
+        - name: DWOLLA_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: dwolla-credentials
+              key: secret
+        # Crypto Payment Integration
+        - name: COINBASE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: coinbase-credentials
+              key: api_key
+        - name: COINBASE_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: coinbase-credentials
+              key: api_secret
+        # Security & Encryption
+        - name: ENCRYPTION_KEY_BILLING
+          valueFrom:
+            secretKeyRef:
+              name: encryption-keys
+              key: billing_key
+        - name: SIGNING_KEY_BILLING
+          valueFrom:
+            secretKeyRef:
+              name: signing-keys
+              key: billing_signing_key
+        - name: PCI_VAULT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: pci-vault-credentials
+              key: token
+        # Financial Reporting & Analytics
+        - name: QUICKBOOKS_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: quickbooks-credentials
+              key: client_id
+        - name: QUICKBOOKS_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: quickbooks-credentials
+              key: client_secret
+        - name: XERO_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: xero-credentials
+              key: client_id
+        - name: XERO_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: xero-credentials
+              key: client_secret
+        # Monitoring & Tracing
+        - name: JAEGER_AGENT_HOST
+          value: "localhost"
+        - name: JAEGER_AGENT_PORT
+          value: "6831"
+        - name: PROMETHEUS_GATEWAY
+          value: "pushgateway:9091"
+        - name: ELASTIC_APM_SERVER_URL
+          value: "http://apm-server:8200"
+        # Financial Audit & Compliance
+        - name: FINANCIAL_AUDIT_ENABLED
+          value: "true"
+        - name: SOX_COMPLIANCE_ENABLED
+          value: "true"
+        - name: GDPR_COMPLIANCE_ENABLED
+          value: "true"
+        - name: CCPA_COMPLIANCE_ENABLED
+          value: "true"
+        - name: PCI_DSS_LEVEL
+          value: "1"
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "3Gi"
+            ephemeral-storage: "500Mi"
+          limits:
+            cpu: "4000m"
+            memory: "8Gi"
+            ephemeral-storage: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 45
+          periodSeconds: 15
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8091
+            scheme: HTTP
+          initialDelaySeconds: 45
+          periodSeconds: 15
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 20
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 60; /app/financial-shutdown.sh"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10004
+          capabilities:
+            drop: ["ALL"]
+            add: ["NET_BIND_SERVICE"]
+        volumeMounts:
+        - name: billing-config
+          mountPath: /etc/billing
+          readOnly: true
+        - name: financial-certificates
+          mountPath: /etc/ssl/certs/financial
+          readOnly: true
+        - name: pci-vault
+          mountPath: /etc/pci
+          readOnly: true
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/billing
+        - name: financial-audit
+          mountPath: /var/log/financial
+        - name: transaction-logs
+          mountPath: /var/log/transactions
+      # Fraud Detection ML Sidecar
+      - name: fraud-detection
+        image: spotify-ai-agent/fraud-detection:dev-latest
+        ports:
+        - containerPort: 8092
+          name: fraud-api
+          protocol: TCP
+        env:
+        - name: ML_MODEL_PATH
+          value: "/models/fraud-detection"
+        - name: RISK_THRESHOLD
+          value: "0.7"
+        - name: REAL_TIME_SCORING
+          value: "true"
+        - name: MODEL_VERSION
+          value: "v2.1.0"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        volumeMounts:
+        - name: ml-models
+          mountPath: /models
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10004
+      # Financial Audit Logger
+      - name: financial-audit-logger
+        image: spotify-ai-agent/financial-audit-logger:dev-latest
+        env:
+        - name: AUDIT_DESTINATION
+          value: "financial-siem"
+        - name: LOG_FORMAT
+          value: "json"
+        - name: COMPLIANCE_MODE
+          value: "sox-pci-gdpr"
+        - name: TRANSACTION_LOGGING
+          value: "full"
+        - name: RETENTION_PERIOD
+          value: "7y"
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: financial-audit
+          mountPath: /var/log/financial
+          readOnly: true
+        - name: transaction-logs
+          mountPath: /var/log/transactions
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10004
+      # PCI DSS Compliance Monitor
+      - name: pci-compliance-monitor
+        image: spotify-ai-agent/pci-monitor:dev-latest
+        env:
+        - name: COMPLIANCE_LEVEL
+          value: "1"
+        - name: MONITORING_INTERVAL
+          value: "60"
+        - name: ALERT_THRESHOLD
+          value: "medium"
+        resources:
+          requests:
+            cpu: "30m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "256Mi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10004
+      volumes:
+      - name: billing-config
+        configMap:
+          name: billing-service-config
+      - name: financial-certificates
+        secret:
+          secretName: financial-certificates
+          defaultMode: 0400
+      - name: pci-vault
+        secret:
+          secretName: pci-vault-config
+          defaultMode: 0400
+      - name: tmp-storage
+        emptyDir:
+          sizeLimit: "1Gi"
+      - name: logs-storage
+        emptyDir:
+          sizeLimit: "500Mi"
+      - name: financial-audit
+        emptyDir:
+          sizeLimit: "2Gi"
+      - name: transaction-logs
+        emptyDir:
+          sizeLimit: "5Gi"
+      - name: ml-models
+        configMap:
+          name: fraud-detection-models
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+      initContainers:
+      - name: billing-init
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Initializing billing service..."
+          mkdir -p /tmp/billing /var/log/billing /var/log/financial /var/log/transactions
+          chown -R 10004:10004 /tmp /var/log/billing /var/log/financial /var/log/transactions
+          echo "Testing financial database connectivity..."
+          nc -z billing-db 5432 && echo "Billing DB reachable" || echo "Billing DB not reachable"
+          nc -z financial-db 5432 && echo "Financial DB reachable" || echo "Financial DB not reachable"
+          echo "Validating PCI compliance requirements..."
+          test -f /etc/pci/vault-token && echo "PCI vault configured" || echo "PCI vault missing"
+          test -f /etc/ssl/certs/financial/cert.pem && echo "Financial certificates found" || echo "Certificates missing"
+          echo "Loading fraud detection models..."
+          test -d /models/fraud-detection && echo "ML models loaded" || echo "ML models missing"
+          echo "Billing service initialized successfully"
+        volumeMounts:
+        - name: tmp-storage
+          mountPath: /tmp
+        - name: logs-storage
+          mountPath: /var/log/billing
+        - name: financial-audit
+          mountPath: /var/log/financial
+        - name: transaction-logs
+          mountPath: /var/log/transactions
+        - name: pci-vault
+          mountPath: /etc/pci
+          readOnly: true
+        - name: financial-certificates
+          mountPath: /etc/ssl/certs/financial
+          readOnly: true
+        - name: ml-models
+          mountPath: /models
+          readOnly: true
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0

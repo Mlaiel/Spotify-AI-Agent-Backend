@@ -1,0 +1,256 @@
+# Prometheus Configuration for Enterprise Tenant Templates
+# Ultra-Advanced Industrial Multi-Tenant Architecture Monitoring
+# Developed by Expert Team led by Fahed Mlaiel
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'tenant-templates-cluster'
+    environment: 'production'
+    team: 'fahed-mlaiel-experts'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "tenant_templates_rules.yml"
+  - "ai_ml_rules.yml"
+  - "security_rules.yml"
+  - "compliance_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Tenant Template Manager API
+  - job_name: 'tenant-template-manager'
+    static_configs:
+      - targets: ['tenant-api:8000']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    basic_auth:
+      username: 'prometheus'
+      password: 'secure_prometheus_password'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'tenant-api:8000'
+
+  # PostgreSQL Database Metrics
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):(.*)'
+        target_label: __address__
+        replacement: '${1}:9187'
+      - source_labels: [__address__]
+        regex: '(.*):(.*)'
+        target_label: instance
+        replacement: '${1}'
+
+  # Redis Cache Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'redis'
+
+  # Node Exporter for System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'node'
+
+  # Docker Container Metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'docker'
+
+  # Kubernetes Metrics (if running on K8s)
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # AI/ML Model Serving Metrics
+  - job_name: 'ml-models'
+    static_configs:
+      - targets: ['ml-inference-api:8001']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    basic_auth:
+      username: 'ml_monitor'
+      password: 'secure_ml_password'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'ml-models'
+
+  # FastAPI Application Metrics
+  - job_name: 'fastapi-app'
+    static_configs:
+      - targets: ['tenant-app:8000']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'fastapi'
+      - source_labels: [__meta_tenant_tier]
+        target_label: tenant_tier
+      - source_labels: [__meta_tenant_id]
+        target_label: tenant_id
+
+  # Security Scanner Metrics
+  - job_name: 'security-scanner'
+    static_configs:
+      - targets: ['security-scanner:9200']
+    scrape_interval: 60s
+    metrics_path: /security/metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'security'
+
+  # Compliance Monitor Metrics
+  - job_name: 'compliance-monitor'
+    static_configs:
+      - targets: ['compliance-api:8002']
+    scrape_interval: 300s  # 5 minutes
+    metrics_path: /compliance/metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'compliance'
+
+  # Load Balancer Metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'nginx'
+
+  # Message Queue Metrics (RabbitMQ)
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq-exporter:9419']
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'rabbitmq'
+
+  # Elasticsearch Metrics
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: job
+        replacement: 'elasticsearch'
+
+  # Blackbox Exporter for URL monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://tenant-api:8000/health
+        - https://tenant-api:8000/api/v1/health
+        - http://ml-inference-api:8001/health
+        - http://compliance-api:8002/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "https://prometheus-remote-storage:9090/api/v1/write"
+    basic_auth:
+      username: 'remote_write_user'
+      password: 'secure_remote_password'
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'tenant_.*|ml_.*|security_.*|compliance_.*'
+        action: keep
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+
+# Remote read configuration
+remote_read:
+  - url: "https://prometheus-remote-storage:9090/api/v1/read"
+    basic_auth:
+      username: 'remote_read_user'
+      password: 'secure_remote_password'
+    read_recent: true

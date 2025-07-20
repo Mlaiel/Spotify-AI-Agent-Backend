@@ -1,0 +1,303 @@
+# 🚀 Spotify AI Agent - Data Isolation Core Development Environment
+# ================================================================
+#
+# Docker Compose pour le développement et test du module core
+# d'isolation des données avec tous les services nécessaires
+#
+# Author: Lead Dev + Architecte IA - Fahed Mlaiel
+
+version: '3.8'
+
+services:
+  # PostgreSQL pour les données principales
+  postgres:
+    image: postgres:15-alpine
+    container_name: spotify_ai_postgres_core
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: spotify_ai_db
+      POSTGRES_USER: spotify_user
+      POSTGRES_PASSWORD: spotify_secure_password_2024
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spotify_user -d spotify_ai_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=database"
+      - "com.spotify-ai.tier=data"
+
+  # Redis pour le cache et les sessions
+  redis:
+    image: redis:7-alpine
+    container_name: spotify_ai_redis_core
+    restart: unless-stopped
+    command: redis-server --requirepass spotify_redis_password_2024 --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=cache"
+      - "com.spotify-ai.tier=cache"
+
+  # MongoDB pour les métadonnées et logs
+  mongodb:
+    image: mongo:7.0
+    container_name: spotify_ai_mongodb_core
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: spotify_mongo_admin
+      MONGO_INITDB_ROOT_PASSWORD: spotify_mongo_password_2024
+      MONGO_INITDB_DATABASE: spotify_ai_metadata
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo_init.js:/docker-entrypoint-initdb.d/01_init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017/spotify_ai_metadata --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=metadata"
+      - "com.spotify-ai.tier=data"
+
+  # Elasticsearch pour la recherche et l'analytics
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: spotify_ai_elasticsearch_core
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=search"
+      - "com.spotify-ai.tier=analytics"
+
+  # Prometheus pour les métriques
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: spotify_ai_prometheus_core
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=metrics"
+      - "com.spotify-ai.tier=monitoring"
+
+  # Grafana pour les dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: spotify_ai_grafana_core
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=spotify_grafana_admin_2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./configs/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./configs/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=dashboard"
+      - "com.spotify-ai.tier=monitoring"
+
+  # Jaeger pour le tracing distribué
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: spotify_ai_jaeger_core
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    volumes:
+      - jaeger_data:/tmp
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=tracing"
+      - "com.spotify-ai.tier=monitoring"
+
+  # Application de test pour le module core
+  core_test_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: spotify_ai_core_test
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://spotify_user:spotify_secure_password_2024@postgres:5432/spotify_ai_db
+      - REDIS_URL=redis://:spotify_redis_password_2024@redis:6379/0
+      - MONGODB_URL=mongodb://spotify_mongo_admin:spotify_mongo_password_2024@mongodb:27017/spotify_ai_metadata
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - TENANT_ISOLATION_LEVEL=strict
+      - CACHE_SIZE_MB=1024
+      - SECURITY_PARANOID_MODE=true
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app/core:ro
+      - test_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=test-app"
+      - "com.spotify-ai.tier=application"
+
+  # Nginx pour le load balancing et reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: spotify_ai_nginx_core
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./configs/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - core_test_app
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - spotify_ai_network
+    labels:
+      - "com.spotify-ai.service=proxy"
+      - "com.spotify-ai.tier=infrastructure"
+
+volumes:
+  postgres_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=postgres-data"
+  
+  redis_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=redis-data"
+  
+  mongodb_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=mongodb-data"
+  
+  elasticsearch_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=elasticsearch-data"
+  
+  prometheus_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=prometheus-data"
+  
+  grafana_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=grafana-data"
+  
+  jaeger_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=jaeger-data"
+  
+  test_data:
+    driver: local
+    labels:
+      - "com.spotify-ai.volume=test-data"
+
+networks:
+  spotify_ai_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    labels:
+      - "com.spotify-ai.network=main"

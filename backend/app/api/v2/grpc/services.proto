@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package spotifyai;
+
+option go_package = "./;spotifyai";
+
+// --- Messages communs ---
+message Empty {}
+message StatusReply {
+  string status = 1;
+  string message = 2;
+}
+
+// --- AI Service ---
+service AIService {
+  rpc Generate (GenerateRequest) returns (GenerateReply);
+  rpc Recommend (RecommendRequest) returns (RecommendReply);
+}
+
+message GenerateRequest {
+  string prompt = 1;
+  int32 max_length = 2;
+  string language = 3;
+}
+message GenerateReply {
+  string result = 1;
+}
+message RecommendRequest {
+  string user_id = 1;
+  int32 top_k = 2;
+}
+message RecommendReply {
+  repeated string recommendations = 1;
+}
+
+// --- Analytics Service ---
+service AnalyticsService {
+  rpc GetStats (StatsRequest) returns (StatsReply);
+  rpc LogEvent (EventLog) returns (StatusReply);
+}
+
+message StatsRequest {
+  string artist_id = 1;
+  string period = 2;
+}
+message StatsReply {
+  int32 listeners = 1;
+  int32 streams = 2;
+  map<string, int32> top_countries = 3;
+}
+message EventLog {
+  string user_id = 1;
+  string event_type = 2;
+  string details = 3;
+  string timestamp = 4;
+}
+
+// --- Music Service ---
+service MusicService {
+  rpc GenerateMusic (MusicRequest) returns (MusicReply);
+  rpc MasterTrack (MasterRequest) returns (MusicReply);
+  rpc SeparateStems (StemsRequest) returns (StemsReply);
+}
+
+message MusicRequest {
+  string prompt = 1;
+  int32 duration = 2;
+  string style = 3;
+}
+message MasterRequest {
+  bytes audio = 1;
+  float target_lufs = 2;
+}
+message MusicReply {
+  bytes audio = 1;
+  string format = 2;
+}
+message StemsRequest {
+  bytes audio = 1;
+  int32 stems = 2;
+}
+message StemsReply {
+  repeated bytes stems = 1;
+}

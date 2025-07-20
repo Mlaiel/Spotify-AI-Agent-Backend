@@ -1,0 +1,441 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-etl-pipeline-advanced
+  namespace: spotify-ai-agent-dev
+  labels:
+    app: spotify-ai-agent
+    component: data-etl
+    job-type: data_etl_pipeline
+    tenant-tier: enterprise
+    version: v4.1.2
+    pipeline-type: real-time-batch-hybrid
+    data-source: multi-platform
+    team: data-engineering
+    owner: fahed-mlaiel
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    jaeger.io/trace: "true"
+    fluentd.io/logs: "true"
+    data.platform/pipeline-id: "pipeline-{{ .Values.pipeline.id }}"
+    data.platform/data-classification: "sensitive"
+    kubernetes.io/change-cause: "ETL pipeline deployed by Fahed Mlaiel data platform"
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 14400  # 4 hours maximum
+  ttlSecondsAfterFinished: 3600  # Keep for 1 hour
+  completions: 1
+  parallelism: 1
+  
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent
+        component: data-etl
+        job-type: data_etl_pipeline
+        version: v4.1.2
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "data-etl-role"
+    
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: spotify-ai-data-etl-sa
+      priorityClassName: high-priority-data
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [2000, 3000, 5000]
+
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: memory-optimized
+        instance-type: data-processing
+        zone: us-west-2a
+        storage-type: nvme-ssd
+
+      tolerations:
+        - key: "data-workload"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "memory-intensive"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "data-processing"
+          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/instance-type
+                    operator: In
+                    values: ["r5.4xlarge", "r5.8xlarge", "r5.12xlarge", "r6i.8xlarge"]
+                  - key: storage-type
+                    operator: In
+                    values: ["nvme-ssd"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: memory-optimized
+                    operator: In
+                    values: ["true"]
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: network-performance
+                    operator: In
+                    values: ["high"]
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: job-type
+                      operator: In
+                      values: ["data_etl_pipeline"]
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: spark-driver
+          image: spotify-ai/spark-etl-platform:v4.1.2-scala2.12
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "8Gi"
+              ephemeral-storage: "20Gi"
+            limits:
+              cpu: "8000m"
+              memory: "16Gi"
+              ephemeral-storage: "50Gi"
+          env:
+            - name: TENANT_ID
+              value: "{{ .Values.tenant.id }}"
+            - name: PIPELINE_TYPE
+              value: "real-time-batch-hybrid"
+            - name: SPARK_MASTER
+              value: "k8s://https://kubernetes.default.svc:443"
+            - name: SPARK_DRIVER_MEMORY
+              value: "8g"
+            - name: SPARK_EXECUTOR_MEMORY
+              value: "4g"
+            - name: SPARK_EXECUTOR_INSTANCES
+              value: "10"
+            - name: SPARK_EXECUTOR_CORES
+              value: "4"
+            - name: SPARK_SQL_ADAPTIVE_ENABLED
+              value: "true"
+            - name: SPARK_SQL_ADAPTIVE_COALESCE_PARTITIONS_ENABLED
+              value: "true"
+            - name: SPARK_SERIALIZER
+              value: "org.apache.spark.serializer.KryoSerializer"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-cluster:9092"
+            - name: SCHEMA_REGISTRY_URL
+              value: "http://schema-registry:8081"
+            - name: ELASTICSEARCH_HOSTS
+              value: "elasticsearch-cluster:9200"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-etl-credentials
+                  key: url
+            - name: REDIS_CLUSTER_NODES
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cluster-credentials
+                  key: nodes
+            - name: AWS_S3_BUCKET
+              value: "spotify-ai-data-lake"
+            - name: DELTA_LAKE_PATH
+              value: "s3a://spotify-ai-data-lake/delta-tables"
+            - name: ICEBERG_CATALOG_URI
+              value: "thrift://hive-metastore:9083"
+          ports:
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+            - containerPort: 4040
+              name: spark-ui
+              protocol: TCP
+            - containerPort: 7077
+              name: spark-master
+              protocol: TCP
+          volumeMounts:
+            - name: spark-work-dir
+              mountPath: /opt/spark/work-dir
+            - name: data-processing
+              mountPath: /workspace/data
+            - name: checkpoint-storage
+              mountPath: /workspace/checkpoints
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+            - name: spark-logs
+              mountPath: /opt/spark/logs
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 180
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9090
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
+
+        - name: kafka-consumer
+          image: spotify-ai/kafka-streaming:v3.5.1
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-cluster:9092"
+            - name: KAFKA_GROUP_ID
+              value: "spotify-ai-etl-consumer"
+            - name: KAFKA_TOPICS
+              value: "user-events,audio-streams,playlist-updates"
+            - name: KAFKA_AUTO_OFFSET_RESET
+              value: "latest"
+            - name: KAFKA_ENABLE_AUTO_COMMIT
+              value: "false"
+            - name: KAFKA_MAX_POLL_RECORDS
+              value: "10000"
+            - name: STREAM_PROCESSING_MODE
+              value: "exactly-once"
+          ports:
+            - containerPort: 8081
+              name: kafka-metrics
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /workspace/kafka-data
+            - name: streaming-checkpoints
+              mountPath: /workspace/streaming-checkpoints
+
+        - name: data-quality-validator
+          image: spotify-ai/data-quality:v2.3.0
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1002
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: VALIDATION_RULES_PATH
+              value: "/workspace/config/validation-rules.yaml"
+            - name: DATA_PROFILING_ENABLED
+              value: "true"
+            - name: ANOMALY_DETECTION_ENABLED
+              value: "true"
+            - name: SCHEMA_VALIDATION_ENABLED
+              value: "true"
+            - name: GREAT_EXPECTATIONS_CONFIG
+              value: "/workspace/config/great-expectations.yaml"
+          volumeMounts:
+            - name: data-processing
+              mountPath: /workspace/data
+              readOnly: true
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: quality-reports
+              mountPath: /workspace/reports
+
+        - name: metadata-catalog
+          image: spotify-ai/metadata-catalog:v1.8.0
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1003
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          env:
+            - name: CATALOG_TYPE
+              value: "apache-atlas"
+            - name: LINEAGE_TRACKING_ENABLED
+              value: "true"
+            - name: DATA_GOVERNANCE_MODE
+              value: "enterprise"
+            - name: ATLAS_ENDPOINT
+              value: "http://apache-atlas:21000"
+          ports:
+            - containerPort: 8082
+              name: catalog-api
+          volumeMounts:
+            - name: metadata-storage
+              mountPath: /workspace/metadata
+
+      initContainers:
+        - name: schema-registry-setup
+          image: confluentinc/cp-schema-registry:7.4.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SCHEMA_REGISTRY_URL
+              value: "http://schema-registry:8081"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Registering Avro schemas..."
+              curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+                --data @/schemas/user-events-schema.avsc \
+                http://schema-registry:8081/subjects/user-events-value/versions
+              echo "Schema registration completed"
+          volumeMounts:
+            - name: schemas
+              mountPath: /schemas
+              readOnly: true
+
+        - name: database-migration
+          image: spotify-ai/db-migrator:v2.1.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-etl-credentials
+                  key: url
+            - name: MIGRATION_MODE
+              value: "up"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Running database migrations..."
+              flyway -url=$DATABASE_URL -locations=/migrations migrate
+              echo "Database migrations completed"
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+              readOnly: true
+
+      volumes:
+        - name: spark-work-dir
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: data-processing
+          persistentVolumeClaim:
+            claimName: data-processing-pvc
+        - name: checkpoint-storage
+          persistentVolumeClaim:
+            claimName: etl-checkpoint-pvc
+        - name: kafka-data
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: streaming-checkpoints
+          persistentVolumeClaim:
+            claimName: streaming-checkpoint-pvc
+        - name: quality-reports
+          persistentVolumeClaim:
+            claimName: data-quality-reports-pvc
+        - name: metadata-storage
+          persistentVolumeClaim:
+            claimName: metadata-catalog-pvc
+        - name: config
+          configMap:
+            name: data-etl-config
+        - name: schemas
+          configMap:
+            name: avro-schemas-config
+        - name: migrations
+          configMap:
+            name: database-migrations-config
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 15Gi
+        - name: spark-logs
+          emptyDir:
+            sizeLimit: 5Gi

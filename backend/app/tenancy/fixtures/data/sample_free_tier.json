@@ -1,0 +1,253 @@
+{
+  "tenant_info": {
+    "tenant_id": "free_demo_001",
+    "tenant_name": "Free Demo Tenant",
+    "tier": "free",
+    "generated_at": "2024-12-19T10:30:00Z",
+    "description": "Sample data for free tier tenant with limited resources"
+  },
+  "profile": {
+    "num_users": 5,
+    "num_tracks": 50,
+    "num_albums": 10,
+    "num_artists": 15,
+    "num_playlists": 3,
+    "num_listening_events": 500,
+    "user_activity_level": 0.3,
+    "music_diversity": 0.5,
+    "geographic_spread": ["US", "CA", "GB"],
+    "gdpr_compliant": false,
+    "pii_anonymization": false
+  },
+  "data": {
+    "artists": [
+      {
+        "artist_id": "free_demo_001_artist_000001",
+        "tenant_id": "free_demo_001",
+        "name": "Alex Rivers",
+        "biography": "An indie pop artist from California known for dreamy melodies and introspective lyrics.",
+        "genres": ["Pop", "Indie", "Alternative"],
+        "country": "US",
+        "formed_year": 2018,
+        "is_verified": false,
+        "monthly_listeners": 15420,
+        "social_media": {
+          "spotify_url": "https://open.spotify.com/artist/free_demo_001_artist_000001",
+          "website": "https://alexriversmusic.com",
+          "instagram": "@alexriversmusic"
+        },
+        "created_at": "2018-03-15T14:22:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      },
+      {
+        "artist_id": "free_demo_001_artist_000002",
+        "tenant_id": "free_demo_001",
+        "name": "The Midnight Owls",
+        "biography": "A folk-rock band from Nashville bringing authentic storytelling through music.",
+        "genres": ["Folk", "Rock", "Country"],
+        "country": "US",
+        "formed_year": 2015,
+        "is_verified": false,
+        "monthly_listeners": 8750,
+        "social_media": {
+          "spotify_url": "https://open.spotify.com/artist/free_demo_001_artist_000002",
+          "website": null,
+          "instagram": "@midnightowlsband"
+        },
+        "created_at": "2015-08-20T09:15:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "albums": [
+      {
+        "album_id": "free_demo_001_album_000001",
+        "tenant_id": "free_demo_001",
+        "artist_id": "free_demo_001_artist_000001",
+        "artist_name": "Alex Rivers",
+        "title": "Dreamscapes",
+        "album_type": "album",
+        "release_date": "2023-06-15",
+        "genres": ["Pop", "Indie"],
+        "total_tracks": 12,
+        "duration_ms": 2940000,
+        "label": "Indie Records",
+        "copyright": "(C) 2023 Indie Records",
+        "is_explicit": false,
+        "popularity": 65,
+        "markets": ["US", "CA", "GB", "AU", "NZ"],
+        "images": [
+          {
+            "url": "https://i.scdn.co/image/dreamscapes_640x640",
+            "height": 640,
+            "width": 640
+          }
+        ],
+        "created_at": "2023-06-15T00:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "tracks": [
+      {
+        "track_id": "free_demo_001_track_000001",
+        "tenant_id": "free_demo_001",
+        "name": "Midnight Drive",
+        "album_id": "free_demo_001_album_000001",
+        "album_name": "Dreamscapes",
+        "artist_id": "free_demo_001_artist_000001",
+        "artist_name": "Alex Rivers",
+        "disc_number": 1,
+        "track_number": 1,
+        "duration_ms": 245000,
+        "explicit": false,
+        "is_playable": true,
+        "popularity": 72,
+        "preview_url": "https://p.scdn.co/mp3-preview/free_demo_001_track_000001",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/free_demo_001_track_000001"
+        },
+        "genres": ["Pop", "Indie"],
+        "mood": "Dreamy",
+        "audio_features": {
+          "danceability": 0.65,
+          "energy": 0.58,
+          "key": 7,
+          "loudness": -8.5,
+          "mode": 1,
+          "speechiness": 0.04,
+          "acousticness": 0.35,
+          "instrumentalness": 0.02,
+          "liveness": 0.12,
+          "valence": 0.71,
+          "tempo": 120.5,
+          "time_signature": 4
+        },
+        "markets": ["US", "CA", "GB", "AU", "NZ"],
+        "created_at": "2023-06-15T00:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "users": [
+      {
+        "user_id": "free_demo_001_user_000001",
+        "tenant_id": "free_demo_001",
+        "display_name": "Music Lover",
+        "email": "user1@freedemo.com",
+        "birth_date": "1995-03-22",
+        "country": "US",
+        "subscription_type": "free",
+        "subscription_start_date": "2024-01-15",
+        "is_verified": false,
+        "followers": 5,
+        "following": 12,
+        "preferences": {
+          "explicit_content": false,
+          "language": "en",
+          "preferred_genres": ["Pop", "Indie", "Rock"],
+          "discovery_mode": "balanced"
+        },
+        "activity_metrics": {
+          "total_listening_time_ms": 1800000,
+          "tracks_played": 95,
+          "playlists_created": 2,
+          "artists_followed": 8,
+          "last_active": "2024-12-18T20:15:00Z"
+        },
+        "device_info": {
+          "devices": ["smartphone", "desktop"],
+          "primary_device": "smartphone"
+        },
+        "privacy_settings": {
+          "public_playlists": true,
+          "show_recently_played": true,
+          "allow_recommendations": true
+        },
+        "created_at": "2024-01-15T10:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "playlists": [
+      {
+        "playlist_id": "free_demo_001_playlist_000001",
+        "tenant_id": "free_demo_001",
+        "name": "My Chill Vibes",
+        "description": "Perfect songs for relaxing after a long day",
+        "owner_id": "free_demo_001_user_000001",
+        "owner_name": "Music Lover",
+        "is_public": true,
+        "is_collaborative": false,
+        "total_tracks": 15,
+        "duration_ms": 3675000,
+        "followers": 3,
+        "tracks": [
+          {
+            "track_id": "free_demo_001_track_000001",
+            "added_at": "2024-06-20T14:30:00Z",
+            "added_by": "free_demo_001_user_000001",
+            "position": 0
+          }
+        ],
+        "images": [
+          {
+            "url": "https://mosaic.scdn.co/640/free_demo_001_playlist_000001",
+            "height": 640,
+            "width": 640
+          }
+        ],
+        "genres": ["Pop", "Indie", "Alternative"],
+        "mood_distribution": {
+          "Happy": 0.2,
+          "Relaxed": 0.6,
+          "Dreamy": 0.2
+        },
+        "created_at": "2024-02-01T16:45:00Z",
+        "updated_at": "2024-12-15T09:20:00Z"
+      }
+    ],
+    "listening_history": [
+      {
+        "event_id": "free_demo_001_event_000000001",
+        "tenant_id": "free_demo_001",
+        "user_id": "free_demo_001_user_000001",
+        "track_id": "free_demo_001_track_000001",
+        "track_name": "Midnight Drive",
+        "artist_id": "free_demo_001_artist_000001",
+        "artist_name": "Alex Rivers",
+        "album_id": "free_demo_001_album_000001",
+        "played_at": "2024-12-18T20:15:30Z",
+        "duration_ms": 245000,
+        "track_duration_ms": 245000,
+        "completion_percentage": 100.0,
+        "context": {
+          "type": "playlist",
+          "uri": "spotify:playlist:free_demo_001_playlist_000001"
+        },
+        "device": {
+          "type": "smartphone",
+          "is_private_session": false,
+          "volume_percent": 75
+        },
+        "skip_reason": null,
+        "is_shuffle": false,
+        "is_repeat": null,
+        "location": {
+          "country": "US",
+          "city": "Los Angeles",
+          "timezone": "PST"
+        },
+        "created_at": "2024-12-18T20:15:30Z"
+      }
+    ]
+  },
+  "stats": {
+    "total_entities": {
+      "artists": 15,
+      "albums": 10,
+      "tracks": 50,
+      "users": 5,
+      "playlists": 3,
+      "listening_events": 500
+    },
+    "data_size_estimate": "~2.5MB",
+    "generation_time": "~15 seconds"
+  }
+}

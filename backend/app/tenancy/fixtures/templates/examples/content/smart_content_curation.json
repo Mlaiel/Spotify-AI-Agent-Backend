@@ -1,0 +1,576 @@
+{
+  "_metadata": {
+    "template_type": "smart_content_curation",
+    "template_version": "3.8.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "ContentCurationTemplateGenerator",
+    "tags": ["curation", "ai", "content", "automation", "quality", "discovery"],
+    "description": "Intelligent content curation system with AI-powered quality assessment and automated workflows"
+  },
+  "curation_id": "{{ curation_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "curator_id": "{{ curator_id }}",
+  "curation_configuration": {
+    "curation_name": "{{ curation_name | default('Smart Music Curation System') }}",
+    "curation_type": "{{ curation_type | default('hybrid_ai_human') }}",
+    "automation_level": "{{ automation_level | default('high') }}",
+    "quality_threshold": "{{ quality_threshold | default(0.8) }}",
+    "content_categories": "{{ content_categories | default(['playlist', 'album', 'artist', 'track']) }}",
+    "curation_frequency": "{{ curation_frequency | default('continuous') }}",
+    "target_audience": "{{ target_audience | default('general') }}",
+    "geographic_focus": "{{ geographic_focus | default('global') }}",
+    "language_preferences": "{{ language_preferences | default(['en', 'es', 'fr']) }}"
+  },
+  "content_sources": {
+    "primary_sources": [
+      {
+        "source_type": "streaming_platforms",
+        "platforms": [
+          {
+            "name": "spotify",
+            "enabled": "{{ spotify_source_enabled | default(true) }}",
+            "api_access": "{{ spotify_api_access | default(true) }}",
+            "weight": "{{ spotify_source_weight | default(0.4) }}",
+            "categories": ["new_releases", "trending", "charts", "playlists"],
+            "update_frequency": "{{ spotify_update_frequency | default('hourly') }}"
+          },
+          {
+            "name": "apple_music",
+            "enabled": "{{ apple_music_source_enabled | default(true) }}",
+            "api_access": "{{ apple_music_api_access | default(true) }}",
+            "weight": "{{ apple_music_source_weight | default(0.3) }}",
+            "categories": ["new_releases", "editorial_playlists", "charts"],
+            "update_frequency": "{{ apple_music_update_frequency | default('daily') }}"
+          },
+          {
+            "name": "youtube_music",
+            "enabled": "{{ youtube_music_source_enabled | default(true) }}",
+            "api_access": "{{ youtube_music_api_access | default(true) }}",
+            "weight": "{{ youtube_music_source_weight | default(0.2) }}",
+            "categories": ["trending", "viral", "music_videos"],
+            "update_frequency": "{{ youtube_music_update_frequency | default('hourly') }}"
+          },
+          {
+            "name": "soundcloud",
+            "enabled": "{{ soundcloud_source_enabled | default(true) }}",
+            "api_access": "{{ soundcloud_api_access | default(true) }}",
+            "weight": "{{ soundcloud_source_weight | default(0.1) }}",
+            "categories": ["indie", "underground", "emerging_artists"],
+            "update_frequency": "{{ soundcloud_update_frequency | default('daily') }}"
+          }
+        ]
+      },
+      {
+        "source_type": "music_blogs",
+        "sources": [
+          {
+            "name": "pitchfork",
+            "enabled": "{{ pitchfork_source_enabled | default(true) }}",
+            "rss_feed": "{{ pitchfork_rss_feed | default('') }}",
+            "weight": "{{ pitchfork_source_weight | default(0.3) }}",
+            "content_types": ["reviews", "news", "features"]
+          },
+          {
+            "name": "rolling_stone",
+            "enabled": "{{ rolling_stone_source_enabled | default(true) }}",
+            "rss_feed": "{{ rolling_stone_rss_feed | default('') }}",
+            "weight": "{{ rolling_stone_source_weight | default(0.25) }}",
+            "content_types": ["reviews", "interviews", "news"]
+          },
+          {
+            "name": "stereogum",
+            "enabled": "{{ stereogum_source_enabled | default(true) }}",
+            "rss_feed": "{{ stereogum_rss_feed | default('') }}",
+            "weight": "{{ stereogum_source_weight | default(0.2) }}",
+            "content_types": ["indie_reviews", "premieres"]
+          }
+        ]
+      },
+      {
+        "source_type": "social_media",
+        "platforms": [
+          {
+            "name": "twitter",
+            "enabled": "{{ twitter_source_enabled | default(true) }}",
+            "api_access": "{{ twitter_api_access | default(true) }}",
+            "monitoring": {
+              "hashtags": ["#newmusic", "#musicdiscovery", "#nowplaying"],
+              "accounts": ["{{ twitter_accounts | default([]) }}"],
+              "sentiment_analysis": "{{ twitter_sentiment_analysis | default(true) }}"
+            }
+          },
+          {
+            "name": "instagram",
+            "enabled": "{{ instagram_source_enabled | default(true) }}",
+            "api_access": "{{ instagram_api_access | default(true) }}",
+            "monitoring": {
+              "hashtags": ["#music", "#artist", "#newrelease"],
+              "story_monitoring": "{{ instagram_story_monitoring | default(true) }}"
+            }
+          },
+          {
+            "name": "tiktok",
+            "enabled": "{{ tiktok_source_enabled | default(true) }}",
+            "api_access": "{{ tiktok_api_access | default(false) }}",
+            "monitoring": {
+              "trending_sounds": "{{ tiktok_trending_sounds | default(true) }}",
+              "viral_tracks": "{{ tiktok_viral_tracks | default(true) }}"
+            }
+          }
+        ]
+      }
+    ],
+    "user_generated_content": {
+      "enabled": "{{ ugc_enabled | default(true) }}",
+      "sources": [
+        {
+          "source": "user_playlists",
+          "weight": "{{ user_playlist_weight | default(0.4) }}",
+          "quality_filter": "{{ user_playlist_quality_filter | default(true) }}",
+          "minimum_followers": "{{ user_playlist_min_followers | default(100) }}"
+        },
+        {
+          "source": "user_reviews",
+          "weight": "{{ user_review_weight | default(0.3) }}",
+          "sentiment_analysis": "{{ user_review_sentiment | default(true) }}",
+          "credibility_scoring": "{{ user_review_credibility | default(true) }}"
+        },
+        {
+          "source": "community_recommendations",
+          "weight": "{{ community_rec_weight | default(0.3) }}",
+          "voting_system": "{{ community_voting_system | default(true) }}",
+          "moderation": "{{ community_moderation | default(true) }}"
+        }
+      ]
+    }
+  },
+  "ai_curation_engine": {
+    "content_analysis": {
+      "audio_analysis": {
+        "enabled": "{{ audio_analysis_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "audio_quality",
+            "weight": "{{ audio_quality_weight | default(0.25) }}",
+            "threshold": "{{ audio_quality_threshold | default(0.7) }}",
+            "methods": ["spectral_analysis", "dynamic_range", "noise_detection"]
+          },
+          {
+            "feature": "genre_classification",
+            "weight": "{{ genre_classification_weight | default(0.2) }}",
+            "confidence_threshold": "{{ genre_confidence_threshold | default(0.8) }}",
+            "model": "{{ genre_classification_model | default('transformer_based') }}"
+          },
+          {
+            "feature": "mood_detection",
+            "weight": "{{ mood_detection_weight | default(0.2) }}",
+            "emotional_dimensions": ["valence", "arousal", "dominance"],
+            "model": "{{ mood_detection_model | default('multimodal_transformer') }}"
+          },
+          {
+            "feature": "tempo_stability",
+            "weight": "{{ tempo_stability_weight | default(0.15) }}",
+            "variance_threshold": "{{ tempo_variance_threshold | default(0.05) }}",
+            "bpm_range": ["{{ min_bpm | default(60) }}", "{{ max_bpm | default(200) }}"]
+          },
+          {
+            "feature": "harmonic_complexity",
+            "weight": "{{ harmonic_complexity_weight | default(0.1) }}",
+            "chord_progression_analysis": "{{ chord_progression_analysis | default(true) }}",
+            "key_stability": "{{ key_stability_analysis | default(true) }}"
+          },
+          {
+            "feature": "production_quality",
+            "weight": "{{ production_quality_weight | default(0.1) }}",
+            "mastering_quality": "{{ mastering_quality_analysis | default(true) }}",
+            "mix_balance": "{{ mix_balance_analysis | default(true) }}"
+          }
+        ]
+      },
+      "metadata_analysis": {
+        "enabled": "{{ metadata_analysis_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "artist_reputation",
+            "weight": "{{ artist_reputation_weight | default(0.3) }}",
+            "factors": ["streaming_numbers", "critical_acclaim", "social_media_presence"],
+            "scoring_model": "{{ artist_reputation_model | default('weighted_ensemble') }}"
+          },
+          {
+            "feature": "release_freshness",
+            "weight": "{{ release_freshness_weight | default(0.25) }}",
+            "decay_function": "{{ freshness_decay_function | default('exponential') }}",
+            "half_life_days": "{{ freshness_half_life | default(30) }}"
+          },
+          {
+            "feature": "label_credibility",
+            "weight": "{{ label_credibility_weight | default(0.2) }}",
+            "label_scoring": "{{ label_scoring_enabled | default(true) }}",
+            "independent_boost": "{{ independent_artist_boost | default(0.1) }}"
+          },
+          {
+            "feature": "collaboration_value",
+            "weight": "{{ collaboration_value_weight | default(0.15) }}",
+            "featured_artist_analysis": "{{ featured_artist_analysis | default(true) }}",
+            "cross_genre_bonus": "{{ cross_genre_collaboration_bonus | default(0.05) }}"
+          },
+          {
+            "feature": "lyrical_content",
+            "weight": "{{ lyrical_content_weight | default(0.1) }}",
+            "sentiment_analysis": "{{ lyrical_sentiment_analysis | default(true) }}",
+            "topic_modeling": "{{ lyrical_topic_modeling | default(true) }}",
+            "language_detection": "{{ lyrical_language_detection | default(true) }}"
+          }
+        ]
+      },
+      "popularity_signals": {
+        "enabled": "{{ popularity_signals_enabled | default(true) }}",
+        "signals": [
+          {
+            "signal": "streaming_velocity",
+            "weight": "{{ streaming_velocity_weight | default(0.3) }}",
+            "time_windows": ["1_day", "7_days", "30_days"],
+            "trending_threshold": "{{ streaming_trending_threshold | default(0.2) }}"
+          },
+          {
+            "signal": "social_media_buzz",
+            "weight": "{{ social_media_buzz_weight | default(0.25) }}",
+            "platforms": ["twitter", "instagram", "tiktok"],
+            "sentiment_weighting": "{{ social_sentiment_weighting | default(true) }}"
+          },
+          {
+            "signal": "playlist_additions",
+            "weight": "{{ playlist_additions_weight | default(0.2) }}",
+            "playlist_quality_weighting": "{{ playlist_quality_weighting | default(true) }}",
+            "editorial_playlist_boost": "{{ editorial_playlist_boost | default(2.0) }}"
+          },
+          {
+            "signal": "user_engagement",
+            "weight": "{{ user_engagement_weight | default(0.15) }}",
+            "metrics": ["completion_rate", "skip_rate", "save_rate", "share_rate"],
+            "engagement_threshold": "{{ engagement_threshold | default(0.7) }}"
+          },
+          {
+            "signal": "critical_reception",
+            "weight": "{{ critical_reception_weight | default(0.1) }}",
+            "review_sources": ["professional_critics", "user_reviews"],
+            "review_sentiment": "{{ review_sentiment_analysis | default(true) }}"
+          }
+        ]
+      }
+    },
+    "quality_scoring": {
+      "overall_score_calculation": {
+        "weighting_strategy": "{{ score_weighting_strategy | default('adaptive') }}",
+        "weights": {
+          "audio_analysis": "{{ audio_analysis_overall_weight | default(0.4) }}",
+          "metadata_analysis": "{{ metadata_analysis_overall_weight | default(0.3) }}",
+          "popularity_signals": "{{ popularity_signals_overall_weight | default(0.3) }}"
+        },
+        "normalization_method": "{{ score_normalization_method | default('min_max') }}",
+        "outlier_handling": "{{ outlier_handling_method | default('winsorization') }}"
+      },
+      "dynamic_thresholds": {
+        "enabled": "{{ dynamic_thresholds_enabled | default(true) }}",
+        "adaptation_frequency": "{{ threshold_adaptation_frequency | default('weekly') }}",
+        "factors": [
+          {
+            "factor": "genre",
+            "adjustment": "{{ genre_threshold_adjustment | default(true) }}",
+            "genre_specific_thresholds": "{{ genre_specific_thresholds | default(true) }}"
+          },
+          {
+            "factor": "time_period",
+            "adjustment": "{{ temporal_threshold_adjustment | default(true) }}",
+            "seasonal_variations": "{{ seasonal_threshold_variations | default(true) }}"
+          },
+          {
+            "factor": "market_saturation",
+            "adjustment": "{{ market_saturation_adjustment | default(true) }}",
+            "saturation_penalty": "{{ market_saturation_penalty | default(0.1) }}"
+          }
+        ]
+      },
+      "confidence_intervals": {
+        "enabled": "{{ confidence_intervals_enabled | default(true) }}",
+        "confidence_level": "{{ confidence_level | default(0.95) }}",
+        "uncertainty_factors": ["data_quality", "model_confidence", "feature_completeness"],
+        "uncertainty_penalty": "{{ uncertainty_penalty | default(0.05) }}"
+      }
+    },
+    "curation_algorithms": {
+      "diversity_optimization": {
+        "enabled": "{{ diversity_optimization_enabled | default(true) }}",
+        "diversity_types": [
+          {
+            "type": "genre_diversity",
+            "weight": "{{ genre_diversity_weight | default(0.3) }}",
+            "target_distribution": "{{ genre_diversity_target | default('balanced') }}",
+            "max_concentration": "{{ max_genre_concentration | default(0.4) }}"
+          },
+          {
+            "type": "artist_diversity",
+            "weight": "{{ artist_diversity_weight | default(0.3) }}",
+            "max_same_artist": "{{ max_same_artist_curation | default(2) }}",
+            "emerging_artist_boost": "{{ emerging_artist_boost | default(0.2) }}"
+          },
+          {
+            "type": "temporal_diversity",
+            "weight": "{{ temporal_diversity_weight | default(0.2) }}",
+            "era_distribution": "{{ era_distribution_target | default('weighted_recent') }}",
+            "nostalgia_factor": "{{ nostalgia_factor_curation | default(0.1) }}"
+          },
+          {
+            "type": "geographic_diversity",
+            "weight": "{{ geographic_diversity_weight | default(0.1) }}",
+            "global_representation": "{{ global_representation_target | default(true) }}",
+            "local_preference": "{{ local_preference_factor | default(0.3) }}"
+          },
+          {
+            "type": "mood_diversity",
+            "weight": "{{ mood_diversity_weight | default(0.1) }}",
+            "emotional_arc": "{{ emotional_arc_enabled | default(true) }}",
+            "mood_transitions": "{{ smooth_mood_transitions | default(true) }}"
+          }
+        ]
+      },
+      "novelty_detection": {
+        "enabled": "{{ novelty_detection_enabled | default(true) }}",
+        "novelty_types": [
+          {
+            "type": "new_artist_discovery",
+            "weight": "{{ new_artist_discovery_weight | default(0.4) }}",
+            "emerging_threshold": "{{ emerging_artist_threshold | default(1000) }}",
+            "discovery_boost": "{{ new_artist_discovery_boost | default(0.3) }}"
+          },
+          {
+            "type": "genre_fusion",
+            "weight": "{{ genre_fusion_weight | default(0.3) }}",
+            "fusion_detection": "{{ genre_fusion_detection | default(true) }}",
+            "innovation_bonus": "{{ genre_innovation_bonus | default(0.2) }}"
+          },
+          {
+            "type": "production_innovation",
+            "weight": "{{ production_innovation_weight | default(0.2) }}",
+            "technical_novelty": "{{ technical_novelty_detection | default(true) }}",
+            "sound_design_analysis": "{{ sound_design_analysis | default(true) }}"
+          },
+          {
+            "type": "cultural_relevance",
+            "weight": "{{ cultural_relevance_weight | default(0.1) }}",
+            "trend_alignment": "{{ cultural_trend_alignment | default(true) }}",
+            "social_impact": "{{ social_impact_analysis | default(true) }}"
+          }
+        ]
+      },
+      "editorial_guidelines": {
+        "content_policies": {
+          "explicit_content": "{{ explicit_content_policy | default('filtered') }}",
+          "hate_speech_detection": "{{ hate_speech_detection | default(true) }}",
+          "violence_content": "{{ violence_content_policy | default('restricted') }}",
+          "substance_references": "{{ substance_references_policy | default('contextual') }}",
+          "political_content": "{{ political_content_policy | default('neutral') }}"
+        },
+        "quality_standards": {
+          "minimum_audio_quality": "{{ editorial_min_audio_quality | default(0.8) }}",
+          "production_standards": "{{ production_standards_enforcement | default(true) }}",
+          "artistic_merit": "{{ artistic_merit_threshold | default(0.7) }}",
+          "originality_requirement": "{{ originality_requirement | default(0.6) }}"
+        },
+        "brand_alignment": {
+          "brand_safety": "{{ brand_safety_enabled | default(true) }}",
+          "advertiser_friendly": "{{ advertiser_friendly_content | default(true) }}",
+          "platform_values": "{{ platform_values_alignment | default(true) }}",
+          "community_guidelines": "{{ community_guidelines_compliance | default(true) }}"
+        }
+      }
+    }
+  },
+  "human_curation": {
+    "curator_roles": [
+      {
+        "role": "music_director",
+        "enabled": "{{ music_director_enabled | default(true) }}",
+        "responsibilities": ["final_approval", "strategic_direction", "quality_oversight"],
+        "approval_threshold": "{{ music_director_approval_threshold | default(0.9) }}",
+        "override_authority": "{{ music_director_override | default(true) }}"
+      },
+      {
+        "role": "genre_specialist",
+        "enabled": "{{ genre_specialist_enabled | default(true) }}",
+        "responsibilities": ["genre_expertise", "trend_identification", "artist_scouting"],
+        "specialization_areas": "{{ genre_specializations | default(['pop', 'rock', 'hip-hop', 'electronic', 'indie']) }}",
+        "influence_weight": "{{ genre_specialist_weight | default(0.3) }}"
+      },
+      {
+        "role": "cultural_consultant",
+        "enabled": "{{ cultural_consultant_enabled | default(true) }}",
+        "responsibilities": ["cultural_sensitivity", "regional_expertise", "diversity_advocacy"],
+        "regional_focus": "{{ cultural_consultant_regions | default(['north_america', 'europe', 'asia', 'latin_america']) }}",
+        "influence_weight": "{{ cultural_consultant_weight | default(0.2) }}"
+      },
+      {
+        "role": "trend_analyst",
+        "enabled": "{{ trend_analyst_enabled | default(true) }}",
+        "responsibilities": ["trend_prediction", "market_analysis", "data_interpretation"],
+        "analysis_scope": ["social_media", "streaming_data", "cultural_movements"],
+        "influence_weight": "{{ trend_analyst_weight | default(0.25) }}"
+      }
+    ],
+    "collaborative_workflows": {
+      "consensus_building": {
+        "enabled": "{{ consensus_building_enabled | default(true) }}",
+        "voting_system": "{{ curator_voting_system | default('weighted') }}",
+        "minimum_consensus": "{{ minimum_curator_consensus | default(0.7) }}",
+        "conflict_resolution": "{{ curator_conflict_resolution | default('escalation') }}"
+      },
+      "review_processes": {
+        "peer_review": "{{ peer_review_enabled | default(true) }}",
+        "blind_review": "{{ blind_review_enabled | default(false) }}",
+        "review_rounds": "{{ max_review_rounds | default(3) }}",
+        "review_criteria": ["quality", "relevance", "diversity", "innovation"]
+      },
+      "feedback_integration": {
+        "curator_feedback": "{{ curator_feedback_enabled | default(true) }}",
+        "feedback_weighting": "{{ curator_feedback_weight | default(0.4) }}",
+        "learning_integration": "{{ curator_learning_integration | default(true) }}",
+        "ai_adjustment": "{{ ai_curator_adjustment | default(true) }}"
+      }
+    }
+  },
+  "automated_workflows": {
+    "content_ingestion": {
+      "monitoring_frequency": "{{ content_monitoring_frequency | default('real_time') }}",
+      "batch_processing": {
+        "enabled": "{{ batch_processing_enabled | default(true) }}",
+        "batch_size": "{{ ingestion_batch_size | default(1000) }}",
+        "processing_interval": "{{ batch_processing_interval | default('hourly') }}",
+        "priority_queuing": "{{ priority_queuing_enabled | default(true) }}"
+      },
+      "duplicate_detection": {
+        "enabled": "{{ duplicate_detection_enabled | default(true) }}",
+        "similarity_threshold": "{{ duplicate_similarity_threshold | default(0.95) }}",
+        "fingerprinting": "{{ audio_fingerprinting_enabled | default(true) }}",
+        "metadata_matching": "{{ metadata_duplicate_matching | default(true) }}"
+      },
+      "quality_gates": {
+        "automated_filtering": "{{ automated_quality_filtering | default(true) }}",
+        "minimum_quality_score": "{{ minimum_auto_quality_score | default(0.6) }}",
+        "human_review_threshold": "{{ human_review_threshold | default(0.8) }}",
+        "auto_approval_threshold": "{{ auto_approval_threshold | default(0.9) }}"
+      }
+    },
+    "curation_automation": {
+      "playlist_generation": {
+        "enabled": "{{ auto_playlist_generation | default(true) }}",
+        "generation_frequency": "{{ playlist_generation_frequency | default('daily') }}",
+        "playlist_types": ["mood_based", "genre_focused", "discovery", "trending"],
+        "target_length": "{{ auto_playlist_target_length | default(50) }}",
+        "refresh_percentage": "{{ playlist_refresh_percentage | default(0.3) }}"
+      },
+      "content_categorization": {
+        "enabled": "{{ auto_categorization_enabled | default(true) }}",
+        "categorization_models": ["genre", "mood", "activity", "tempo"],
+        "confidence_threshold": "{{ categorization_confidence_threshold | default(0.8) }}",
+        "multi_label_classification": "{{ multi_label_classification | default(true) }}"
+      },
+      "trending_detection": {
+        "enabled": "{{ trending_detection_enabled | default(true) }}",
+        "trend_algorithms": ["velocity_based", "social_signals", "engagement_metrics"],
+        "trend_threshold": "{{ trend_detection_threshold | default(0.7) }}",
+        "trend_categories": ["viral", "emerging", "breakout", "resurgent"]
+      }
+    },
+    "distribution_automation": {
+      "platform_publishing": {
+        "enabled": "{{ auto_platform_publishing | default(true) }}",
+        "target_platforms": ["internal", "partner_playlists", "social_media"],
+        "publishing_schedule": "{{ auto_publishing_schedule | default('optimized') }}",
+        "content_formatting": "{{ auto_content_formatting | default(true) }}"
+      },
+      "performance_optimization": {
+        "enabled": "{{ performance_optimization_enabled | default(true) }}",
+        "a_b_testing": "{{ automated_ab_testing | default(true) }}",
+        "content_rotation": "{{ automated_content_rotation | default(true) }}",
+        "engagement_optimization": "{{ engagement_optimization | default(true) }}"
+      }
+    }
+  },
+  "analytics_and_insights": {
+    "performance_tracking": {
+      "curation_metrics": [
+        {
+          "metric": "content_engagement",
+          "tracking_enabled": "{{ content_engagement_tracking | default(true) }}",
+          "kpis": ["play_rate", "completion_rate", "save_rate", "share_rate"],
+          "benchmarking": "{{ engagement_benchmarking | default(true) }}"
+        },
+        {
+          "metric": "discovery_success",
+          "tracking_enabled": "{{ discovery_success_tracking | default(true) }}",
+          "kpis": ["new_artist_discovery_rate", "genre_expansion", "playlist_diversity"],
+          "success_threshold": "{{ discovery_success_threshold | default(0.3) }}"
+        },
+        {
+          "metric": "curation_efficiency",
+          "tracking_enabled": "{{ curation_efficiency_tracking | default(true) }}",
+          "kpis": ["processing_time", "curator_productivity", "automation_rate"],
+          "efficiency_targets": "{{ curation_efficiency_targets | default({'processing_time': 300, 'automation_rate': 0.8}) }}"
+        },
+        {
+          "metric": "quality_consistency",
+          "tracking_enabled": "{{ quality_consistency_tracking | default(true) }}",
+          "kpis": ["quality_variance", "consistency_score", "outlier_rate"],
+          "quality_standards": "{{ quality_consistency_standards | default({'variance_threshold': 0.1, 'outlier_limit': 0.05}) }}"
+        }
+      ],
+      "real_time_dashboards": {
+        "enabled": "{{ real_time_dashboards_enabled | default(true) }}",
+        "dashboard_types": ["executive", "operational", "curator", "analytical"],
+        "update_frequency": "{{ dashboard_update_frequency | default('5_minutes') }}",
+        "alert_system": "{{ dashboard_alert_system | default(true) }}"
+      }
+    },
+    "predictive_analytics": {
+      "trend_prediction": {
+        "enabled": "{{ trend_prediction_enabled | default(true) }}",
+        "prediction_horizon": "{{ trend_prediction_horizon | default('30_days') }}",
+        "prediction_models": ["time_series", "machine_learning", "ensemble"],
+        "accuracy_tracking": "{{ trend_prediction_accuracy_tracking | default(true) }}"
+      },
+      "content_performance_forecasting": {
+        "enabled": "{{ performance_forecasting_enabled | default(true) }}",
+        "forecasting_models": ["regression", "neural_network", "gradient_boosting"],
+        "feature_importance": "{{ forecasting_feature_importance | default(true) }}",
+        "confidence_intervals": "{{ forecasting_confidence_intervals | default(true) }}"
+      },
+      "user_behavior_prediction": {
+        "enabled": "{{ user_behavior_prediction_enabled | default(true) }}",
+        "behavior_models": ["engagement_prediction", "churn_prediction", "preference_evolution"],
+        "prediction_accuracy": "{{ user_behavior_prediction_accuracy | default(0.75) }}",
+        "personalization_integration": "{{ behavior_prediction_personalization | default(true) }}"
+      }
+    },
+    "content_insights": {
+      "success_factor_analysis": {
+        "enabled": "{{ success_factor_analysis_enabled | default(true) }}",
+        "analysis_dimensions": ["audio_features", "metadata", "timing", "context"],
+        "correlation_analysis": "{{ success_correlation_analysis | default(true) }}",
+        "causal_inference": "{{ success_causal_inference | default(false) }}"
+      },
+      "market_analysis": {
+        "enabled": "{{ market_analysis_enabled | default(true) }}",
+        "market_segments": ["demographic", "geographic", "psychographic", "behavioral"],
+        "competitive_analysis": "{{ competitive_analysis_enabled | default(true) }}",
+        "market_opportunity": "{{ market_opportunity_analysis | default(true) }}"
+      },
+      "cultural_impact_assessment": {
+        "enabled": "{{ cultural_impact_assessment_enabled | default(true) }}",
+        "impact_metrics": ["social_media_sentiment", "cultural_references", "influence_network"],
+        "longitudinal_tracking": "{{ cultural_impact_longitudinal | default(true) }}",
+        "cross_cultural_analysis": "{{ cross_cultural_analysis | default(true) }}"
+      }
+    }
+  }
+}

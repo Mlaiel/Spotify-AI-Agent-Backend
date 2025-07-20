@@ -1,0 +1,11 @@
+{
+  "validation_error": "Erreur de validation.",
+  "authentication_failed": "Échec de l’authentification.",
+  "permission_denied": "Permission refusée.",
+  "resource_not_found": "Ressource non trouvée.",
+  "rate_limited": "Trop de requêtes. Veuillez patienter.",
+  "internal_error": "Erreur interne. Contactez le support.",
+  "timeout": "Délai dépassé. Veuillez réessayer.",
+  "conflict": "Conflit de données détecté.",
+  "quota_exceeded": "Quota dépassé."
+}

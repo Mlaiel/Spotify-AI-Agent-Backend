@@ -1,0 +1,222 @@
+{
+  "_metadata": {
+    "template_type": "content_playlist",
+    "template_version": "1.8.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "ContentTemplateGenerator",
+    "tags": ["content", "playlist", "ai-generated", "mood-based", "collaborative"],
+    "description": "AI-generated mood-based playlist with collaborative features"
+  },
+  "playlist_id": "{{ playlist_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "user_id": "{{ creator_user_id }}",
+  "basic_info": {
+    "name": "{{ playlist_name | default('AI Curated Mix') }}",
+    "description": "{{ playlist_description | default('An AI-curated playlist based on your mood and preferences') }}",
+    "type": "ai_generated",
+    "category": "{{ playlist_category | default('mood') }}",
+    "mood": "{{ target_mood | default('energetic') }}",
+    "activity": "{{ target_activity | default('general') }}",
+    "energy_level": "{{ energy_level | default(0.7) }}",
+    "duration_target": "{{ duration_minutes | default(60) }}",
+    "language": "{{ content_language | default('en') }}"
+  },
+  "ai_generation": {
+    "algorithm_version": "v2.1.0",
+    "model_used": "{{ ai_model | default('spotify-recommendation-v2') }}",
+    "seed_tracks": [
+      {
+        "spotify_id": "{{ seed_track_1_id }}",
+        "name": "{{ seed_track_1_name }}",
+        "artist": "{{ seed_track_1_artist }}",
+        "genre": "{{ seed_track_1_genre }}",
+        "weight": 0.8
+      },
+      {
+        "spotify_id": "{{ seed_track_2_id }}",
+        "name": "{{ seed_track_2_name }}",
+        "artist": "{{ seed_track_2_artist }}",
+        "genre": "{{ seed_track_2_genre }}",
+        "weight": 0.6
+      }
+    ],
+    "generation_parameters": {
+      "acousticness": "{{ acousticness | default(0.5) }}",
+      "danceability": "{{ danceability | default(0.7) }}",
+      "energy": "{{ energy | default(0.8) }}",
+      "instrumentalness": "{{ instrumentalness | default(0.1) }}",
+      "liveness": "{{ liveness | default(0.2) }}",
+      "loudness": "{{ loudness | default(-6.0) }}",
+      "speechiness": "{{ speechiness | default(0.1) }}",
+      "tempo": "{{ tempo | default(120) }}",
+      "valence": "{{ valence | default(0.7) }}",
+      "popularity_min": "{{ popularity_min | default(30) }}",
+      "popularity_max": "{{ popularity_max | default(90) }}"
+    },
+    "constraints": {
+      "explicit_content": "{{ allow_explicit | default(true) }}",
+      "release_date_from": "{{ release_date_from | default('1990-01-01') }}",
+      "release_date_to": "{{ release_date_to | default(current_date()) }}",
+      "include_genres": [
+        "{{ include_genre_1 | default('pop') }}",
+        "{{ include_genre_2 | default('rock') }}"
+      ],
+      "exclude_genres": [
+        "{{ exclude_genre_1 | default('') }}",
+        "{{ exclude_genre_2 | default('') }}"
+      ],
+      "max_same_artist": "{{ max_same_artist | default(2) }}",
+      "diversity_score": "{{ diversity_score | default(0.7) }}"
+    },
+    "generation_context": {
+      "user_mood": "{{ detected_mood | default('neutral') }}",
+      "time_of_day": "{{ generation_time_of_day | default('evening') }}",
+      "weather": "{{ weather_context | default('unknown') }}",
+      "activity_context": "{{ activity_context | default('listening') }}",
+      "listening_history_influence": "{{ history_influence | default(0.6) }}",
+      "social_influence": "{{ social_influence | default(0.3) }}"
+    }
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "spotify_id": "{{ track_1_spotify_id }}",
+      "name": "{{ track_1_name }}",
+      "artist": "{{ track_1_artist }}",
+      "album": "{{ track_1_album }}",
+      "duration_ms": "{{ track_1_duration | default(180000) }}",
+      "explicit": "{{ track_1_explicit | default(false) }}",
+      "popularity": "{{ track_1_popularity | default(75) }}",
+      "preview_url": "{{ track_1_preview_url | default('') }}",
+      "external_urls": {
+        "spotify": "{{ track_1_spotify_url }}"
+      },
+      "audio_features": {
+        "acousticness": "{{ track_1_acousticness | default(0.5) }}",
+        "danceability": "{{ track_1_danceability | default(0.7) }}",
+        "energy": "{{ track_1_energy | default(0.8) }}",
+        "valence": "{{ track_1_valence | default(0.6) }}"
+      },
+      "ai_score": "{{ track_1_ai_score | default(0.85) }}",
+      "reason_selected": "{{ track_1_reason | default('High energy match for workout mood') }}",
+      "added_at": "{{ current_timestamp() }}"
+    }
+  ],
+  "collaboration": {
+    "is_collaborative": "{{ is_collaborative | default(false) }}",
+    "access_level": "{{ access_level | default('private') }}",
+    "allowed_users": [
+      {
+        "user_id": "{{ collaborator_1_id | default('') }}",
+        "username": "{{ collaborator_1_username | default('') }}",
+        "permissions": "{{ collaborator_1_permissions | default('view') }}",
+        "added_at": "{{ current_timestamp() }}"
+      }
+    ],
+    "collaboration_rules": {
+      "allow_track_addition": "{{ allow_track_addition | default(true) }}",
+      "allow_track_removal": "{{ allow_track_removal | default(false) }}",
+      "allow_reordering": "{{ allow_reordering | default(true) }}",
+      "require_approval": "{{ require_approval | default(false) }}",
+      "max_collaborators": "{{ max_collaborators | default(10) }}"
+    },
+    "activity_log": [
+      {
+        "action": "playlist_created",
+        "user_id": "{{ creator_user_id }}",
+        "timestamp": "{{ current_timestamp() }}",
+        "details": {
+          "ai_generated": true,
+          "track_count": "{{ initial_track_count | default(20) }}"
+        }
+      }
+    ]
+  },
+  "analytics": {
+    "play_count": 0,
+    "skip_rate": 0.0,
+    "completion_rate": 0.0,
+    "share_count": 0,
+    "like_count": 0,
+    "comment_count": 0,
+    "last_played": null,
+    "most_played_track": null,
+    "average_session_duration": 0,
+    "user_feedback": {
+      "thumbs_up": 0,
+      "thumbs_down": 0,
+      "reported": 0,
+      "saved": 0
+    },
+    "performance_metrics": {
+      "discovery_rate": 0.0,
+      "retention_rate": 0.0,
+      "recommendation_accuracy": 0.0,
+      "mood_match_score": 0.0
+    }
+  },
+  "spotify_integration": {
+    "spotify_playlist_id": "{{ spotify_playlist_id | default(null) }}",
+    "sync_enabled": "{{ spotify_sync_enabled | default(true) }}",
+    "last_sync": null,
+    "sync_status": "pending",
+    "sync_errors": [],
+    "spotify_url": "{{ spotify_playlist_url | default('') }}",
+    "spotify_followers": 0,
+    "spotify_public": "{{ spotify_public | default(false) }}"
+  },
+  "personalization": {
+    "user_preferences_weight": "{{ user_prefs_weight | default(0.7) }}",
+    "social_signals_weight": "{{ social_signals_weight | default(0.2) }}",
+    "global_trends_weight": "{{ global_trends_weight | default(0.1) }}",
+    "learning_data": {
+      "user_skips": [],
+      "user_likes": [],
+      "listening_patterns": {},
+      "mood_feedback": {}
+    },
+    "adaptation_settings": {
+      "auto_evolve": "{{ auto_evolve | default(true) }}",
+      "feedback_sensitivity": "{{ feedback_sensitivity | default(0.5) }}",
+      "trend_sensitivity": "{{ trend_sensitivity | default(0.3) }}",
+      "diversity_preference": "{{ diversity_preference | default(0.6) }}"
+    }
+  },
+  "content_safety": {
+    "content_rating": "{{ content_rating | default('general') }}",
+    "explicit_filter": "{{ explicit_filter | default(false) }}",
+    "language_filter": "{{ language_filter | default([]) }}",
+    "cultural_sensitivity": "{{ cultural_sensitivity | default('medium') }}",
+    "age_appropriate": "{{ age_appropriate | default(true) }}",
+    "content_warnings": [],
+    "moderation_status": "approved",
+    "last_reviewed": "{{ current_timestamp() }}"
+  },
+  "metadata": {
+    "created_at": "{{ current_timestamp() }}",
+    "updated_at": "{{ current_timestamp() }}",
+    "created_by": "ai_system",
+    "last_modified_by": "{{ creator_user_id }}",
+    "version": 1,
+    "status": "active",
+    "visibility": "{{ visibility | default('private') }}",
+    "tags": [
+      "{{ tag_1 | default('ai-generated') }}",
+      "{{ tag_2 | default('mood-based') }}",
+      "{{ tag_3 | default('personalized') }}"
+    ],
+    "source": "ai_generation",
+    "quality_score": 0.0,
+    "freshness_score": 1.0,
+    "last_quality_check": "{{ current_timestamp() }}"
+  },
+  "export_data": {
+    "exportable": "{{ exportable | default(true) }}",
+    "formats_supported": ["json", "m3u", "spotify_uri"],
+    "last_export": null,
+    "export_count": 0,
+    "backup_enabled": "{{ backup_enabled | default(true) }}",
+    "backup_frequency": "{{ backup_frequency | default('weekly') }}"
+  }
+}

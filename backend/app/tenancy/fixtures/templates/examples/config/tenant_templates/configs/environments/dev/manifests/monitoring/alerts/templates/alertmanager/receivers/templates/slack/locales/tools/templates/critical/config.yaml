@@ -1,0 +1,576 @@
+# 🚨 Configuration Ultra-Avancée des Alertes Critiques
+# ====================================================
+# 
+# Configuration complète du système d'alertes critiques avec:
+# - Gestion multi-tenant sophistiquée
+# - Intelligence artificielle intégrée
+# - Escalades automatiques intelligentes
+# - Support multilingue complet
+# - Intégrations avancées tous canaux
+
+version: "3.0.0-enterprise"
+metadata:
+  name: "critical-alerts-system"
+  description: "Système d'alertes critiques ultra-avancé avec IA"
+  author: "Fahed Mlaiel - Lead Architect"
+  created_at: "2024-07-19T00:00:00Z"
+  last_updated: "2024-07-19T00:00:00Z"
+  schema_version: "3.0.0"
+
+# Configuration globale du système
+global_config:
+  # Paramètres de performance
+  performance:
+    alert_processing_timeout_ms: 100
+    batch_processing_size: 50
+    max_concurrent_alerts: 1000
+    cache_ttl_seconds: 3600
+    circuit_breaker_threshold: 10
+    
+  # Configuration ML/IA
+  machine_learning:
+    enabled: true
+    model_version: "tensorflow_v3.0.0"
+    confidence_threshold: 0.8
+    prediction_cache_ttl: 1800
+    auto_learning_enabled: true
+    correlation_window_minutes: 15
+    
+  # Observabilité et métriques
+  observability:
+    prometheus_enabled: true
+    jaeger_tracing: true
+    elastic_logging: true
+    grafana_dashboards: true
+    custom_metrics_enabled: true
+    
+  # Sécurité
+  security:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    audit_logging: true
+    rbac_enabled: true
+    zero_trust_mode: true
+
+# Configuration des niveaux de sévérité
+severity_levels:
+  CATASTROPHIC:
+    priority: "P0"
+    score: 1000
+    description: "Panne complète du système - Impact critique sur le business"
+    auto_escalation: true
+    max_response_time_seconds: 60
+    notification_channels: ["slack", "email", "sms", "pagerduty", "phone"]
+    business_impact_multiplier: 5.0
+    
+  CRITICAL:
+    priority: "P1" 
+    score: 800
+    description: "Fonctionnalité critique indisponible - Impact majeur"
+    auto_escalation: true
+    max_response_time_seconds: 120
+    notification_channels: ["slack", "email", "pagerduty"]
+    business_impact_multiplier: 3.0
+    
+  HIGH:
+    priority: "P2"
+    score: 600
+    description: "Dégradation majeure des performances - Impact significatif"
+    auto_escalation: true
+    max_response_time_seconds: 300
+    notification_channels: ["slack", "email"]
+    business_impact_multiplier: 2.0
+    
+  ELEVATED:
+    priority: "P3"
+    score: 400
+    description: "Anomalie détectée nécessitant attention - Impact modéré"
+    auto_escalation: false
+    max_response_time_seconds: 600
+    notification_channels: ["slack"]
+    business_impact_multiplier: 1.5
+    
+  WARNING:
+    priority: "P4"
+    score: 200
+    description: "Seuil d'alerte franchi - Surveillance requise"
+    auto_escalation: false
+    max_response_time_seconds: 1800
+    notification_channels: ["slack"]
+    business_impact_multiplier: 1.0
+
+# Configuration des tiers de tenants
+tenant_tiers:
+  FREE:
+    name: "free"
+    priority: 1
+    sla_response_seconds: 300
+    max_alerts_per_hour: 10
+    escalation_levels: 2
+    channels: ["slack"]
+    ml_features_enabled: false
+    custom_templates: false
+    
+  PREMIUM:
+    name: "premium"
+    priority: 2
+    sla_response_seconds: 180
+    max_alerts_per_hour: 50
+    escalation_levels: 3
+    channels: ["slack", "email"]
+    ml_features_enabled: true
+    custom_templates: true
+    
+  ENTERPRISE:
+    name: "enterprise"
+    priority: 3
+    sla_response_seconds: 60
+    max_alerts_per_hour: 200
+    escalation_levels: 4
+    channels: ["slack", "email", "sms", "pagerduty"]
+    ml_features_enabled: true
+    custom_templates: true
+    dedicated_support: true
+    
+  ENTERPRISE_PLUS:
+    name: "enterprise_plus"
+    priority: 4
+    sla_response_seconds: 30
+    max_alerts_per_hour: 1000
+    escalation_levels: 5
+    channels: ["slack", "email", "sms", "pagerduty", "teams", "phone"]
+    ml_features_enabled: true
+    custom_templates: true
+    dedicated_support: true
+    white_glove_service: true
+
+# Configuration des canaux de notification
+notification_channels:
+  slack:
+    enabled: true
+    priority: 1
+    retry_attempts: 3
+    timeout_seconds: 30
+    rate_limit_per_minute: 60
+    template_engine: "advanced_blocks"
+    interactive_features: true
+    thread_management: true
+    
+    # Configuration Slack spécifique
+    config:
+      bot_token_env: "SLACK_BOT_TOKEN"
+      signing_secret_env: "SLACK_SIGNING_SECRET"
+      default_channel: "#alerts-critical"
+      escalation_channel: "#alerts-escalation"
+      resolved_channel: "#alerts-resolved"
+      
+    # Templates par sévérité
+    templates:
+      CATASTROPHIC: "critical_alert_emergency"
+      CRITICAL: "critical_alert_advanced"
+      HIGH: "high_alert_detailed"
+      ELEVATED: "standard_alert_enhanced"
+      WARNING: "warning_alert_simple"
+      
+  email:
+    enabled: true
+    priority: 2
+    retry_attempts: 3
+    timeout_seconds: 60
+    rate_limit_per_minute: 30
+    template_engine: "html_advanced"
+    
+    config:
+      smtp_host: "smtp.enterprise.com"
+      smtp_port: 587
+      smtp_user_env: "SMTP_USER"
+      smtp_password_env: "SMTP_PASSWORD"
+      from_address: "alerts@spotify-ai-agent.com"
+      reply_to: "support@spotify-ai-agent.com"
+      
+  sms:
+    enabled: true
+    priority: 3
+    retry_attempts: 2
+    timeout_seconds: 30
+    rate_limit_per_minute: 10
+    template_engine: "sms_compact"
+    
+    config:
+      provider: "twilio"
+      account_sid_env: "TWILIO_ACCOUNT_SID"
+      auth_token_env: "TWILIO_AUTH_TOKEN"
+      from_number: "+1234567890"
+      
+  pagerduty:
+    enabled: true
+    priority: 4
+    retry_attempts: 3
+    timeout_seconds: 45
+    rate_limit_per_minute: 20
+    template_engine: "pagerduty_incident"
+    
+    config:
+      integration_key_env: "PAGERDUTY_INTEGRATION_KEY"
+      routing_key_env: "PAGERDUTY_ROUTING_KEY"
+      api_endpoint: "https://events.pagerduty.com/v2/enqueue"
+      
+  teams:
+    enabled: true
+    priority: 5
+    retry_attempts: 3
+    timeout_seconds: 30
+    rate_limit_per_minute: 40
+    template_engine: "teams_adaptive_cards"
+    
+    config:
+      webhook_url_env: "TEAMS_WEBHOOK_URL"
+      tenant_id_env: "TEAMS_TENANT_ID"
+      client_id_env: "TEAMS_CLIENT_ID"
+
+# Configuration des escalades automatiques
+escalation_rules:
+  # Règles globales par défaut
+  default:
+    max_escalation_levels: 5
+    escalation_delay_multiplier: 2.0
+    auto_resolve_timeout_hours: 24
+    snooze_durations: [300, 900, 1800, 3600]  # 5m, 15m, 30m, 1h
+    
+  # Règles par sévérité
+  by_severity:
+    CATASTROPHIC:
+      immediate_escalation: true
+      escalation_intervals: [30, 60, 120, 300]  # secondes
+      max_snooze_duration: 300  # 5 minutes max
+      requires_manual_resolution: true
+      
+    CRITICAL:
+      immediate_escalation: true
+      escalation_intervals: [60, 180, 600, 1800]
+      max_snooze_duration: 900  # 15 minutes max
+      requires_manual_resolution: true
+      
+    HIGH:
+      immediate_escalation: false
+      escalation_intervals: [300, 900, 1800, 3600]
+      max_snooze_duration: 1800  # 30 minutes max
+      requires_manual_resolution: false
+      
+    ELEVATED:
+      immediate_escalation: false
+      escalation_intervals: [600, 1800, 3600, 7200]
+      max_snooze_duration: 3600  # 1 heure max
+      requires_manual_resolution: false
+      
+    WARNING:
+      immediate_escalation: false
+      escalation_intervals: [1800, 3600, 7200, 14400]
+      max_snooze_duration: 7200  # 2 heures max
+      requires_manual_resolution: false
+
+# Configuration des templates Slack avancés
+slack_templates:
+  # Configuration du moteur de templates
+  engine:
+    version: "3.0.0"
+    cache_enabled: true
+    cache_ttl_seconds: 1800
+    localization_enabled: true
+    ml_optimization_enabled: true
+    a_b_testing_enabled: true
+    
+  # Templates principaux
+  templates:
+    critical_alert_emergency:
+      type: "interactive_blocks"
+      max_blocks: 50
+      features:
+        - "interactive_buttons"
+        - "modal_dialogs"
+        - "threaded_responses"
+        - "real_time_updates"
+        - "escalation_workflows"
+      
+      blocks:
+        - type: "header"
+          emoji_enabled: true
+          dynamic_color: true
+          
+        - type: "main_section"
+          fields_layout: "two_column"
+          include_metrics: true
+          include_ml_prediction: true
+          
+        - type: "actions_primary"
+          buttons:
+            - acknowledge
+            - escalate
+            - runbook
+            - dashboard
+            
+        - type: "actions_secondary"
+          buttons:
+            - snooze
+            - resolve
+            - assign
+            - comment
+            
+        - type: "context_footer"
+          include_metadata: true
+          include_links: true
+          
+    critical_alert_advanced:
+      type: "interactive_blocks"
+      max_blocks: 40
+      features:
+        - "interactive_buttons"
+        - "real_time_updates"
+        - "basic_workflows"
+        
+    high_alert_detailed:
+      type: "rich_card"
+      max_blocks: 30
+      features:
+        - "basic_buttons"
+        - "static_content"
+        
+    standard_alert_enhanced:
+      type: "simple_blocks"
+      max_blocks: 20
+      
+    warning_alert_simple:
+      type: "simple_message"
+      max_blocks: 10
+
+# Configuration de l'intelligence artificielle
+ai_configuration:
+  # Modèles de prédiction
+  prediction_models:
+    escalation_predictor:
+      model_type: "tensorflow"
+      model_path: "/models/escalation_predictor_v3.h5"
+      confidence_threshold: 0.8
+      retrain_interval_hours: 24
+      features:
+        - "severity_score"
+        - "affected_users"
+        - "business_impact"
+        - "tenant_tier"
+        - "time_of_day"
+        - "day_of_week"
+        - "historical_escalation_rate"
+        - "service_health_score"
+        
+    correlation_engine:
+      model_type: "scikit_learn"
+      model_path: "/models/correlation_engine_v3.pkl"
+      similarity_threshold: 0.7
+      time_window_minutes: 15
+      features:
+        - "fingerprint_similarity"
+        - "service_correlation"
+        - "error_pattern_matching"
+        - "temporal_clustering"
+        
+  # Configuration du pipeline ML
+  ml_pipeline:
+    feature_engineering:
+      enabled: true
+      real_time_features: true
+      batch_features: true
+      feature_store_enabled: true
+      
+    model_serving:
+      enabled: true
+      model_cache_ttl: 3600
+      batch_prediction: true
+      real_time_inference: true
+      
+    model_monitoring:
+      enabled: true
+      drift_detection: true
+      performance_monitoring: true
+      auto_retrain_enabled: true
+
+# Configuration de la localisation
+localization:
+  default_locale: "en"
+  supported_locales:
+    - "en"  # English
+    - "fr"  # Français
+    - "de"  # Deutsch
+    - "es"  # Español
+    - "it"  # Italiano
+    - "pt"  # Português
+    - "ja"  # 日本語
+    - "ko"  # 한국어
+    - "zh"  # 中文
+    
+  # Messages par locale
+  messages:
+    en:
+      alert_created: "Critical alert created"
+      alert_escalated: "Alert escalated to level {level}"
+      alert_resolved: "Alert resolved"
+      alert_acknowledged: "Alert acknowledged by {user}"
+      
+    fr:
+      alert_created: "Alerte critique créée"
+      alert_escalated: "Alerte escaladée au niveau {level}"
+      alert_resolved: "Alerte résolue"
+      alert_acknowledged: "Alerte acquittée par {user}"
+      
+    de:
+      alert_created: "Kritische Warnung erstellt"
+      alert_escalated: "Warnung auf Stufe {level} eskaliert"
+      alert_resolved: "Warnung gelöst"
+      alert_acknowledged: "Warnung von {user} bestätigt"
+
+# Configuration du monitoring et des métriques
+monitoring:
+  # Métriques Prometheus
+  prometheus:
+    enabled: true
+    metrics_port: 9090
+    scrape_interval: "15s"
+    
+    custom_metrics:
+      - name: "critical_alert_processing_time"
+        type: "histogram"
+        description: "Temps de traitement des alertes critiques"
+        labels: ["tenant_id", "severity", "channel"]
+        
+      - name: "critical_alert_escalations_total"
+        type: "counter"
+        description: "Nombre total d'escalades"
+        labels: ["tenant_id", "severity", "level"]
+        
+      - name: "critical_alert_ml_prediction_accuracy"
+        type: "gauge"
+        description: "Précision des prédictions ML"
+        labels: ["model_version", "tenant_id"]
+        
+      - name: "active_critical_alerts"
+        type: "gauge"
+        description: "Nombre d'alertes critiques actives"
+        labels: ["tenant_id", "severity"]
+        
+  # Dashboards Grafana
+  grafana:
+    enabled: true
+    dashboard_refresh: "30s"
+    
+    dashboards:
+      - name: "Critical Alerts Overview"
+        panels:
+          - "Alert Volume by Severity"
+          - "Response Time Distribution"
+          - "Escalation Rate Trends"
+          - "ML Prediction Accuracy"
+          - "Channel Performance"
+          
+      - name: "Tenant Analytics"
+        panels:
+          - "Alerts by Tenant"
+          - "SLA Compliance"
+          - "Business Impact Analysis"
+          - "Cost Analytics"
+          
+  # Alerting sur les métriques
+  alerting:
+    enabled: true
+    
+    rules:
+      - name: "High Alert Processing Time"
+        condition: "avg(critical_alert_processing_time) > 0.5"
+        severity: "warning"
+        
+      - name: "ML Model Accuracy Drop"
+        condition: "avg(critical_alert_ml_prediction_accuracy) < 0.8"
+        severity: "critical"
+        
+      - name: "High Escalation Rate"
+        condition: "rate(critical_alert_escalations_total[5m]) > 0.1"
+        severity: "warning"
+
+# Configuration de la conformité et sécurité
+compliance:
+  # Audit et logs
+  audit_logging:
+    enabled: true
+    log_level: "INFO"
+    include_sensitive_data: false
+    retention_days: 365
+    
+    events_to_log:
+      - "alert_created"
+      - "alert_escalated"
+      - "alert_resolved"
+      - "alert_acknowledged"
+      - "notification_sent"
+      - "escalation_rule_triggered"
+      - "ml_prediction_made"
+      
+  # Chiffrement
+  encryption:
+    at_rest:
+      enabled: true
+      algorithm: "AES-256-GCM"
+      key_rotation_days: 90
+      
+    in_transit:
+      enabled: true
+      tls_version: "1.3"
+      certificate_validation: true
+      
+  # Contrôle d'accès
+  access_control:
+    rbac_enabled: true
+    
+    roles:
+      - name: "alert_viewer"
+        permissions: ["view_alerts", "view_metrics"]
+        
+      - name: "alert_operator"
+        permissions: ["view_alerts", "acknowledge_alerts", "resolve_alerts"]
+        
+      - name: "alert_admin"
+        permissions: ["*"]
+        
+  # Conformité réglementaire
+  regulatory:
+    gdpr_compliance: true
+    soc2_compliance: true
+    iso27001_compliance: true
+    data_residency_enforcement: true
+
+# Configuration des environnements
+environments:
+  development:
+    debug_enabled: true
+    mock_notifications: true
+    reduced_rate_limits: true
+    test_data_enabled: true
+    
+  staging:
+    debug_enabled: false
+    mock_notifications: false
+    full_feature_set: true
+    performance_testing: true
+    
+  production:
+    debug_enabled: false
+    mock_notifications: false
+    full_feature_set: true
+    high_availability: true
+    auto_scaling: true
+    disaster_recovery: true
+
+# Métadonnées de fin
+footer:
+  generated_by: "Spotify AI Agent Critical Alert System"
+  configuration_version: "3.0.0-enterprise"
+  last_updated: "2024-07-19T00:00:00Z"
+  contact: "support@spotify-ai-agent.com"
+  documentation: "https://docs.spotify-ai-agent.com/alerts/critical"

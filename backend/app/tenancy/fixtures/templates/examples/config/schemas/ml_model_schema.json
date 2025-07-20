@@ -1,0 +1,802 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spotify-ai-agent.com/schemas/ml_model.json",
+  "title": "ML Model Configuration Schema",
+  "description": "Schéma ultra-avancé pour la configuration des modèles ML/IA avec validation temps réel et optimisation automatique",
+  "type": "object",
+  "required": ["model_info", "training_config", "deployment_config", "monitoring"],
+  "additionalProperties": false,
+  
+  "properties": {
+    "model_info": {
+      "type": "object",
+      "required": ["name", "version", "type", "framework"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "minLength": 3,
+          "maxLength": 50,
+          "description": "Nom unique du modèle"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Version sémantique du modèle"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "recommendation",
+            "classification",
+            "regression",
+            "clustering",
+            "nlp",
+            "computer_vision",
+            "time_series",
+            "anomaly_detection",
+            "reinforcement_learning",
+            "generative",
+            "ensemble"
+          ],
+          "description": "Type de modèle ML"
+        },
+        "framework": {
+          "type": "string",
+          "enum": [
+            "tensorflow",
+            "pytorch",
+            "scikit-learn",
+            "xgboost",
+            "lightgbm",
+            "catboost",
+            "huggingface",
+            "onnx",
+            "custom"
+          ],
+          "description": "Framework utilisé"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Description détaillée du modèle"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "maxItems": 20,
+          "description": "Tags pour catégoriser le modèle"
+        },
+        "author": {
+          "type": "string",
+          "description": "Auteur du modèle"
+        },
+        "license": {
+          "type": "string",
+          "enum": ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "proprietary"],
+          "default": "proprietary"
+        }
+      }
+    },
+    
+    "training_config": {
+      "type": "object",
+      "required": ["data_source", "hyperparameters"],
+      "properties": {
+        "data_source": {
+          "type": "object",
+          "required": ["type", "location"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["database", "file", "api", "stream", "s3", "gcs", "azure_blob"],
+              "description": "Type de source de données"
+            },
+            "location": {
+              "type": "string",
+              "description": "Localisation des données"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["csv", "json", "parquet", "avro", "tfrecord", "hdf5", "pickle"],
+              "description": "Format des données"
+            },
+            "preprocessing": {
+              "type": "object",
+              "properties": {
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "normalization",
+                          "standardization",
+                          "encoding",
+                          "feature_selection",
+                          "dimensionality_reduction",
+                          "augmentation",
+                          "cleaning"
+                        ]
+                      },
+                      "parameters": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "validation_split": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 0.5,
+                  "default": 0.2
+                },
+                "test_split": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 0.3,
+                  "default": 0.2
+                }
+              }
+            }
+          }
+        },
+        "hyperparameters": {
+          "type": "object",
+          "properties": {
+            "learning_rate": {
+              "type": "number",
+              "minimum": 0.0001,
+              "maximum": 1.0,
+              "default": 0.001
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024,
+              "default": 32
+            },
+            "epochs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "optimizer": {
+              "type": "string",
+              "enum": ["adam", "sgd", "rmsprop", "adagrad", "adadelta"],
+              "default": "adam"
+            },
+            "loss_function": {
+              "type": "string",
+              "description": "Fonction de perte utilisée"
+            },
+            "regularization": {
+              "type": "object",
+              "properties": {
+                "l1": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0
+                },
+                "l2": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0
+                },
+                "dropout": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0.9,
+                  "default": 0
+                }
+              }
+            },
+            "early_stopping": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "patience": {
+                  "type": "integer",
+                  "minimum": 5,
+                  "maximum": 100,
+                  "default": 10
+                },
+                "min_delta": {
+                  "type": "number",
+                  "minimum": 0,
+                  "default": 0.001
+                }
+              }
+            }
+          }
+        },
+        "auto_hyperparameter_tuning": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "method": {
+              "type": "string",
+              "enum": ["grid_search", "random_search", "bayesian", "evolutionary", "optuna"],
+              "default": "bayesian"
+            },
+            "search_space": {
+              "type": "object",
+              "description": "Espace de recherche pour l'optimisation"
+            },
+            "max_trials": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 1000,
+              "default": 100
+            },
+            "objective": {
+              "type": "string",
+              "enum": ["maximize", "minimize"],
+              "default": "maximize"
+            },
+            "metric": {
+              "type": "string",
+              "description": "Métrique à optimiser"
+            }
+          }
+        },
+        "distributed_training": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["data_parallel", "model_parallel", "pipeline_parallel"],
+              "default": "data_parallel"
+            },
+            "nodes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 1
+            },
+            "gpus_per_node": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 8,
+              "default": 1
+            }
+          }
+        }
+      }
+    },
+    
+    "deployment_config": {
+      "type": "object",
+      "required": ["environment", "serving"],
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["development", "staging", "production"],
+          "description": "Environnement de déploiement"
+        },
+        "serving": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["batch", "online", "streaming", "edge"],
+              "description": "Type de service"
+            },
+            "api": {
+              "type": "object",
+              "properties": {
+                "framework": {
+                  "type": "string",
+                  "enum": ["fastapi", "flask", "django", "torchserve", "tfserving", "mlflow"],
+                  "default": "fastapi"
+                },
+                "port": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "maximum": 65535,
+                  "default": 8000
+                },
+                "max_batch_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000,
+                  "default": 32
+                },
+                "timeout_seconds": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 300,
+                  "default": 30
+                }
+              }
+            },
+            "scaling": {
+              "type": "object",
+              "properties": {
+                "auto_scaling": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "min_replicas": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 1
+                },
+                "max_replicas": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 10
+                },
+                "target_cpu_utilization": {
+                  "type": "number",
+                  "minimum": 10,
+                  "maximum": 90,
+                  "default": 70
+                },
+                "scale_up_cooldown": {
+                  "type": "integer",
+                  "minimum": 60,
+                  "maximum": 3600,
+                  "default": 300
+                },
+                "scale_down_cooldown": {
+                  "type": "integer",
+                  "minimum": 60,
+                  "maximum": 3600,
+                  "default": 600
+                }
+              }
+            },
+            "caching": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "ttl_seconds": {
+                  "type": "integer",
+                  "minimum": 60,
+                  "maximum": 86400,
+                  "default": 3600
+                },
+                "max_size_mb": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 10000,
+                  "default": 1000
+                }
+              }
+            }
+          }
+        },
+        "containerization": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "base_image": {
+              "type": "string",
+              "description": "Image de base Docker"
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "cpu_limit": {
+                  "type": "string",
+                  "pattern": "^\\d+(\\.\\d+)?[m]?$",
+                  "default": "1000m"
+                },
+                "memory_limit": {
+                  "type": "string",
+                  "pattern": "^\\d+[GMK]i?$",
+                  "default": "2Gi"
+                },
+                "gpu_limit": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 8,
+                  "default": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "monitoring": {
+      "type": "object",
+      "required": ["metrics", "logging"],
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "performance": {
+              "type": "object",
+              "properties": {
+                "accuracy_threshold": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Seuil d'exactitude minimum"
+                },
+                "latency_threshold_ms": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000,
+                  "default": 1000
+                },
+                "throughput_threshold_rps": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000,
+                  "default": 100
+                }
+              }
+            },
+            "data_drift": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "detection_method": {
+                  "type": "string",
+                  "enum": ["statistical", "ml_based", "distance_based"],
+                  "default": "statistical"
+                },
+                "threshold": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.1
+                },
+                "window_size": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 10000,
+                  "default": 1000
+                }
+              }
+            },
+            "concept_drift": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "detection_method": {
+                  "type": "string",
+                  "enum": ["adwin", "page_hinkley", "ddm", "eddm"],
+                  "default": "adwin"
+                },
+                "sensitivity": {
+                  "type": "string",
+                  "enum": ["low", "medium", "high"],
+                  "default": "medium"
+                }
+              }
+            },
+            "fairness": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "protected_attributes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["demographic_parity", "equal_opportunity", "calibration"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+              "default": "INFO"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["json", "structured", "plain"],
+              "default": "json"
+            },
+            "retention_days": {
+              "type": "integer",
+              "minimum": 7,
+              "maximum": 365,
+              "default": 30
+            },
+            "prediction_logging": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "sample_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.1
+                },
+                "include_features": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        },
+        "alerting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "channels": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["email", "slack", "webhook", "pagerduty"]
+              }
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "condition": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"]
+                  },
+                  "cooldown_minutes": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 1440,
+                    "default": 60
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "retraining": {
+      "type": "object",
+      "properties": {
+        "auto_retraining": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "trigger_conditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["performance_degradation", "data_drift", "schedule", "manual"]
+                  },
+                  "threshold": {
+                    "type": "number"
+                  },
+                  "parameters": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "schedule": {
+              "type": "object",
+              "properties": {
+                "frequency": {
+                  "type": "string",
+                  "enum": ["daily", "weekly", "monthly", "quarterly"]
+                },
+                "time": {
+                  "type": "string",
+                  "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              }
+            }
+          }
+        },
+        "model_versioning": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "max_versions": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 50,
+              "default": 10
+            },
+            "rollback_strategy": {
+              "type": "string",
+              "enum": ["automatic", "manual", "canary"],
+              "default": "manual"
+            }
+          }
+        }
+      }
+    },
+    
+    "explainability": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["lime", "shap", "integrated_gradients", "attention", "permutation"]
+          }
+        },
+        "global_explanations": {
+          "type": "boolean",
+          "default": true
+        },
+        "local_explanations": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    
+    "security": {
+      "type": "object",
+      "properties": {
+        "model_encryption": {
+          "type": "boolean",
+          "default": true
+        },
+        "input_validation": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "schema_validation": {
+              "type": "boolean",
+              "default": true
+            },
+            "adversarial_detection": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "privacy": {
+          "type": "object",
+          "properties": {
+            "differential_privacy": {
+              "type": "boolean",
+              "default": false
+            },
+            "federated_learning": {
+              "type": "boolean",
+              "default": false
+            },
+            "data_anonymization": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "default": "1.0.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_modified": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "model_size_mb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "training_time_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dataset_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "feature_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "compliance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["GDPR", "CCPA", "HIPAA", "AI_Act"]
+          }
+        }
+      }
+    }
+  },
+  
+  "additionalMetadata": {
+    "enterprise_ml": true,
+    "auto_ml_capable": true,
+    "real_time_inference": true,
+    "distributed_training": true,
+    "model_governance": true,
+    "ai_ops_ready": true
+  }
+}

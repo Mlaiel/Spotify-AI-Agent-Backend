@@ -1,0 +1,11 @@
+{
+  "validation_error": "Validierungsfehler.",
+  "authentication_failed": "Authentifizierung fehlgeschlagen.",
+  "permission_denied": "Berechtigung verweigert.",
+  "resource_not_found": "Ressource nicht gefunden.",
+  "rate_limited": "Zu viele Anfragen. Bitte warten Sie.",
+  "internal_error": "Interner Fehler. Kontaktieren Sie den Support.",
+  "timeout": "Zeitüberschreitung. Bitte erneut versuchen.",
+  "conflict": "Datenkonflikt erkannt.",
+  "quota_exceeded": "Kontingent überschritten."
+}

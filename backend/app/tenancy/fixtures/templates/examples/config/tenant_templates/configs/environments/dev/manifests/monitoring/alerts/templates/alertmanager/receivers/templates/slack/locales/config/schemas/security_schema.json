@@ -1,0 +1,536 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Security Policy Schema",
+  "description": "Schéma de configuration des politiques de sécurité multi-tenant",
+  "type": "object",
+  "properties": {
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["oauth2", "saml", "ldap", "jwt", "api_key"]
+              },
+              "config": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string"
+                  },
+                  "redirect_uri": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "token_endpoint": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "userinfo_endpoint": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": ["name", "type", "enabled"]
+          }
+        },
+        "session": {
+          "type": "object",
+          "properties": {
+            "timeout": {
+              "type": "integer",
+              "minimum": 300,
+              "maximum": 86400
+            },
+            "refresh_threshold": {
+              "type": "integer",
+              "minimum": 60
+            },
+            "secure_cookies": {
+              "type": "boolean"
+            },
+            "same_site": {
+              "type": "string",
+              "enum": ["strict", "lax", "none"]
+            }
+          }
+        },
+        "mfa": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "methods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["totp", "sms", "email", "webauthn"]
+              }
+            },
+            "backup_codes": {
+              "type": "boolean"
+            },
+            "grace_period": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "password_policy": {
+          "type": "object",
+          "properties": {
+            "min_length": {
+              "type": "integer",
+              "minimum": 8
+            },
+            "require_uppercase": {
+              "type": "boolean"
+            },
+            "require_lowercase": {
+              "type": "boolean"
+            },
+            "require_numbers": {
+              "type": "boolean"
+            },
+            "require_symbols": {
+              "type": "boolean"
+            },
+            "max_age_days": {
+              "type": "integer",
+              "minimum": 30
+            },
+            "history_count": {
+              "type": "integer",
+              "minimum": 3
+            }
+          }
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "properties": {
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "inherit_from": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": ["name", "permissions"]
+              }
+            },
+            "permissions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "resource": {
+                    "type": "string"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": ["create", "read", "update", "delete", "list", "execute"]
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "required": ["name", "resource", "action"]
+              }
+            }
+          }
+        },
+        "abac": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "policies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "effect": {
+                    "type": "string",
+                    "enum": ["allow", "deny"]
+                  },
+                  "subject": {
+                    "type": "object"
+                  },
+                  "resource": {
+                    "type": "object"
+                  },
+                  "action": {
+                    "type": "object"
+                  },
+                  "environment": {
+                    "type": "object"
+                  },
+                  "condition": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "effect"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "encryption": {
+      "type": "object",
+      "properties": {
+        "at_rest": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256", "ChaCha20-Poly1305"]
+            },
+            "key_management": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": ["vault", "aws_kms", "azure_key_vault", "gcp_kms", "local"]
+                },
+                "key_rotation": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "interval_days": {
+                      "type": "integer",
+                      "minimum": 30
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "in_transit": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "tls_version": {
+              "type": "string",
+              "enum": ["1.2", "1.3"]
+            },
+            "cipher_suites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "certificate_management": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": ["letsencrypt", "internal_ca", "external_ca"]
+                },
+                "auto_renewal": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "properties": {
+        "firewall": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": ["allow", "deny", "log"]
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "enum": ["tcp", "udp", "icmp", "any"]
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "destination": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "rate_limiting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "global_limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_second": {
+                  "type": "integer"
+                },
+                "requests_per_minute": {
+                  "type": "integer"
+                },
+                "requests_per_hour": {
+                  "type": "integer"
+                }
+              }
+            },
+            "tenant_limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_second": {
+                  "type": "integer"
+                },
+                "requests_per_minute": {
+                  "type": "integer"
+                },
+                "requests_per_hour": {
+                  "type": "integer"
+                }
+              }
+            },
+            "user_limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_second": {
+                  "type": "integer"
+                },
+                "requests_per_minute": {
+                  "type": "integer"
+                },
+                "requests_per_hour": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "ddos_protection": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "threshold": {
+              "type": "integer"
+            },
+            "mitigation_actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["block", "captcha", "rate_limit", "alert"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "authentication",
+              "authorization", 
+              "data_access",
+              "configuration_change",
+              "user_management",
+              "system_events"
+            ]
+          }
+        },
+        "retention": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "minimum": 30
+            },
+            "compression": {
+              "type": "boolean"
+            },
+            "archival": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "schedule": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "real_time_monitoring": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "suspicious_activity_detection": {
+              "type": "boolean"
+            },
+            "automated_response": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["gdpr", "ccpa", "hipaa", "sox", "iso27001", "pci_dss"]
+          }
+        },
+        "data_classification": {
+          "type": "object",
+          "properties": {
+            "levels": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "handling_requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "privacy_controls": {
+          "type": "object",
+          "properties": {
+            "data_minimization": {
+              "type": "boolean"
+            },
+            "purpose_limitation": {
+              "type": "boolean"
+            },
+            "consent_management": {
+              "type": "boolean"
+            },
+            "right_to_be_forgotten": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["authentication", "authorization", "encryption", "audit"],
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+{
+  "required": "Este campo es obligatorio.",
+  "invalid_email": "Correo electrónico inválido.",
+  "min_length": "Longitud mínima: {min} caracteres.",
+  "max_length": "Longitud máxima: {max} caracteres.",
+  "invalid_choice": "Opción inválida.",
+  "password_mismatch": "Las contraseñas no coinciden.",
+  "unique": "Este valor debe ser único.",
+  "invalid_format": "Formato inválido.",
+  "number_only": "Solo se permiten números."
+}

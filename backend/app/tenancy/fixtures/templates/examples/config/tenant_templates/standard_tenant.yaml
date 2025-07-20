@@ -1,0 +1,239 @@
+# Standard Tenant Template Configuration
+# Balanced Configuration for Standard Business Customers
+# Essential features with good performance
+
+tenant_profile:
+  name: "standard_tenant"
+  display_name: "Standard Business Tenant"
+  tier: "standard"
+  version: "2.0.0"
+  priority: "medium"
+  sla_level: "silver"
+  
+  metadata:
+    created_date: "2024-01-20"
+    last_updated: "2024-01-20"
+    template_author: "fahed.mlaiel"
+    compliance_certified: false
+    security_reviewed: true
+
+# Resource Allocation
+resources:
+  compute:
+    cpu_cores: 4
+    memory_gb: 16
+    storage_gb: 200
+    network_bandwidth_mbps: 200
+    gpu_enabled: false
+    
+  scaling:
+    auto_scaling: true
+    min_instances: 1
+    max_instances: 10
+    scale_up_threshold: 80
+    scale_down_threshold: 20
+    scaling_cooldown_minutes: 15
+    
+  geographic_distribution:
+    multi_region: false
+    primary_region: "us-east-1"
+    secondary_regions: []
+    cross_region_replication: false
+
+# Performance Configuration
+performance:
+  cache_configuration:
+    l1_cache_size_gb: 1
+    l2_cache_size_gb: 4
+    l3_cache_size_gb: 16
+    cdn_enabled: false
+    edge_caching: false
+    
+  database:
+    connection_pool_size: 50
+    read_replicas: 1
+    write_replicas: 0
+    sharding_enabled: false
+    partitioning: "none"
+    
+  api_limits:
+    requests_per_second: 1000
+    burst_capacity: 5000
+    concurrent_connections: 500
+    file_upload_size_mb: 50
+    batch_operation_size: 1000
+
+# Security Configuration
+security:
+  authentication:
+    multi_factor_required: false
+    biometric_enabled: false
+    hardware_tokens: false
+    certificate_based: false
+    sso_integration: false
+    
+  authorization:
+    rbac_enabled: true
+    abac_enabled: false
+    policy_based_access: false
+    context_aware_access: false
+    
+  encryption:
+    data_at_rest: "AES-256"
+    data_in_transit: "TLS 1.2"
+    key_management: "software_backed"
+    key_rotation_days: 180
+    
+  monitoring:
+    siem_integration: false
+    behavioral_analytics: false
+    threat_detection: "basic"
+    incident_response: "manual"
+    
+  compliance:
+    frameworks: ["GDPR"]
+    audit_logging: "basic"
+    data_lineage: false
+    privacy_controls: "basic"
+
+# Feature Access
+features:
+  core_features:
+    template_engine: "basic"
+    workflow_automation: false
+    api_access: "standard"
+    custom_integrations: false
+    white_labeling: false
+    
+  advanced_features:
+    ai_powered_insights: false
+    predictive_analytics: false
+    machine_learning_models: false
+    custom_algorithms: false
+    real_time_processing: false
+    
+  standard_features:
+    basic_analytics: true
+    standard_templates: true
+    email_support: true
+    documentation_access: true
+    
+  experimental_features:
+    beta_feature_access: false
+
+# Compliance and Governance
+compliance:
+  data_governance:
+    data_classification: "standard"
+    retention_policies: "default"
+    archival_strategy: "automatic"
+    disposal_method: "standard_deletion"
+    
+  audit_requirements:
+    continuous_monitoring: false
+    real_time_compliance: false
+    automated_reporting: false
+    third_party_audits: "none"
+    
+  privacy_controls:
+    data_minimization: false
+    purpose_limitation: false
+    consent_management: "basic"
+    subject_rights: "manual"
+
+# Integration Capabilities
+integrations:
+  business_systems:
+    erp_integration: false
+    crm_integration: false
+    hr_systems: false
+    financial_systems: false
+    
+  cloud_platforms:
+    aws_integration: false
+    azure_integration: false
+    gcp_integration: false
+    hybrid_cloud: false
+    
+  security_tools:
+    siem_integration: false
+    vulnerability_scanners: false
+    identity_providers: false
+    
+  development_tools:
+    ci_cd_pipelines: false
+    version_control: false
+    issue_tracking: false
+
+# Service Level Agreements
+sla:
+  availability:
+    uptime_percentage: 99.5
+    maintenance_windows: "scheduled"
+    planned_downtime_hours_monthly: 8
+    
+  performance:
+    response_time_ms: 200
+    throughput_requests_per_second: 1000
+    data_processing_latency_ms: 500
+    
+  support:
+    response_time_critical: "4_hours"
+    response_time_high: "12_hours"
+    response_time_medium: "24_hours"
+    response_time_low: "72_hours"
+    
+  recovery:
+    rto_minutes: 240
+    rpo_minutes: 120
+    backup_frequency: "weekly"
+    cross_region_failover: "none"
+
+# Monitoring and Analytics
+monitoring:
+  real_time_dashboards: false
+  custom_metrics: false
+  predictive_alerting: false
+  capacity_planning: false
+  
+  business_intelligence:
+    usage_analytics: "basic"
+    performance_insights: false
+    cost_optimization: false
+    trend_analysis: false
+
+# Customization Options
+customization:
+  branding:
+    custom_logo: false
+    custom_colors: false
+    custom_fonts: false
+    custom_domain: false
+    
+  functionality:
+    custom_workflows: false
+    custom_templates: false
+    custom_apis: false
+    custom_connectors: false
+
+# Backup and Disaster Recovery
+backup_disaster_recovery:
+  backup_strategy:
+    frequency: "weekly"
+    retention_years: 1
+    encryption: "AES-256"
+    compression: false
+    verification: "none"
+    
+  disaster_recovery:
+    strategy: "backup_restore"
+    failover_time_minutes: 240
+    data_synchronization: "weekly"
+    testing_frequency: "annual"
+
+# Cost Management
+cost_management:
+  billing_model: "subscription"
+  cost_optimization: "none"
+  budget_controls: false
+  cost_allocation: "none"

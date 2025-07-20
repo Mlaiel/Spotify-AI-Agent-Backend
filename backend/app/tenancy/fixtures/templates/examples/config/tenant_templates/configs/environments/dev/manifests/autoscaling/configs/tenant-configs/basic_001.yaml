@@ -1,0 +1,64 @@
+# Configuration tenant Basic - Spotify AI Agent
+# Tenant de niveau Basic avec ressources limitées
+
+tenant_id: "basic_001"
+tier: "basic"
+scaling_mode: "cost_optimized"
+priority: 2
+
+# Limites de ressources restreintes
+resource_limits:
+  min_cpu: 0.1
+  max_cpu: 5.0
+  min_memory: "256Mi"
+  max_memory: "20Gi"
+  min_replicas: 1
+  max_replicas: 10
+  max_nodes: 3
+  storage_limit: "100Gi"
+
+# Budget mensuel limité
+cost_budget: 500.0  # $500/mois
+
+# SLA basiques
+sla_requirements:
+  availability: 99.5
+  max_response_time_ms: 500
+  max_error_rate_percent: 2.0
+  recovery_time_objective_minutes: 60
+  recovery_point_objective_minutes: 30
+
+# Politiques de scaling conservatrices
+scaling_policies:
+  api-service:
+    target_cpu_utilization: 80
+    target_memory_utilization: 85
+    scale_up_stabilization: 300
+    scale_down_stabilization: 600
+    scale_up_percent: 50
+    scale_down_percent: 50
+    metrics_server_delay: 60
+  
+  ml-service:
+    target_cpu_utilization: 85
+    target_memory_utilization: 90
+    scale_up_stabilization: 360
+    scale_down_stabilization: 900
+    scale_up_percent: 50
+    scale_down_percent: 25
+    metrics_server_delay: 120
+
+# Configuration basique
+advanced_features:
+  predictive_scaling: false
+  cost_optimization: true
+  multi_zone_deployment: false
+  dedicated_nodes: false
+  premium_storage: false
+  enhanced_monitoring: false
+
+# Alertes minimales
+alerting:
+  channels: ["email"]
+  escalation_policy: "basic"
+  response_time_sla: 60  # 1 heure

@@ -1,0 +1,663 @@
+{
+  "profile_template": {
+    "tier": "premium",
+    "display_name": "Premium User Profile",
+    "description": "Advanced tier with AI composition, unlimited features, and enhanced analytics",
+    "configuration": {
+      "limits": {
+        "max_playlists": 100,
+        "max_songs_per_playlist": 1000,
+        "max_ai_requests_per_day": 500,
+        "max_api_calls_per_hour": 1000,
+        "max_storage_mb": 1000,
+        "max_concurrent_sessions": 3,
+        "max_integrations": 10,
+        "max_custom_models": 3,
+        "max_collaboration_users": 25,
+        "max_export_operations_per_day": 20,
+        "max_backup_retention_days": 90,
+        "can_use_premium_features": true,
+        "can_access_analytics": true,
+        "can_use_ai_composer": true,
+        "can_create_custom_algorithms": false,
+        "can_access_enterprise_features": false,
+        "priority_support": true,
+        "dedicated_resources": false
+      },
+      "security_settings": {
+        "require_mfa": false,
+        "mfa_methods": ["email", "sms", "authenticator"],
+        "session_timeout_minutes": 1440,
+        "max_failed_login_attempts": 5,
+        "lockout_duration_minutes": 15,
+        "password_expiry_days": 120,
+        "require_password_change": false,
+        "allowed_ip_ranges": [],
+        "geo_restrictions": [],
+        "device_trust_required": false,
+        "biometric_enabled": true,
+        "hardware_token_required": false,
+        "risk_score_threshold": 0.7,
+        "anomaly_detection_enabled": true,
+        "session_recording_enabled": false,
+        "encryption_level": "AES-256-GCM"
+      },
+      "ai_preferences": {
+        "personalization_level": "advanced",
+        "recommendation_types": ["music", "artists", "albums", "playlists", "concerts", "podcasts"],
+        "learning_rate": 0.1,
+        "privacy_mode": false,
+        "explicit_content_filter": true,
+        "mood_detection_enabled": true,
+        "context_awareness_enabled": true,
+        "cross_platform_sync": true,
+        "predictive_caching": true,
+        "custom_model_training": true,
+        "federated_learning_participation": true,
+        "bias_mitigation_enabled": true,
+        "explanation_level": "detailed",
+        "feedback_collection_enabled": true,
+        "a_b_testing_participation": true
+      },
+      "integration_settings": {
+        "spotify_connected": true,
+        "spotify_premium": true,
+        "spotify_scopes": [
+          "user-read-playback-state",
+          "user-read-currently-playing",
+          "playlist-read-private",
+          "playlist-modify-private",
+          "playlist-modify-public",
+          "user-read-recently-played",
+          "user-top-read",
+          "user-library-read",
+          "user-library-modify"
+        ],
+        "apple_music_connected": true,
+        "youtube_music_connected": true,
+        "amazon_music_connected": true,
+        "social_media_connections": {
+          "facebook": true,
+          "twitter": true,
+          "instagram": true,
+          "linkedin": false,
+          "discord": true,
+          "reddit": true,
+          "last_fm": true
+        },
+        "webhook_endpoints": [],
+        "api_keys": {},
+        "third_party_analytics": true,
+        "data_sharing_consent": {
+          "analytics": true,
+          "marketing": true,
+          "research": true,
+          "partners": false
+        },
+        "sync_preferences": {
+          "auto_sync": true,
+          "sync_frequency": "real_time",
+          "conflict_resolution": "server_wins",
+          "cross_device_sync": true,
+          "cloud_backup": true
+        }
+      },
+      "analytics_settings": {
+        "tracking_enabled": true,
+        "detailed_analytics": true,
+        "behavioral_tracking": true,
+        "performance_monitoring": true,
+        "usage_analytics": true,
+        "error_reporting": true,
+        "crash_reporting": true,
+        "feature_usage_tracking": true,
+        "a_b_test_participation": true,
+        "heatmap_tracking": true,
+        "session_replay_enabled": false,
+        "funnel_analysis_enabled": true,
+        "cohort_analysis_enabled": true,
+        "retention_analysis_enabled": true,
+        "churn_prediction_enabled": true,
+        "lifetime_value_tracking": true
+      },
+      "compliance_settings": {
+        "gdpr_consent": true,
+        "ccpa_consent": true,
+        "coppa_compliant": false,
+        "data_retention_days": 1095,
+        "right_to_deletion": true,
+        "data_portability": true,
+        "privacy_policy_version": "1.0",
+        "terms_of_service_version": "1.0",
+        "cookie_consent": {
+          "essential": true,
+          "analytics": true,
+          "marketing": true,
+          "personalization": true,
+          "advertising": false
+        },
+        "marketing_consent": true,
+        "profiling_consent": true,
+        "third_party_sharing_consent": false,
+        "data_processing_purposes": [
+          "service_provision",
+          "analytics",
+          "personalization",
+          "marketing",
+          "research",
+          "product_improvement"
+        ],
+        "lawful_basis": "consent",
+        "data_controller_info": {
+          "name": "Spotify AI Agent",
+          "contact": "privacy@spotify-ai-agent.com",
+          "dpo_contact": "dpo@spotify-ai-agent.com"
+        }
+      },
+      "feature_flags": {
+        "basic_recommendations": true,
+        "playlist_creation": true,
+        "music_analysis": true,
+        "basic_export": true,
+        "mood_detection": true,
+        "genre_classification": true,
+        "tempo_analysis": true,
+        "key_detection": true,
+        "energy_analysis": true,
+        "danceability_analysis": true,
+        "valence_analysis": true,
+        "acousticness_analysis": true,
+        "instrumentalness_analysis": true,
+        "liveness_analysis": true,
+        "loudness_analysis": true,
+        "speechiness_analysis": true,
+        "basic_visualizations": true,
+        "simple_statistics": true,
+        "usage_reports": true,
+        "advanced_recommendations": true,
+        "ai_composer": true,
+        "unlimited_playlists": true,
+        "advanced_analytics": true,
+        "api_access": true,
+        "custom_integrations": true,
+        "collaboration_tools": true,
+        "advanced_visualizations": true,
+        "trend_analysis": true,
+        "predictive_insights": true,
+        "cross_platform_analytics": true,
+        "export_to_daw": true,
+        "stem_separation": true,
+        "audio_enhancement": true,
+        "custom_recommendations": true,
+        "mood_playlists": true,
+        "smart_radio": true,
+        "concert_recommendations": true,
+        "social_features": true,
+        "playlist_collaboration": true,
+        "music_discovery": true,
+        "personalized_insights": true,
+        "listening_history_analysis": true,
+        "team_collaboration": false,
+        "custom_algorithms": false,
+        "white_label": false,
+        "dedicated_support": false,
+        "advanced_security": false,
+        "compliance_tools": false,
+        "user_management": false,
+        "system_configuration": false,
+        "audit_logs": false,
+        "security_management": false,
+        "billing_management": false
+      },
+      "notification_preferences": {
+        "email": true,
+        "push": true,
+        "sms": true,
+        "in_app": true,
+        "marketing_emails": true,
+        "product_updates": true,
+        "security_alerts": true,
+        "usage_reports": true,
+        "recommendations": true,
+        "social_updates": true,
+        "collaboration_invites": true,
+        "system_maintenance": true,
+        "feature_announcements": true,
+        "concert_alerts": true,
+        "new_music_alerts": true,
+        "playlist_updates": true,
+        "ai_insights": true
+      },
+      "privacy_settings": {
+        "profile_visibility": "friends",
+        "show_listening_activity": true,
+        "show_playlists": true,
+        "allow_friend_requests": true,
+        "allow_collaboration_invites": true,
+        "share_analytics": true,
+        "public_statistics": false,
+        "searchable_profile": true,
+        "data_sharing_level": "enhanced",
+        "activity_feed": true,
+        "music_taste_sharing": true,
+        "location_sharing": false
+      },
+      "ui_preferences": {
+        "theme": "dark",
+        "color_scheme": "premium",
+        "density": "comfortable",
+        "animations_enabled": true,
+        "sound_effects": true,
+        "keyboard_shortcuts": true,
+        "tooltips_enabled": true,
+        "advanced_mode": true,
+        "compact_view": false,
+        "sidebar_collapsed": false,
+        "custom_layouts": true,
+        "dashboard_widgets": true,
+        "real_time_updates": true
+      }
+    },
+    "default_settings": {
+      "language": "en",
+      "timezone": "UTC",
+      "date_format": "YYYY-MM-DD",
+      "time_format": "24h",
+      "currency": "USD",
+      "unit_system": "metric",
+      "first_day_of_week": "monday",
+      "audio_quality": "high",
+      "streaming_quality": "premium",
+      "download_quality": "high"
+    },
+    "premium_features": {
+      "ai_composer": {
+        "enabled": true,
+        "daily_generations": 50,
+        "style_templates": 25,
+        "custom_models": 3,
+        "export_formats": ["wav", "mp3", "midi", "stems"],
+        "collaboration_enabled": true
+      },
+      "advanced_analytics": {
+        "enabled": true,
+        "real_time_insights": true,
+        "historical_analysis": true,
+        "predictive_modeling": true,
+        "custom_reports": true,
+        "data_export": true,
+        "api_access": true
+      },
+      "unlimited_features": {
+        "playlist_creation": true,
+        "song_analysis": true,
+        "recommendations": true,
+        "exports": true,
+        "integrations": true,
+        "cloud_storage": true
+      },
+      "priority_support": {
+        "response_time": "2_hours",
+        "dedicated_support": false,
+        "phone_support": true,
+        "live_chat": true,
+        "screen_sharing": true,
+        "priority_queue": true
+      }
+    },
+    "ai_composer": {
+      "style_categories": [
+        "electronic",
+        "ambient",
+        "classical",
+        "jazz",
+        "rock",
+        "pop",
+        "hip_hop",
+        "reggae",
+        "country",
+        "folk",
+        "blues",
+        "funk",
+        "disco",
+        "house",
+        "techno",
+        "dubstep",
+        "drum_and_bass",
+        "trance",
+        "world_music",
+        "experimental"
+      ],
+      "instruments": [
+        "piano",
+        "guitar",
+        "bass",
+        "drums",
+        "violin",
+        "saxophone",
+        "trumpet",
+        "synthesizer",
+        "strings",
+        "brass",
+        "woodwinds",
+        "percussion",
+        "vocals",
+        "ethnic_instruments"
+      ],
+      "composition_parameters": {
+        "tempo_range": [60, 200],
+        "key_signatures": ["major", "minor", "dorian", "mixolydian", "pentatonic"],
+        "time_signatures": ["4/4", "3/4", "6/8", "7/8", "5/4"],
+        "song_structure": ["intro", "verse", "chorus", "bridge", "outro"],
+        "arrangement_complexity": ["simple", "moderate", "complex"],
+        "mood_settings": ["happy", "sad", "energetic", "calm", "mysterious", "epic", "romantic", "dark", "uplifting"],
+        "duration_range": [30, 300]
+      },
+      "advanced_features": {
+        "style_fusion": true,
+        "melody_variation": true,
+        "harmonic_progression": true,
+        "rhythm_patterns": true,
+        "arrangement_layers": true,
+        "dynamic_expression": true,
+        "custom_training": true,
+        "collaborative_composition": true
+      }
+    },
+    "integrations": {
+      "music_services": {
+        "spotify": {
+          "enabled": true,
+          "premium_features": true,
+          "full_api_access": true,
+          "playlist_sync": true,
+          "library_sync": true,
+          "playback_control": true
+        },
+        "apple_music": {
+          "enabled": true,
+          "playlist_import": true,
+          "library_sync": true,
+          "metadata_enhancement": true
+        },
+        "youtube_music": {
+          "enabled": true,
+          "playlist_import": true,
+          "video_analysis": true,
+          "metadata_enhancement": true
+        },
+        "amazon_music": {
+          "enabled": true,
+          "playlist_import": true,
+          "library_sync": true
+        },
+        "tidal": {
+          "enabled": true,
+          "high_quality_analysis": true,
+          "master_quality_support": true
+        },
+        "deezer": {
+          "enabled": true,
+          "flow_integration": true,
+          "mood_detection": true
+        }
+      },
+      "social_platforms": {
+        "last_fm": {
+          "enabled": true,
+          "scrobbling": true,
+          "history_import": true,
+          "social_features": true
+        },
+        "discord": {
+          "enabled": true,
+          "rich_presence": true,
+          "music_bot_integration": true,
+          "server_analytics": true
+        },
+        "twitter": {
+          "enabled": true,
+          "auto_sharing": true,
+          "music_discovery": true
+        },
+        "instagram": {
+          "enabled": true,
+          "story_integration": true,
+          "music_stickers": true
+        }
+      },
+      "productivity_tools": {
+        "google_calendar": {
+          "enabled": true,
+          "mood_based_scheduling": true,
+          "focus_time_music": true
+        },
+        "notion": {
+          "enabled": true,
+          "playlist_databases": true,
+          "music_notes": true
+        },
+        "zapier": {
+          "enabled": true,
+          "automation_workflows": true,
+          "trigger_events": true
+        }
+      },
+      "creative_tools": {
+        "ableton_live": {
+          "enabled": true,
+          "stem_export": true,
+          "project_templates": true
+        },
+        "logic_pro": {
+          "enabled": true,
+          "midi_export": true,
+          "audio_export": true
+        },
+        "fl_studio": {
+          "enabled": true,
+          "pattern_export": true,
+          "preset_sharing": true
+        },
+        "pro_tools": {
+          "enabled": true,
+          "session_templates": true,
+          "mix_analysis": true
+        }
+      }
+    },
+    "analytics_dashboard": {
+      "widgets": [
+        "listening_time_trends",
+        "genre_distribution",
+        "mood_analysis",
+        "discovery_metrics",
+        "social_engagement",
+        "ai_usage_stats",
+        "recommendation_performance",
+        "playlist_analytics",
+        "artist_exploration",
+        "temporal_patterns",
+        "device_usage",
+        "geographic_insights"
+      ],
+      "customization": {
+        "widget_arrangement": true,
+        "color_themes": true,
+        "date_ranges": true,
+        "filtering_options": true,
+        "export_options": true,
+        "sharing_options": true
+      },
+      "real_time_updates": true,
+      "historical_data": "1_year",
+      "predictive_insights": true,
+      "benchmarking": true
+    },
+    "collaboration_features": {
+      "playlist_collaboration": {
+        "enabled": true,
+        "real_time_editing": true,
+        "permission_levels": ["view", "edit", "admin"],
+        "version_history": true,
+        "comment_system": true,
+        "approval_workflows": false
+      },
+      "music_discovery": {
+        "enabled": true,
+        "friend_recommendations": true,
+        "taste_matching": true,
+        "discovery_challenges": true,
+        "group_listening": true
+      },
+      "social_features": {
+        "profile_sharing": true,
+        "activity_feeds": true,
+        "music_reviews": true,
+        "rating_system": true,
+        "following_system": true,
+        "group_creation": true
+      }
+    },
+    "export_options": {
+      "formats": ["json", "csv", "xml", "yaml", "spotify_backup"],
+      "audio_formats": ["mp3", "wav", "flac", "aac"],
+      "playlist_formats": ["m3u", "pls", "xspf", "spotify_uri"],
+      "data_categories": [
+        "profile_information",
+        "playlist_data",
+        "listening_history",
+        "analytics_data",
+        "ai_generated_content",
+        "social_interactions",
+        "preferences",
+        "custom_models"
+      ],
+      "scheduling": {
+        "enabled": true,
+        "frequencies": ["daily", "weekly", "monthly"],
+        "automatic_backup": true,
+        "cloud_storage": true
+      }
+    },
+    "api_access": {
+      "enabled": true,
+      "tier": "premium",
+      "rate_limits": {
+        "requests_per_minute": 100,
+        "requests_per_hour": 5000,
+        "requests_per_day": 50000
+      },
+      "available_endpoints": [
+        "/api/v1/profile",
+        "/api/v1/playlists",
+        "/api/v1/analysis",
+        "/api/v1/recommendations",
+        "/api/v1/ai-composer",
+        "/api/v1/analytics",
+        "/api/v1/integrations",
+        "/api/v1/social"
+      ],
+      "authentication": ["api_key", "oauth2", "jwt"],
+      "webhooks": {
+        "enabled": true,
+        "events": [
+          "playlist_created",
+          "song_analyzed",
+          "recommendation_generated",
+          "ai_composition_completed"
+        ]
+      },
+      "sdk_access": true,
+      "documentation_access": "premium",
+      "code_examples": true,
+      "testing_environment": true
+    },
+    "support_options": {
+      "help_center": true,
+      "community_forum": true,
+      "email_support": true,
+      "live_chat": true,
+      "phone_support": true,
+      "priority_support": true,
+      "dedicated_account_manager": false,
+      "response_time_sla": "2_hours",
+      "available_channels": ["email", "chat", "phone", "help_center", "community"],
+      "premium_support_features": {
+        "screen_sharing": true,
+        "remote_assistance": true,
+        "custom_training": true,
+        "onboarding_assistance": true
+      }
+    },
+    "mobile_features": {
+      "offline_mode": true,
+      "download_quality": "high",
+      "background_analysis": true,
+      "push_notifications": true,
+      "widget_support": true,
+      "car_play_integration": true,
+      "android_auto_integration": true,
+      "wear_os_support": true,
+      "apple_watch_support": true,
+      "voice_commands": true,
+      "gesture_controls": true
+    },
+    "beta_features": {
+      "access_level": "premium",
+      "early_access": true,
+      "feature_voting": true,
+      "feedback_priority": "high",
+      "beta_testing_rewards": true,
+      "preview_releases": true,
+      "experimental_ai": true
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "2024-01-15T00:00:00Z",
+    "last_updated": "2024-01-15T00:00:00Z",
+    "created_by": "Spotify AI Agent Team",
+    "template_type": "premium_user_profile",
+    "compatibility": {
+      "min_app_version": "1.0.0",
+      "max_app_version": "*",
+      "supported_platforms": ["web", "mobile", "desktop"],
+      "required_features": [
+        "advanced_auth",
+        "playlist_management",
+        "music_analysis",
+        "ai_composer",
+        "analytics_engine",
+        "integration_hub"
+      ]
+    },
+    "localization": {
+      "supported_languages": ["en", "fr", "de", "es", "it", "pt", "nl", "sv", "no", "da", "fi", "pl", "ru", "ja", "ko", "zh"],
+      "default_language": "en",
+      "fallback_language": "en",
+      "rtl_support": true
+    },
+    "compliance": {
+      "gdpr_compliant": true,
+      "ccpa_compliant": true,
+      "coppa_compliant": false,
+      "privacy_framework": "privacy_by_design",
+      "data_classification": "restricted",
+      "retention_policy": "extended",
+      "encryption_standards": ["AES-256", "TLS-1.3"],
+      "audit_requirements": "premium"
+    },
+    "subscription": {
+      "billing_cycle": "monthly",
+      "trial_period_days": 14,
+      "grace_period_days": 7,
+      "auto_renewal": true,
+      "upgrade_path": "enterprise",
+      "downgrade_restrictions": {
+        "data_retention": "30_days",
+        "feature_access": "immediate_revocation"
+      }
+    }
+  }
+}

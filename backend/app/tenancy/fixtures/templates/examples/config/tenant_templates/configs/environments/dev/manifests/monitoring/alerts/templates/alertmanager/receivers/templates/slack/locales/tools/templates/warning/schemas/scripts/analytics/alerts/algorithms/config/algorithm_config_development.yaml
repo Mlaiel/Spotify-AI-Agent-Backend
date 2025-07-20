@@ -1,0 +1,514 @@
+# 🎵 Spotify AI Agent - Development Algorithm Configuration
+# =========================================================
+# 
+# Development Environment Configuration for Music Streaming Platform
+# Optimized for rapid development, debugging, and testing
+# Relaxed performance requirements with detailed logging
+#
+# Author: Configuration by Fahed Mlaiel
+# Version: 2.0.0 (Development Edition)
+# Last Updated: 2025-07-19
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🧠 ANOMALY DETECTION ENGINE - Development Setup
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+anomaly_detection:
+  models:
+    # Primary: Simplified Isolation Forest for Development
+    isolation_forest:
+      enabled: true
+      priority: 1
+      parameters:
+        contamination: 0.10     # Higher tolerance for dev data
+        n_estimators: 50        # Faster training
+        max_samples: 100        # Smaller sample size
+        max_features: 1.0
+        random_state: 42
+        n_jobs: 2              # Limited CPU usage
+        bootstrap: false
+      performance_thresholds:
+        max_latency_ms: 1000   # Relaxed for development
+        min_accuracy: 0.80     # Lower accuracy acceptable
+        max_memory_mb: 512
+        min_precision: 0.75
+        min_recall: 0.70
+      resource_limits:
+        max_cpu_percent: 50
+        max_memory_mb: 1024
+        timeout_seconds: 60
+        max_concurrent_requests: 100
+      cache_settings:
+        enabled: true
+        ttl_seconds: 60        # Shorter cache for rapid development
+        max_size: 1000
+        compression: false
+      development_features:
+        debug_mode: true
+        verbose_logging: true
+        model_inspection: true
+        feature_visualization: true
+      music_streaming_config:
+        audio_quality_thresholds:
+          bitrate_drop_percent: 25    # More lenient for dev
+          buffering_ratio: 0.15       # Higher tolerance
+          latency_ms: 500            # Relaxed latency
+        user_experience_metrics:
+          skip_rate_threshold: 0.50   # Higher skip rate tolerance
+          engagement_drop_percent: 30 # More lenient
+          search_latency_ms: 1000    # Relaxed search timing
+
+    # Secondary: Basic Autoencoder (Optional in Dev)
+    lstm_autoencoder:
+      enabled: false           # Disabled by default in dev
+      priority: 2
+      parameters:
+        sequence_length: 24     # Shorter sequences
+        encoding_dim: 32        # Smaller dimensions
+        hidden_layers: [64, 32, 16, 32, 64]
+        epochs: 20              # Fewer epochs
+        batch_size: 32
+        learning_rate: 0.01     # Higher learning rate
+        dropout_rate: 0.1       # Lower dropout
+        threshold_percentile: 90 # More lenient threshold
+        early_stopping_patience: 5
+      performance_thresholds:
+        max_latency_ms: 2000
+        min_accuracy: 0.75
+        max_memory_mb: 1024
+      development_features:
+        plot_training_curves: true
+        save_model_checkpoints: true
+        tensorboard_logging: true
+
+    # Ensemble (Simplified for Development)
+    ensemble:
+      enabled: false          # Usually disabled in dev
+      priority: 0
+      parameters:
+        voting_strategy: "simple_majority"
+        model_weights:
+          isolation_forest: 1.0
+        confidence_threshold: 0.60
+        consensus_threshold: 0.50
+        fallback_model: "isolation_forest"
+
+  global_settings:
+    real_time_processing: false    # Batch processing for dev
+    batch_processing: true
+    adaptive_thresholds: false     # Static thresholds for consistency
+    auto_retraining: false        # Manual retraining in dev
+    feature_importance_tracking: true
+    model_drift_detection: false
+    a_b_testing: false
+    multi_tenant_isolation: false # Single tenant for dev
+    
+  monitoring_config:
+    prometheus_metrics: true
+    detailed_logging: true       # Verbose logging for debugging
+    performance_tracking: true
+    alert_on_degradation: false  # No alerts in dev
+    health_check_interval_seconds: 60
+    metrics_retention_days: 7    # Shorter retention
+
+  development_tools:
+    jupyter_integration: true
+    model_comparison_tools: true
+    data_visualization: true
+    performance_profiling: true
+    unit_test_integration: true
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔮 PREDICTIVE ALERTING - Simplified Development Version
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+predictive_alerting:
+  models:
+    # Simple Linear Regression for Development
+    simple_forecaster:
+      enabled: true
+      parameters:
+        method: "linear_regression"
+        window_size: 24
+        forecast_horizon: 6
+        seasonality_detection: false
+        trend_detection: true
+      forecast_horizons:
+        short_term_minutes: [30, 60]
+        medium_term_hours: [6, 12]
+        long_term_days: [1, 3]
+      development_features:
+        plot_forecasts: true
+        save_predictions: true
+        compare_actuals: true
+
+    # Prophet (Simplified)
+    prophet_forecaster:
+      enabled: false         # Optional in development
+      parameters:
+        growth: "linear"
+        seasonality_mode: "additive"
+        yearly_seasonality: false
+        weekly_seasonality: true
+        daily_seasonality: true
+        holidays_prior_scale: 1
+        seasonality_prior_scale: 1
+        changepoint_prior_scale: 0.1
+        interval_width: 0.80
+
+  global_settings:
+    prediction_confidence_threshold: 0.60  # Lower threshold for dev
+    auto_alert_generation: false
+    proactive_scaling: false
+    capacity_planning: false
+    trend_analysis: true
+    
+  alert_triggers:
+    capacity_thresholds:
+      cpu_utilization: 90     # Higher thresholds for dev
+      memory_utilization: 95
+      disk_utilization: 90
+      network_bandwidth: 98
+    business_metrics:
+      user_churn_rate: 15.0
+      revenue_drop_percent: 25
+      content_delivery_latency: 2000
+      recommendation_accuracy: 70
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔗 ALERT CORRELATION - Basic Development Setup
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+alert_correlation:
+  models:
+    # Simple Statistical Correlation
+    statistical_correlator:
+      enabled: true
+      parameters:
+        correlation_methods: ["pearson"]
+        window_size_hours: 6     # Shorter window for dev
+        min_correlation_threshold: 0.30
+        max_lag_minutes: 30
+        min_samples_for_correlation: 10
+        significance_level: 0.10
+      performance_thresholds:
+        max_latency_ms: 2000
+        max_memory_mb: 512
+      development_features:
+        correlation_plots: true
+        export_correlation_matrix: true
+        verbose_analysis: true
+
+    # Basic Event Grouping
+    event_grouper:
+      enabled: true
+      parameters:
+        time_window_minutes: 15
+        similarity_threshold: 0.50
+        min_group_size: 2
+        max_group_size: 20
+
+    # Graph Neural Network (Disabled for Dev)
+    graph_correlator:
+      enabled: false
+      
+  global_settings:
+    real_time_correlation: false
+    historical_analysis: true
+    cascade_prediction: false
+    root_cause_analysis: true
+    alert_grouping: true
+    
+  correlation_rules:
+    development_patterns:
+      - rule_name: "Basic_Performance_Correlation"
+        description: "Simple CPU-Memory correlation for testing"
+        trigger_metrics: ["cpu_usage", "memory_usage"]
+        correlation_threshold: 0.50
+        action: "log_correlation"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🎯 PATTERN RECOGNITION - Development Configuration
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pattern_recognition:
+  models:
+    # Basic K-Means Clustering
+    kmeans_clustering:
+      enabled: true
+      parameters:
+        n_clusters: 5
+        max_iter: 100
+        n_init: 3              # Fewer initializations
+        random_state: 42
+        algorithm: "auto"
+      performance_thresholds:
+        max_latency_ms: 5000
+        min_silhouette_score: 0.40
+        max_memory_mb: 512
+      development_features:
+        plot_clusters: true
+        export_cluster_centers: true
+        silhouette_analysis: true
+
+    # Simple Pattern Mining
+    basic_pattern_miner:
+      enabled: true
+      parameters:
+        min_support: 0.10      # Lower support for small dev datasets
+        min_confidence: 0.50
+        max_itemset_size: 5
+        algorithm: "apriori"   # Simpler algorithm
+      development_features:
+        pattern_visualization: true
+        export_patterns: true
+
+    # Time Series Pattern Detection (Simplified)
+    simple_temporal_patterns:
+      enabled: true
+      parameters:
+        pattern_types: ["trend", "seasonal"]
+        window_sizes: [24]     # Single window size
+        change_point_detection: true
+        motif_discovery: false # Disabled for performance
+
+  global_settings:
+    real_time_pattern_detection: false
+    pattern_persistence: true
+    pattern_evolution_tracking: false
+    automated_pattern_alerts: false
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ⚡ STREAMING PROCESSOR - Local Development Setup
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+streaming_processor:
+  kafka_config:
+    bootstrap_servers: ["localhost:9092"]  # Local Kafka
+    topic_prefix: "dev-spotify-alerts"
+    partitions: 2              # Minimal partitions for dev
+    replication_factor: 1      # Single replica for local
+    compression_type: "none"   # No compression for debugging
+    batch_size: 1024          # Small batches
+    linger_ms: 100            # Longer batching for dev
+    buffer_memory: 16777216   # 16MB buffer
+    max_request_size: 1048576 # 1MB max message
+    
+  processing_config:
+    max_throughput_per_second: 1000      # 1K alerts/second for dev
+    processing_parallelism: 2            # 2 parallel processors
+    checkpoint_interval_ms: 30000        # 30-second checkpoints
+    watermark_delay_ms: 5000            # 5-second watermark
+    buffer_timeout_ms: 1000             # 1-second buffer timeout
+    
+  windowing:
+    tumbling_windows: [300]    # 5-minute windows only
+    sliding_windows: [300]     # 5-minute sliding
+    session_windows:
+      gap_duration_minutes: 15
+      max_duration_hours: 2
+
+  state_management:
+    backend: "in_memory"       # In-memory for development
+    checkpoint_storage: "/tmp/dev-checkpoints/"
+    state_ttl_hours: 24
+    cleanup_interval_hours: 12
+
+  development_features:
+    console_output: true
+    file_output: true
+    debug_messages: true
+    processing_metrics: true
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🎭 SEVERITY CLASSIFICATION - Development Version
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+severity_classification:
+  models:
+    # Simple Decision Tree for Development
+    decision_tree_classifier:
+      enabled: true
+      parameters:
+        criterion: "gini"
+        max_depth: 5          # Shallow tree for interpretability
+        min_samples_split: 10
+        min_samples_leaf: 5
+        random_state: 42
+        class_weight: "balanced"
+      performance_thresholds:
+        max_latency_ms: 500
+        min_accuracy: 0.75
+        max_memory_mb: 256
+      development_features:
+        tree_visualization: true
+        feature_importance_plot: true
+        confusion_matrix: true
+
+    # Random Forest (Simplified)
+    simple_random_forest:
+      enabled: false          # Optional in development
+      parameters:
+        n_estimators: 10      # Fewer trees
+        max_depth: 5
+        min_samples_split: 10
+        random_state: 42
+        n_jobs: 2
+
+  classification_rules:
+    # Simplified Business Impact Rules
+    business_impact_rules:
+      critical:
+        revenue_impact_threshold: 1000      # $1K+ impact
+        user_impact_threshold: 100          # 100+ users affected
+        service_availability: 0.90          # < 90% availability
+      high:
+        revenue_impact_threshold: 100       # $100+ impact
+        user_impact_threshold: 50           # 50+ users affected
+        service_availability: 0.95          # < 95% availability
+      medium:
+        revenue_impact_threshold: 10        # $10+ impact
+        user_impact_threshold: 10           # 10+ users affected
+        service_availability: 0.98          # < 98% availability
+
+    # Development-Specific Rules
+    development_severity:
+      test_scenarios:
+        - unit_test_failure
+        - integration_test_error
+        - build_pipeline_issue
+        - local_environment_problem
+        - dependency_conflict
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔇 NOISE REDUCTION - Basic Development Filtering
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+noise_reduction:
+  filters:
+    # Basic Statistical Filter
+    statistical_filter:
+      enabled: true
+      parameters:
+        method: "z_score"
+        window_size: 20
+        std_threshold: 2      # More lenient threshold
+        mad_threshold: 2.0
+      development_features:
+        plot_filtered_data: true
+        export_outliers: true
+        
+    # Simple Moving Average
+    moving_average_filter:
+      enabled: true
+      parameters:
+        window_size: 5
+        center: true
+        
+  alert_suppression:
+    duplicate_detection:
+      enabled: true
+      time_window_minutes: 2   # Shorter window for dev
+      similarity_threshold: 0.80
+      max_duplicates_per_window: 5
+      
+    flapping_prevention:
+      enabled: false          # Disabled for development
+      
+  global_settings:
+    adaptive_filtering: false
+    signal_quality_monitoring: true
+    false_positive_learning: false
+    context_aware_filtering: false
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🛡️ SECURITY CONFIGURATION - Development Settings
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+security:
+  authentication:
+    method: "basic_auth"      # Simplified for development
+    token_expiry_minutes: 1440 # 24 hours
+    
+  encryption:
+    algorithm: "AES-128-CBC"  # Simpler encryption
+    key_rotation_days: 365    # Less frequent rotation
+    data_at_rest: false       # Disabled for dev
+    data_in_transit: false    # Disabled for dev
+    
+  access_control:
+    rbac_enabled: false       # Simplified access control
+    multi_tenant_isolation: false
+    audit_logging: false      # Disabled for performance
+    
+  rate_limiting:
+    requests_per_minute: 1000  # Higher limit for development
+    burst_capacity: 2000
+    ip_whitelist_enabled: false
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 📊 MONITORING AND OBSERVABILITY - Development Setup
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+monitoring:
+  prometheus:
+    enabled: true
+    scrape_interval_seconds: 30  # Less frequent scraping
+    metrics_retention_days: 3     # Short retention for dev
+    
+  jaeger:
+    enabled: false             # Disabled for simplicity
+    
+  logging:
+    level: "DEBUG"             # Verbose logging for development
+    structured_logging: false  # Simple logging format
+    log_retention_days: 3      # Short retention
+    console_output: true       # Log to console
+    file_output: true         # Also log to file
+    
+  health_checks:
+    enabled: true
+    interval_seconds: 60       # Less frequent checks
+    timeout_seconds: 30        # Longer timeout
+    
+  development_tools:
+    hot_reload: true
+    auto_restart: true
+    debug_endpoints: true
+    performance_profiler: true
+    memory_profiler: true
+    
+  sla_targets:
+    availability_percent: 95.0  # Relaxed SLA for development
+    response_time_p99_ms: 2000
+    error_rate_percent: 5.0
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔧 DEVELOPMENT-SPECIFIC CONFIGURATION
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+development:
+  data_generation:
+    enabled: true
+    synthetic_alerts: true
+    data_volume: "small"      # Small dataset for development
+    patterns_to_generate:
+      - normal_operation
+      - gradual_degradation
+      - sudden_spikes
+      - periodic_patterns
+      - anomalous_behavior
+    
+  testing:
+    unit_tests: true
+    integration_tests: true
+    load_testing: false       # Disabled by default
+    chaos_engineering: false  # Disabled in development
+    
+  debugging:
+    debug_mode: true
+    verbose_errors: true
+    stack_traces: true
+    performance_timing: true
+    memory_tracking: true
+    
+  hot_reload:
+    enabled: true
+    watch_files: true
+    auto_restart: true
+    
+  documentation:
+    auto_generate: true
+    api_docs: true
+    model_docs: true
+    config_docs: true

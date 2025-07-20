@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://spotify-ai-agent.com/schemas/monitoring/detector-config-schema.json",
+  "title": "Spotify AI Agent - Detector Configuration Schema",
+  "description": "Schéma de configuration pour les détecteurs d'anomalies",
+  "type": "object",
+  "required": [
+    "detector_name",
+    "detector_type", 
+    "enabled",
+    "configuration"
+  ],
+  "properties": {
+    "detector_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Nom unique du détecteur"
+    },
+    "detector_type": {
+      "type": "string",
+      "enum": [
+        "ml_detector",
+        "threshold_detector",
+        "pattern_detector",
+        "security_detector",
+        "performance_analyzer",
+        "behavior_analyzer"
+      ],
+      "description": "Type de détecteur"
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Indique si le détecteur est activé"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Description du détecteur"
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "isolation_forest",
+            "one_class_svm", 
+            "autoencoder",
+            "lstm",
+            "zscore",
+            "modified_zscore",
+            "iqr",
+            "mad",
+            "grubbs",
+            "dbscan",
+            "kmeans"
+          ],
+          "description": "Algorithme utilisé"
+        },
+        "sensitivity": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "default": 1.0,
+          "description": "Sensibilité du détecteur"
+        },
+        "window_size": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000,
+          "default": 100,
+          "description": "Taille de la fenêtre d'analyse"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Seuil de détection"
+        },
+        "adaptation_rate": {
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 1.0,
+          "default": 0.1,
+          "description": "Taux d'adaptation du seuil"
+        },
+        "cooldown_period": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 3600,
+          "default": 300,
+          "description": "Période de cooldown en secondes"
+        }
+      },
+      "additionalProperties": true
+    },
+    "data_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_type": {
+            "type": "string",
+            "enum": ["prometheus", "elasticsearch", "database", "api", "file", "kafka"]
+          },
+          "connection_string": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["source_type"]
+      },
+      "description": "Sources de données"
+    },
+    "output_configuration": {
+      "type": "object",
+      "properties": {
+        "notification_channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["slack", "email", "webhook", "pagerduty", "sms"]
+          }
+        },
+        "severity_mapping": {
+          "type": "object",
+          "properties": {
+            "critical": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 1.0
+            },
+            "high": {
+              "type": "number", 
+              "minimum": 0.6,
+              "maximum": 0.9
+            },
+            "medium": {
+              "type": "number",
+              "minimum": 0.4,
+              "maximum": 0.7
+            },
+            "low": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 0.5
+            }
+          }
+        }
+      }
+    },
+    "scheduling": {
+      "type": "object",
+      "properties": {
+        "interval_seconds": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 86400,
+          "default": 60
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 100
+        },
+        "parallel_processing": {
+          "type": "boolean",
+          "default": false
+        },
+        "max_workers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 4
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "max_memory_mb": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 16384
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 300
+        },
+        "cache_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "cache_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400,
+          "default": 3600
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

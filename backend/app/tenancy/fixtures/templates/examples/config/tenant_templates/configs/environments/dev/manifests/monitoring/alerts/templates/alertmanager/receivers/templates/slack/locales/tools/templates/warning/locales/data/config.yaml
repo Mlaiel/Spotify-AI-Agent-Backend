@@ -1,0 +1,390 @@
+# Configuration YAML - Système de Localisation Spotify AI Agent
+# =============================================================
+# 
+# Configuration complète pour le module de localisation des alertes
+# et du monitoring multi-tenant avec support de toutes les fonctionnalités
+# avancées du système.
+#
+# Author: Fahed Mlaiel
+
+# Configuration générale
+general:
+  version: "1.0.0"
+  environment: "development"
+  debug_mode: true
+  default_locale: "en_US"
+  fallback_locale: "en_US"
+  
+  # Locales supportées
+  supported_locales:
+    - "en_US"
+    - "fr_FR" 
+    - "de_DE"
+    - "es_ES"
+    - "it_IT"
+    - "pt_BR"
+    - "ja_JP"
+    - "ko_KR"
+    - "zh_CN"
+    - "ru_RU"
+    - "ar_SA"
+
+# Configuration de la localisation
+localization:
+  # Chargement des ressources
+  resource_loading:
+    lazy_loading: true
+    preload_critical: true
+    cache_resources: true
+    reload_interval: 3600  # secondes
+  
+  # Détection automatique de locale
+  auto_detection:
+    enabled: true
+    sources:
+      - "user_preference"
+      - "tenant_config"
+      - "accept_language_header"
+      - "ip_geolocation"
+    
+    # Géolocalisation IP
+    ip_geolocation:
+      enabled: true
+      provider: "maxmind"
+      database_path: "/data/GeoLite2-City.mmdb"
+      cache_ttl: 86400
+  
+  # Formatage des données
+  formatting:
+    strict_validation: true
+    auto_detect_format: true
+    preserve_precision: true
+    
+    # Nombres
+    numbers:
+      max_decimal_places: 6
+      scientific_notation_threshold: 1e6
+      percentage_scale: 1.0
+    
+    # Devises
+    currencies:
+      show_symbol: true
+      symbol_position: "auto"  # auto, prefix, suffix
+      round_to_currency_precision: true
+    
+    # Dates et heures
+    datetime:
+      timezone_aware: true
+      utc_display: true
+      relative_time_threshold: 86400  # secondes
+      
+# Configuration du cache
+cache:
+  # Cache général
+  enabled: true
+  default_ttl: 3600  # secondes
+  max_memory_size: "100MB"
+  
+  # Cache L1 (mémoire)
+  memory_cache:
+    enabled: true
+    max_entries: 10000
+    eviction_policy: "lru"  # lru, lfu, ttl
+    
+  # Cache L2 (Redis)
+  redis_cache:
+    enabled: true
+    host: "localhost"
+    port: 6379
+    database: 0
+    password: null
+    ssl: false
+    
+    # Configuration du pool de connexions
+    connection_pool:
+      max_connections: 50
+      retry_on_timeout: true
+      socket_timeout: 5
+      socket_connect_timeout: 5
+    
+    # Clustering Redis (optionnel)
+    cluster:
+      enabled: false
+      nodes: []
+      skip_full_coverage_check: false
+  
+  # Stratégies de cache adaptatif
+  adaptive_strategies:
+    enabled: true
+    
+    # TTL adaptatif basé sur l'usage
+    adaptive_ttl:
+      enabled: true
+      base_ttl: 3600
+      max_ttl: 86400
+      usage_threshold: 10
+      usage_multiplier: 2.0
+    
+    # Préchargement intelligent
+    preloading:
+      enabled: true
+      popular_keys_threshold: 5
+      preload_interval: 1800
+
+# Configuration des devises
+currencies:
+  # Conversion en temps réel
+  real_time_conversion:
+    enabled: true
+    default_provider: "exchangerate_api"
+    update_interval: 300  # secondes
+    cache_rates: true
+    rate_cache_ttl: 3600
+    
+    # Fournisseurs de taux de change
+    providers:
+      exchangerate_api:
+        enabled: true
+        base_url: "https://api.exchangerate-api.com/v4/latest"
+        api_key: null
+        timeout: 10
+        rate_limit: 1500  # par mois
+        
+      fixer_io:
+        enabled: false
+        base_url: "https://api.fixer.io/latest"
+        api_key: "${FIXER_API_KEY}"
+        timeout: 10
+        rate_limit: 1000  # par mois
+        
+      ecb:
+        enabled: true
+        base_url: "https://api.exchangerate.host/latest"
+        timeout: 15
+        rate_limit: null
+    
+    # Fallback et redondance
+    fallback:
+      enabled: true
+      fallback_order:
+        - "exchangerate_api"
+        - "ecb"
+        - "cache"
+      max_retries: 3
+      retry_delay: 5
+  
+  # Devises supportées
+  supported_currencies:
+    - "USD"
+    - "EUR" 
+    - "GBP"
+    - "JPY"
+    - "CHF"
+    - "CAD"
+    - "AUD"
+    - "CNY"
+    - "KRW"
+    - "BRL"
+    - "INR"
+    - "RUB"
+    - "MXN"
+    - "ZAR"
+    - "SGD"
+
+# Configuration des alertes
+alerts:
+  # Templates d'alertes
+  templates:
+    auto_reload: true
+    validation_level: "strict"  # strict, normal, permissive
+    
+    # Chargement des templates
+    loading:
+      source_directory: "./locales"
+      file_extension: ".json"
+      encoding: "utf-8"
+      watch_changes: true
+    
+    # Validation des templates
+    validation:
+      check_placeholders: true
+      check_html_safety: true
+      max_template_length: 2000
+      required_fields: ["title", "message", "category", "severity"]
+  
+  # Génération des alertes
+  generation:
+    include_metadata: true
+    include_timestamp: true
+    include_tenant_info: true
+    
+    # Formatage des paramètres
+    parameter_formatting:
+      auto_format_numbers: true
+      auto_format_dates: true
+      auto_format_currencies: true
+      locale_aware: true
+    
+    # Enrichissement des alertes
+    enrichment:
+      add_severity_emoji: true
+      add_category_context: true
+      add_action_suggestions: true
+      add_escalation_info: true
+
+# Configuration de la validation
+validation:
+  # Niveau global de validation
+  global_level: "normal"  # strict, normal, permissive
+  
+  # Validation des chaînes
+  strings:
+    max_length: 1000
+    allow_html: false
+    escape_html: true
+    check_injections: true
+    
+    # Patterns interdits
+    forbidden_patterns:
+      - "<script[^>]*>"
+      - "javascript:"
+      - "vbscript:"
+      - "eval\\s*\\("
+      - "expression\\s*\\("
+      - "--.*drop\\s+table"
+      - ";.*delete\\s+from"
+  
+  # Validation des nombres
+  numbers:
+    allow_negative: true
+    max_value: 1e15
+    min_value: -1e15
+    max_decimal_places: 10
+  
+  # Validation des locales
+  locales:
+    strict_format: true
+    require_supported: true
+    case_sensitive: true
+
+# Configuration de la sécurité
+security:
+  # Protection contre les injections
+  injection_protection:
+    enabled: true
+    
+    # XSS Protection
+    xss_protection:
+      enabled: true
+      escape_html: true
+      sanitize_inputs: true
+      
+    # SQL Injection Protection
+    sql_injection_protection:
+      enabled: true
+      detect_sql_keywords: true
+      block_suspicious_patterns: true
+    
+    # Command Injection Protection
+    command_injection_protection:
+      enabled: true
+      detect_shell_metacharacters: true
+  
+  # Audit et logging
+  audit:
+    enabled: true
+    log_all_validations: false
+    log_security_events: true
+    log_failed_validations: true
+    
+    # Rétention des logs
+    retention:
+      security_logs: 90  # jours
+      validation_logs: 30  # jours
+      performance_logs: 7  # jours
+
+# Configuration des performances
+performance:
+  # Monitoring des performances
+  monitoring:
+    enabled: true
+    
+    # Métriques collectées
+    metrics:
+      response_times: true
+      cache_hit_ratios: true
+      validation_times: true
+      formatting_times: true
+      currency_conversion_times: true
+    
+    # Seuils d'alerte
+    thresholds:
+      slow_operation_ms: 1000
+      cache_miss_ratio: 0.9
+      memory_usage_percent: 85
+  
+  # Optimisations
+  optimizations:
+    # Compilation des regex
+    compile_regex_patterns: true
+    
+    # Pool d'objets
+    object_pooling:
+      enabled: true
+      pool_size: 100
+    
+    # Compression
+    compression:
+      enabled: true
+      threshold_bytes: 1024
+      algorithm: "gzip"  # gzip, zlib, lz4
+
+# Configuration du logging
+logging:
+  # Niveau de log global
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  
+  # Formatage des logs
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Handlers de log
+  handlers:
+    console:
+      enabled: true
+      level: "INFO"
+    
+    file:
+      enabled: true
+      filename: "/var/log/spotify-ai-agent/localization.log"
+      max_bytes: 10485760  # 10MB
+      backup_count: 5
+      level: "DEBUG"
+    
+    # Log structuré pour ELK/monitoring
+    structured:
+      enabled: true
+      format: "json"
+      include_extra_fields: true
+
+# Configuration du développement
+development:
+  # Mode debug
+  debug_mode: true
+  
+  # Rechargement automatique
+  auto_reload:
+    enabled: true
+    watch_directories:
+      - "./locales"
+      - "./templates"
+    
+  # Tests et validation
+  testing:
+    run_startup_tests: true
+    validate_all_locales: true
+    test_all_currencies: false  # Nécessite connectivité
+    
+  # Profiling
+  profiling:
+    enabled: false
+    output_directory: "/tmp/profiling"

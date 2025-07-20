@@ -1,0 +1,950 @@
+# Configuration des Templates pour Alertmanager Receivers
+# Templates ultra-avancés pour tous les types de notifications
+
+# Configuration globale des templates
+global_template_config:
+  template_engine: "jinja2"
+  auto_escape: true
+  trim_blocks: true
+  lstrip_blocks: true
+  cache_enabled: true
+  cache_ttl: 300  # 5 minutes
+  
+  # Variables globales disponibles dans tous les templates
+  global_variables:
+    company_name: "Spotify"
+    support_email: "support@spotify.com"
+    docs_url: "https://docs.spotify.com/alerting"
+    dashboard_base_url: "https://monitoring.spotify.com"
+    runbook_base_url: "https://runbook.spotify.com"
+    
+  # Fonctions personnalisées
+  custom_functions:
+    - name: "severity_emoji"
+      description: "Retourne un emoji selon la sévérité"
+    - name: "format_duration"
+      description: "Formate une durée de manière lisible"
+    - name: "highlight_keywords"
+      description: "Met en évidence des mots-clés"
+    - name: "generate_incident_id"
+      description: "Génère un ID d'incident unique"
+
+# Templates Slack ultra-avancés
+slack_templates:
+  # Template critique premium avec rich formatting
+  critical_premium:
+    name: "slack_critical_premium"
+    description: "Template critique pour tenant Premium avec formatage avancé"
+    content: |
+      {
+        "text": "🚨 *ALERTE CRITIQUE* - {{ alert.name }}",
+        "blocks": [
+          {
+            "type": "header",
+            "text": {
+              "type": "plain_text",
+              "text": "🚨 ALERTE CRITIQUE - INTERVENTION IMMÉDIATE REQUISE"
+            }
+          },
+          {
+            "type": "section",
+            "fields": [
+              {
+                "type": "mrkdwn",
+                "text": "*Service:*\n{{ alert.labels.get('service', 'Non spécifié') }}"
+              },
+              {
+                "type": "mrkdwn", 
+                "text": "*Environnement:*\n{{ alert.labels.get('environment', 'Non spécifié') }}"
+              },
+              {
+                "type": "mrkdwn",
+                "text": "*Sévérité:*\n🔴 {{ alert.severity.upper() }}"
+              },
+              {
+                "type": "mrkdwn",
+                "text": "*Début:*\n{{ format_timestamp(alert.starts_at, '%Y-%m-%d %H:%M:%S UTC') }}"
+              }
+            ]
+          },
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Résumé:*\n{{ alert.annotations.get('summary', 'Aucun résumé disponible') }}"
+            }
+          },
+          {% if alert.annotations.get('description') %}
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Description:*\n{{ alert.annotations.description | truncate_text(500) }}"
+            }
+          },
+          {% endif %}
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Impact Client:*\n{{ 'ÉLEVÉ - Clients Premium affectés' if 'customer-facing' in alert.labels.values() else 'MODÉRÉ - Services internes' }}"
+            }
+          },
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Tenant:* {{ alert.tenant_id }}\n*Fingerprint:* `{{ alert.fingerprint[:12] }}`\n*Durée:* {{ format_duration(alert.starts_at) }}"
+            }
+          },
+          {
+            "type": "actions",
+            "elements": [
+              {% if alert.dashboard_url %}
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "📊 Dashboard"
+                },
+                "url": "{{ alert.dashboard_url }}",
+                "style": "primary"
+              },
+              {% endif %}
+              {% if alert.silence_url %}
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text", 
+                  "text": "🔇 Silence 1h"
+                },
+                "url": "{{ alert.silence_url }}",
+                "style": "danger"
+              },
+              {% endif %}
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "📖 Runbook"
+                },
+                "url": "{{ runbook_base_url }}/{{ alert.name | lower | replace(' ', '-') }}",
+                "style": "default"
+              },
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🎯 War Room"
+                },
+                "url": "https://meet.google.com/new",
+                "style": "default"
+              }
+            ]
+          },
+          {
+            "type": "context",
+            "elements": [
+              {
+                "type": "mrkdwn",
+                "text": "🏷️ *Labels:* {{ join_labels(alert.labels, ' • ') }}"
+              }
+            ]
+          },
+          {
+            "type": "divider"
+          },
+          {
+            "type": "context",
+            "elements": [
+              {
+                "type": "mrkdwn",
+                "text": "⚡ Spotify Premium AlertManager | ID: {{ generate_alert_id('SPOT') }}"
+              }
+            ]
+          }
+        ],
+        "attachments": [
+          {
+            "color": "#FF0000",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<!here> *Équipe Premium SRE* - Intervention critique requise"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    variables:
+      - alert
+      - tenant_id
+      - config
+    
+  # Template pour alertes moyennes avec rich content
+  medium_general:
+    name: "slack_medium_general"
+    description: "Template pour alertes moyennes avec contenu enrichi"
+    content: |
+      {
+        "text": "⚠️ {{ alert.name }} - {{ alert.severity.upper() }}",
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "⚠️ *{{ alert.name }}*\n{{ alert.annotations.get('summary', '') }}"
+            },
+            "accessory": {
+              "type": "image",
+              "image_url": "https://cdn.spotify.com/alerts/{{ alert.severity }}.png",
+              "alt_text": "{{ alert.severity }} alert"
+            }
+          },
+          {
+            "type": "section",
+            "fields": [
+              {
+                "type": "mrkdwn",
+                "text": "*Sévérité:*\n{{ severity_emoji(alert.severity) }} {{ alert.severity.upper() }}"
+              },
+              {
+                "type": "mrkdwn",
+                "text": "*Service:*\n{{ alert.labels.get('service', 'N/A') }}"
+              },
+              {
+                "type": "mrkdwn",
+                "text": "*Environnement:*\n{{ alert.labels.get('environment', 'N/A') }}"
+              },
+              {
+                "type": "mrkdwn",
+                "text": "*Région:*\n{{ alert.labels.get('region', 'N/A') }}"
+              }
+            ]
+          },
+          {% if alert.dashboard_url %}
+          {
+            "type": "actions",
+            "elements": [
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "Voir Dashboard"
+                },
+                "url": "{{ alert.dashboard_url }}"
+              }
+            ]
+          },
+          {% endif %}
+          {
+            "type": "context",
+            "elements": [
+              {
+                "type": "mrkdwn",
+                "text": "🕐 {{ format_timestamp(alert.starts_at) }} | 🏷️ {{ alert.tenant_id }}"
+              }
+            ]
+          }
+        ]
+      }
+
+# Templates Email ultra-professionnels
+email_templates:
+  # Template critique avec HTML riche
+  critical_html:
+    name: "email_critical_html"
+    description: "Template email critique avec design HTML professionnel"
+    content: |
+      Subject: 🚨 [CRITIQUE] {{ alert.name }} - Intervention Immédiate Requise
+      
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Alerte Critique Spotify</title>
+          <style>
+              body { 
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                  line-height: 1.6; 
+                  margin: 0; 
+                  padding: 0; 
+                  background-color: #f4f4f4; 
+              }
+              .container { 
+                  max-width: 600px; 
+                  margin: 0 auto; 
+                  background: white; 
+                  border-radius: 10px; 
+                  overflow: hidden; 
+                  box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+              }
+              .header { 
+                  background: linear-gradient(135deg, #FF0000, #CC0000); 
+                  color: white; 
+                  padding: 30px; 
+                  text-align: center; 
+              }
+              .header h1 { 
+                  margin: 0; 
+                  font-size: 24px; 
+                  font-weight: bold; 
+              }
+              .alert-badge { 
+                  background: rgba(255,255,255,0.2); 
+                  padding: 5px 15px; 
+                  border-radius: 20px; 
+                  display: inline-block; 
+                  margin-top: 10px; 
+              }
+              .content { 
+                  padding: 30px; 
+              }
+              .alert-details { 
+                  background: #f8f9fa; 
+                  border-left: 4px solid #FF0000; 
+                  padding: 20px; 
+                  margin: 20px 0; 
+                  border-radius: 5px; 
+              }
+              .detail-grid { 
+                  display: grid; 
+                  grid-template-columns: 1fr 1fr; 
+                  gap: 15px; 
+                  margin: 20px 0; 
+              }
+              .detail-item { 
+                  background: white; 
+                  padding: 15px; 
+                  border-radius: 5px; 
+                  border: 1px solid #e9ecef; 
+              }
+              .detail-label { 
+                  font-weight: bold; 
+                  color: #495057; 
+                  font-size: 12px; 
+                  text-transform: uppercase; 
+                  margin-bottom: 5px; 
+              }
+              .detail-value { 
+                  color: #212529; 
+                  font-size: 14px; 
+              }
+              .impact-section { 
+                  background: #fff3cd; 
+                  border: 1px solid #ffeaa7; 
+                  padding: 20px; 
+                  border-radius: 5px; 
+                  margin: 20px 0; 
+              }
+              .actions { 
+                  text-align: center; 
+                  margin: 30px 0; 
+              }
+              .btn { 
+                  display: inline-block; 
+                  padding: 12px 24px; 
+                  margin: 5px; 
+                  border-radius: 5px; 
+                  text-decoration: none; 
+                  font-weight: bold; 
+                  transition: all 0.3s ease; 
+              }
+              .btn-primary { 
+                  background: #1DB954; 
+                  color: white; 
+              }
+              .btn-secondary { 
+                  background: #6c757d; 
+                  color: white; 
+              }
+              .btn:hover { 
+                  transform: translateY(-2px); 
+                  box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+              }
+              .footer { 
+                  background: #343a40; 
+                  color: white; 
+                  padding: 20px; 
+                  text-align: center; 
+                  font-size: 12px; 
+              }
+              .labels { 
+                  margin: 20px 0; 
+              }
+              .label { 
+                  display: inline-block; 
+                  background: #e9ecef; 
+                  color: #495057; 
+                  padding: 4px 8px; 
+                  margin: 2px; 
+                  border-radius: 3px; 
+                  font-size: 11px; 
+              }
+              .timeline { 
+                  background: #f8f9fa; 
+                  padding: 15px; 
+                  border-radius: 5px; 
+                  margin: 20px 0; 
+              }
+              @media (max-width: 600px) {
+                  .detail-grid { grid-template-columns: 1fr; }
+                  .container { margin: 10px; }
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>🚨 ALERTE CRITIQUE</h1>
+                  <div class="alert-badge">INTERVENTION IMMÉDIATE REQUISE</div>
+              </div>
+              
+              <div class="content">
+                  <div class="alert-details">
+                      <h2 style="margin-top: 0; color: #FF0000;">{{ alert.name }}</h2>
+                      <p style="font-size: 16px; margin-bottom: 0;">{{ alert.annotations.get('summary', 'Aucun résumé disponible') }}</p>
+                  </div>
+                  
+                  <div class="detail-grid">
+                      <div class="detail-item">
+                          <div class="detail-label">Sévérité</div>
+                          <div class="detail-value" style="color: #FF0000; font-weight: bold;">🔴 {{ alert.severity.upper() }}</div>
+                      </div>
+                      <div class="detail-item">
+                          <div class="detail-label">Statut</div>
+                          <div class="detail-value">{{ '🔥 ACTIF' if alert.status == 'firing' else '✅ RÉSOLU' }}</div>
+                      </div>
+                      <div class="detail-item">
+                          <div class="detail-label">Service</div>
+                          <div class="detail-value">{{ alert.labels.get('service', 'Non spécifié') }}</div>
+                      </div>
+                      <div class="detail-item">
+                          <div class="detail-label">Environnement</div>
+                          <div class="detail-value">{{ alert.labels.get('environment', 'Non spécifié') }}</div>
+                      </div>
+                      <div class="detail-item">
+                          <div class="detail-label">Région</div>
+                          <div class="detail-value">{{ alert.labels.get('region', 'Non spécifié') }}</div>
+                      </div>
+                      <div class="detail-item">
+                          <div class="detail-label">Tenant</div>
+                          <div class="detail-value">{{ alert.tenant_id }}</div>
+                      </div>
+                  </div>
+                  
+                  {% if alert.annotations.get('description') %}
+                  <div class="alert-details">
+                      <h3>Description Détaillée</h3>
+                      <p>{{ alert.annotations.description }}</p>
+                  </div>
+                  {% endif %}
+                  
+                  <div class="impact-section">
+                      <h3 style="margin-top: 0;">⚠️ Impact Estimé</h3>
+                      <p><strong>Impact Client:</strong> {{ 'ÉLEVÉ - Clients affectés directement' if 'customer-facing' in alert.labels.values() else 'MODÉRÉ - Services internes affectés' }}</p>
+                      <p><strong>SLA:</strong> {{ 'RUPTURE PROBABLE' if alert.severity == 'critical' else 'SURVEILLÉ' }}</p>
+                      <p><strong>Priorité:</strong> {{ 'P1 - IMMÉDIATE' if alert.severity == 'critical' else 'P2 - HAUTE' }}</p>
+                  </div>
+                  
+                  <div class="timeline">
+                      <h3 style="margin-top: 0;">📅 Chronologie</h3>
+                      <p><strong>Début:</strong> {{ format_timestamp(alert.starts_at, '%d/%m/%Y à %H:%M:%S UTC') }}</p>
+                      <p><strong>Durée:</strong> {{ format_duration(alert.starts_at) }}</p>
+                      <p><strong>Détection:</strong> Monitoring automatique Prometheus</p>
+                  </div>
+                  
+                  <div class="labels">
+                      <h3>🏷️ Labels</h3>
+                      {% for key, value in alert.labels.items() %}
+                      <span class="label">{{ key }}: {{ value }}</span>
+                      {% endfor %}
+                  </div>
+                  
+                  <div class="actions">
+                      <h3>Actions Recommandées</h3>
+                      {% if alert.dashboard_url %}
+                      <a href="{{ alert.dashboard_url }}" class="btn btn-primary">📊 Voir Dashboard</a>
+                      {% endif %}
+                      {% if alert.silence_url %}
+                      <a href="{{ alert.silence_url }}" class="btn btn-secondary">🔇 Silence Temporaire</a>
+                      {% endif %}
+                      <a href="{{ runbook_base_url }}/{{ alert.name | lower | replace(' ', '-') }}" class="btn btn-primary">📖 Consulter Runbook</a>
+                      <a href="https://meet.google.com/new" class="btn btn-secondary">🎯 War Room</a>
+                  </div>
+                  
+                  <div style="border-top: 1px solid #e9ecef; padding-top: 20px; margin-top: 30px; font-size: 12px; color: #6c757d;">
+                      <p><strong>Fingerprint:</strong> {{ alert.fingerprint }}</p>
+                      <p><strong>ID Incident:</strong> {{ generate_alert_id('SPOT') }}</p>
+                      <p><strong>Générateur:</strong> {{ alert.generator_url or 'Prometheus AlertManager' }}</p>
+                  </div>
+              </div>
+              
+              <div class="footer">
+                  <p><strong>Spotify AlertManager</strong> | Monitoring & Alerting Platform</p>
+                  <p>📧 Support: {{ support_email }} | 📚 Documentation: {{ docs_url }}</p>
+                  <p>Ce message est généré automatiquement - Ne pas répondre</p>
+              </div>
+          </div>
+      </body>
+      </html>
+
+  # Template email texte simple pour compatibility  
+  simple_text:
+    name: "email_simple_text"
+    description: "Template email texte simple pour tous les clients"
+    content: |
+      Subject: [{{ alert.severity.upper() }}] {{ alert.name }} - {{ alert.tenant_id }}
+      
+      ALERTE SPOTIFY - {{ alert.severity.upper() }}
+      =====================================
+      
+      Nom de l'alerte: {{ alert.name }}
+      Sévérité: {{ alert.severity.upper() }}
+      Statut: {{ alert.status.upper() }}
+      Tenant: {{ alert.tenant_id }}
+      
+      Résumé:
+      {{ alert.annotations.get('summary', 'Aucun résumé disponible') }}
+      
+      {% if alert.annotations.get('description') %}
+      Description:
+      {{ alert.annotations.description }}
+      
+      {% endif %}
+      Détails:
+      - Service: {{ alert.labels.get('service', 'Non spécifié') }}
+      - Environnement: {{ alert.labels.get('environment', 'Non spécifié') }}
+      - Région: {{ alert.labels.get('region', 'Non spécifié') }}
+      - Début: {{ format_timestamp(alert.starts_at) }}
+      - Durée: {{ format_duration(alert.starts_at) }}
+      
+      Labels:
+      {% for key, value in alert.labels.items() %}
+      - {{ key }}: {{ value }}
+      {% endfor %}
+      
+      Liens utiles:
+      {% if alert.dashboard_url %}
+      - Dashboard: {{ alert.dashboard_url }}
+      {% endif %}
+      {% if alert.silence_url %}
+      - Silence: {{ alert.silence_url }}
+      {% endif %}
+      - Runbook: {{ runbook_base_url }}/{{ alert.name | lower | replace(' ', '-') }}
+      - Support: {{ support_email }}
+      
+      =====================================
+      Spotify AlertManager
+      ID: {{ alert.fingerprint[:12] }}
+      Généré le: {{ format_timestamp(timestamp) }}
+
+# Templates PagerDuty optimisés
+pagerduty_templates:
+  critical_premium:
+    name: "pagerduty_critical_premium"
+    description: "Template PagerDuty critique premium avec contexte enrichi"
+    content: |
+      {
+        "summary": "[{{ alert.severity.upper() }}] {{ alert.name }} - {{ alert.tenant_id }}",
+        "source": "{{ alert.labels.get('service', alert.tenant_id) }}",
+        "severity": "critical",
+        "component": "{{ alert.labels.get('component', 'unknown') }}",
+        "group": "{{ alert.labels.get('environment', 'production') }}",
+        "class": "{{ alert.labels.get('alertname', alert.name) }}",
+        "custom_details": {
+          "tenant_id": "{{ alert.tenant_id }}",
+          "alert_name": "{{ alert.name }}",
+          "severity": "{{ alert.severity }}",
+          "status": "{{ alert.status }}",
+          "summary": "{{ alert.annotations.get('summary', '') }}",
+          "description": "{{ alert.annotations.get('description', '') }}",
+          "service": "{{ alert.labels.get('service', '') }}",
+          "environment": "{{ alert.labels.get('environment', '') }}",
+          "region": "{{ alert.labels.get('region', '') }}",
+          "cluster": "{{ alert.labels.get('cluster', '') }}",
+          "instance": "{{ alert.labels.get('instance', '') }}",
+          "fingerprint": "{{ alert.fingerprint }}",
+          "starts_at": "{{ alert.starts_at.isoformat() }}",
+          "duration": "{{ format_duration(alert.starts_at) }}",
+          "impact_level": "{{ 'high' if alert.severity in ['critical', 'high'] else 'medium' }}",
+          "customer_facing": "{{ 'yes' if 'customer-facing' in alert.labels.values() else 'no' }}",
+          "escalation_level": "{{ alert.escalation_level or 0 }}",
+          "labels": {{ alert.labels | tojson }},
+          "annotations": {{ alert.annotations | tojson }}
+        }
+      }
+
+# Templates Webhook personnalisables
+webhook_templates:
+  spotify_standard:
+    name: "webhook_spotify_standard"
+    description: "Template webhook standard pour intégrations Spotify"
+    content: |
+      {
+        "version": "2.0",
+        "timestamp": "{{ timestamp.isoformat() }}",
+        "event_type": "alert_notification",
+        "source": "spotify_alertmanager",
+        "alert": {
+          "id": "{{ alert.alert_id }}",
+          "name": "{{ alert.name }}",
+          "fingerprint": "{{ alert.fingerprint }}",
+          "severity": "{{ alert.severity }}",
+          "status": "{{ alert.status }}",
+          "tenant_id": "{{ alert.tenant_id }}",
+          "starts_at": "{{ alert.starts_at.isoformat() }}",
+          "ends_at": "{{ alert.ends_at.isoformat() if alert.ends_at else null }}",
+          "duration_seconds": {{ (timestamp - alert.starts_at).total_seconds() | int }},
+          "escalation_level": {{ alert.escalation_level or 0 }},
+          "summary": "{{ alert.annotations.get('summary', '') }}",
+          "description": "{{ alert.annotations.get('description', '') }}",
+          "labels": {{ alert.labels | tojson }},
+          "annotations": {{ alert.annotations | tojson }}
+        },
+        "context": {
+          "tenant": {
+            "id": "{{ alert.tenant_id }}",
+            "tier": "{{ 'premium' if 'premium' in alert.tenant_id else 'standard' }}"
+          },
+          "service": {
+            "name": "{{ alert.labels.get('service', 'unknown') }}",
+            "environment": "{{ alert.labels.get('environment', 'unknown') }}",
+            "region": "{{ alert.labels.get('region', 'unknown') }}",
+            "cluster": "{{ alert.labels.get('cluster', 'unknown') }}"
+          },
+          "impact": {
+            "customer_facing": {{ 'true' if 'customer-facing' in alert.labels.values() else 'false' }},
+            "severity_score": {{ {'critical': 5, 'high': 4, 'medium': 3, 'low': 2, 'info': 1}[alert.severity] }},
+            "estimated_affected_users": "{{ alert.annotations.get('affected_users', 'unknown') }}"
+          }
+        },
+        "urls": {
+          "dashboard": "{{ alert.dashboard_url }}",
+          "silence": "{{ alert.silence_url }}",
+          "generator": "{{ alert.generator_url }}",
+          "runbook": "{{ runbook_base_url }}/{{ alert.name | lower | replace(' ', '-') }}"
+        },
+        "metadata": {
+          "notification_id": "{{ generate_alert_id('NOTIF') }}",
+          "generated_by": "spotify_alertmanager_v2",
+          "receiver_name": "{{ receiver.name if receiver else 'unknown' }}",
+          "template_name": "{{ template_name }}",
+          "schema_version": "2.0"
+        }
+      }
+
+# Templates Teams avec Adaptive Cards
+teams_templates:
+  adaptive_card_premium:
+    name: "teams_adaptive_card_premium"
+    description: "Carte adaptative Teams premium avec design avancé"
+    content: |
+      {
+        "type": "message",
+        "attachments": [
+          {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+              "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+              "type": "AdaptiveCard",
+              "version": "1.4",
+              "body": [
+                {
+                  "type": "Container",
+                  "style": "{{ 'attention' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'default' }}",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "Image",
+                              "url": "https://cdn.spotify.com/alerts/{{ alert.severity }}.png",
+                              "size": "small"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "text": "{{ severity_emoji(alert.severity) }} **{{ alert.name }}**",
+                              "size": "large",
+                              "weight": "bolder",
+                              "color": "{{ 'attention' if alert.severity in ['critical', 'high'] else 'default' }}"
+                            },
+                            {
+                              "type": "TextBlock",
+                              "text": "{{ alert.annotations.get('summary', '') }}",
+                              "wrap": true,
+                              "spacing": "small"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "FactSet",
+                  "facts": [
+                    {
+                      "title": "Sévérité",
+                      "value": "{{ alert.severity.upper() }}"
+                    },
+                    {
+                      "title": "Service",
+                      "value": "{{ alert.labels.get('service', 'Non spécifié') }}"
+                    },
+                    {
+                      "title": "Environnement", 
+                      "value": "{{ alert.labels.get('environment', 'Non spécifié') }}"
+                    },
+                    {
+                      "title": "Tenant",
+                      "value": "{{ alert.tenant_id }}"
+                    },
+                    {
+                      "title": "Début",
+                      "value": "{{ format_timestamp(alert.starts_at, '%d/%m/%Y %H:%M UTC') }}"
+                    },
+                    {
+                      "title": "Durée",
+                      "value": "{{ format_duration(alert.starts_at) }}"
+                    }
+                  ]
+                },
+                {% if alert.annotations.get('description') %}
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "text": "**Description:**",
+                      "weight": "bolder",
+                      "size": "small"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "text": "{{ alert.annotations.description | truncate_text(300) }}",
+                      "wrap": true,
+                      "size": "small"
+                    }
+                  ]
+                },
+                {% endif %}
+                {
+                  "type": "Container",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "text": "**Labels:** {{ join_labels(alert.labels, ' • ') }}",
+                      "size": "small",
+                      "wrap": true,
+                      "color": "accent"
+                    }
+                  ]
+                }
+              ],
+              "actions": [
+                {% if alert.dashboard_url %}
+                {
+                  "type": "Action.OpenUrl",
+                  "title": "📊 Dashboard",
+                  "url": "{{ alert.dashboard_url }}"
+                },
+                {% endif %}
+                {% if alert.silence_url %}
+                {
+                  "type": "Action.OpenUrl",
+                  "title": "🔇 Silence",
+                  "url": "{{ alert.silence_url }}"
+                },
+                {% endif %}
+                {
+                  "type": "Action.OpenUrl",
+                  "title": "📖 Runbook",
+                  "url": "{{ runbook_base_url }}/{{ alert.name | lower | replace(' ', '-') }}"
+                }
+              ]
+            }
+          }
+        ]
+      }
+
+# Templates Discord avec embeds riches
+discord_templates:
+  rich_embed:
+    name: "discord_rich_embed"
+    description: "Embed Discord riche avec toutes les informations"
+    content: |
+      {
+        "embeds": [
+          {
+            "title": "{{ severity_emoji(alert.severity) }} {{ alert.name }}",
+            "description": "{{ alert.annotations.get('summary', 'Aucun résumé disponible') }}",
+            "color": {{ {'critical': 16711680, 'high': 16753920, 'medium': 16776960, 'low': 3329330, 'info': 4299831}[alert.severity] }},
+            "timestamp": "{{ alert.starts_at.isoformat() }}",
+            "footer": {
+              "text": "Spotify AlertManager • {{ alert.tenant_id }}",
+              "icon_url": "https://cdn.spotify.com/assets/logo-icon.png"
+            },
+            "thumbnail": {
+              "url": "https://cdn.spotify.com/alerts/{{ alert.severity }}.png"
+            },
+            {% if alert.dashboard_url %}
+            "url": "{{ alert.dashboard_url }}",
+            {% endif %}
+            "fields": [
+              {
+                "name": "🚨 Sévérité",
+                "value": "{{ alert.severity.upper() }}",
+                "inline": true
+              },
+              {
+                "name": "📊 Statut",
+                "value": "{{ '🔥 ACTIF' if alert.status == 'firing' else '✅ RÉSOLU' }}",
+                "inline": true
+              },
+              {
+                "name": "🕐 Durée",
+                "value": "{{ format_duration(alert.starts_at) }}",
+                "inline": true
+              },
+              {
+                "name": "🔧 Service",
+                "value": "{{ alert.labels.get('service', 'Non spécifié') }}",
+                "inline": true
+              },
+              {
+                "name": "🌍 Environnement",
+                "value": "{{ alert.labels.get('environment', 'Non spécifié') }}",
+                "inline": true
+              },
+              {
+                "name": "📍 Région",
+                "value": "{{ alert.labels.get('region', 'Non spécifié') }}",
+                "inline": true
+              }
+              {% if alert.annotations.get('description') %},
+              {
+                "name": "📝 Description",
+                "value": "{{ alert.annotations.description | truncate_text(1024) }}",
+                "inline": false
+              }
+              {% endif %}
+              {% if alert.labels | length > 3 %},
+              {
+                "name": "🏷️ Labels",
+                "value": "```{{ join_labels(alert.labels, '\n', '{key}: {value}') }}```",
+                "inline": false
+              }
+              {% endif %}
+            ]
+          }
+        ]
+        {% if alert.severity in ['critical', 'high'] and config.get('mentions') %}
+        ,
+        "content": "{{ config.mentions | map('regex_replace', '^(.+)$', '<@\\1>') | join(' ') }}"
+        {% endif %}
+      }
+
+# Configuration des mappings templates
+template_mappings:
+  # Mapping par canal et sévérité
+  by_channel_severity:
+    slack:
+      critical: "slack_critical_premium"
+      high: "slack_medium_general"
+      medium: "slack_medium_general"
+      low: "slack_medium_general"
+      info: "slack_medium_general"
+    
+    email:
+      critical: "email_critical_html"
+      high: "email_critical_html"
+      medium: "email_simple_text"
+      low: "email_simple_text"
+      info: "email_simple_text"
+    
+    pagerduty:
+      critical: "pagerduty_critical_premium"
+      high: "pagerduty_critical_premium"
+    
+    webhook:
+      default: "webhook_spotify_standard"
+    
+    teams:
+      default: "teams_adaptive_card_premium"
+    
+    discord:
+      default: "discord_rich_embed"
+  
+  # Mapping par tenant
+  by_tenant:
+    spotify-premium:
+      slack: "slack_critical_premium"
+      email: "email_critical_html"
+      pagerduty: "pagerduty_critical_premium"
+      teams: "teams_adaptive_card_premium"
+      webhook: "webhook_spotify_standard"
+      discord: "discord_rich_embed"
+    
+    spotify-free:
+      slack: "slack_medium_general"
+      email: "email_simple_text"
+      pagerduty: "pagerduty_critical_premium"
+      teams: "teams_adaptive_card_premium"
+      webhook: "webhook_spotify_standard"
+      discord: "discord_rich_embed"
+    
+    spotify-enterprise:
+      slack: "slack_critical_premium"
+      email: "email_critical_html"
+      pagerduty: "pagerduty_critical_premium"
+      teams: "teams_adaptive_card_premium"
+      webhook: "webhook_spotify_standard"
+      discord: "discord_rich_embed"
+
+# Configuration de validation des templates
+validation:
+  enabled: true
+  strict_mode: true
+  required_variables: ["alert", "tenant_id"]
+  max_size_kb: 100
+  timeout_seconds: 5
+  
+  # Tests automatiques
+  test_cases:
+    - name: "critical_alert_test"
+      alert_data:
+        name: "HighCPUUsage"
+        severity: "critical"
+        status: "firing"
+        tenant_id: "spotify-premium"
+        labels:
+          service: "api-server"
+          environment: "production"
+          region: "us-east-1"
+        annotations:
+          summary: "CPU usage above 90% for 5 minutes"
+          description: "The API server is experiencing high CPU usage"
+    
+    - name: "resolved_alert_test"
+      alert_data:
+        name: "HighCPUUsage"
+        severity: "high"
+        status: "resolved"
+        tenant_id: "spotify-free"

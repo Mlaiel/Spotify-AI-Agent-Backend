@@ -1,0 +1,569 @@
+# Redis Enterprise Cluster Configuration
+# Enterprise Production-Ready Setup with Advanced Features
+# Architecture: Multi-Node Cluster with Sharding, Replication, and Persistence
+
+_metadata:
+  template_type: "redis_enterprise_cluster"
+  template_version: "5.1.0"
+  schema_version: "2024.2"
+  created_at: "{{ current_timestamp() }}"
+  generator: "RedisEnterpriseClusterGenerator"
+  tags: ["cache", "redis", "cluster", "enterprise", "production", "high-performance"]
+  description: "Redis Enterprise cluster with advanced features, clustering, persistence, and monitoring"
+  
+cluster_id: "{{ cluster_id }}"
+tenant_id: "{{ tenant_id }}"
+environment: "{{ environment | default('production') }}"
+
+# Configuration du cluster Redis Enterprise
+redis_enterprise_cluster:
+  cluster_name: "{{ cluster_name | default('spotify-ai-agent-redis') }}"
+  redis_version: "{{ redis_version | default('7.2.3') }}"
+  
+  # Architecture cluster
+  cluster_architecture:
+    topology: "{{ cluster_topology | default('sharded_replicated') }}"
+    node_count: "{{ node_count | default(6) }}"
+    shards_count: "{{ shards_count | default(3) }}"
+    replicas_per_shard: "{{ replicas_per_shard | default(1) }}"
+    
+    # Configuration nœuds master
+    master_nodes:
+      cpu_cores: "{{ master_cpu_cores | default(4) }}"
+      memory_gb: "{{ master_memory_gb | default(16) }}"
+      storage_gb: "{{ master_storage_gb | default(500) }}"
+      storage_type: "{{ master_storage_type | default('nvme_ssd') }}"
+      
+    # Configuration nœuds répliques
+    replica_nodes:
+      cpu_cores: "{{ replica_cpu_cores | default(4) }}"
+      memory_gb: "{{ replica_memory_gb | default(16) }}"
+      storage_gb: "{{ replica_storage_gb | default(500) }}"
+      storage_type: "{{ replica_storage_type | default('nvme_ssd') }}"
+      
+  # Configuration haute disponibilité
+  high_availability:
+    enabled: true
+    
+    # Failover automatique
+    automatic_failover:
+      enabled: true
+      failover_timeout_seconds: "{{ failover_timeout | default(15) }}"
+      min_replicas_for_failover: "{{ min_replicas_failover | default(1) }}"
+      
+    # Configuration réplication
+    replication:
+      replication_mode: "{{ replication_mode | default('async') }}"
+      repl_backlog_size: "{{ repl_backlog_size | default('256mb') }}"
+      repl_timeout: "{{ repl_timeout | default(60) }}"
+      
+    # Distribution géographique
+    multi_zone_deployment:
+      enabled: true
+      zones: "{{ availability_zones | default(['zone-a', 'zone-b', 'zone-c']) }}"
+      zone_awareness: true
+      
+  # Configuration performance
+  performance_configuration:
+    # Configuration mémoire
+    memory_management:
+      maxmemory_policy: "{{ maxmemory_policy | default('allkeys-lru') }}"
+      maxmemory_samples: "{{ maxmemory_samples | default(5) }}"
+      
+      # Redis Memory Optimization
+      hash_max_ziplist_entries: "{{ hash_max_ziplist_entries | default(512) }}"
+      hash_max_ziplist_value: "{{ hash_max_ziplist_value | default(64) }}"
+      list_max_ziplist_size: "{{ list_max_ziplist_size | default(-2) }}"
+      set_max_intset_entries: "{{ set_max_intset_entries | default(512) }}"
+      zset_max_ziplist_entries: "{{ zset_max_ziplist_entries | default(128) }}"
+      
+    # Configuration réseau
+    networking:
+      port: "{{ redis_port | default(6379) }}"
+      cluster_port: "{{ cluster_port | default(16379) }}"
+      tcp_keepalive: "{{ tcp_keepalive | default(300) }}"
+      tcp_backlog: "{{ tcp_backlog | default(511) }}"
+      timeout: "{{ client_timeout | default(0) }}"
+      
+      # Configuration SSL/TLS
+      tls_configuration:
+        enabled: true
+        tls_port: "{{ tls_port | default(6380) }}"
+        tls_cert_file: "/etc/ssl/redis/redis-server.crt"
+        tls_key_file: "/etc/ssl/redis/redis-server.key"
+        tls_ca_cert_file: "/etc/ssl/redis/ca.crt"
+        tls_protocols: "{{ tls_protocols | default('TLSv1.2 TLSv1.3') }}"
+        
+    # Configuration I/O
+    io_optimization:
+      io_threads: "{{ io_threads | default(4) }}"
+      io_threads_do_reads: "{{ io_threads_do_reads | default('yes') }}"
+      
+      # Configuration disk
+      save_configuration: "{{ save_config | default('900 1 300 10 60 10000') }}"
+      stop_writes_on_bgsave_error: "{{ stop_writes_on_bgsave_error | default('yes') }}"
+      rdbcompression: "{{ rdb_compression | default('yes') }}"
+      rdbchecksum: "{{ rdb_checksum | default('yes') }}"
+      
+  # Configuration persistance
+  persistence_configuration:
+    # RDB Snapshots
+    rdb_persistence:
+      enabled: true
+      save_points:
+        - seconds: 900
+          changes: 1
+        - seconds: 300 
+          changes: 10
+        - seconds: 60
+          changes: 10000
+      rdb_filename: "{{ rdb_filename | default('dump.rdb') }}"
+      
+    # AOF (Append Only File)
+    aof_persistence:
+      enabled: true
+      aof_filename: "{{ aof_filename | default('appendonly.aof') }}"
+      appendfsync: "{{ aof_appendfsync | default('everysec') }}"
+      no_appendfsync_on_rewrite: "{{ aof_no_appendfsync_on_rewrite | default('no') }}"
+      auto_aof_rewrite_percentage: "{{ aof_rewrite_percentage | default(100) }}"
+      auto_aof_rewrite_min_size: "{{ aof_rewrite_min_size | default('64mb') }}"
+      
+    # Backup automatisé
+    automated_backup:
+      enabled: true
+      backup_schedule: "{{ backup_schedule | default('0 */6 * * *') }}"  # Toutes les 6h
+      backup_retention_days: "{{ backup_retention_days | default(7) }}"
+      
+      # Configuration S3
+      s3_backup:
+        enabled: true
+        bucket_name: "{{ backup_s3_bucket | default('spotify-ai-agent-redis-backups') }}"
+        region: "{{ backup_s3_region | default('us-west-2') }}"
+        encryption_enabled: true
+        
+  # Configuration sécurité
+  security_configuration:
+    # Authentification
+    authentication:
+      auth_enabled: true
+      requirepass: "{{ redis_password | default('') }}"  # À définir via secrets
+      
+      # ACL (Access Control Lists)
+      acl_configuration:
+        enabled: true
+        acl_file: "/etc/redis/users.acl"
+        
+        # Utilisateurs prédéfinis
+        users:
+          # Utilisateur application principal
+          - username: "{{ app_username | default('spotify_app') }}"
+            password: "{{ app_user_password | default('') }}"
+            acl_rules: "{{ app_user_acl | default('~* &* +@all -@dangerous') }}"
+            
+          # Utilisateur lecture seule
+          - username: "{{ readonly_username | default('spotify_readonly') }}"
+            password: "{{ readonly_user_password | default('') }}"
+            acl_rules: "{{ readonly_user_acl | default('~* &* +@read -@all') }}"
+            
+          # Utilisateur monitoring
+          - username: "{{ monitoring_username | default('redis_exporter') }}"
+            password: "{{ monitoring_user_password | default('') }}"
+            acl_rules: "{{ monitoring_user_acl | default('~* &* +@read +info +ping') }}"
+            
+    # Configuration réseau sécurisée
+    network_security:
+      bind_addresses: "{{ bind_addresses | default(['0.0.0.0']) }}"
+      protected_mode: "{{ protected_mode | default('yes') }}"
+      
+      # Firewall rules
+      allowed_clients:
+        - cidr: "{{ app_cidr | default('10.0.0.0/8') }}"
+          description: "Application network"
+        - cidr: "{{ monitoring_cidr | default('10.1.0.0/16') }}"
+          description: "Monitoring network"
+          
+    # Chiffrement
+    encryption:
+      at_rest: true
+      in_transit: true
+      algorithm: "{{ encryption_algorithm | default('AES-256-GCM') }}"
+      
+  # Configuration clustering Redis
+  cluster_configuration:
+    # Redis Cluster settings
+    cluster_enabled: true
+    cluster_config_file: "{{ cluster_config_file | default('nodes.conf') }}"
+    cluster_node_timeout: "{{ cluster_node_timeout | default(15000) }}"
+    cluster_announce_ip: "{{ cluster_announce_ip | default('') }}"
+    cluster_announce_port: "{{ cluster_announce_port | default(0) }}"
+    cluster_announce_bus_port: "{{ cluster_announce_bus_port | default(0) }}"
+    
+    # Migration settings
+    cluster_migration_barrier: "{{ cluster_migration_barrier | default(1) }}"
+    cluster_require_full_coverage: "{{ cluster_require_full_coverage | default('yes') }}"
+    
+    # Hash slots distribution
+    hash_slots:
+      automatic_distribution: true
+      custom_distribution: "{{ custom_hash_slots | default({}) }}"
+      
+  # Configuration monitoring et métriques
+  monitoring:
+    enabled: true
+    
+    # Redis Exporter pour Prometheus
+    redis_exporter:
+      enabled: true
+      port: "{{ redis_exporter_port | default(9121) }}"
+      
+      # Métriques personnalisées
+      custom_metrics:
+        - name: "spotify_connected_clients"
+          command: "info clients"
+          key: "connected_clients"
+          
+        - name: "spotify_used_memory"
+          command: "info memory"
+          key: "used_memory"
+          
+        - name: "spotify_keyspace_hits"
+          command: "info stats"
+          key: "keyspace_hits"
+          
+        - name: "spotify_keyspace_misses"
+          command: "info stats"
+          key: "keyspace_misses"
+          
+        - name: "spotify_instantaneous_ops_per_sec"
+          command: "info stats"
+          key: "instantaneous_ops_per_sec"
+          
+    # Logging et audit
+    logging:
+      loglevel: "{{ log_level | default('notice') }}"
+      logfile: "{{ log_file | default('/var/log/redis/redis-server.log') }}"
+      syslog_enabled: true
+      syslog_ident: "{{ syslog_ident | default('redis') }}"
+      
+    # Alerting configuration
+    alerting:
+      enabled: true
+      
+      alert_rules:
+        # Alertes critiques
+        - name: "Redis_Down"
+          condition: "up{job='redis-exporter'} == 0"
+          severity: "critical"
+          duration: "1m"
+          
+        - name: "Redis_High_Memory_Usage"
+          condition: "redis_memory_used_bytes / redis_memory_max_bytes > 0.9"
+          severity: "warning"
+          duration: "5m"
+          
+        - name: "Redis_High_Connection_Usage"
+          condition: "redis_connected_clients / redis_config_maxclients > 0.8"
+          severity: "warning"
+          duration: "5m"
+          
+        - name: "Redis_Cluster_Node_Down"
+          condition: "redis_cluster_nodes{state!='ok'} > 0"
+          severity: "critical"
+          duration: "2m"
+          
+        - name: "Redis_Backup_Failed"
+          condition: "time() - redis_last_save_timestamp_seconds > 21600"  # 6h
+          severity: "critical"
+          duration: "0m"
+
+# Configuration Kubernetes
+kubernetes_deployment:
+  namespace: "{{ k8s_namespace | default('cache') }}"
+  
+  # Configuration StatefulSet
+  statefulset:
+    replicas: "{{ node_count | default(6) }}"
+    
+    # Ressources compute
+    resources:
+      requests:
+        cpu: "{{ cpu_request | default('2000m') }}"
+        memory: "{{ memory_request | default('8Gi') }}"
+      limits:
+        cpu: "{{ cpu_limit | default('4000m') }}"
+        memory: "{{ memory_limit | default('16Gi') }}"
+        
+    # Variables d'environnement
+    env_vars:
+      - name: "REDIS_CLUSTER_ENABLED"
+        value: "yes"
+      - name: "REDIS_CLUSTER_ANNOUNCE_IP"
+        valueFrom:
+          fieldRef:
+            fieldPath: "status.podIP"
+      - name: "REDIS_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: "redis-auth"
+            key: "password"
+            
+  # Configuration stockage persistant
+  persistent_storage:
+    storage_class: "{{ storage_class | default('fast-ssd') }}"
+    access_mode: "ReadWriteOnce"
+    size: "{{ volume_size | default('500Gi') }}"
+    mount_path: "/data"
+    
+  # Configuration réseau
+  networking:
+    # Service headless pour cluster
+    headless_service:
+      enabled: true
+      name: "redis-headless"
+      
+    # Service pour accès externe
+    cluster_service:
+      type: "{{ service_type | default('ClusterIP') }}"
+      port: "{{ service_port | default(6379) }}"
+      
+    # LoadBalancer pour lecture
+    read_service:
+      enabled: true
+      type: "LoadBalancer"
+      port: "{{ read_service_port | default(6380) }}"
+      
+  # Configuration pods
+  pod_configuration:
+    # Anti-affinity pour distribution
+    pod_anti_affinity:
+      enabled: true
+      topology_key: "kubernetes.io/hostname"
+      
+    # Node affinity
+    node_affinity:
+      enabled: true
+      node_selector_terms:
+        - key: "node-type"
+          operator: "In"
+          values: ["cache"]
+          
+    # Tolérances
+    tolerations:
+      - key: "cache-node"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+        
+  # Health checks
+  health_checks:
+    liveness_probe:
+      exec:
+        command: ["redis-cli", "--raw", "incr", "ping"]
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+      
+    readiness_probe:
+      exec:
+        command: ["redis-cli", "ping"]
+      initial_delay_seconds: 5
+      period_seconds: 5
+      timeout_seconds: 1
+      failure_threshold: 3
+
+# Configuration Redis Operator
+redis_operator:
+  enabled: true
+  operator_version: "{{ redis_operator_version | default('v1.2.4') }}"
+  
+  # Configuration custom resource
+  redis_enterprise_database:
+    name: "{{ database_name | default('spotify-redis-db') }}"
+    memory_size: "{{ db_memory_size | default('10GB') }}"
+    
+    # Options base de données
+    database_config:
+      data_persistence: "aof"
+      data_eviction: "allkeys-lru"
+      aof_policy: "appendfsync-every-sec"
+      snapshot_policy:
+        - "900:1"
+        - "300:10" 
+        - "60:10000"
+        
+    # Configuration modules Redis
+    redis_modules:
+      - name: "RedisJSON"
+        version: "{{ redisjson_version | default('2.6.6') }}"
+        config: "{{ redisjson_config | default('') }}"
+        
+      - name: "RedisSearch"
+        version: "{{ redisearch_version | default('2.8.4') }}"
+        config: "{{ redisearch_config | default('') }}"
+        
+      - name: "RedisTimeSeries"
+        version: "{{ redistimeseries_version | default('1.10.5') }}"
+        config: "{{ redistimeseries_config | default('') }}"
+        
+# Configuration Helm Chart
+helm_configuration:
+  chart_name: "redis-cluster"
+  chart_version: "{{ helm_chart_version | default('9.0.5') }}"
+  
+  values_override:
+    cluster:
+      enabled: true
+      nodes: "{{ node_count | default(6) }}"
+      replicas: "{{ replicas_per_shard | default(1) }}"
+      
+    auth:
+      enabled: true
+      password: "{{ redis_password }}"
+      
+    persistence:
+      enabled: true
+      size: "{{ volume_size | default('500Gi') }}"
+      storageClass: "{{ storage_class | default('fast-ssd') }}"
+      
+    metrics:
+      enabled: true
+      prometheus:
+        enabled: true
+
+# Scripts d'automatisation
+automation_scripts:
+  # Script de création cluster
+  create_cluster: |
+    #!/bin/bash
+    # Script de création cluster Redis
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('cache') }}"
+    CLUSTER_NODES="{{ node_count | default(6) }}"
+    
+    echo "Création du cluster Redis avec $CLUSTER_NODES nœuds..."
+    
+    # Attendre que tous les pods soient prêts
+    kubectl wait --for=condition=ready pod -l app=redis-cluster -n $NAMESPACE --timeout=300s
+    
+    # Obtenir les IPs des pods
+    REDIS_NODES=$(kubectl get pods -l app=redis-cluster -n $NAMESPACE -o jsonpath='{range.items[*]}{.status.podIP}:6379 {end}')
+    
+    # Créer le cluster
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli --cluster create $REDIS_NODES --cluster-replicas {{ replicas_per_shard | default(1) }} --cluster-yes
+    
+    echo "Cluster Redis créé avec succès"
+    
+  # Script de sauvegarde cluster
+  backup_cluster: |
+    #!/bin/bash
+    # Script de sauvegarde cluster Redis
+    set -euo pipefail
+    
+    BACKUP_NAME="cluster-backup-$(date +%Y%m%d-%H%M%S)"
+    NAMESPACE="{{ k8s_namespace | default('cache') }}"
+    S3_BUCKET="{{ backup_s3_bucket | default('spotify-ai-agent-redis-backups') }}"
+    
+    echo "Démarrage de la sauvegarde: $BACKUP_NAME"
+    
+    # Sauvegarder chaque nœud master
+    for i in $(seq 0 2); do
+      echo "Sauvegarde du nœud redis-cluster-$i"
+      kubectl exec -n $NAMESPACE redis-cluster-$i -- redis-cli BGSAVE
+      
+      # Attendre la fin de la sauvegarde
+      while [ "$(kubectl exec -n $NAMESPACE redis-cluster-$i -- redis-cli LASTSAVE)" = "$(kubectl exec -n $NAMESPACE redis-cluster-$i -- redis-cli LASTSAVE)" ]; do
+        sleep 1
+      done
+      
+      # Copier vers S3
+      kubectl exec -n $NAMESPACE redis-cluster-$i -- aws s3 cp /data/dump.rdb s3://$S3_BUCKET/$BACKUP_NAME/node-$i/
+    done
+    
+    echo "Sauvegarde terminée: $BACKUP_NAME"
+    
+  # Script de monitoring cluster
+  monitor_cluster: |
+    #!/bin/bash
+    # Script de monitoring cluster Redis
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('cache') }}"
+    
+    echo "=== État du cluster Redis ==="
+    
+    # État général du cluster
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli cluster info
+    
+    echo -e "\n=== Nœuds du cluster ==="
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli cluster nodes
+    
+    echo -e "\n=== Métriques mémoire ==="
+    for i in $(seq 0 5); do
+      echo "Nœud redis-cluster-$i:"
+      kubectl exec -n $NAMESPACE redis-cluster-$i -- redis-cli info memory | grep used_memory_human
+    done
+    
+    echo -e "\n=== Statistiques ==="
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli info stats | grep -E "total_commands_processed|instantaneous_ops_per_sec"
+    
+  # Script de réparation cluster
+  repair_cluster: |
+    #!/bin/bash
+    # Script de réparation cluster Redis
+    set -euo pipefail
+    
+    NAMESPACE="{{ k8s_namespace | default('cache') }}"
+    
+    echo "Vérification et réparation du cluster Redis..."
+    
+    # Vérifier l'état du cluster
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli --cluster check $(kubectl get pod redis-cluster-0 -n $NAMESPACE -o jsonpath='{.status.podIP}'):6379
+    
+    # Réparer si nécessaire
+    kubectl exec -n $NAMESPACE redis-cluster-0 -- redis-cli --cluster fix $(kubectl get pod redis-cluster-0 -n $NAMESPACE -o jsonpath='{.status.podIP}'):6379
+    
+    echo "Réparation terminée"
+
+# Configuration client et connexions
+client_configuration:
+  # Configuration connexion application
+  application_clients:
+    # Client principal
+    primary_client:
+      connection_string: "redis://{{ cluster_service_name }}.{{ k8s_namespace }}.svc.cluster.local:6379"
+      ssl_enabled: true
+      auth_enabled: true
+      
+      # Pool de connexions
+      connection_pool:
+        max_connections: "{{ app_max_connections | default(100) }}"
+        max_idle_connections: "{{ app_max_idle_connections | default(20) }}"
+        idle_timeout_seconds: "{{ app_idle_timeout | default(300) }}"
+        
+    # Client lecture seule
+    readonly_client:
+      connection_string: "redis://{{ read_service_name }}.{{ k8s_namespace }}.svc.cluster.local:6380"
+      ssl_enabled: true
+      auth_enabled: true
+      read_only: true
+      
+      connection_pool:
+        max_connections: "{{ readonly_max_connections | default(50) }}"
+        max_idle_connections: "{{ readonly_max_idle_connections | default(10) }}"
+        
+  # Configuration Sentinel (si utilisé)
+  sentinel_configuration:
+    enabled: false
+    sentinels: []
+    master_name: "{{ sentinel_master_name | default('spotify-redis-master') }}"
+    
+# Métriques SLA et objectifs
+sla_objectives:
+  availability_target: "{{ availability_sla | default('99.95%') }}"
+  response_time_p99_ms: "{{ response_time_target | default(5) }}"
+  throughput_ops_per_second: "{{ throughput_target | default(100000) }}"
+  memory_efficiency: "{{ memory_efficiency_target | default(85) }}"
+  cache_hit_ratio: "{{ cache_hit_ratio_target | default(95) }}"
+  backup_success_rate: "{{ backup_success_rate | default('99.9%') }}"

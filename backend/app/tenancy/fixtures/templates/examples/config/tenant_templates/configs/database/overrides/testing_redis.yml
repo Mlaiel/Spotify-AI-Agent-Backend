@@ -1,0 +1,415 @@
+# Redis Testing Environment Overrides
+# ===================================
+# This configuration overrides default Redis settings for testing environments
+# Optimized for automated testing, CI/CD pipelines, and quality assurance
+
+redis:
+  # Connection settings for testing
+  connection:
+    host: redis-testing
+    port: 6379
+    database: 0  # Use database 0 for main cache, others for test isolation
+    password: "${REDIS_TESTING_PASSWORD}"
+    
+    # Connection pool for testing load
+    pool:
+      max_connections: 50
+      health_check_interval: 30
+      socket_timeout: 5.0
+      socket_connect_timeout: 5.0
+      socket_keepalive: true
+      socket_keepalive_options: {}
+      retry_on_timeout: true
+      
+    # Testing-specific connection options
+    options:
+      decode_responses: true
+      encoding: "utf-8"
+      encoding_errors: "strict"
+      
+  # Multiple database allocation for test isolation
+  databases:
+    main_cache: 0          # Primary cache for application
+    session_store: 1       # User sessions
+    rate_limiting: 2       # Rate limiting counters
+    test_isolation_1: 3    # Test suite 1
+    test_isolation_2: 4    # Test suite 2
+    test_isolation_3: 5    # Test suite 3
+    integration_tests: 6   # Integration test data
+    performance_tests: 7   # Performance test data
+    load_tests: 8         # Load testing data
+    temp_data: 9          # Temporary test data
+    
+  # Memory management for testing
+  memory:
+    maxmemory: "512MB"  # Limited memory for testing environment
+    maxmemory_policy: allkeys-lru
+    maxmemory_samples: 5
+    
+    # Memory optimization for testing
+    hash_max_ziplist_entries: 512
+    hash_max_ziplist_value: 64
+    list_max_ziplist_size: -2
+    list_compress_depth: 0
+    set_max_intset_entries: 512
+    zset_max_ziplist_entries: 128
+    zset_max_ziplist_value: 64
+    
+  # Persistence settings for testing
+  persistence:
+    # Disable persistence for most testing scenarios
+    save_enabled: false  # No automatic saves during testing
+    appendonly: false    # No AOF for testing
+    
+    # Enable persistence only for specific test scenarios
+    test_scenarios:
+      persistence_tests:
+        save_enabled: true
+        save_intervals:
+          - "900 1"    # Save if at least 1 key changed in 900 seconds
+          - "300 10"   # Save if at least 10 keys changed in 300 seconds
+          - "60 10000" # Save if at least 10000 keys changed in 60 seconds
+        appendonly: true
+        appendfsync: everysec
+        
+  # Security settings for testing
+  security:
+    # Basic authentication for testing
+    auth:
+      enabled: true
+      password: "${REDIS_TESTING_PASSWORD}"
+      
+    # Network security for testing
+    network:
+      bind_addresses:
+        - 127.0.0.1
+        - redis-testing
+        - "172.16.0.0/12"  # Docker/testing networks
+      protected_mode: true
+      
+    # Command security
+    commands:
+      # Disable dangerous commands in testing
+      disabled_commands:
+        - FLUSHDB  # Prevent accidental data loss
+        - FLUSHALL
+        - CONFIG
+        - SHUTDOWN
+        - DEBUG
+        - EVAL    # Disable Lua scripting for security
+        - EVALSHA
+        
+      # Rename sensitive commands
+      renamed_commands:
+        FLUSHDB: "FLUSH_DB_TEST_ONLY"
+        FLUSHALL: "FLUSH_ALL_TEST_ONLY"
+        CONFIG: "CONFIG_TEST_ADMIN"
+        
+  # Logging configuration for testing
+  logging:
+    level: notice  # Moderate logging for test debugging
+    file: "/var/log/redis/testing-${TENANT_ID}.log"
+    syslog_enabled: false
+    
+    # Enhanced logging for test debugging
+    debug_logging:
+      slow_log_enabled: true
+      slowlog_log_slower_than: 1000  # 1ms threshold
+      slowlog_max_len: 1000
+      
+    # Client connection logging
+    client_logging:
+      log_connections: true
+      log_disconnections: true
+      timeout_logs: true
+      
+  # Performance settings optimized for testing
+  performance:
+    # Timeout settings for testing
+    timeout: 300  # 5 minutes timeout for long-running tests
+    tcp_keepalive: 300
+    
+    # Client limits for testing
+    maxclients: 1000
+    
+    # Memory and CPU optimization for testing
+    hz: 10  # Background task frequency
+    tcp_backlog: 511
+    
+    # Lazy freeing for better test performance
+    lazyfree_lazy_eviction: true
+    lazyfree_lazy_expire: true
+    lazyfree_lazy_server_del: true
+    replica_lazy_flush: true
+    
+  # Testing-specific configurations
+  testing:
+    # Test data management
+    data_management:
+      auto_cleanup: true
+      cleanup_interval: 300  # 5 minutes
+      test_data_ttl: 3600   # 1 hour default TTL for test data
+      
+    # Test isolation
+    isolation:
+      enabled: true
+      namespace_prefix: "test_${TENANT_ID}_"
+      separate_databases: true
+      flush_between_tests: true
+      
+    # Performance testing settings
+    performance_testing:
+      benchmark_mode: true
+      latency_monitoring: true
+      throughput_monitoring: true
+      memory_usage_tracking: true
+      
+    # Load testing configuration
+    load_testing:
+      max_concurrent_connections: 500
+      request_rate_limit: 10000  # requests per second
+      memory_alert_threshold: 400  # MB
+      cpu_alert_threshold: 80     # percent
+      
+  # Caching strategies for testing
+  caching:
+    # Default TTL values for different data types
+    default_ttls:
+      user_sessions: 1800      # 30 minutes
+      api_responses: 300       # 5 minutes
+      computed_data: 600       # 10 minutes
+      temporary_data: 60       # 1 minute
+      test_data: 3600         # 1 hour
+      
+    # Cache invalidation strategies
+    invalidation:
+      pattern_based: true
+      tag_based: true
+      time_based: true
+      
+    # Cache warming for tests
+    warming:
+      enabled: true
+      warmup_data:
+        - user_preferences
+        - popular_tracks
+        - recommendation_models
+        
+  # Monitoring and metrics for testing
+  monitoring:
+    enabled: true
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 10  # seconds
+      retention_period: 3600   # 1 hour
+      
+      # Key metrics for testing
+      tracked_metrics:
+        - memory_usage
+        - cpu_usage
+        - connection_count
+        - command_stats
+        - keyspace_stats
+        - slowlog_stats
+        
+    # Alerts for testing issues
+    alerts:
+      enabled: true
+      channels:
+        - slack: "#testing-alerts"
+        - webhook: "http://testing-alert-service/webhook"
+        
+      thresholds:
+        memory_usage_percent: 90
+        connection_count: 800
+        slow_queries_per_minute: 100
+        error_rate_percent: 5
+        
+  # Test data seeding
+  data_seeding:
+    enabled: true
+    
+    # Seed data for different test scenarios
+    seed_sets:
+      basic_cache_test:
+        user_sessions: 100
+        api_cache_entries: 500
+        
+      performance_test:
+        large_objects: 1000
+        small_objects: 10000
+        
+      stress_test:
+        memory_intensive_keys: 5000
+        high_frequency_keys: 10000
+        
+      integration_test:
+        spotify_api_cache: 1000
+        user_preferences: 500
+        recommendation_cache: 2000
+        
+  # High availability testing
+  high_availability:
+    # Redis Sentinel for HA testing
+    sentinel:
+      enabled: false  # Disabled for simple testing
+      master_name: "redis-testing-master"
+      
+    # Clustering for scale testing
+    cluster:
+      enabled: false  # Disabled for simple testing
+      nodes: 3
+      
+  # Integration with testing tools
+  testing_tools:
+    # Redis CLI tools
+    redis_cli:
+      enabled: true
+      monitoring_interval: 1
+      
+    # Performance testing tools
+    redis_benchmark:
+      enabled: true
+      default_tests:
+        - ping_inline
+        - ping_bulk
+        - set
+        - get
+        - incr
+        - lpush
+        - rpush
+        - lpop
+        - rpop
+        - sadd
+        - spop
+        
+    # Memory analysis tools
+    redis_rdb_tools:
+      enabled: true
+      memory_analysis: true
+      
+  # CI/CD integration
+  ci_cd:
+    # Automated testing
+    automated_tests:
+      unit_tests:
+        database: 3
+        cleanup_after: true
+        
+      integration_tests:
+        database: 6
+        data_seeding: true
+        cleanup_after: true
+        
+      performance_tests:
+        database: 7
+        benchmark_mode: true
+        
+    # Test reporting
+    reporting:
+      enabled: true
+      format: junit
+      output_path: "/tmp/redis-test-reports"
+      
+  # Environment-specific overrides
+  testing_overrides:
+    # Unit testing environment
+    unit:
+      memory:
+        maxmemory: "128MB"
+      databases:
+        count: 10  # More databases for test isolation
+        
+    # Integration testing environment  
+    integration:
+      memory:
+        maxmemory: "256MB"
+      persistence:
+        save_enabled: true
+        
+    # Performance testing environment
+    performance:
+      memory:
+        maxmemory: "1GB"
+      performance:
+        maxclients: 2000
+        
+    # Load testing environment
+    load:
+      memory:
+        maxmemory: "2GB"
+      performance:
+        maxclients: 5000
+        hz: 100
+        
+# Testing environment variables
+environment_variables:
+  REDIS_TESTING_PASSWORD: "test_redis_${TENANT_ID}"
+  REDIS_URL: "redis://:${REDIS_TESTING_PASSWORD}@redis-testing:6379/0"
+  REDIS_CACHE_URL: "redis://:${REDIS_TESTING_PASSWORD}@redis-testing:6379/0"
+  REDIS_SESSION_URL: "redis://:${REDIS_TESTING_PASSWORD}@redis-testing:6379/1"
+  REDIS_RATE_LIMIT_URL: "redis://:${REDIS_TESTING_PASSWORD}@redis-testing:6379/2"
+  
+# Testing deployment configuration
+deployment:
+  # Container configuration for testing
+  container:
+    image: "redis:7-alpine"
+    resources:
+      cpu: "0.5"
+      memory: "512Mi"
+      
+  # Kubernetes testing deployment
+  kubernetes:
+    namespace: "testing-${TENANT_ID}"
+    replicas: 1
+    service_type: ClusterIP
+    
+  # Docker Compose for local testing
+  docker_compose:
+    services:
+      redis-testing:
+        image: redis:7-alpine
+        command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+        ports:
+          - "6379:6379"
+        environment:
+          - REDIS_PASSWORD=${REDIS_TESTING_PASSWORD}
+          
+# Quality assurance settings
+quality_assurance:
+  # Data validation
+  data_validation:
+    enabled: true
+    schema_validation: true
+    type_checking: true
+    
+  # Performance benchmarks
+  benchmarks:
+    baseline_ops_per_second: 50000
+    max_memory_usage_mb: 400
+    max_latency_ms: 10
+    
+  # Test coverage requirements
+  coverage:
+    minimum_coverage: 80
+    critical_paths: 95
+    
+# Metadata
+metadata:
+  environment: testing
+  purpose: "Automated testing, CI/CD, and quality assurance"
+  maintainer: "QA Team"
+  last_updated: "2025-07-16"
+  notes: |
+    This testing configuration provides:
+    - Multiple database isolation for concurrent tests
+    - Optimized performance settings for test execution
+    - Comprehensive monitoring and alerting
+    - Integration with CI/CD pipelines
+    - Data seeding and cleanup automation
+    - Performance benchmarking capabilities
+    
+    Designed for automated testing environments with emphasis on
+    reliability, isolation, and performance measurement.

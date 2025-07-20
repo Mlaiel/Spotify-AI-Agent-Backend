@@ -1,0 +1,11 @@
+{
+  "success": "Richiesta completata con successo.",
+  "created": "Risorsa creata con successo.",
+  "updated": "Risorsa aggiornata con successo.",
+  "deleted": "Risorsa eliminata con successo.",
+  "not_found": "Risorsa non trovata.",
+  "unauthorized": "Non autorizzato.",
+  "forbidden": "Accesso negato.",
+  "bad_request": "Richiesta non valida.",
+  "server_error": "Errore interno del server. Riprova più tardi."
+}

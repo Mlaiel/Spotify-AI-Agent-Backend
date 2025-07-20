@@ -1,0 +1,548 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tenant-backup-migration-advanced
+  namespace: spotify-ai-agent-dev
+  labels:
+    app: spotify-ai-agent
+    component: tenant-backup
+    job-type: tenant_backup_migration
+    tenant-tier: enterprise
+    version: v7.2.1
+    backup-type: enterprise-grade-encrypted
+    migration-type: zero-downtime
+    team: infrastructure-engineering
+    owner: fahed-mlaiel
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9097"
+    prometheus.io/path: "/metrics"
+    jaeger.io/trace: "true"
+    backup.platform/backup-id: "backup-{{ .Values.backup.id }}"
+    backup.platform/retention-policy: "enterprise-7years"
+    backup.platform/encryption-level: "aes-256-gcm"
+    kubernetes.io/change-cause: "Tenant backup deployed by Fahed Mlaiel infrastructure platform"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 21600  # 6 hours maximum
+  ttlSecondsAfterFinished: 7200  # Keep for 2 hours
+  completions: 1
+  parallelism: 1
+  
+  template:
+    metadata:
+      labels:
+        app: spotify-ai-agent
+        component: tenant-backup
+        job-type: tenant_backup_migration
+        version: v7.2.1
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9097"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "tenant-backup-role"
+    
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: spotify-ai-tenant-backup-sa
+      priorityClassName: high-priority-backup
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: [2000, 3000]
+
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node-type: storage-optimized
+        instance-type: backup-optimized
+        zone: us-west-2a
+        storage-tier: enterprise-nvme
+
+      tolerations:
+        - key: "backup-workload"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "storage-intensive"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "dedicated"
+          operator: "Equal"
+          value: "backup-operations"
+          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/instance-type
+                    operator: In
+                    values: ["i3.4xlarge", "i3.8xlarge", "d3.4xlarge", "i4i.4xlarge"]
+                  - key: storage-optimized
+                    operator: In
+                    values: ["true"]
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: storage-tier
+                    operator: In
+                    values: ["enterprise-nvme"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: job-type
+                    operator: In
+                    values: ["tenant_backup_migration"]
+              topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: backup-orchestrator
+          image: spotify-ai/backup-orchestrator:v7.2.1-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "3000m"
+              memory: "6Gi"
+              ephemeral-storage: "50Gi"
+            limits:
+              cpu: "6000m"
+              memory: "12Gi"
+              ephemeral-storage: "100Gi"
+          env:
+            - name: TENANT_ID
+              value: "{{ .Values.tenant.id }}"
+            - name: BACKUP_TYPE
+              value: "full-incremental-differential"
+            - name: COMPRESSION_ALGORITHM
+              value: "zstd-level-9"
+            - name: ENCRYPTION_ENABLED
+              value: "true"
+            - name: ENCRYPTION_ALGORITHM
+              value: "aes-256-gcm"
+            - name: DEDUPLICATION_ENABLED
+              value: "true"
+            - name: PARALLEL_STREAMS
+              value: "8"
+            - name: STORAGE_DESTINATIONS
+              value: "s3-glacier,azure-blob,gcp-coldline"
+            - name: BACKUP_VERIFICATION_ENABLED
+              value: "true"
+            - name: RESTORATION_TESTING_ENABLED
+              value: "true"
+            - name: POSTGRES_BACKUP_METHOD
+              value: "logical-physical-hybrid"
+            - name: REDIS_BACKUP_METHOD
+              value: "rdb-aof-combined"
+            - name: ELASTICSEARCH_BACKUP_METHOD
+              value: "snapshot-repository"
+            - name: MONGODB_BACKUP_METHOD
+              value: "mongodump-oplog"
+            - name: AWS_S3_BUCKET
+              value: "spotify-ai-enterprise-backups"
+            - name: AWS_GLACIER_VAULT
+              value: "spotify-ai-long-term-archive"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-backup-credentials
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: url
+            - name: ELASTICSEARCH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-backup-credentials
+                  key: url
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-backup-credentials
+                  key: url
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-encryption-keys
+                  key: master-key
+          ports:
+            - containerPort: 9097
+              name: metrics
+              protocol: TCP
+            - containerPort: 8454
+              name: backup-api
+              protocol: TCP
+          volumeMounts:
+            - name: backup-staging
+              mountPath: /workspace/staging
+            - name: backup-metadata
+              mountPath: /workspace/metadata
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+            - name: backup-logs
+              mountPath: /workspace/logs
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9097
+            initialDelaySeconds: 180
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9097
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
+
+        - name: database-backup-agent
+          image: spotify-ai/db-backup-agent:v5.1.2-multi-engine
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: "4Gi"
+            limits:
+              cpu: "4000m"
+              memory: "8Gi"
+          env:
+            - name: DATABASE_ENGINES
+              value: "postgresql,redis,elasticsearch,mongodb,cassandra"
+            - name: BACKUP_STRATEGY
+              value: "hot-backup-continuous-archival"
+            - name: POINT_IN_TIME_RECOVERY
+              value: "enabled"
+            - name: CONSISTENCY_CHECK_ENABLED
+              value: "true"
+            - name: BACKUP_COMPRESSION_LEVEL
+              value: "9"
+            - name: PARALLEL_DUMP_JOBS
+              value: "4"
+          ports:
+            - containerPort: 8455
+              name: db-backup-api
+          volumeMounts:
+            - name: database-backups
+              mountPath: /workspace/db-backups
+            - name: backup-staging
+              mountPath: /workspace/staging
+            - name: config
+              mountPath: /workspace/config
+              readOnly: true
+
+        - name: file-system-backup
+          image: spotify-ai/fs-backup-agent:v4.3.1-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1002
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1500m"
+              memory: "3Gi"
+            limits:
+              cpu: "3000m"
+              memory: "6Gi"
+          env:
+            - name: BACKUP_PATHS
+              value: "/data/tenant-files,/data/user-uploads,/data/application-logs"
+            - name: EXCLUSION_PATTERNS
+              value: "*.tmp,*.cache,*.log.old,node_modules"
+            - name: INCREMENTAL_BACKUP_ENABLED
+              value: "true"
+            - name: CHANGE_BLOCK_TRACKING
+              value: "enabled"
+            - name: FILE_INTEGRITY_VERIFICATION
+              value: "sha256-checksums"
+            - name: SPARSE_FILE_HANDLING
+              value: "optimized"
+          ports:
+            - containerPort: 8456
+              name: fs-backup-api
+          volumeMounts:
+            - name: file-system-backups
+              mountPath: /workspace/fs-backups
+            - name: tenant-data
+              mountPath: /data
+              readOnly: true
+            - name: backup-staging
+              mountPath: /workspace/staging
+
+        - name: backup-verification
+          image: spotify-ai/backup-verifier:v3.2.0-enterprise
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1003
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          env:
+            - name: VERIFICATION_MODE
+              value: "comprehensive-integrity-check"
+            - name: CHECKSUM_ALGORITHMS
+              value: "sha256,blake2b,crc32c"
+            - name: RESTORATION_TEST_ENABLED
+              value: "true"
+            - name: RESTORATION_TEST_FREQUENCY
+              value: "weekly"
+            - name: CORRUPTION_DETECTION_ENABLED
+              value: "true"
+            - name: BACKUP_CATALOG_VALIDATION
+              value: "enabled"
+          ports:
+            - containerPort: 8457
+              name: verify-api
+          volumeMounts:
+            - name: verification-reports
+              mountPath: /workspace/verification
+            - name: backup-staging
+              mountPath: /workspace/staging
+              readOnly: true
+
+        - name: migration-engine
+          image: spotify-ai/migration-engine:v6.1.0-zero-downtime
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1004
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "1200m"
+              memory: "2.5Gi"
+            limits:
+              cpu: "2500m"
+              memory: "5Gi"
+          env:
+            - name: MIGRATION_STRATEGY
+              value: "blue-green-zero-downtime"
+            - name: DATA_REPLICATION_MODE
+              value: "streaming-cdc"
+            - name: CUTOVER_AUTOMATION
+              value: "intelligent-traffic-switching"
+            - name: ROLLBACK_CAPABILITY
+              value: "instant-rollback-enabled"
+            - name: CONSISTENCY_VALIDATION
+              value: "real-time-data-validation"
+            - name: PERFORMANCE_MONITORING
+              value: "continuous-metrics-collection"
+          ports:
+            - containerPort: 8458
+              name: migration-api
+          volumeMounts:
+            - name: migration-workspace
+              mountPath: /workspace/migration
+            - name: migration-logs
+              mountPath: /workspace/migration-logs
+
+        - name: audit-logger
+          image: spotify-ai/audit-logger:v2.4.0-compliance
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1005
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: AUDIT_LEVEL
+              value: "comprehensive"
+            - name: COMPLIANCE_FRAMEWORKS
+              value: "SOX,PCI-DSS,GDPR,HIPAA,ISO27001"
+            - name: LOG_RETENTION_PERIOD
+              value: "7-years"
+            - name: LOG_ENCRYPTION_ENABLED
+              value: "true"
+            - name: TAMPER_EVIDENCE_ENABLED
+              value: "true"
+            - name: DIGITAL_SIGNATURES_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8459
+              name: audit-api
+          volumeMounts:
+            - name: audit-logs
+              mountPath: /workspace/audit
+            - name: compliance-reports
+              mountPath: /workspace/compliance
+
+      initContainers:
+        - name: backup-environment-setup
+          image: spotify-ai/backup-setup:v2.1.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          env:
+            - name: SETUP_MODE
+              value: "enterprise-production"
+            - name: STORAGE_VALIDATION_ENABLED
+              value: "true"
+            - name: CONNECTIVITY_TESTING_ENABLED
+              value: "true"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Setting up enterprise backup environment..."
+              /scripts/validate-storage-connectivity.sh
+              /scripts/prepare-backup-directories.sh
+              /scripts/test-encryption-keys.sh
+              echo "Backup environment setup completed"
+          volumeMounts:
+            - name: backup-staging
+              mountPath: /workspace/staging
+
+        - name: pre-backup-validation
+          image: spotify-ai/pre-backup-validator:v1.3.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "600m"
+              memory: "1Gi"
+          env:
+            - name: VALIDATION_CHECKS
+              value: "connectivity,permissions,disk-space,database-health"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Running pre-backup validations..."
+              /scripts/validate-backup-prerequisites.sh
+              echo "Pre-backup validation completed"
+          volumeMounts:
+            - name: validation-reports
+              mountPath: /workspace/validation
+
+      volumes:
+        - name: backup-staging
+          emptyDir:
+            sizeLimit: 500Gi
+        - name: backup-metadata
+          persistentVolumeClaim:
+            claimName: backup-metadata-pvc
+        - name: database-backups
+          persistentVolumeClaim:
+            claimName: database-backups-pvc
+        - name: file-system-backups
+          persistentVolumeClaim:
+            claimName: file-system-backups-pvc
+        - name: verification-reports
+          persistentVolumeClaim:
+            claimName: verification-reports-pvc
+        - name: migration-workspace
+          persistentVolumeClaim:
+            claimName: migration-workspace-pvc
+        - name: migration-logs
+          persistentVolumeClaim:
+            claimName: migration-logs-pvc
+        - name: audit-logs
+          persistentVolumeClaim:
+            claimName: audit-logs-pvc
+        - name: compliance-reports
+          persistentVolumeClaim:
+            claimName: compliance-reports-pvc
+        - name: backup-logs
+          persistentVolumeClaim:
+            claimName: backup-logs-pvc
+        - name: validation-reports
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: tenant-data
+          persistentVolumeClaim:
+            claimName: tenant-data-pvc
+        - name: config
+          configMap:
+            name: tenant-backup-config
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 20Gi

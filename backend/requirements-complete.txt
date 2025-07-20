@@ -1,0 +1,61 @@
+# Core FastAPI dependencies
+fastapi>=0.95
+starlette>=0.27
+httpx>=0.25
+uvicorn>=0.18.0
+uvloop>=0.17.0
+gunicorn>=20.1.0
+
+# Database dependencies
+sqlalchemy>=2.0.0
+alembic>=1.8.0
+psycopg2-binary>=2.9.0
+pymongo>=4.0.0
+motor>=3.0.0
+redis>=4.0.0
+elasticsearch[async]>=8.0.0
+
+# Security & Authentication
+authlib>=1.2.0
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.0.0
+passlib[bcrypt]>=1.7.4
+
+# Data handling & validation
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0
+python-multipart>=0.0.6
+aiofiles>=23.0.0
+
+# Internationalization
+babel>=2.12.0
+langdetect>=1.0.9
+pytz>=2023.3
+
+# ML & Audio processing (non-spleeter)
+scikit-learn>=1.3.0
+numpy>=1.24.0
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# Configuration & Environment
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# Testing dependencies
+pytest>=8.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+
+# Background tasks
+celery>=5.3.0
+kafka-python>=2.0.0
+
+# Observability
+sentry-sdk>=1.32.0
+starlette-exporter>=0.20.0
+opentelemetry-instrumentation-fastapi>=0.40.0
+
+# Utility dependencies
+requests>=2.31.0

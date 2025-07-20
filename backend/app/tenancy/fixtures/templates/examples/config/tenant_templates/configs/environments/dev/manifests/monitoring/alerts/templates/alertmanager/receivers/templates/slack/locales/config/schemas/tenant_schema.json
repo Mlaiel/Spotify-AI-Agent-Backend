@@ -1,0 +1,348 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tenant Configuration Schema",
+  "description": "Schéma de configuration complet pour un tenant multi-environnement",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-_]{3,50}$",
+      "description": "Identifiant unique du tenant"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": ["user_id", "email", "name"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "custom_fields": {
+          "type": "object"
+        }
+      },
+      "required": ["name", "created_at", "owner"]
+    },
+    "environments": {
+      "type": "object",
+      "patternProperties": {
+        "^(dev|staging|prod|test)$": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "database": {
+              "type": "object",
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "name": {
+                  "type": "string"
+                },
+                "schema": {
+                  "type": "string"
+                },
+                "ssl_mode": {
+                  "type": "string",
+                  "enum": ["require", "prefer", "allow", "disable"]
+                },
+                "connection_pool": {
+                  "type": "object",
+                  "properties": {
+                    "min_connections": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "max_connections": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "timeout": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                }
+              },
+              "required": ["host", "port", "name", "schema"]
+            },
+            "cache": {
+              "type": "object",
+              "properties": {
+                "redis": {
+                  "type": "object",
+                  "properties": {
+                    "host": {
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "integer"
+                    },
+                    "db": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 15
+                    },
+                    "prefix": {
+                      "type": "string"
+                    },
+                    "ttl": {
+                      "type": "integer",
+                      "minimum": 60
+                    }
+                  }
+                }
+              }
+            },
+            "storage": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["s3", "gcs", "azure", "local"]
+                },
+                "bucket": {
+                  "type": "string"
+                },
+                "prefix": {
+                  "type": "string"
+                },
+                "encryption": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "prometheus": {
+                      "type": "object",
+                      "properties": {
+                        "endpoint": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "logging": {
+                  "type": "object",
+                  "properties": {
+                    "level": {
+                      "type": "string",
+                      "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+                    },
+                    "structured": {
+                      "type": "boolean"
+                    },
+                    "retention_days": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 365
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["enabled", "database"]
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "ai_processing": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rate_limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_minute": {
+                  "type": "integer"
+                },
+                "requests_per_hour": {
+                  "type": "integer"
+                },
+                "requests_per_day": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "collaboration": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "max_users": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "real_time": {
+              "type": "boolean"
+            }
+          }
+        },
+        "spotify_integration": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "api_version": {
+              "type": "string"
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "authentication": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["oauth2", "saml", "ldap", "jwt"]
+            },
+            "mfa_required": {
+              "type": "boolean"
+            },
+            "session_timeout": {
+              "type": "integer",
+              "minimum": 300
+            }
+          }
+        },
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "at_rest": {
+              "type": "boolean"
+            },
+            "in_transit": {
+              "type": "boolean"
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256", "ChaCha20-Poly1305"]
+            }
+          }
+        },
+        "data_privacy": {
+          "type": "object",
+          "properties": {
+            "gdpr_compliant": {
+              "type": "boolean"
+            },
+            "data_retention_days": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "anonymization": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "billing": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "string",
+          "enum": ["free", "basic", "pro", "enterprise"]
+        },
+        "billing_cycle": {
+          "type": "string",
+          "enum": ["monthly", "yearly"]
+        },
+        "usage_limits": {
+          "type": "object",
+          "properties": {
+            "api_calls": {
+              "type": "integer"
+            },
+            "storage_gb": {
+              "type": "number"
+            },
+            "ai_minutes": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["tenant_id", "metadata", "environments", "features", "security", "billing"],
+  "additionalProperties": false
+}

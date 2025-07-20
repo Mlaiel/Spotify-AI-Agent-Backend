@@ -1,0 +1,221 @@
+# File di localizzazione per sistema di alerting Spotify AI Agent
+# Lingua: Italiano (it)
+# Sviluppato dal team di esperti: Lead Dev + AI Architect, Backend Senior Developer,
+# ML Engineer, DBA & Data Engineer, Backend Security Specialist, Microservices Architect
+# Supervisione: Fahed Mlaiel
+
+# Messaggi di allerta generici
+alerts:
+  # Allerte critiche
+  critical:
+    title: "🚨 ALLERTA CRITICA - Spotify AI Agent"
+    subtitle: "Intervento immediato richiesto"
+    description: "Una situazione critica richiede la tua attenzione immediata sul sistema Spotify AI Agent."
+    severity_label: "Gravità"
+    tenant_label: "Tenant"
+    service_label: "Servizio"
+    timestamp_label: "Timestamp"
+    value_label: "Valore"
+    threshold_label: "Soglia"
+    duration_label: "Durata"
+    
+  # Allerte di avvertimento
+  warning:
+    title: "⚠️ AVVERTIMENTO - Spotify AI Agent"
+    subtitle: "Attenzione richiesta"
+    description: "È stata rilevata una situazione anomala che richiede la tua attenzione."
+    escalation_info: "Questo avviso sarà escalato a critico se non risolto entro {timeout} minuti."
+    
+  # Allerte informative
+  info:
+    title: "ℹ️ INFORMAZIONE - Spotify AI Agent"
+    subtitle: "Informazione di sistema"
+    description: "Notifica di un evento di sistema importante."
+    
+  # Risoluzione allerte
+  resolved:
+    title: "✅ RISOLTO - Spotify AI Agent"
+    subtitle: "Incidente risolto"
+    description: "L'incidente precedentemente segnalato è stato risolto automaticamente."
+    resolution_time: "Tempo di risoluzione"
+
+# Messaggi specifici per metriche business Spotify
+business_metrics:
+  streams:
+    high_volume:
+      title: "📈 Alto volume di streaming rilevato"
+      description: "Il conteggio stream per tenant {tenant_name} ha raggiunto {current_value:,} stream in {period}, superando la soglia normale di {threshold:,}."
+      impact: "Impatto positivo sui ricavi stimato in ${estimated_revenue:,.2f}"
+      suggestion: "Considerare l'ottimizzazione dell'infrastruttura per gestire il carico."
+      
+    low_volume:
+      title: "📉 Calo del volume di streaming"
+      description: "Il conteggio stream per {tenant_name} è sceso a {current_value:,} stream, {percentage_drop:.1f}% sotto la media."
+      impact: "Perdita potenziale di ricavi stimata in ${revenue_loss:,.2f}"
+      suggestion: "Analizzare i fattori di calo e attivare campagne di re-engagement."
+      
+  engagement:
+    low_engagement:
+      title: "👎 Tasso di engagement basso"
+      description: "Il tasso di skip per {artist_name} ha raggiunto {skip_rate:.1f}%, superando la soglia di allerta del {threshold:.1f}%."
+      context: "Analisi degli ultimi {sample_size:,} ascolti"
+      suggestion: "Rivedere la strategia di raccomandazione e analizzare le preferenze utente."
+      
+    high_engagement:
+      title: "👍 Eccellente engagement rilevato"
+      description: "Il tasso di completamento per {content_type} ha raggiunto {completion_rate:.1f}%, prestazione eccellente!"
+      context: "Basato su {sample_size:,} interazioni utente"
+      suggestion: "Capitalizzare questo successo per future raccomandazioni."
+
+# Messaggi IA/ML
+ai_metrics:
+  model_performance:
+    accuracy_drop:
+      title: "🎯 Calo di accuratezza del modello IA"
+      description: "L'accuratezza del modello {model_name} è scesa al {current_accuracy:.2f}%, sotto la soglia del {threshold:.2f}%."
+      technical_details: "Drift rilevato su {feature_count} feature critiche"
+      action_required: "Ri-valutazione e ri-addestramento del modello raccomandati"
+      
+    latency_high:
+      title: "⏱️ Alta latenza di inferenza"
+      description: "Il tempo di risposta del modello {model_name} ha raggiunto {current_latency:.0f}ms (P95), superando l'SLA di {sla_threshold:.0f}ms."
+      impact: "Possibile degradazione dell'esperienza utente"
+      suggestion: "Ottimizzare il modello o aumentare le risorse di calcolo"
+      
+  anomaly_detection:
+    pattern_change:
+      title: "🔍 Cambiamento di pattern rilevato"
+      description: "Anomalia significativa rilevata nelle metriche {metric_name} con score di confidenza di {confidence:.2f}."
+      analysis: "Cambiamento dal comportamento usuale di {deviation:.1f} deviazioni standard"
+      recommendation: "Investigazione raccomandata per identificare la causa radice"
+
+# Messaggi tecnici
+technical_metrics:
+  infrastructure:
+    high_cpu:
+      title: "🖥️ Alta utilizzazione CPU"
+      description: "L'uso CPU per il servizio {service_name} ha raggiunto {cpu_usage:.1f}% per {duration} minuti."
+      threshold_info: "Soglia critica: {threshold:.1f}%"
+      auto_scaling: "Auto-scaling attivato automaticamente"
+      
+    memory_leak:
+      title: "🧠 Sospetta perdita di memoria"
+      description: "Consumo crescente di memoria rilevato: {current_memory:.1f}GB (+{increase:.1f}GB in {timeframe})"
+      trend: "Tendenza: +{growth_rate:.2f}GB/ora"
+      action: "Riavvio del servizio programmato automaticamente"
+      
+    api_errors:
+      title: "🚨 Alto tasso di errori API"
+      description: "Il tasso di errori per API {api_endpoint} ha raggiunto {error_rate:.2f}% negli ultimi {time_window} minuti."
+      error_breakdown: "Ripartizione: {error_4xx:.1f}% errori client, {error_5xx:.1f}% errori server"
+      mitigation: "Circuit breaker attivato per proteggere i servizi downstream"
+
+# Azioni e suggerimenti
+actions:
+  investigate:
+    primary: "🔍 Investigare"
+    description: "Analizzare log e metriche dettagliate"
+    
+  escalate:
+    primary: "📞 Escalare"
+    description: "Notificare team di reperibilità livello 2"
+    
+  acknowledge:
+    primary: "✓ Confermare"
+    description: "Confermare la presa in carico dell'incidente"
+    
+  resolve:
+    primary: "✅ Risolvere"
+    description: "Contrassegnare incidente come risolto"
+    
+  dashboard:
+    primary: "📊 Dashboard"
+    description: "Aprire dashboard di monitoraggio"
+    
+  runbook:
+    primary: "📖 Runbook"
+    description: "Visualizzare procedura di risoluzione"
+
+# Contesto specifico Spotify
+spotify_context:
+  artists:
+    trending: "🎵 Artista in tendenza"
+    emerging: "🌟 Artista emergente"
+    established: "👑 Artista affermato"
+    
+  genres:
+    pop: "🎤 Pop"
+    rock: "🎸 Rock"
+    hip_hop: "🎤 Hip-Hop"
+    electronic: "🎛️ Elettronica"
+    classical: "🎼 Classica"
+    jazz: "🎺 Jazz"
+    country: "🤠 Country"
+    latin: "💃 Latina"
+    
+  regions:
+    global: "🌍 Globale"
+    north_america: "🇺🇸 Nord America"
+    europe: "🇪🇺 Europa"
+    asia_pacific: "🌏 Asia-Pacifico"
+    latin_america: "🌎 America Latina"
+    africa: "🌍 Africa"
+
+# Formattazione e unità
+formatting:
+  numbers:
+    millions: "Mln"
+    billions: "Mld"
+    thousands: "K"
+    
+  currency:
+    usd: "$"
+    eur: "€"
+    gbp: "£"
+    
+  time:
+    seconds: "sec"
+    minutes: "min"
+    hours: "h"
+    days: "g"
+    
+  percentages:
+    format: "{value:.1f}%"
+    
+  dates:
+    short: "dd/mm/yyyy"
+    long: "dd mmmm yyyy alle HH:MM"
+    relative: "{time} fa"
+
+# Messaggi di errore
+errors:
+  tenant_not_found: "Tenant '{tenant_id}' non trovato"
+  metric_unavailable: "Metrica '{metric_name}' temporaneamente non disponibile"
+  threshold_invalid: "Soglia di allerta non valida per '{metric_name}'"
+  permission_denied: "Permessi insufficienti per accedere ai dati del tenant"
+  data_quality_low: "Qualità dei dati insufficiente per alerting affidabile"
+  
+# Stato del sistema
+system_status:
+  healthy: "🟢 Sistema operativo"
+  degraded: "🟡 Prestazioni degradate"
+  critical: "🔴 Sistema critico"
+  maintenance: "🔧 In manutenzione"
+  unknown: "❓ Stato sconosciuto"
+
+# Livelli di priorità
+priority_levels:
+  p1: "P1 - Critico (risolvi < 15min)"
+  p2: "P2 - Alto (risolvi < 1h)"
+  p3: "P3 - Medio (risolvi < 4h)"
+  p4: "P4 - Basso (risolvi < 24h)"
+  p5: "P5 - Pianificato (risoluzione programmata)"
+
+# Footer e firme
+footer:
+  generated_by: "Generato da Spotify AI Agent Alerting System"
+  documentation: "📚 Documentazione completa"
+  support: "🆘 Supporto tecnico"
+  escalation: "⚡ Escalation di emergenza"
+  timestamp: "Generato il {timestamp}"
+  correlation_id: "ID di correlazione: {correlation_id}"

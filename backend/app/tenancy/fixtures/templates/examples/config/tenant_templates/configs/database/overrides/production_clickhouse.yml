@@ -1,0 +1,449 @@
+# ClickHouse Production Environment Overrides
+# ===========================================
+# Configuration avancée ClickHouse pour analytics en temps réel et data warehousing
+# Optimisé pour workloads OLAP massifs et requêtes analytiques complexes
+
+clickhouse:
+  # Configuration cluster pour production
+  cluster:
+    name: "spotify_analytics_prod"
+    
+    # Shards pour distribution des données
+    shards:
+      - replica_count: 2
+        weight: 1
+        internal_replication: true
+        hosts:
+          - host: clickhouse-prod-shard1-replica1.internal
+            port: 9000
+            secure: true
+          - host: clickhouse-prod-shard1-replica2.internal
+            port: 9000
+            secure: true
+            
+      - replica_count: 2
+        weight: 1
+        internal_replication: true
+        hosts:
+          - host: clickhouse-prod-shard2-replica1.internal
+            port: 9000
+            secure: true
+          - host: clickhouse-prod-shard2-replica2.internal
+            port: 9000
+            secure: true
+            
+      - replica_count: 2
+        weight: 1
+        internal_replication: true
+        hosts:
+          - host: clickhouse-prod-shard3-replica1.internal
+            port: 9000
+            secure: true
+          - host: clickhouse-prod-shard3-replica2.internal
+            port: 9000
+            secure: true
+
+  # Configuration des connexions
+  connection:
+    # Connexion principale pour écriture
+    primary:
+      host: clickhouse-prod-lb.internal
+      port: 9000
+      database: "${TENANT_ID}_analytics"
+      username: "${TENANT_ID}_analytics_writer"
+      password: "${CLICKHOUSE_WRITER_PASSWORD}"
+      secure: true
+      
+    # Connexions lecture distribuée
+    readers:
+      - host: clickhouse-prod-reader-01.internal
+        port: 9000
+        database: "${TENANT_ID}_analytics"
+        username: "${TENANT_ID}_analytics_reader"
+        password: "${CLICKHOUSE_READER_PASSWORD}"
+        secure: true
+        weight: 1.0
+      - host: clickhouse-prod-reader-02.internal
+        port: 9000
+        database: "${TENANT_ID}_analytics"
+        username: "${TENANT_ID}_analytics_reader"
+        password: "${CLICKHOUSE_READER_PASSWORD}"
+        secure: true
+        weight: 1.0
+        
+    # Pool de connexions optimisé pour analytics
+    pool:
+      max_connections: 200
+      min_connections: 20
+      connection_timeout: 30
+      send_timeout: 600      # 10 minutes pour requêtes longues
+      receive_timeout: 600
+      keep_alive: true
+      
+    # Configuration SSL/TLS
+    ssl:
+      enabled: true
+      verify_ssl_cert: true
+      ca_cert_file: "/etc/ssl/clickhouse/prod-ca.crt"
+      client_cert_file: "/etc/ssl/clickhouse/prod-client.crt"
+      client_key_file: "/etc/ssl/clickhouse/prod-client.key"
+
+  # Configuration serveur ClickHouse
+  server:
+    # Ports et interfaces
+    tcp_port: 9000
+    tcp_port_secure: 9440
+    http_port: 8123
+    https_port: 8443
+    interserver_http_port: 9009
+    
+    # Interfaces réseau
+    listen_host:
+      - "0.0.0.0"
+    listen_try: true
+    
+    # Configuration mémoire pour production
+    max_memory_usage: 32000000000      # 32GB par requête
+    max_memory_usage_for_user: 64000000000  # 64GB par utilisateur
+    max_memory_usage_for_all_queries: 128000000000  # 128GB total
+    
+    # Limitations de requêtes
+    max_execution_time: 3600           # 1 heure max par requête
+    max_query_size: 1073741824         # 1GB max par requête
+    max_concurrent_queries_for_user: 10
+    max_concurrent_queries: 100
+    
+    # Configuration threading
+    max_thread_pool_size: 32
+    max_thread_pool_free_size: 8
+    thread_pool_queue_size: 10000
+
+  # Stockage et bases de données
+  storage:
+    # Configuration des disques
+    storage_configuration:
+      disks:
+        # SSD pour données chaudes
+        hot_ssd:
+          type: local
+          path: "/var/lib/clickhouse/hot/"
+          max_data_part_size_bytes: 1073741824  # 1GB
+          
+        # HDD pour données froides  
+        cold_hdd:
+          type: local
+          path: "/var/lib/clickhouse/cold/"
+          
+        # S3 pour archivage long terme
+        s3_archive:
+          type: s3
+          endpoint: "https://s3.${AWS_REGION}.amazonaws.com/${CLICKHOUSE_S3_BUCKET}/"
+          access_key_id: "${AWS_ACCESS_KEY_ID}"
+          secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+          
+      # Politiques de stockage
+      storage_policies:
+        hot_to_cold:
+          volumes:
+            hot:
+              disk: hot_ssd
+              max_data_part_size: 1073741824
+              move_factor: 0.1
+            cold:
+              disk: cold_hdd
+              move_factor: 0.1
+            archive:
+              disk: s3_archive
+              
+        analytics_tiered:
+          volumes:
+            recent:
+              disk: hot_ssd
+              max_data_part_size: 2147483648  # 2GB
+              move_factor: 0.2
+            historical:
+              disk: cold_hdd
+              move_factor: 0.1
+            longterm:
+              disk: s3_archive
+
+  # Tables et schemas optimisés pour Spotify
+  schemas:
+    # Table principale des événements d'écoute
+    listening_events:
+      engine: "ReplicatedMergeTree('/clickhouse/tables/{shard}/listening_events', '{replica}')"
+      partition_by: "toYYYYMM(timestamp)"
+      order_by: 
+        - user_id
+        - timestamp
+        - track_id
+      primary_key:
+        - user_id
+        - timestamp
+      sample_by: "user_id"
+      ttl: "timestamp + INTERVAL 2 YEAR DELETE"
+      storage_policy: "analytics_tiered"
+      settings:
+        index_granularity: 8192
+        use_minimalistic_part_header_in_zookeeper: 1
+        min_merge_bytes_to_use_direct_io: 10737418240  # 10GB
+        
+    # Métriques d'engagement utilisateur
+    user_engagement_metrics:
+      engine: "ReplicatedAggregatingMergeTree('/clickhouse/tables/{shard}/user_engagement', '{replica}')"
+      partition_by: "toYYYYMM(date)"
+      order_by:
+        - tenant_id
+        - user_id
+        - date
+      primary_key:
+        - tenant_id
+        - user_id
+        - date
+      ttl: "date + INTERVAL 1 YEAR DELETE"
+      storage_policy: "hot_to_cold"
+      
+    # Analytics de recommandation
+    recommendation_analytics:
+      engine: "ReplicatedMergeTree('/clickhouse/tables/{shard}/recommendations', '{replica}')"
+      partition_by: "toYYYYMM(created_at)"
+      order_by:
+        - recommendation_engine
+        - user_id
+        - created_at
+      primary_key:
+        - recommendation_engine
+        - user_id
+      sample_by: "cityHash64(user_id)"
+      ttl: "created_at + INTERVAL 6 MONTH DELETE"
+      
+    # Métriques de performance système
+    system_metrics:
+      engine: "ReplicatedMergeTree('/clickhouse/tables/{shard}/system_metrics', '{replica}')"
+      partition_by: "toYYYYMMDD(timestamp)"
+      order_by:
+        - service_name
+        - metric_name
+        - timestamp
+      primary_key:
+        - service_name
+        - metric_name
+      ttl: "timestamp + INTERVAL 90 DAY DELETE"
+      storage_policy: "hot_to_cold"
+
+  # Optimisations de performance
+  performance:
+    # Configuration MergeTree
+    merge_tree:
+      parts_to_delay_insert: 150
+      parts_to_throw_insert: 300
+      max_delay_to_insert: 1
+      min_merge_bytes_to_use_direct_io: 10737418240
+      index_granularity_bytes: 10485760
+      
+    # Configuration des jointures
+    joins:
+      default_max_bytes_in_join: 107374182400  # 100GB
+      partial_merge_join_optimizations: 1
+      partial_merge_join_rows_in_right_blocks: 10000
+      
+    # Configuration des agrégations
+    aggregation:
+      max_bytes_before_external_group_by: 21474836480  # 20GB
+      max_bytes_before_external_sort: 21474836480      # 20GB
+      
+    # Optimisations vectorielles
+    vectorization:
+      compile_expressions: 1
+      min_count_to_compile_expression: 3
+      compile_aggregate_expressions: 1
+      min_count_to_compile_aggregate_expression: 3
+
+  # Configuration de la réplication
+  replication:
+    # ZooKeeper pour coordination
+    zookeeper:
+      nodes:
+        - host: zk-prod-01.internal
+          port: 2181
+        - host: zk-prod-02.internal
+          port: 2181
+        - host: zk-prod-03.internal
+          port: 2181
+      session_timeout_ms: 30000
+      operation_timeout_ms: 10000
+      
+    # Paramètres de réplication
+    replication_settings:
+      queue_max_wait_ms: 5000
+      cleanup_delay_period: 30
+      cleanup_delay_period_random_add: 10
+      min_relative_delay_to_measure: 0
+      
+    # Réplication cross-datacenter
+    cross_dc_replication:
+      enabled: true
+      async_insert_max_data_size: 1048576
+      async_insert_busy_timeout_ms: 200
+
+  # Sécurité avancée
+  security:
+    # Configuration des utilisateurs
+    users:
+      # Utilisateur applicatif principal
+      "${TENANT_ID}_analytics_writer":
+        password_sha256_hex: "${CLICKHOUSE_WRITER_PASSWORD_HASH}"
+        profile: "analytics_writer"
+        quota: "analytics_writer_quota"
+        databases:
+          "${TENANT_ID}_analytics": {}
+        allow_introspection: false
+        
+      # Utilisateur lecture seule pour dashboards
+      "${TENANT_ID}_analytics_reader":
+        password_sha256_hex: "${CLICKHOUSE_READER_PASSWORD_HASH}"
+        profile: "analytics_reader"
+        quota: "analytics_reader_quota"
+        databases:
+          "${TENANT_ID}_analytics": {}
+        readonly: 1
+        allow_introspection: false
+        
+      # Utilisateur pour maintenance
+      "${TENANT_ID}_analytics_admin":
+        password_sha256_hex: "${CLICKHOUSE_ADMIN_PASSWORD_HASH}"
+        profile: "analytics_admin"
+        quota: "analytics_admin_quota"
+        databases:
+          "${TENANT_ID}_analytics": {}
+        access_management: 1
+        
+    # Profils de performance par rôle
+    profiles:
+      analytics_writer:
+        max_memory_usage: 16000000000     # 16GB
+        max_execution_time: 1800          # 30 minutes
+        max_query_size: 1073741824        # 1GB
+        readonly: 0
+        
+      analytics_reader:
+        max_memory_usage: 8000000000      # 8GB
+        max_execution_time: 600           # 10 minutes
+        max_query_size: 268435456         # 256MB
+        readonly: 1
+        
+      analytics_admin:
+        max_memory_usage: 32000000000     # 32GB
+        max_execution_time: 7200          # 2 heures
+        max_query_size: 2147483648        # 2GB
+        readonly: 0
+        
+    # Quotas par utilisateur
+    quotas:
+      analytics_writer_quota:
+        interval:
+          duration: 3600
+          queries: 1000
+          query_selects: 500
+          query_inserts: 500
+          result_rows: 100000000
+          result_bytes: 107374182400
+          
+      analytics_reader_quota:
+        interval:
+          duration: 3600
+          queries: 500
+          query_selects: 500
+          query_inserts: 0
+          result_rows: 50000000
+          result_bytes: 53687091200
+
+  # Monitoring et observabilité
+  monitoring:
+    # Métriques système
+    system_metrics:
+      enabled: true
+      collection_interval: 30
+      retention_days: 30
+      
+    # Métriques de requêtes
+    query_metrics:
+      enabled: true
+      log_queries: true
+      log_query_threads: true
+      log_profile_events: true
+      sample_by_query_id: true
+      
+    # Intégration Prometheus
+    prometheus:
+      enabled: true
+      endpoint: "/metrics"
+      port: 9363
+      
+    # Alerting
+    alerts:
+      slow_queries_threshold: 30        # secondes
+      memory_usage_threshold: 0.8       # 80%
+      disk_usage_threshold: 0.85        # 85%
+      replication_lag_threshold: 300    # 5 minutes
+
+  # Backup et disaster recovery
+  backup:
+    # Configuration des sauvegardes
+    enabled: true
+    schedule: "0 2 * * *"               # Quotidien à 2h
+    retention_days: 30
+    compression: true
+    encryption: true
+    
+    # Destinations de backup
+    destinations:
+      primary:
+        type: s3
+        bucket: "${CLICKHOUSE_BACKUP_BUCKET}"
+        path: "backups/${TENANT_ID}/clickhouse/"
+        storage_class: "STANDARD_IA"
+        
+      secondary:
+        type: gcs
+        bucket: "${CLICKHOUSE_BACKUP_GCS_BUCKET}"
+        path: "backups/${TENANT_ID}/clickhouse/"
+        storage_class: "NEARLINE"
+        
+    # Backup incrémental
+    incremental:
+      enabled: true
+      frequency: "0 */6 * * *"          # Toutes les 6h
+      retention_days: 7
+      
+    # Tests de restauration
+    restore_tests:
+      enabled: true
+      frequency: "0 3 * * 0"            # Hebdomadaire le dimanche
+
+# Variables d'environnement
+environment_variables:
+  CLICKHOUSE_WRITER_PASSWORD: "${CLICKHOUSE_PROD_WRITER_PASSWORD}"
+  CLICKHOUSE_READER_PASSWORD: "${CLICKHOUSE_PROD_READER_PASSWORD}"
+  CLICKHOUSE_ADMIN_PASSWORD: "${CLICKHOUSE_PROD_ADMIN_PASSWORD}"
+  CLICKHOUSE_BACKUP_BUCKET: "spotify-ai-clickhouse-backups-prod"
+  CLICKHOUSE_BACKUP_GCS_BUCKET: "spotify-ai-clickhouse-backups-gcs-prod"
+  AWS_REGION: "us-east-1"
+
+# Métadonnées de configuration
+metadata:
+  environment: production
+  purpose: "Analytics en temps réel et data warehousing"
+  maintainer: "Analytics & Data Platform Team"
+  last_updated: "2025-07-16"
+  version: "2.1.0"
+  notes: |
+    Configuration ClickHouse optimisée pour:
+    - Analytics en temps réel sur événements d'écoute Spotify
+    - Requêtes OLAP complexes avec agrégations massives
+    - Stockage tiered avec lifecycle automatique
+    - Haute disponibilité avec réplication multi-datacenter
+    - Performance optimisée pour workloads analytics
+    
+    Sécurité enterprise avec chiffrement, ACL et audit complet.
+    Monitoring intégré avec alerting proactif.

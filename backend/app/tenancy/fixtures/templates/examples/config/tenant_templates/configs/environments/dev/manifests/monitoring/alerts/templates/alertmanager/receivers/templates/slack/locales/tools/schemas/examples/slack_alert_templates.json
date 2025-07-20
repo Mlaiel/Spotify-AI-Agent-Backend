@@ -1,0 +1,396 @@
+{
+  "title": "Templates d'Alertes Slack Multi-Tenant",
+  "description": "Collection de templates d'alertes Slack pour l'architecture multi-tenant",
+  "version": "2.0.0",
+  "templates": {
+    "critical_alert": {
+      "channel": "#alerts-critical",
+      "username": "Spotify AI Agent - Critical",
+      "icon_emoji": ":rotating_light:",
+      "attachments": [
+        {
+          "color": "#FF0000",
+          "pretext": "🚨 ALERTE CRITIQUE - Action Immédiate Requise",
+          "title": "{{alert.summary}}",
+          "title_link": "{{alert.generatorURL}}",
+          "text": "{{alert.description}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{alert.labels.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Environnement", 
+              "value": "{{alert.labels.environment}}",
+              "short": true
+            },
+            {
+              "title": "Sévérité",
+              "value": "{{alert.labels.severity}}",
+              "short": true
+            },
+            {
+              "title": "Instance",
+              "value": "{{alert.labels.instance}}",
+              "short": true
+            },
+            {
+              "title": "Service",
+              "value": "{{alert.labels.service}}",
+              "short": true
+            },
+            {
+              "title": "Début",
+              "value": "{{alert.startsAt | date}}",
+              "short": true
+            }
+          ],
+          "footer": "Spotify AI Agent Monitoring",
+          "footer_icon": "https://spotify-ai-agent.com/icons/monitoring.png",
+          "ts": "{{alert.startsAt | unixEpoch}}"
+        }
+      ],
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "*🚨 ALERTE CRITIQUE*\n\n*Tenant:* `{{alert.labels.tenant_id}}`\n*Service:* `{{alert.labels.service}}`\n*Environnement:* `{{alert.labels.environment}}`\n\n*Description:* {{alert.description}}"
+          }
+        },
+        {
+          "type": "actions",
+          "elements": [
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "🔍 Voir Grafana"
+              },
+              "url": "{{alert.grafanaURL}}",
+              "style": "primary"
+            },
+            {
+              "type": "button", 
+              "text": {
+                "type": "plain_text",
+                "text": "📊 Prometheus"
+              },
+              "url": "{{alert.generatorURL}}"
+            },
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "🔧 Runbook"
+              },
+              "url": "{{alert.runbookURL}}"
+            }
+          ]
+        }
+      ]
+    },
+    "warning_alert": {
+      "channel": "#alerts-warning",
+      "username": "Spotify AI Agent - Warning",
+      "icon_emoji": ":warning:",
+      "attachments": [
+        {
+          "color": "#FFA500",
+          "pretext": "⚠️ ALERTE D'AVERTISSEMENT",
+          "title": "{{alert.summary}}",
+          "title_link": "{{alert.generatorURL}}",
+          "text": "{{alert.description}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{alert.labels.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Service",
+              "value": "{{alert.labels.service}}",
+              "short": true
+            },
+            {
+              "title": "Métrique",
+              "value": "{{alert.labels.alertname}}",
+              "short": true
+            },
+            {
+              "title": "Valeur Actuelle",
+              "value": "{{alert.annotations.current_value}}",
+              "short": true
+            }
+          ],
+          "footer": "Monitoring Auto",
+          "ts": "{{alert.startsAt | unixEpoch}}"
+        }
+      ]
+    },
+    "info_alert": {
+      "channel": "#alerts-info",
+      "username": "Spotify AI Agent - Info",
+      "icon_emoji": ":information_source:",
+      "attachments": [
+        {
+          "color": "#0099CC",
+          "pretext": "ℹ️ NOTIFICATION D'INFORMATION",
+          "title": "{{alert.summary}}",
+          "text": "{{alert.description}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{alert.labels.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Type",
+              "value": "{{alert.labels.alert_type}}",
+              "short": true
+            }
+          ]
+        }
+      ]
+    },
+    "tenant_onboarding": {
+      "channel": "#tenant-ops",
+      "username": "Spotify AI Agent - Onboarding",
+      "icon_emoji": ":rocket:",
+      "attachments": [
+        {
+          "color": "#00AA00",
+          "pretext": "🚀 NOUVEAU TENANT CRÉÉ",
+          "title": "Tenant {{tenant.name}} configuré avec succès",
+          "fields": [
+            {
+              "title": "ID Tenant",
+              "value": "{{tenant.id}}",
+              "short": true
+            },
+            {
+              "title": "Tier d'Abonnement",
+              "value": "{{tenant.subscription_tier}}",
+              "short": true
+            },
+            {
+              "title": "Environnement",
+              "value": "{{tenant.environment}}",
+              "short": true
+            },
+            {
+              "title": "Ressources Allouées",
+              "value": "CPU: {{tenant.resources.cpu}}m\nRAM: {{tenant.resources.memory}}Mi\nStorage: {{tenant.resources.storage}}Gi",
+              "short": true
+            }
+          ],
+          "footer": "Tenant Management System"
+        }
+      ]
+    },
+    "performance_degradation": {
+      "channel": "#performance",
+      "username": "Spotify AI Agent - Performance",
+      "icon_emoji": ":chart_with_downwards_trend:",
+      "attachments": [
+        {
+          "color": "#FF6600",
+          "pretext": "📉 DÉGRADATION DES PERFORMANCES DÉTECTÉE",
+          "title": "Performance dégradée sur {{alert.labels.service}}",
+          "fields": [
+            {
+              "title": "Tenant Affecté",
+              "value": "{{alert.labels.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Métrique",
+              "value": "{{alert.labels.metric_name}}",
+              "short": true
+            },
+            {
+              "title": "Seuil",
+              "value": "{{alert.annotations.threshold}}",
+              "short": true
+            },
+            {
+              "title": "Valeur Actuelle",
+              "value": "{{alert.annotations.current_value}}",
+              "short": true
+            },
+            {
+              "title": "Impact Estimé",
+              "value": "{{alert.annotations.impact_level}}",
+              "short": true
+            },
+            {
+              "title": "Action Recommandée",
+              "value": "{{alert.annotations.recommended_action}}",
+              "short": false
+            }
+          ]
+        }
+      ]
+    },
+    "security_incident": {
+      "channel": "#security-alerts",
+      "username": "Spotify AI Agent - Security",
+      "icon_emoji": ":shield:",
+      "attachments": [
+        {
+          "color": "#CC0000",
+          "pretext": "🛡️ INCIDENT DE SÉCURITÉ DÉTECTÉ",
+          "title": "{{alert.labels.incident_type}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{alert.labels.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Type d'Incident",
+              "value": "{{alert.labels.security_type}}",
+              "short": true
+            },
+            {
+              "title": "Adresse IP Source",
+              "value": "{{alert.labels.source_ip}}",
+              "short": true
+            },
+            {
+              "title": "Utilisateur",
+              "value": "{{alert.labels.user_id}}",
+              "short": true
+            },
+            {
+              "title": "Timestamp",
+              "value": "{{alert.startsAt | date}}",
+              "short": true
+            },
+            {
+              "title": "Actions Automatiques",
+              "value": "{{alert.annotations.auto_actions}}",
+              "short": false
+            }
+          ],
+          "footer": "Security Operations Center"
+        }
+      ]
+    },
+    "data_backup_status": {
+      "channel": "#data-ops",
+      "username": "Spotify AI Agent - Backup",
+      "icon_emoji": ":floppy_disk:",
+      "attachments": [
+        {
+          "color": "{{#if backup.success}}#00AA00{{else}}#FF0000{{/if}}",
+          "pretext": "💾 STATUT DE SAUVEGARDE",
+          "title": "Sauvegarde {{backup.type}} - {{#if backup.success}}Succès{{else}}Échec{{/if}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{backup.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Type de Sauvegarde",
+              "value": "{{backup.type}}",
+              "short": true
+            },
+            {
+              "title": "Taille",
+              "value": "{{backup.size_gb}} GB",
+              "short": true
+            },
+            {
+              "title": "Durée",
+              "value": "{{backup.duration_minutes}} min",
+              "short": true
+            },
+            {
+              "title": "Localisation",
+              "value": "{{backup.location}}",
+              "short": false
+            }
+          ]
+        }
+      ]
+    },
+    "ai_model_performance": {
+      "channel": "#ai-ops",
+      "username": "Spotify AI Agent - AI Ops",
+      "icon_emoji": ":robot_face:",
+      "attachments": [
+        {
+          "color": "#9966CC",
+          "pretext": "🤖 PERFORMANCE DU MODÈLE IA",
+          "title": "Analyse de performance - {{model.name}}",
+          "fields": [
+            {
+              "title": "Tenant",
+              "value": "{{model.tenant_id}}",
+              "short": true
+            },
+            {
+              "title": "Modèle",
+              "value": "{{model.name}} v{{model.version}}",
+              "short": true
+            },
+            {
+              "title": "Précision",
+              "value": "{{model.metrics.accuracy}}%",
+              "short": true
+            },
+            {
+              "title": "Latence Moyenne",
+              "value": "{{model.metrics.avg_latency}}ms",
+              "short": true
+            },
+            {
+              "title": "Requêtes/min",
+              "value": "{{model.metrics.requests_per_minute}}",
+              "short": true
+            },
+            {
+              "title": "Utilisation GPU",
+              "value": "{{model.metrics.gpu_usage}}%",
+              "short": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "routing_rules": {
+    "severity_mapping": {
+      "critical": ["#alerts-critical", "#on-call"],
+      "warning": ["#alerts-warning"],
+      "info": ["#alerts-info"],
+      "security": ["#security-alerts", "#on-call"]
+    },
+    "tenant_specific": {
+      "enterprise": {
+        "channels": ["#enterprise-alerts"],
+        "escalation_enabled": true,
+        "response_time_sla": 15
+      },
+      "premium": {
+        "channels": ["#premium-alerts"],
+        "escalation_enabled": true,
+        "response_time_sla": 30
+      },
+      "free": {
+        "channels": ["#free-tier-alerts"],
+        "escalation_enabled": false,
+        "response_time_sla": 120
+      }
+    }
+  },
+  "message_formatting": {
+    "timestamp_format": "YYYY-MM-DD HH:mm:ss UTC",
+    "timezone": "UTC",
+    "date_locale": "fr-FR",
+    "number_format": "european"
+  }
+}

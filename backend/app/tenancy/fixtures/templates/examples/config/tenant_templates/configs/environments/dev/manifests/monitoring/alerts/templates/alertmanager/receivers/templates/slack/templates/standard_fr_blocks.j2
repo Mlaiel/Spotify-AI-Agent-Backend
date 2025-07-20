@@ -1,0 +1,259 @@
+{
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "{{ get_severity_emoji(alert.severity) }} 🚨 ALERTE {{ alert.severity.upper() }} - {{ alert.context.service_name }}",
+                "emoji": true
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*{{ alert.title }}*\n{{ alert.description | truncate_smart(300) }}"
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🎛️ Voir Détails",
+                    "emoji": true
+                },
+                "style": "{% if alert.severity in ['critical', 'emergency'] %}danger{% else %}primary{% endif %}",
+                "action_id": "view_alert_details",
+                "url": "{{ dashboard_url }}/alerts/{{ alert.alert_id }}",
+                "value": "{{ alert.alert_id }}"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*🎯 Service:*\n`{{ alert.context.service_name }}`"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*🌍 Environnement:*\n{{ environment | upper }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*🔧 Composant:*\n{{ alert.context.component }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*⏰ Déclenché:*\n{{ format_date(alert.created_at, 'short') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*⚡ Sévérité:*\n{{ alert.severity | upper }} ({{ alert.priority_score | default(0) }}/10)"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*⏱️ Durée:*\n{{ alert.duration | duration_format | default('Nouveau') }}"
+                }
+            ]
+        },
+        {% if alert.context.instance_id %}
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*🖥️ Instance:*\n`{{ alert.context.instance_id }}`"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*🏗️ Cluster:*\n`{{ alert.context.cluster_name | default('défaut') }}`"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*🌐 Région:*\n{{ alert.context.region | default('global') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*📦 Namespace:*\n{{ alert.context.namespace | default('défaut') }}"
+                }
+            ]
+        },
+        {% endif %}
+        {% if alert.metrics %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*📊 Métriques Clés:*\n{% for metric_name, metric_value in alert.metrics.items() %}• *{{ metric_name | title }}:* {{ metric_value }}\n{% endfor %}"
+            }
+        },
+        {% endif %}
+        {% if alert.business_impact %}
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*💼 Impact Business:*\n{{ alert.business_impact.level | title }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*👥 Utilisateurs Affectés:*\n{{ alert.business_impact.affected_users | default('Inconnu') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*📈 SLA:*\n{{ alert.business_impact.sla_breach | ternary('⚠️ Violation', '✅ OK') }}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*💰 Coût Estimé:*\n{{ alert.business_impact.estimated_cost | default('En évaluation') }}"
+                }
+            ]
+        },
+        {% endif %}
+        {% if alert.ai_insights and alert.ai_insights.recommended_actions %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🤖 Recommandations IA (Auto-générées):*\n{% for action in alert.ai_insights.recommended_actions[:4] %}{{ loop.index }}. {{ action }}\n{% endfor %}"
+            }
+        },
+        {% endif %}
+        {% if alert.ai_insights and alert.ai_insights.root_cause_analysis %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🔍 Analyse Cause Racine:*\n{{ alert.ai_insights.root_cause_analysis | truncate(200) }}"
+            }
+        },
+        {% endif %}
+        {% if alert.related_alerts %}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*🔗 Alertes Liées ({{ alert.related_alerts | length }}):*\n{% for related in alert.related_alerts[:3] %}• {{ related.service }} - {{ related.title }}\n{% endfor %}{% if alert.related_alerts | length > 3 %}\n... et {{ alert.related_alerts | length - 3 }} de plus{% endif %}"
+            }
+        },
+        {% endif %}
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "✅ Acquitter",
+                        "emoji": true
+                    },
+                    "style": "primary",
+                    "action_id": "acknowledge_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔧 Résoudre",
+                        "emoji": true
+                    },
+                    "style": "primary", 
+                    "action_id": "resolve_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {% if alert.severity in ['critical', 'emergency'] %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔥 Escalader",
+                        "emoji": true
+                    },
+                    "style": "danger",
+                    "action_id": "escalate_alert",
+                    "value": "{{ alert.alert_id }}"
+                },
+                {% endif %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📊 Métriques",
+                        "emoji": true
+                    },
+                    "action_id": "view_metrics",
+                    "url": "{{ metrics_url }}/d/{{ alert.context.service_name }}",
+                    "value": "{{ alert.alert_id }}"
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📋 Logs Service",
+                        "emoji": true
+                    },
+                    "url": "{{ logs_url }}/app/{{ alert.context.service_name }}"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔧 Infrastructure",
+                        "emoji": true
+                    },
+                    "url": "{{ dashboard_url }}/infrastructure/{{ alert.context.cluster_name }}"
+                },
+                {% if alert.context.trace_id %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔍 Tracing",
+                        "emoji": true
+                    },
+                    "url": "{{ tracing_url }}/trace/{{ alert.context.trace_id }}"
+                },
+                {% endif %}
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📚 Runbook",
+                        "emoji": true
+                    },
+                    "url": "{{ runbook_url }}/{{ alert.context.service_name }}"
+                }
+            ]
+        },
+        {% if alert.escalation %}
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "⚡ *Escalade automatique dans:* {{ alert.escalation.escalation_time | default('15 minutes') }} | *Astreinte:* @{{ alert.escalation.primary_oncall | default('équipe-devops') }} | *Backup:* @{{ alert.escalation.secondary_oncall | default('équipe-backup') }}"
+                }
+            ]
+        },
+        {% endif %}
+        {
+            "type": "divider"
+        },
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "🎵 *Spotify AI Agent Monitoring* | ID: `{{ alert.alert_id }}` | Corrélation: `{{ alert.correlation_id | default('N/A') }}` | Tenant: `{{ alert.tenant_id | default('système') }}` | {{ format_date(now, 'iso') }}"
+                }
+            ]
+        }
+    ]
+}

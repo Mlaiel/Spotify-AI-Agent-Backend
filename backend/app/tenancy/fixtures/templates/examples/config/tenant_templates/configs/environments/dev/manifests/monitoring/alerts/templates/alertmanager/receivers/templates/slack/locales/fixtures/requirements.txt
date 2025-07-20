@@ -1,0 +1,190 @@
+# Dépendances Python pour le Module Fixtures Slack
+# ================================================
+# 
+# Liste complète des dépendances requises pour le système de fixtures
+# d'alertes Slack dans l'architecture multi-tenant Spotify AI Agent.
+# 
+# Auteur: Fahed Mlaiel - Lead Developer Achiri
+# Version: 2.5.0
+
+# === Core Dependencies ===
+# Framework web asynchrone
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Base de données asynchrone
+asyncpg>=0.29.0
+alembic>=1.12.0
+
+# Cache et session Redis
+aioredis>=2.0.1
+redis>=5.0.0
+
+# === Template Engine ===
+# Moteur de templates avancé
+jinja2>=3.1.2
+markupsafe>=2.1.3
+
+# === Validation et Sérialisation ===
+# Modèles de données et validation
+pydantic[email]>=2.4.0
+jsonschema>=4.19.0
+
+# === Sécurité et Chiffrement ===
+# Chiffrement et hachage
+cryptography>=41.0.0
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+
+# === Monitoring et Observabilité ===
+# Métriques Prometheus
+prometheus-client>=0.18.0
+
+# Tracing distribué
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+opentelemetry-instrumentation-fastapi>=0.41b0
+opentelemetry-instrumentation-asyncpg>=0.41b0
+opentelemetry-instrumentation-redis>=0.41b0
+opentelemetry-exporter-prometheus>=1.12.0
+
+# === Logging et Configuration ===
+# Logging structuré
+structlog>=23.1.0
+python-json-logger>=2.0.7
+
+# Configuration
+python-decouple>=3.8
+pyyaml>=6.0.1
+toml>=0.10.2
+
+# === Clients HTTP ===
+# Client HTTP asynchrone
+aiohttp>=3.8.6
+httpx>=0.25.0
+
+# === Utilitaires ===
+# Manipulation de dates
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Expressions régulières avancées
+regex>=2023.8.8
+
+# UUID et identifiants
+shortuuid>=1.0.11
+
+# === Testing (Développement) ===
+# Framework de tests
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+
+# Tests de performance
+pytest-benchmark>=4.0.0
+
+# Tests d'intégration
+pytest-docker>=2.0.0
+
+# === Développement et Qualité ===
+# Formatage de code
+black>=23.9.0
+isort>=5.12.0
+
+# Linting et analyse statique
+ruff>=0.0.290
+mypy>=1.5.0
+
+# Vérification de sécurité
+bandit>=1.7.5
+safety>=2.3.0
+
+# === Documentation ===
+# Génération de documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.4.0
+mkdocs-mermaid2-plugin>=1.1.0
+
+# === Production ===
+# Serveur WSGI/ASGI de production
+gunicorn>=21.2.0
+
+# Monitoring système
+psutil>=5.9.0
+
+# === Slack SDK ===
+# SDK officiel Slack
+slack-sdk>=3.23.0
+slack-bolt>=1.18.0
+
+# === Outils de données ===
+# Manipulation de données
+pandas>=2.1.0
+numpy>=1.25.0
+
+# === CLI et Scripts ===
+# Interface en ligne de commande
+click>=8.1.0
+typer>=0.9.0
+rich>=13.6.0
+
+# === Compatibilité et Polyfills ===
+# Compatibilité Python
+typing-extensions>=4.8.0
+backports.zoneinfo>=0.2.1; python_version<"3.9"
+
+# === Optimisation ===
+# Sérialisation rapide
+orjson>=3.9.0
+
+# Compression
+lz4>=4.3.0
+zstandard>=0.22.0
+
+# === Sécurité supplémentaire ===
+# Validation d'entrées
+validators>=0.22.0
+bleach>=6.1.0
+
+# === Base de données additionnelle ===
+# Support SQLAlchemy (si nécessaire)
+sqlalchemy[asyncio]>=2.0.0
+
+# === Notifications alternatives ===
+# Support d'autres canaux de notification
+requests>=2.31.0
+email-validator>=2.1.0
+
+# === Métriques avancées ===
+# Métriques système
+py-cpuinfo>=9.0.0
+
+# === Cache avancé ===
+# Cache LRU avancé
+cachetools>=5.3.0
+
+# === Gestion des erreurs ===
+# Reporting d'erreurs
+sentry-sdk>=1.32.0
+
+# === API Documentation ===
+# Documentation API automatique
+sphinx>=7.2.0
+sphinx-rtd-theme>=1.3.0
+
+# === Outils de développement ===
+# Debugging avancé
+ipdb>=0.13.0
+rich-click>=1.7.0
+
+# === Requirements pour différents environnements ===
+
+# Développement local
+# pip install -r requirements.txt -r requirements-dev.txt
+
+# Staging
+# pip install -r requirements.txt --no-dev
+
+# Production
+# pip install -r requirements.txt --no-dev --only-binary=all

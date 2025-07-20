@@ -1,0 +1,54 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {"type": "keyword"},
+      "name": {
+        "type": "text",
+        "fields": {
+          "raw": {"type": "keyword"},
+          "suggest": {"type": "completion"}
+        },
+        "analyzer": "autocomplete_analyzer"
+      },
+      "owner_id": {"type": "keyword"},
+      "track_ids": {"type": "keyword"},
+      "collaborative": {"type": "boolean"},
+      "followers": {"type": "integer"},
+      "analytics": {"type": "object", "enabled": true},
+      "tags": {"type": "keyword"},
+      "visibility": {"type": "keyword"},
+      "version": {"type": "integer"},
+      "audit": {"type": "nested", "properties": {
+        "action": {"type": "keyword"},
+        "user_id": {"type": "keyword"},
+        "timestamp": {"type": "date"}
+      }},
+      "created_at": {"type": "date"},
+      "updated_at": {"type": "date"}
+    }
+  },
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "autocomplete_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "edge_ngram"]
+        },
+        "default": {"type": "standard"}
+      },
+      "filter": {
+        "edge_ngram": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    },
+    "lifecycle": {
+      "name": "playlists_policy"
+    }
+  }
+}

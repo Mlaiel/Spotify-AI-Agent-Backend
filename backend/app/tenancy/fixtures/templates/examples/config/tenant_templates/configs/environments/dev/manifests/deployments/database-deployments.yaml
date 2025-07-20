@@ -1,0 +1,254 @@
+# Database Deployment (PostgreSQL)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-primary
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "15.4"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Primary PostgreSQL database for Spotify AI Agent"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-primary
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: postgresql-primary
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/component: database
+        environment: development
+        version: "15.4"
+    spec:
+      serviceAccountName: postgresql
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: postgresql
+        image: postgres:15.4-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          name: postgresql
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: "spotify_ai_agent_dev"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: password
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        - name: POSTGRES_INITDB_ARGS
+          value: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+            ephemeral-storage: "5Gi"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        - name: postgresql-config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+          readOnly: true
+        - name: postgresql-initdb
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 999
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: postgresql-data
+        persistentVolumeClaim:
+          claimName: postgresql-data-pvc
+      - name: postgresql-config
+        configMap:
+          name: postgresql-config
+          defaultMode: 0644
+      - name: postgresql-initdb
+        configMap:
+          name: postgresql-initdb
+          defaultMode: 0755
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 3
+
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-primary
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "7.2"
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Primary Redis cache for Spotify AI Agent"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-primary
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: redis-primary
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/component: cache
+        environment: development
+        version: "7.2"
+    spec:
+      serviceAccountName: redis
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-credentials
+              key: password
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+            ephemeral-storage: "500Mi"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+            ephemeral-storage: "2Gi"
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - --no-auth-warning
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - --no-auth-warning
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 999
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-data-pvc
+      - name: redis-config
+        configMap:
+          name: redis-config
+          defaultMode: 0644
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 3

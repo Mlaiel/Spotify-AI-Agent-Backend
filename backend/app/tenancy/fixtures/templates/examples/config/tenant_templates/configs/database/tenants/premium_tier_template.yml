@@ -1,0 +1,662 @@
+# Premium Tier Tenant Configuration
+# =================================
+# Advanced configuration for premium tier tenants with enhanced features
+
+tenant_config:
+  # Premium tenant information
+  tenant_info:
+    tenant_id: "${TENANT_ID}"
+    tenant_name: "${TENANT_NAME}"
+    tenant_type: "premium"
+    
+    # Enhanced metadata
+    metadata:
+      created_at: "${TENANT_CREATED_AT}"
+      updated_at: "${TENANT_UPDATED_AT}"
+      contact_email: "${TENANT_CONTACT_EMAIL}"
+      technical_contact: "${TENANT_TECHNICAL_CONTACT}"
+      region: "${TENANT_REGION}"
+      timezone: "${TENANT_TIMEZONE}"
+      
+    # Premium subscription
+    subscription:
+      plan: "premium"
+      billing_cycle: "${BILLING_CYCLE:-monthly}"
+      max_users: 10000
+      max_storage_gb: 1000
+      max_api_calls_per_month: 10000000
+      priority_support: true
+      sla_tier: "premium"
+      
+    # Service level agreement
+    sla:
+      uptime_guarantee: "99.9%"
+      response_time_guarantee: "< 200ms p95"
+      support_response_time: "< 4 hours"
+      
+  # Enhanced database allocation
+  databases:
+    # High-performance PostgreSQL
+    postgresql:
+      enabled: true
+      deployment_type: "dedicated_cluster"
+      database_name: "${TENANT_ID}_postgresql"
+      
+      # Multiple schemas for organization
+      schemas:
+        tenant_data: "${TENANT_ID}_data"
+        tenant_analytics: "${TENANT_ID}_analytics"
+        tenant_ml: "${TENANT_ID}_ml"
+        tenant_audit: "${TENANT_ID}_audit"
+        tenant_reporting: "${TENANT_ID}_reporting"
+        
+      # Enhanced resources
+      resources:
+        cpu_cores: 8
+        memory_gb: 32
+        storage_gb: 1000
+        max_connections: 500
+        iops: 5000
+        
+      # High availability
+      high_availability:
+        enabled: true
+        replication:
+          type: "streaming"
+          replicas: 2
+        failover:
+          automatic: true
+          rpo_seconds: 30
+          rto_seconds: 120
+          
+      # Advanced connection pooling
+      connection_pool:
+        enabled: true
+        pool_size: 100
+        max_overflow: 50
+        pool_recycle: 3600
+        
+      # Performance optimization
+      performance:
+        shared_preload_libraries: ["pg_stat_statements", "auto_explain"]
+        max_wal_size: "4GB"
+        checkpoint_completion_target: 0.9
+        effective_cache_size: "24GB"
+        work_mem: "256MB"
+        maintenance_work_mem: "1GB"
+        
+    # High-performance MongoDB
+    mongodb:
+      enabled: true
+      deployment_type: "dedicated_replica_set"
+      database_name: "${TENANT_ID}_mongodb"
+      
+      # Comprehensive collections
+      collections:
+        users: "${TENANT_ID}_users"
+        tracks: "${TENANT_ID}_tracks"
+        albums: "${TENANT_ID}_albums"
+        artists: "${TENANT_ID}_artists"
+        playlists: "${TENANT_ID}_playlists"
+        listening_history: "${TENANT_ID}_listening_history"
+        recommendations: "${TENANT_ID}_recommendations"
+        analytics: "${TENANT_ID}_analytics"
+        ml_models: "${TENANT_ID}_ml_models"
+        user_preferences: "${TENANT_ID}_user_preferences"
+        
+      # Sharding enabled for large datasets
+      sharding:
+        enabled: true
+        shard_key: "user_id"
+        chunks_per_shard: 32
+        
+      resources:
+        cpu_cores: 8
+        memory_gb: 32
+        storage_gb: 1000
+        
+      # Enhanced replica set
+      replica_set:
+        enabled: true
+        members: 5
+        arbiter: true
+        read_preference: "primaryPreferred"
+        write_concern: "majority"
+        
+      # Performance tuning
+      performance:
+        cache_size_gb: 16
+        journal_enabled: true
+        compression: "snappy"
+        
+    # Enhanced Redis cluster
+    redis:
+      enabled: true
+      deployment_type: "cluster"
+      
+      # Multiple databases for different purposes
+      database_mapping:
+        cache: 0
+        sessions: 1
+        rate_limiting: 2
+        analytics: 3
+        ml_cache: 4
+        real_time: 5
+        
+      # Advanced namespacing
+      namespaces:
+        cache: "cache:${TENANT_ID}:"
+        session: "session:${TENANT_ID}:"
+        analytics: "analytics:${TENANT_ID}:"
+        rate_limit: "rate_limit:${TENANT_ID}:"
+        ml_cache: "ml_cache:${TENANT_ID}:"
+        real_time: "real_time:${TENANT_ID}:"
+        
+      resources:
+        memory_gb: 4
+        max_connections: 5000
+        
+      # Clustering for high availability
+      cluster:
+        enabled: true
+        nodes: 3
+        replicas_per_node: 1
+        
+      # Advanced persistence
+      persistence:
+        enabled: true
+        strategy: "rdb_aof"
+        save_intervals: ["900 1", "300 10", "60 10000"]
+        
+    # ClickHouse for analytics
+    clickhouse:
+      enabled: true
+      deployment_type: "dedicated"
+      database_name: "${TENANT_ID}_analytics"
+      
+      # Analytics tables
+      tables:
+        user_events: "user_events_${TENANT_ID}"
+        listening_sessions: "listening_sessions_${TENANT_ID}"
+        recommendation_events: "recommendation_events_${TENANT_ID}"
+        performance_metrics: "performance_metrics_${TENANT_ID}"
+        
+      resources:
+        cpu_cores: 4
+        memory_gb: 16
+        storage_gb: 500
+        
+      # Performance optimization
+      performance:
+        max_memory_usage: "12GB"
+        max_threads: 4
+        
+    # Enhanced search with Elasticsearch
+    elasticsearch:
+      enabled: true
+      deployment_type: "dedicated"
+      
+      # Search indices
+      indices:
+        tracks: "tracks_${TENANT_ID}"
+        artists: "artists_${TENANT_ID}"
+        albums: "albums_${TENANT_ID}"
+        playlists: "playlists_${TENANT_ID}"
+        
+      resources:
+        cpu_cores: 4
+        memory_gb: 16
+        storage_gb: 200
+        
+      # Cluster configuration
+      cluster:
+        master_nodes: 1
+        data_nodes: 2
+        
+    # TimescaleDB disabled for premium (enterprise feature)
+    timescaledb:
+      enabled: false
+      
+  # Enhanced security
+  security:
+    # Advanced encryption
+    encryption:
+      enabled: true
+      key_management: "managed"
+      key_rotation: "quarterly"
+      algorithm: "AES-256-GCM"
+      
+      # Per-service encryption
+      per_service:
+        postgresql: true
+        mongodb: true
+        redis: true
+        clickhouse: true
+        backup: true
+        
+    # Advanced access control
+    access_control:
+      # Multiple admin levels
+      admin_users:
+        - username: "${TENANT_ID}_super_admin"
+          password: "${TENANT_SUPER_ADMIN_PASSWORD}"
+          roles: ["tenant_super_admin"]
+          mfa_required: true
+          
+        - username: "${TENANT_ID}_db_admin"
+          password: "${TENANT_DB_ADMIN_PASSWORD}"
+          roles: ["tenant_db_admin"]
+          mfa_required: false
+          
+      # Service accounts
+      service_accounts:
+        - username: "${TENANT_ID}_app_primary"
+          password: "${TENANT_APP_PRIMARY_PASSWORD}"
+          roles: ["tenant_app_primary"]
+          
+        - username: "${TENANT_ID}_app_readonly"
+          password: "${TENANT_APP_READONLY_PASSWORD}"
+          roles: ["tenant_app_readonly"]
+          
+        - username: "${TENANT_ID}_analytics"
+          password: "${TENANT_ANALYTICS_PASSWORD}"
+          roles: ["tenant_analytics"]
+          
+      # Role-based access control
+      rbac:
+        enabled: true
+        policies:
+          - name: "data_analyst"
+            permissions: ["read_analytics", "read_clickhouse"]
+          - name: "developer"
+            permissions: ["read_app_data", "write_app_data"]
+          - name: "admin"
+            permissions: ["full_access"]
+            
+    # Enhanced network security
+    network:
+      vpc_isolation: false
+      allowed_ips: ${TENANT_ALLOWED_IPS}
+      security_groups: ${TENANT_SECURITY_GROUPS}
+      
+    # Advanced SSL/TLS
+    ssl:
+      enabled: true
+      cert_type: "premium"
+      cert_authority: "letsencrypt"
+      
+    # Security monitoring
+    security_monitoring:
+      enabled: true
+      intrusion_detection: false
+      anomaly_detection: true
+      
+  # Enhanced backup and recovery
+  backup:
+    enabled: true
+    strategy: "premium"
+    
+    # Frequent backup schedule
+    schedule:
+      full_backup: "0 1 * * 0"  # Weekly full backup
+      incremental_backup: "0 */6 * * *"  # Every 6 hours
+      transaction_log_backup: "*/30 * * * *"  # Every 30 minutes
+      
+    # Multi-region backup
+    storage:
+      primary_region: "${BACKUP_PRIMARY_REGION}"
+      secondary_region: "${BACKUP_SECONDARY_REGION}"
+      encryption: true
+      retention_days: 90
+      
+    # Point-in-time recovery
+    point_in_time_recovery:
+      enabled: true
+      retention_period: "7 days"
+      
+    # Basic disaster recovery
+    disaster_recovery:
+      enabled: false  # Enterprise feature
+      
+  # Enhanced monitoring
+  monitoring:
+    enabled: true
+    level: "premium"
+    
+    # Comprehensive metrics
+    metrics:
+      collection_interval: 30
+      retention_days: 90
+      
+      # Enhanced metrics
+      enabled_metrics:
+        - "database_performance"
+        - "resource_usage"
+        - "connection_metrics"
+        - "query_performance"
+        - "cache_performance"
+        - "replication_lag"
+        - "backup_status"
+        
+    # Advanced alerting
+    alerts:
+      enabled: true
+      escalation_levels: 2
+      
+      channels:
+        email: "${TENANT_ALERT_EMAIL}"
+        slack: "${TENANT_SLACK_WEBHOOK}"
+        webhook: "${TENANT_WEBHOOK_URL}"
+        
+      # Comprehensive alert rules
+      rules:
+        - name: "high_cpu_usage"
+          threshold: 75
+          duration: "3m"
+          
+        - name: "high_memory_usage"
+          threshold: 80
+          duration: "3m"
+          
+        - name: "connection_limit_reached"
+          threshold: 85
+          duration: "1m"
+          
+        - name: "replication_lag"
+          threshold: 60
+          duration: "2m"
+          
+        - name: "backup_failure"
+          threshold: 1
+          duration: "immediate"
+          
+    # Performance monitoring
+    performance:
+      apm_enabled: true
+      slow_query_threshold: 500  # 500ms
+      resource_usage_alerts: true
+      
+    # Log management
+    logging:
+      centralized: true
+      retention: "90 days"
+      
+  # Enhanced compliance
+  compliance:
+    # Advanced data governance
+    data_governance:
+      classification: true
+      lineage: true
+      retention: true
+      privacy_controls: true
+      
+    # Regulatory requirements
+    regulations: ${COMPLIANCE_REGULATIONS:-["GDPR", "CCPA"]}
+    
+    # Enhanced auditing
+    auditing:
+      enabled: true
+      level: "enhanced"
+      retention_period: "3 years"
+      
+    # Privacy controls
+    privacy:
+      data_minimization: true
+      consent_management: true
+      right_to_erasure: true
+      
+  # Enhanced performance
+  performance_tier:
+    # High resource limits
+    limits:
+      cpu_limit: "8000m"
+      memory_limit: "32Gi"
+      storage_limit: "1Ti"
+      connection_limit: 500
+      
+    # High priority
+    qos:
+      priority: "high"
+      guaranteed_iops: 5000
+      burst_iops: 10000
+      
+    # Enhanced rate limits
+    rate_limits:
+      api_calls_per_minute: 5000
+      api_calls_per_hour: 100000
+      api_calls_per_day: 1000000
+      api_calls_per_month: 10000000
+      
+  # Enhanced integrations
+  integrations:
+    # Advanced Spotify API
+    spotify_api:
+      client_id: "${SPOTIFY_CLIENT_ID}"
+      client_secret: "${SPOTIFY_CLIENT_SECRET}"
+      redirect_uri: "${SPOTIFY_REDIRECT_URI}"
+      premium_features: true
+      rate_limit_increase: true
+      
+    # Advanced analytics
+    analytics:
+      enabled: true
+      data_warehouse: "clickhouse"
+      business_intelligence: true
+      real_time_analytics: true
+      retention_days: 365
+      
+    # Basic ML services
+    ml_services:
+      enabled: false  # Enterprise feature
+      
+    # API management
+    api_management:
+      gateway: true
+      rate_limiting: "advanced"
+      analytics: true
+      
+  # Environment-specific overrides
+  environment_overrides:
+    development:
+      # Development-specific settings
+      security:
+        ssl:
+          enabled: false
+        encryption:
+          enabled: false
+      monitoring:
+        level: "development"
+      resources:
+        scale_factor: 0.3
+        
+    staging:
+      # Production-like with reduced scale
+      resources:
+        scale_factor: 0.5
+      backup:
+        retention_days: 14
+        
+    production:
+      # Full premium configuration
+      security:
+        ssl:
+          enabled: true
+        encryption:
+          enabled: true
+      monitoring:
+        level: "premium"
+      backup:
+        enabled: true
+
+# Premium tier specific configurations
+premium_tier_config:
+  # Enhanced feature set
+  features:
+    advanced_analytics: true
+    ml_recommendations: false  # Enterprise feature
+    priority_support: true
+    custom_integrations: true
+    data_export: true
+    api_access: "premium"
+    real_time_sync: true
+    custom_dashboards: true
+    
+  # Priority support
+  support:
+    type: "priority"
+    response_time: "4 hours"
+    channels: ["email", "chat", "phone", "documentation"]
+    priority: "high"
+    dedicated_support: false
+    
+  # Extended data retention
+  data_retention:
+    user_data: "5 years"
+    analytics_data: "1 year"
+    logs: "90 days"
+    backup_data: "90 days"
+    
+  # Advanced resource scaling
+  auto_scaling:
+    enabled: true
+    min_resources: 0.5
+    max_resources: 4.0
+    scale_up_threshold: 70
+    scale_down_threshold: 30
+    predictive_scaling: true
+    
+  # Enhanced business continuity
+  business_continuity:
+    backup_sla: "6 hours"
+    recovery_sla: "2 hours"
+    uptime_target: "99.9%"
+
+# Enhanced resource quotas
+resource_quotas:
+  # Database quotas
+  postgresql:
+    max_database_size: "1TB"
+    max_connections: 500
+    max_queries_per_minute: 50000
+    max_tables: 5000
+    max_indexes: 25000
+    
+  mongodb:
+    max_database_size: "1TB"
+    max_collections: 500
+    max_documents_per_collection: 10000000
+    max_operations_per_minute: 50000
+    
+  redis:
+    max_memory: "4GB"
+    max_keys: 10000000
+    max_operations_per_minute: 50000
+    
+  clickhouse:
+    max_database_size: "500GB"
+    max_tables: 100
+    max_queries_per_minute: 10000
+    
+  elasticsearch:
+    max_indices: 50
+    max_documents_per_index: 10000000
+    max_queries_per_minute: 10000
+    
+  # API quotas
+  api:
+    max_calls_per_minute: 5000
+    max_calls_per_hour: 100000
+    max_calls_per_day: 1000000
+    max_calls_per_month: 10000000
+    max_concurrent_requests: 200
+    
+  # Storage quotas
+  storage:
+    max_file_size: "1GB"
+    max_total_storage: "1TB"
+    max_files: 100000
+
+# Advanced monitoring configuration
+monitoring_config:
+  # Comprehensive health checks
+  health_checks:
+    enabled: true
+    interval: 30
+    timeout: 10
+    
+    checks:
+      - name: "database_connectivity"
+        type: "connection"
+        targets: ["postgresql", "mongodb", "redis", "clickhouse", "elasticsearch"]
+        
+      - name: "api_responsiveness"
+        type: "http"
+        endpoint: "/health"
+        expected_status: 200
+        
+      - name: "resource_usage"
+        type: "metrics"
+        thresholds:
+          cpu: 75
+          memory: 80
+          storage: 85
+          
+      - name: "replication_health"
+        type: "replication"
+        max_lag_seconds: 60
+        
+  # Enhanced performance metrics
+  performance_metrics:
+    - name: "response_time"
+      target: "< 200ms p95"
+      
+    - name: "throughput"
+      target: "> 1000 rps"
+      
+    - name: "error_rate"
+      target: "< 0.1%"
+      
+    - name: "uptime"
+      target: "> 99.9%"
+      
+    - name: "cache_hit_ratio"
+      target: "> 95%"
+
+# Enhanced security configuration
+security_config:
+  # Strong authentication
+  authentication:
+    methods: ["password", "api_key", "oauth2"]
+    mfa_required: true
+    password_policy:
+      min_length: 16
+      require_special_chars: true
+      require_numbers: true
+      require_uppercase: true
+      expiry_days: 60
+      
+  # Advanced authorization
+  authorization:
+    rbac_enabled: true
+    attribute_based_access: true
+    default_role: "user"
+    
+  # Comprehensive audit logging
+  audit_logging:
+    enabled: true
+    events:
+      - "login"
+      - "logout"
+      - "data_access"
+      - "data_modification"
+      - "admin_actions"
+      - "api_calls"
+      - "configuration_changes"
+    retention: "3 years"
+    
+  # Enhanced data protection
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    key_rotation_days: 30
+    field_level_encryption: true

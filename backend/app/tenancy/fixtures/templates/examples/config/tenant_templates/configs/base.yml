@@ -1,0 +1,710 @@
+# Base Configuration Template for Enterprise Tenant Templates
+# =================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced configuration architecture with AI optimization
+# - Senior Backend Developer: Python/FastAPI/Django enterprise configuration patterns
+# - ML Engineer: TensorFlow/PyTorch/Hugging Face model deployment configurations
+# - DBA & Data Engineer: PostgreSQL/Redis/MongoDB advanced database configurations
+# - Backend Security Specialist: Enterprise-level security configuration management
+# - Microservices Architect: Service mesh and distributed systems configuration
+
+# ==========================================
+# BASE APPLICATION CONFIGURATION
+# ==========================================
+
+app:
+  name: "spotify-ai-agent"
+  version: "2.0.0"
+  environment: "${ENVIRONMENT:-development}"
+  debug: ${DEBUG:-false}
+  log_level: "${LOG_LEVEL:-INFO}"
+  
+  # Application URLs and Networking
+  urls:
+    frontend: "${FRONTEND_URL:-http://localhost:3000}"
+    backend: "${BACKEND_URL:-http://localhost:8000}"
+    api_base: "${API_BASE_URL:-/api/v1}"
+    docs: "${DOCS_URL:-/docs}"
+    health: "${HEALTH_URL:-/health}"
+  
+  # CORS Configuration
+  cors:
+    allow_origins: 
+      - "${FRONTEND_URL:-http://localhost:3000}"
+      - "https://*.${DOMAIN:-localhost}"
+    allow_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+    allow_headers: ["*"]
+    allow_credentials: true
+    max_age: 3600
+  
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    default_limit: "1000/hour"
+    burst_limit: "100/minute"
+    key_function: "get_user_id"
+    storage: "redis"
+  
+  # Feature Flags
+  features:
+    ai_recommendations: true
+    playlist_generation: true
+    music_analysis: true
+    social_features: true
+    real_time_sync: true
+    offline_mode: false
+    experimental_features: false
+
+# ==========================================
+# DATABASE CONFIGURATION
+# ==========================================
+
+database:
+  # Primary Database (PostgreSQL)
+  primary:
+    engine: "postgresql"
+    host: "${DB_HOST:-localhost}"
+    port: ${DB_PORT:-5432}
+    name: "${DB_NAME:-spotify_ai_agent}"
+    user: "${DB_USER:-postgres}"
+    password: "${DB_PASSWORD:-postgres}"
+    
+    # Connection Pool Settings
+    pool:
+      min_size: 5
+      max_size: 20
+      max_overflow: 30
+      pool_timeout: 30
+      pool_recycle: 3600
+      pool_pre_ping: true
+    
+    # SSL Configuration
+    ssl:
+      enabled: ${DB_SSL_ENABLED:-false}
+      mode: "${DB_SSL_MODE:-prefer}"
+      cert_file: "${DB_SSL_CERT:-}"
+      key_file: "${DB_SSL_KEY:-}"
+      ca_file: "${DB_SSL_CA:-}"
+    
+    # Performance Settings
+    performance:
+      statement_timeout: 30000
+      lock_timeout: 10000
+      idle_in_transaction_session_timeout: 60000
+      log_min_duration_statement: 1000
+  
+  # Redis Cache Configuration
+  redis:
+    host: "${REDIS_HOST:-localhost}"
+    port: ${REDIS_PORT:-6379}
+    password: "${REDIS_PASSWORD:-}"
+    db: ${REDIS_DB:-0}
+    
+    # Connection Settings
+    connection:
+      encoding: "utf-8"
+      decode_responses: true
+      socket_timeout: 5
+      socket_connect_timeout: 5
+      socket_keepalive: true
+      socket_keepalive_options: {}
+      health_check_interval: 30
+    
+    # Pool Settings
+    pool:
+      max_connections: 20
+      retry_on_timeout: true
+      retry_on_error: ["ConnectionError", "TimeoutError"]
+    
+    # Clustering (for production)
+    cluster:
+      enabled: false
+      nodes: []
+      skip_full_coverage_check: false
+      readonly_mode: false
+      decode_responses: true
+  
+  # MongoDB (for analytics and logs)
+  mongodb:
+    host: "${MONGO_HOST:-localhost}"
+    port: ${MONGO_PORT:-27017}
+    database: "${MONGO_DB:-spotify_analytics}"
+    username: "${MONGO_USER:-}"
+    password: "${MONGO_PASSWORD:-}"
+    
+    # Connection Options
+    options:
+      authSource: "admin"
+      authMechanism: "SCRAM-SHA-256"
+      ssl: ${MONGO_SSL:-false}
+      sslCertificateKeyFile: "${MONGO_SSL_CERT:-}"
+      sslCAFile: "${MONGO_SSL_CA:-}"
+      replicaSet: "${MONGO_REPLICA_SET:-}"
+      readPreference: "primaryPreferred"
+      maxPoolSize: 20
+      minPoolSize: 5
+      maxIdleTimeMS: 30000
+      serverSelectionTimeoutMS: 5000
+      socketTimeoutMS: 20000
+      connectTimeoutMS: 10000
+
+# ==========================================
+# SECURITY CONFIGURATION
+# ==========================================
+
+security:
+  # Authentication
+  auth:
+    # JWT Configuration
+    jwt:
+      secret_key: "${JWT_SECRET_KEY:-your-secret-key-change-in-production}"
+      algorithm: "HS256"
+      access_token_expire_minutes: 30
+      refresh_token_expire_days: 7
+      issuer: "spotify-ai-agent"
+      audience: "spotify-ai-agent-users"
+    
+    # OAuth2 Configuration
+    oauth2:
+      google:
+        client_id: "${GOOGLE_CLIENT_ID:-}"
+        client_secret: "${GOOGLE_CLIENT_SECRET:-}"
+        redirect_uri: "${GOOGLE_REDIRECT_URI:-}"
+        scopes: ["openid", "email", "profile"]
+      
+      spotify:
+        client_id: "${SPOTIFY_CLIENT_ID:-}"
+        client_secret: "${SPOTIFY_CLIENT_SECRET:-}"
+        redirect_uri: "${SPOTIFY_REDIRECT_URI:-}"
+        scopes: ["user-read-private", "user-read-email", "playlist-read-private", "playlist-modify-public", "playlist-modify-private"]
+    
+    # Session Configuration
+    session:
+      secret_key: "${SESSION_SECRET_KEY:-your-session-secret-change-in-production}"
+      cookie_secure: ${SESSION_COOKIE_SECURE:-false}
+      cookie_httponly: true
+      cookie_samesite: "lax"
+      max_age: 86400
+  
+  # Encryption
+  encryption:
+    # Data Encryption
+    data:
+      algorithm: "AES-256-GCM"
+      key: "${ENCRYPTION_KEY:-}"
+      key_derivation: "PBKDF2"
+      salt: "${ENCRYPTION_SALT:-}"
+      iterations: 100000
+    
+    # Password Hashing
+    password:
+      algorithm: "bcrypt"
+      rounds: 12
+      salt_length: 16
+  
+  # API Security
+  api:
+    # API Keys
+    api_keys:
+      enabled: true
+      header_name: "X-API-Key"
+      query_param_name: "api_key"
+      
+    # Request Validation
+    validation:
+      max_content_length: 16777216  # 16MB
+      max_form_memory_size: 2097152  # 2MB
+      request_timeout: 30
+      
+    # Security Headers
+    headers:
+      x_content_type_options: "nosniff"
+      x_frame_options: "DENY"
+      x_xss_protection: "1; mode=block"
+      strict_transport_security: "max-age=31536000; includeSubDomains"
+      content_security_policy: "default-src 'self'"
+      referrer_policy: "strict-origin-when-cross-origin"
+
+# ==========================================
+# AI/ML CONFIGURATION
+# ==========================================
+
+ai_ml:
+  # Model Configuration
+  models:
+    # Music Recommendation Model
+    recommendation:
+      model_path: "${RECOMMENDATION_MODEL_PATH:-models/recommendation/}"
+      model_type: "tensorflow"
+      version: "latest"
+      batch_size: 32
+      max_predictions: 100
+      threshold: 0.7
+      
+      # Model Serving
+      serving:
+        host: "${RECOMMENDATION_MODEL_HOST:-localhost}"
+        port: ${RECOMMENDATION_MODEL_PORT:-8501}
+        protocol: "grpc"
+        timeout: 10
+        retries: 3
+    
+    # Playlist Generation Model
+    playlist_generation:
+      model_path: "${PLAYLIST_MODEL_PATH:-models/playlist/}"
+      model_type: "pytorch"
+      version: "latest"
+      max_songs: 50
+      diversity_weight: 0.3
+      coherence_weight: 0.7
+      
+      # Model Serving
+      serving:
+        host: "${PLAYLIST_MODEL_HOST:-localhost}"
+        port: ${PLAYLIST_MODEL_PORT:-8502}
+        protocol: "http"
+        timeout: 15
+        retries: 3
+    
+    # Audio Analysis Model
+    audio_analysis:
+      model_path: "${AUDIO_MODEL_PATH:-models/audio/}"
+      model_type: "huggingface"
+      model_name: "facebook/wav2vec2-base-960h"
+      version: "latest"
+      
+      # Audio Processing
+      processing:
+        sample_rate: 16000
+        chunk_duration: 30
+        overlap: 0.1
+        normalize: true
+        
+      # Feature Extraction
+      features:
+        mfcc: true
+        spectral_centroid: true
+        spectral_rolloff: true
+        zero_crossing_rate: true
+        tempo: true
+        chroma: true
+  
+  # ML Pipeline Configuration
+  pipeline:
+    # Data Processing
+    data_processing:
+      batch_size: 1000
+      workers: 4
+      cache_size: "1GB"
+      preprocessing_steps: ["normalize", "augment", "validate"]
+      
+    # Training Configuration
+    training:
+      epochs: 100
+      learning_rate: 0.001
+      optimizer: "adam"
+      loss_function: "categorical_crossentropy"
+      metrics: ["accuracy", "precision", "recall", "f1"]
+      validation_split: 0.2
+      early_stopping: true
+      patience: 10
+      
+    # Model Registry
+    registry:
+      type: "mlflow"
+      uri: "${MLFLOW_URI:-http://localhost:5000}"
+      experiment_name: "spotify-ai-agent"
+      artifact_location: "${MLFLOW_ARTIFACT_LOCATION:-s3://mlflow-artifacts/}"
+  
+  # Feature Store
+  feature_store:
+    type: "feast"
+    registry: "${FEAST_REGISTRY_PATH:-feature_store/}"
+    offline_store:
+      type: "file"
+      path: "${FEAST_OFFLINE_STORE_PATH:-feature_store/offline/}"
+    online_store:
+      type: "redis"
+      connection_string: "${FEAST_REDIS_CONNECTION:-redis://localhost:6379/1}"
+
+# ==========================================
+# MONITORING AND OBSERVABILITY
+# ==========================================
+
+monitoring:
+  # Metrics Collection
+  metrics:
+    enabled: true
+    exporter: "prometheus"
+    endpoint: "/metrics"
+    port: 9090
+    
+    # Application Metrics
+    application:
+      - name: "request_duration_seconds"
+        type: "histogram"
+        description: "HTTP request duration"
+        labels: ["method", "endpoint", "status_code"]
+      
+      - name: "active_users_total"
+        type: "gauge"
+        description: "Number of active users"
+        labels: ["tenant_id"]
+      
+      - name: "ai_model_predictions_total"
+        type: "counter"
+        description: "Total AI model predictions"
+        labels: ["model_name", "model_version"]
+    
+    # System Metrics
+    system:
+      cpu_usage: true
+      memory_usage: true
+      disk_usage: true
+      network_io: true
+      process_count: true
+  
+  # Logging Configuration
+  logging:
+    level: "${LOG_LEVEL:-INFO}"
+    format: "json"
+    
+    # Log Outputs
+    outputs:
+      console:
+        enabled: true
+        format: "text"
+        level: "INFO"
+      
+      file:
+        enabled: true
+        path: "${LOG_FILE_PATH:-logs/app.log}"
+        max_size: "100MB"
+        backup_count: 5
+        level: "DEBUG"
+      
+      elasticsearch:
+        enabled: false
+        host: "${ELASTICSEARCH_HOST:-localhost}"
+        port: ${ELASTICSEARCH_PORT:-9200}
+        index: "spotify-ai-agent-logs"
+        level: "INFO"
+    
+    # Structured Logging
+    structured:
+      enabled: true
+      correlation_id: true
+      user_id: true
+      tenant_id: true
+      request_id: true
+      trace_id: true
+  
+  # Distributed Tracing
+  tracing:
+    enabled: false
+    service_name: "spotify-ai-agent"
+    
+    # Jaeger Configuration
+    jaeger:
+      agent_host: "${JAEGER_AGENT_HOST:-localhost}"
+      agent_port: ${JAEGER_AGENT_PORT:-6831}
+      collector_endpoint: "${JAEGER_COLLECTOR_ENDPOINT:-}"
+      sampling_rate: 0.1
+    
+    # Zipkin Configuration
+    zipkin:
+      endpoint: "${ZIPKIN_ENDPOINT:-http://localhost:9411/api/v2/spans}"
+      sampling_rate: 0.1
+  
+  # Health Checks
+  health:
+    enabled: true
+    endpoint: "/health"
+    detailed_endpoint: "/health/detailed"
+    
+    # Health Check Components
+    checks:
+      database: true
+      redis: true
+      mongodb: true
+      external_apis: true
+      ai_models: true
+      file_system: true
+    
+    # Thresholds
+    thresholds:
+      response_time_ms: 1000
+      error_rate_percent: 5
+      cpu_usage_percent: 80
+      memory_usage_percent: 85
+      disk_usage_percent: 90
+
+# ==========================================
+# EXTERNAL SERVICES
+# ==========================================
+
+external_services:
+  # Spotify API
+  spotify:
+    base_url: "https://api.spotify.com/v1"
+    auth_url: "https://accounts.spotify.com/api/token"
+    timeout: 10
+    retries: 3
+    rate_limit:
+      requests_per_second: 100
+      burst_limit: 200
+  
+  # Music Information Services
+  music_services:
+    lastfm:
+      api_key: "${LASTFM_API_KEY:-}"
+      base_url: "https://ws.audioscrobbler.com/2.0/"
+      timeout: 5
+      retries: 2
+    
+    musicbrainz:
+      base_url: "https://musicbrainz.org/ws/2/"
+      timeout: 10
+      retries: 2
+      user_agent: "SpotifyAIAgent/2.0.0 (contact@example.com)"
+  
+  # Cloud Storage
+  storage:
+    aws_s3:
+      bucket: "${AWS_S3_BUCKET:-}"
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID:-}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY:-}"
+      
+    azure_blob:
+      account_name: "${AZURE_STORAGE_ACCOUNT:-}"
+      account_key: "${AZURE_STORAGE_KEY:-}"
+      container: "${AZURE_STORAGE_CONTAINER:-}"
+    
+    gcp_storage:
+      bucket: "${GCP_STORAGE_BUCKET:-}"
+      credentials_path: "${GCP_CREDENTIALS_PATH:-}"
+      project_id: "${GCP_PROJECT_ID:-}"
+
+# ==========================================
+# CACHING CONFIGURATION
+# ==========================================
+
+caching:
+  # Cache Backends
+  backends:
+    redis:
+      default_ttl: 3600
+      max_ttl: 86400
+      key_prefix: "spotify_ai_cache:"
+      serializer: "pickle"
+      compression: "gzip"
+    
+    memory:
+      max_size: 1000
+      default_ttl: 300
+      cleanup_interval: 60
+  
+  # Cache Strategies
+  strategies:
+    user_data:
+      backend: "redis"
+      ttl: 1800
+      invalidation: "time_based"
+    
+    music_metadata:
+      backend: "redis"
+      ttl: 86400
+      invalidation: "manual"
+    
+    ai_predictions:
+      backend: "redis"
+      ttl: 3600
+      invalidation: "version_based"
+    
+    static_content:
+      backend: "memory"
+      ttl: 3600
+      invalidation: "time_based"
+
+# ==========================================
+# TASK QUEUE CONFIGURATION
+# ==========================================
+
+task_queue:
+  # Celery Configuration
+  celery:
+    broker_url: "${CELERY_BROKER_URL:-redis://localhost:6379/2}"
+    result_backend: "${CELERY_RESULT_BACKEND:-redis://localhost:6379/3}"
+    
+    # Worker Configuration
+    worker:
+      concurrency: 4
+      max_tasks_per_child: 1000
+      task_time_limit: 300
+      task_soft_time_limit: 240
+      worker_prefetch_multiplier: 1
+      worker_max_memory_per_child: 200000
+    
+    # Task Routing
+    task_routes:
+      "ai_tasks.*": {"queue": "ai_queue"}
+      "music_processing.*": {"queue": "music_queue"}
+      "user_notifications.*": {"queue": "notifications_queue"}
+      "analytics.*": {"queue": "analytics_queue"}
+    
+    # Beat Schedule (Periodic Tasks)
+    beat_schedule:
+      cleanup_expired_sessions:
+        task: "cleanup.expired_sessions"
+        schedule: 3600.0  # Every hour
+      
+      update_music_metadata:
+        task: "music.update_metadata"
+        schedule: 86400.0  # Daily
+      
+      retrain_models:
+        task: "ai.retrain_models"
+        schedule: 604800.0  # Weekly
+      
+      generate_analytics_reports:
+        task: "analytics.generate_reports"
+        schedule: 86400.0  # Daily
+
+# ==========================================
+# DEVELOPMENT SETTINGS
+# ==========================================
+
+development:
+  # Debug Settings
+  debug:
+    enabled: ${DEBUG:-false}
+    toolbar: false
+    profiler: false
+    sql_debug: false
+  
+  # Hot Reload
+  hot_reload:
+    enabled: true
+    watch_paths: ["app/", "templates/", "static/"]
+    ignore_patterns: ["*.pyc", "__pycache__/", ".git/"]
+  
+  # Testing
+  testing:
+    database_url: "${TEST_DATABASE_URL:-sqlite:///test.db}"
+    redis_url: "${TEST_REDIS_URL:-redis://localhost:6379/15}"
+    disable_auth: false
+    mock_external_apis: true
+    
+    # Test Data
+    fixtures:
+      load_sample_data: true
+      sample_users: 100
+      sample_playlists: 50
+      sample_songs: 1000
+
+# ==========================================
+# INTERNATIONALIZATION
+# ==========================================
+
+i18n:
+  # Default Language
+  default_language: "en"
+  
+  # Supported Languages
+  supported_languages:
+    - "en"  # English
+    - "fr"  # French
+    - "de"  # German
+    - "es"  # Spanish
+    - "it"  # Italian
+    - "ja"  # Japanese
+    - "ko"  # Korean
+    - "zh"  # Chinese
+  
+  # Translation Settings
+  translation:
+    fallback_language: "en"
+    auto_translate: false
+    translation_service: "google_translate"
+    cache_translations: true
+    translation_cache_ttl: 86400
+  
+  # Locale Settings
+  locale:
+    timezone: "UTC"
+    date_format: "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
+    currency: "USD"
+    number_format: "1,234.56"
+
+# ==========================================
+# PERFORMANCE OPTIMIZATION
+# ==========================================
+
+performance:
+  # Connection Pooling
+  connection_pooling:
+    enabled: true
+    max_connections: 100
+    min_connections: 10
+    connection_timeout: 30
+    idle_timeout: 300
+  
+  # Request Optimization
+  request_optimization:
+    compression: true
+    compression_threshold: 1024
+    etag_support: true
+    conditional_requests: true
+    response_caching: true
+  
+  # Database Optimization
+  database_optimization:
+    query_caching: true
+    prepared_statements: true
+    connection_pooling: true
+    read_replicas: false
+    write_through_cache: true
+  
+  # Static File Serving
+  static_files:
+    compression: true
+    caching: true
+    cache_max_age: 31536000
+    versioning: true
+    cdn_url: "${CDN_URL:-}"
+
+# ==========================================
+# BACKUP AND RECOVERY
+# ==========================================
+
+backup:
+  # Database Backup
+  database:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention_days: 30
+    compression: true
+    encryption: true
+    storage_location: "${BACKUP_STORAGE_LOCATION:-s3://backups/database/}"
+  
+  # File Backup
+  files:
+    enabled: true
+    paths: ["uploads/", "logs/", "models/"]
+    schedule: "0 3 * * *"  # Daily at 3 AM
+    retention_days: 14
+    compression: true
+    encryption: true
+    storage_location: "${BACKUP_STORAGE_LOCATION:-s3://backups/files/}"
+  
+  # Configuration Backup
+  configuration:
+    enabled: true
+    schedule: "0 1 * * *"  # Daily at 1 AM
+    retention_days: 90
+    encryption: true
+    storage_location: "${BACKUP_STORAGE_LOCATION:-s3://backups/config/}"

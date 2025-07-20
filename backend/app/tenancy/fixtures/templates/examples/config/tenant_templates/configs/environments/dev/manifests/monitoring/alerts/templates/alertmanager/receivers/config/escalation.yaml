@@ -1,0 +1,630 @@
+# Configuration des Politiques d'Escalade Ultra-Avancées
+# Système d'escalade intelligent pour Spotify AI Agent
+
+# Configuration globale d'escalade
+global_escalation_config:
+  # Paramètres généraux
+  enabled: true
+  default_delay_minutes: 15
+  max_escalation_levels: 5
+  business_hours_only: false
+  timezone: "UTC"
+  
+  # Configuration des horaires de travail
+  business_hours:
+    start_time: "09:00"
+    end_time: "17:00"
+    weekdays: [1, 2, 3, 4, 5]  # Lundi à Vendredi
+    holidays_calendar: "spotify_holidays"
+    
+  # Seuils automatiques
+  auto_escalation:
+    enabled: true
+    cpu_threshold: 90
+    memory_threshold: 85
+    error_rate_threshold: 5  # %
+    response_time_threshold: 2000  # ms
+    
+  # Configuration des notifications de management
+  management_notification:
+    enabled: true
+    min_severity: "high"
+    delay_minutes: 30
+    max_frequency_per_hour: 3
+
+# Politiques d'escalade par tenant
+escalation_policies:
+  
+  # Politiques Premium - Escalade ultra-rapide
+  premium_policies:
+    
+    # Politique critique Premium - P1
+    premium_critical_p1:
+      name: "premium-critical-p1"
+      description: "Escalade immédiate pour incidents P1 Premium"
+      priority: 1
+      enabled: true
+      
+      # Critères de déclenchement
+      triggers:
+        severity_threshold: "critical"
+        tenant_filter: ["spotify-premium"]
+        label_filters:
+          environment: "production"
+          customer_facing: "true"
+        annotation_filters:
+          priority: "p1"
+          impact: "high"
+        
+      # Niveaux d'escalade
+      escalation_levels:
+        # Niveau 0 - Immédiat (0 min)
+        - level: 0
+          delay_seconds: 0
+          description: "Notification immédiate équipe Premium SRE"
+          receivers:
+            - "premium-pagerduty-oncall"
+            - "premium-slack-critical"
+          actions:
+            - type: "create_incident"
+              severity: "sev1"
+              title: "P1 Critical: {{ alert.name }}"
+            - type: "notify_management"
+              delay_minutes: 0
+            - type: "create_war_room"
+              auto_invite: ["premium-sre", "premium-lead"]
+              
+        # Niveau 1 - Escalade SRE Lead (5 min)
+        - level: 1
+          delay_seconds: 300
+          description: "Escalade vers SRE Lead Premium"
+          receivers:
+            - "premium-sre-lead"
+            - "premium-slack-escalation"
+          conditions:
+            - type: "no_acknowledgment"
+              timeout_minutes: 5
+            - type: "still_firing"
+          actions:
+            - type: "page_manager"
+              role: "sre_lead"
+            - type: "update_incident"
+              status: "escalated_level_1"
+              
+        # Niveau 2 - Management technique (15 min)
+        - level: 2
+          delay_seconds: 900
+          description: "Escalade management technique Premium"
+          receivers:
+            - "premium-engineering-director"
+            - "premium-teams-management"
+          conditions:
+            - type: "no_resolution"
+              timeout_minutes: 15
+            - type: "customer_impact_confirmed"
+          actions:
+            - type: "notify_customers"
+              template: "premium_incident_notification"
+            - type: "activate_crisis_mode"
+            - type: "page_executive"
+              role: "engineering_director"
+              
+        # Niveau 3 - Direction exécutive (30 min)
+        - level: 3
+          delay_seconds: 1800
+          description: "Escalade direction exécutive"
+          receivers:
+            - "premium-cto-emergency"
+            - "premium-ceo-critical"
+          conditions:
+            - type: "major_outage"
+              duration_minutes: 30
+            - type: "revenue_impact"
+              threshold: 100000  # $100k
+          actions:
+            - type: "executive_briefing"
+              format: "crisis_summary"
+            - type: "media_preparation"
+            - type: "customer_communication"
+              channels: ["email", "status_page", "social_media"]
+              
+      # Configuration avancée
+      advanced_config:
+        auto_escalation: true
+        smart_routing: true
+        context_preservation: true
+        escalation_backoff: false
+        max_escalations: 3
+        cool_down_period: 3600  # 1 heure
+        
+        # Conditions intelligentes
+        smart_conditions:
+          - type: "impact_assessment"
+            metrics: ["user_complaints", "revenue_loss", "sla_breach"]
+          - type: "similar_incidents"
+            lookback_hours: 24
+            threshold: 3
+          - type: "dependency_check"
+            services: ["payment", "auth", "api"]
+            
+        # Actions automatiques
+        auto_actions:
+          - trigger: "level_1_reached"
+            action: "scale_up_resources"
+            params: {"factor": 2}
+          - trigger: "level_2_reached"
+            action: "activate_backup_region"
+          - trigger: "level_3_reached"
+            action: "initiate_disaster_recovery"
+            
+    # Politique haute priorité Premium - P2
+    premium_high_p2:
+      name: "premium-high-p2"
+      description: "Escalade modérée pour incidents P2 Premium"
+      priority: 2
+      enabled: true
+      
+      triggers:
+        severity_threshold: "high"
+        tenant_filter: ["spotify-premium"]
+        label_filters:
+          environment: "production"
+        
+      escalation_levels:
+        # Niveau 0 - Équipe de garde (0 min)
+        - level: 0
+          delay_seconds: 0
+          description: "Notification équipe de garde Premium"
+          receivers:
+            - "premium-oncall-secondary"
+            - "premium-slack-alerts"
+          actions:
+            - type: "create_ticket"
+              priority: "high"
+              
+        # Niveau 1 - SRE Principal (10 min)
+        - level: 1
+          delay_seconds: 600
+          description: "Escalade SRE Principal"
+          receivers:
+            - "premium-sre-principal"
+          conditions:
+            - type: "no_acknowledgment"
+              timeout_minutes: 10
+          actions:
+            - type: "assign_investigator"
+              team: "premium_sre"
+              
+        # Niveau 2 - Lead technique (30 min)
+        - level: 2
+          delay_seconds: 1800
+          description: "Escalade lead technique"
+          receivers:
+            - "premium-tech-lead"
+            - "premium-teams-tech"
+          conditions:
+            - type: "no_progress"
+              timeout_minutes: 30
+              
+      advanced_config:
+        business_hours_only: true
+        timezone: "Europe/Stockholm"
+        auto_escalation: true
+        
+  # Politiques Free - Escalade équilibrée
+  free_policies:
+    
+    # Politique critique Free
+    free_critical:
+      name: "free-critical"
+      description: "Escalade pour incidents critiques Free"
+      priority: 1
+      enabled: true
+      
+      triggers:
+        severity_threshold: "critical"
+        tenant_filter: ["spotify-free"]
+        label_filters:
+          environment: "production"
+          
+      escalation_levels:
+        # Niveau 0 - Équipe Free oncall (0 min)
+        - level: 0
+          delay_seconds: 0
+          description: "Notification équipe Free oncall"
+          receivers:
+            - "free-oncall-primary"
+            - "free-slack-critical"
+          actions:
+            - type: "create_incident"
+              severity: "sev2"
+              
+        # Niveau 1 - SRE Free Lead (15 min)
+        - level: 1
+          delay_seconds: 900
+          description: "Escalade SRE Lead Free"
+          receivers:
+            - "free-sre-lead"
+          conditions:
+            - type: "no_acknowledgment"
+              timeout_minutes: 15
+              
+        # Niveau 2 - Management Free (45 min)
+        - level: 2
+          delay_seconds: 2700
+          description: "Escalade management Free"
+          receivers:
+            - "free-engineering-manager"
+          conditions:
+            - type: "no_resolution"
+              timeout_minutes: 45
+              
+      advanced_config:
+        business_hours_only: false
+        auto_escalation: true
+        max_escalations: 2
+        
+    # Politique haute priorité Free
+    free_high:
+      name: "free-high"
+      description: "Escalade pour incidents haute priorité Free"
+      priority: 2
+      enabled: true
+      
+      triggers:
+        severity_threshold: "high"
+        tenant_filter: ["spotify-free"]
+        
+      escalation_levels:
+        - level: 0
+          delay_seconds: 0
+          receivers:
+            - "free-oncall-secondary"
+            - "free-slack-alerts"
+            
+        - level: 1
+          delay_seconds: 1800  # 30 min
+          receivers:
+            - "free-sre-lead"
+          conditions:
+            - type: "business_hours"
+            - type: "no_acknowledgment"
+              timeout_minutes: 30
+              
+      advanced_config:
+        business_hours_only: true
+        timezone: "UTC"
+        
+  # Politiques Enterprise - Escalade personnalisée
+  enterprise_policies:
+    
+    # Politique critique Enterprise
+    enterprise_critical:
+      name: "enterprise-critical"
+      description: "Escalade sur mesure pour Enterprise"
+      priority: 1
+      enabled: true
+      
+      triggers:
+        severity_threshold: "critical"
+        tenant_filter: ["spotify-enterprise"]
+        label_filters:
+          customer_tier: "enterprise"
+          
+      escalation_levels:
+        # Niveau 0 - Équipe dédiée Enterprise (0 min)
+        - level: 0
+          delay_seconds: 0
+          description: "Équipe dédiée Enterprise"
+          receivers:
+            - "enterprise-dedicated-team"
+            - "enterprise-slack-critical"
+            - "enterprise-teams-war-room"
+          actions:
+            - type: "create_enterprise_incident"
+              sla: "15_minutes"
+            - type: "notify_customer_success"
+            - type: "prepare_status_update"
+            
+        # Niveau 1 - Customer Success Manager (5 min)
+        - level: 1
+          delay_seconds: 300
+          description: "Notification Customer Success Manager"
+          receivers:
+            - "enterprise-csm"
+            - "enterprise-account-manager"
+          actions:
+            - type: "customer_proactive_communication"
+            - type: "prepare_executive_summary"
+            
+        # Niveau 2 - Enterprise Engineering Director (20 min)
+        - level: 2
+          delay_seconds: 1200
+          description: "Enterprise Engineering Director"
+          receivers:
+            - "enterprise-engineering-director"
+          conditions:
+            - type: "sla_breach_risk"
+              threshold_minutes: 15
+          actions:
+            - type: "allocate_additional_resources"
+            - type: "engage_vendor_support"
+            
+      advanced_config:
+        custom_sla: true
+        sla_targets:
+          acknowledgment: 300  # 5 min
+          resolution: 900      # 15 min
+        customer_communication: true
+        dedicated_resources: true
+
+# Politiques d'escalade par type d'incident
+incident_type_policies:
+  
+  # Incidents sécurité
+  security_incidents:
+    name: "security-incident-escalation"
+    description: "Escalade spéciale pour incidents de sécurité"
+    priority: 0  # Plus haute priorité
+    
+    triggers:
+      severity_threshold: "medium"
+      label_filters:
+        category: "security"
+        type: "breach|intrusion|vulnerability"
+        
+    escalation_levels:
+      - level: 0
+        delay_seconds: 0
+        receivers:
+          - "security-team-primary"
+          - "security-slack-urgent"
+        actions:
+          - type: "initiate_security_protocol"
+          - type: "notify_legal_team"
+          - type: "preserve_evidence"
+          
+      - level: 1
+        delay_seconds: 600  # 10 min
+        receivers:
+          - "security-manager"
+          - "compliance-officer"
+        actions:
+          - type: "assess_regulatory_impact"
+          - type: "prepare_breach_notification"
+          
+  # Incidents performance
+  performance_incidents:
+    name: "performance-degradation-escalation"
+    description: "Escalade pour dégradations de performance"
+    
+    triggers:
+      annotation_filters:
+        category: "performance"
+      label_filters:
+        metric_type: "latency|throughput|errors"
+        
+    escalation_levels:
+      - level: 0
+        delay_seconds: 0
+        receivers:
+          - "performance-team"
+          - "sre-performance-slack"
+        actions:
+          - type: "auto_scale_resources"
+          - type: "analyze_metrics"
+          
+      - level: 1
+        delay_seconds: 900  # 15 min
+        receivers:
+          - "performance-lead"
+        conditions:
+          - type: "performance_degradation_continues"
+            threshold: "15_minutes"
+            
+  # Incidents infrastructure
+  infrastructure_incidents:
+    name: "infrastructure-failure-escalation"
+    description: "Escalade pour pannes d'infrastructure"
+    
+    triggers:
+      label_filters:
+        component: "kubernetes|database|network|storage"
+        
+    escalation_levels:
+      - level: 0
+        delay_seconds: 0
+        receivers:
+          - "infrastructure-oncall"
+          - "platform-team-slack"
+        actions:
+          - type: "check_cluster_health"
+          - type: "initiate_failover"
+          
+      - level: 1
+        delay_seconds: 600
+        receivers:
+          - "infrastructure-lead"
+          - "platform-architect"
+
+# Configuration des conditions d'escalade avancées
+escalation_conditions:
+  
+  # Conditions temporelles
+  temporal_conditions:
+    no_acknowledgment:
+      description: "Aucune prise en charge dans le délai imparti"
+      evaluation_interval: 60  # secondes
+      
+    no_resolution:
+      description: "Aucune résolution dans le délai imparti"
+      evaluation_interval: 300
+      
+    still_firing:
+      description: "L'alerte est toujours active"
+      evaluation_interval: 30
+      
+    business_hours:
+      description: "Pendant les heures de travail"
+      timezone_aware: true
+      
+  # Conditions métier
+  business_conditions:
+    customer_impact_confirmed:
+      description: "Impact client confirmé"
+      data_sources: ["customer_support", "social_media", "status_page"]
+      
+    revenue_impact:
+      description: "Impact sur le chiffre d'affaires"
+      threshold_currency: "USD"
+      calculation_method: "estimated_loss"
+      
+    sla_breach_risk:
+      description: "Risque de violation SLA"
+      sla_buffer_minutes: 5
+      
+    major_outage:
+      description: "Panne majeure détectée"
+      affected_services_threshold: 3
+      user_impact_threshold: 1000
+      
+  # Conditions techniques
+  technical_conditions:
+    similar_incidents:
+      description: "Incidents similaires récents"
+      similarity_threshold: 0.8
+      lookback_period: "24h"
+      
+    dependency_check:
+      description: "Vérification des dépendances"
+      dependency_services: ["auth", "payment", "api"]
+      health_check_timeout: 30
+      
+    performance_degradation_continues:
+      description: "Dégradation de performance continue"
+      metrics: ["response_time", "error_rate", "throughput"]
+      degradation_threshold: 20  # %
+
+# Actions automatiques d'escalade
+escalation_actions:
+  
+  # Actions de notification
+  notification_actions:
+    create_incident:
+      description: "Créer un incident dans le système de ticketing"
+      platforms: ["jira", "servicenow", "pagerduty"]
+      auto_assign: true
+      
+    notify_management:
+      description: "Notifier le management"
+      escalation_chain: ["team_lead", "director", "vp", "cto"]
+      
+    page_manager:
+      description: "Faire appel au manager via PagerDuty"
+      urgency: "high"
+      
+    customer_communication:
+      description: "Communication client automatique"
+      channels: ["email", "status_page", "in_app"]
+      
+  # Actions techniques
+  technical_actions:
+    scale_up_resources:
+      description: "Augmenter automatiquement les ressources"
+      platforms: ["kubernetes", "aws", "gcp"]
+      
+    activate_backup_region:
+      description: "Activer la région de backup"
+      failover_type: "automatic"
+      
+    initiate_disaster_recovery:
+      description: "Initier le plan de continuité"
+      runbook: "disaster_recovery_runbook"
+      
+    auto_scale_resources:
+      description: "Auto-scaling des ressources"
+      trigger_metrics: ["cpu", "memory", "requests"]
+      
+  # Actions organisationnelles
+  organizational_actions:
+    create_war_room:
+      description: "Créer une war room"
+      platforms: ["zoom", "teams", "slack"]
+      auto_invite_roles: ["oncall", "lead", "manager"]
+      
+    activate_crisis_mode:
+      description: "Activer le mode crise"
+      procedures: ["crisis_communication", "resource_allocation"]
+      
+    executive_briefing:
+      description: "Briefing exécutif"
+      format: ["summary", "impact", "timeline", "actions"]
+
+# Configuration du monitoring d'escalade
+escalation_monitoring:
+  
+  # Métriques d'escalade
+  metrics:
+    escalation_rate:
+      description: "Taux d'escalade par politique"
+      calculation: "escalated_alerts / total_alerts"
+      
+    escalation_duration:
+      description: "Durée moyenne d'escalade"
+      measurement: "time_to_resolution"
+      
+    escalation_effectiveness:
+      description: "Efficacité des escalades"
+      factors: ["resolution_time", "customer_satisfaction"]
+      
+  # Alertes sur les escalades
+  escalation_alerts:
+    high_escalation_rate:
+      threshold: 15  # %
+      period: "1h"
+      action: "notify_escalation_manager"
+      
+    escalation_storm:
+      threshold: 10  # escalations in 15min
+      period: "15m"
+      action: "activate_escalation_circuit_breaker"
+      
+    failed_escalations:
+      threshold: 3
+      period: "1h"
+      action: "review_escalation_policy"
+
+# Configuration de test et validation
+testing_config:
+  
+  # Tests automatiques des politiques
+  automated_tests:
+    enabled: true
+    schedule: "daily"
+    test_scenarios:
+      - name: "critical_alert_escalation"
+        simulate_alert: true
+        verify_receivers: true
+        check_timing: true
+        
+      - name: "business_hours_escalation"
+        time_based: true
+        verify_conditions: true
+        
+  # Validation des configurations
+  validation_rules:
+    - rule: "escalation_delay_not_zero_for_level_0"
+      severity: "error"
+    - rule: "max_escalation_levels_not_exceeded"
+      severity: "error"
+    - rule: "receivers_exist_and_healthy"
+      severity: "warning"
+    - rule: "business_hours_configured_correctly"
+      severity: "warning"
+      
+  # Simulation d'escalade
+  simulation:
+    enabled: true
+    dry_run_mode: true
+    notification_override: "test_channel"
+    log_all_actions: true

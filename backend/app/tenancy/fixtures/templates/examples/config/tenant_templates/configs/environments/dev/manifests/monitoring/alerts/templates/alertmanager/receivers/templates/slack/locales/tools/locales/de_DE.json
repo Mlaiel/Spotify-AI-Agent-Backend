@@ -1,0 +1,144 @@
+{
+  "alerts": {
+    "critical_detected": "🚨 Kritischer Alarm Erkannt",
+    "warning_detected": "⚠️ Warnungsalarm Erkannt",
+    "info_detected": "ℹ️ Informationsalarm",
+    "resolved": "✅ Alarm Behoben",
+    "multiple_detected": "📊 Mehrere Alarme Erkannt",
+    "aggregated": "📈 Alarm-Aggregation"
+  },
+  "fields": {
+    "severity": "Schweregrad",
+    "tenant": "Mandant",
+    "environment": "Umgebung",
+    "timestamp": "Zeitstempel",
+    "duration": "Dauer",
+    "service": "Service",
+    "instance": "Instanz",
+    "description": "Beschreibung",
+    "summary": "Zusammenfassung",
+    "fingerprint": "Fingerabdruck",
+    "status": "Status",
+    "count": "Anzahl",
+    "first_seen": "Erstmals Gesehen",
+    "last_seen": "Zuletzt Gesehen"
+  },
+  "actions": {
+    "view_runbook": "📖 Runbook Anzeigen",
+    "acknowledge": "✓ Bestätigen",
+    "escalate": "⬆️ Eskalieren",
+    "silence": "🔇 Stummschalten",
+    "view_dashboard": "📊 Dashboard",
+    "view_logs": "📋 Logs Anzeigen",
+    "view_metrics": "📈 Metriken Anzeigen",
+    "contact_support": "📞 Support Kontaktieren"
+  },
+  "status": {
+    "firing": "🔥 Aktiv",
+    "resolved": "✅ Behoben",
+    "pending": "⏳ Ausstehend",
+    "silenced": "🔇 Stummgeschaltet",
+    "acknowledged": "✓ Bestätigt"
+  },
+  "severity": {
+    "critical": "🚨 Kritisch",
+    "warning": "⚠️ Warnung",
+    "info": "ℹ️ Info",
+    "unknown": "❓ Unbekannt"
+  },
+  "tenant_types": {
+    "free": "Kostenlos",
+    "premium": "Premium",
+    "enterprise": "Enterprise"
+  },
+  "environments": {
+    "production": "Produktion",
+    "staging": "Staging",
+    "development": "Entwicklung",
+    "testing": "Test"
+  },
+  "time": {
+    "now": "jetzt",
+    "seconds_ago": "vor {{count}} Sekunde{{count|plural(,n)}}",
+    "minutes_ago": "vor {{count}} Minute{{count|plural(,n)}}",
+    "hours_ago": "vor {{count}} Stunde{{count|plural(,n)}}",
+    "days_ago": "vor {{count}} Tag{{count|plural(,en)}}",
+    "duration_seconds": "{{count}} Sekunde{{count|plural(,n)}}",
+    "duration_minutes": "{{count}} Minute{{count|plural(,n)}}",
+    "duration_hours": "{{count}} Stunde{{count|plural(,n)}}",
+    "duration_days": "{{count}} Tag{{count|plural(,e)}}"
+  },
+  "messages": {
+    "system_healthy": "System funktioniert normal",
+    "system_degraded": "System-Performance beeinträchtigt",
+    "system_down": "System nicht verfügbar",
+    "multiple_services_affected": "Mehrere Services betroffen",
+    "escalation_required": "Eskalation erforderlich",
+    "auto_resolved": "Automatisch behoben",
+    "manual_intervention": "Manuelle Intervention erforderlich",
+    "monitoring_alert": "Überwachungsalarm",
+    "business_impact": "Potentielle Geschäftsauswirkung",
+    "sla_breach": "SLA-Verletzung erkannt"
+  },
+  "notifications": {
+    "sent_successfully": "Benachrichtigung erfolgreich gesendet",
+    "send_failed": "Senden der Benachrichtigung fehlgeschlagen",
+    "rate_limited": "Rate-Limiting angewendet",
+    "queued": "Benachrichtigung in Warteschlange",
+    "duplicate_suppressed": "Duplikat unterdrückt",
+    "aggregated_with_others": "Mit anderen Alarmen aggregiert"
+  },
+  "errors": {
+    "template_not_found": "Template nicht gefunden",
+    "localization_failed": "Lokalisierung fehlgeschlagen",
+    "invalid_format": "Ungültiges Format",
+    "tenant_not_found": "Mandant nicht gefunden",
+    "permission_denied": "Berechtigung verweigert",
+    "rate_limit_exceeded": "Rate-Limit überschritten",
+    "service_unavailable": "Service nicht verfügbar",
+    "timeout_occurred": "Timeout aufgetreten"
+  },
+  "health": {
+    "healthy": "Gesund",
+    "unhealthy": "Ungesund",
+    "degraded": "Beeinträchtigt",
+    "unknown": "Unbekannt",
+    "recovering": "Wiederherstellung",
+    "maintenance": "Wartung"
+  },
+  "system": {
+    "cpu_usage": "CPU-Auslastung",
+    "memory_usage": "Speicher-Auslastung",
+    "disk_usage": "Festplatten-Auslastung",
+    "network_traffic": "Netzwerk-Traffic",
+    "response_time": "Antwortzeit",
+    "error_rate": "Fehlerrate",
+    "throughput": "Durchsatz",
+    "availability": "Verfügbarkeit"
+  },
+  "components": {
+    "localization_engine": "Lokalisierungs-Engine",
+    "template_renderer": "Template-Renderer",
+    "cache_manager": "Cache-Manager",
+    "tenant_context": "Mandanten-Kontext",
+    "alert_formatter": "Alarm-Formatierer",
+    "metrics_collector": "Metriken-Sammler",
+    "slack_webhook": "Slack-Webhook",
+    "security_manager": "Sicherheits-Manager"
+  },
+  "aggregation": {
+    "similar_alerts": "{{count}} ähnliche{{count|plural(r,)}} Alarm{{count|plural(,e)}}",
+    "time_window": "{{duration}} Zeitfenster",
+    "grouped_by": "Gruppiert nach {{criteria}}",
+    "total_affected": "{{count}} Service{{count|plural(,s)}} betroffen",
+    "first_occurrence": "Erstes Auftreten: {{time}}",
+    "latest_occurrence": "Letztes Auftreten: {{time}}"
+  },
+  "performance": {
+    "response_time_ms": "{{value}}ms",
+    "cache_hit_ratio": "{{ratio}}% Treffer",
+    "throughput_per_second": "{{value}}/Sek",
+    "error_percentage": "{{percentage}}% Fehler",
+    "uptime_percentage": "{{percentage}}% Verfügbarkeit"
+  }
+}

@@ -1,0 +1,17 @@
+# Spotify AI Agent – Testing Requirements
+# --------------------------------------
+# Test, Mocking, Coverage, Integration, Load, ML/AI-Tests
+# Rollen: Lead Dev, Backend Senior, ML Engineer, Security Specialist
+
+-r base.txt
+
+pytest>=8.2
+pytest-cov>=5.0
+pytest-asyncio>=0.23
+pytest-mock>=3.14
+coverage>=7.5
+requests-mock>=1.12
+factory-boy>=3.3
+freezegun>=1.4
+faker>=25.2
+httpx[cli]>=0.27

@@ -1,0 +1,225 @@
+# Backend API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-ai-agent-backend
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: backend-api
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Service exposing the main backend API"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8000
+    protocol: TCP
+  - name: metrics
+    port: 9000
+    targetPort: 9000
+    protocol: TCP
+  selector:
+    app: spotify-ai-agent-backend
+    environment: development
+  sessionAffinity: None
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+
+---
+# Backend API Headless Service for StatefulSet scenarios
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-ai-agent-backend-headless
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: backend-api
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Headless service for backend API pod discovery"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  - name: metrics
+    port: 9000
+    targetPort: 9000
+    protocol: TCP
+  selector:
+    app: spotify-ai-agent-backend
+    environment: development
+  publishNotReadyAddresses: false
+
+---
+# Machine Learning Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-ai-agent-ml
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: ml-service
+    app.kubernetes.io/part-of: spotify-ai-agent
+    app.kubernetes.io/managed-by: helm
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Service exposing the ML microservice"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9001"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - name: grpc
+    port: 8001
+    targetPort: 8001
+    protocol: TCP
+  - name: metrics
+    port: 9001
+    targetPort: 9001
+    protocol: TCP
+  - name: tf-serving
+    port: 8501
+    targetPort: 8501
+    protocol: TCP
+  - name: tf-grpc
+    port: 8500
+    targetPort: 8500
+    protocol: TCP
+  selector:
+    app: spotify-ai-agent-ml
+    environment: development
+  sessionAffinity: None
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-primary
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "15.4"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Service exposing PostgreSQL primary database"
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgresql-primary
+    environment: development
+  sessionAffinity: None
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-primary
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: "7.2"
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "Service exposing Redis primary cache"
+spec:
+  type: ClusterIP
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+    protocol: TCP
+  selector:
+    app: redis-primary
+    environment: development
+  sessionAffinity: None
+
+---
+# External Service for Development Access
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-ai-agent-external
+  namespace: spotify-ai-agent-dev
+  labels:
+    app.kubernetes.io/name: spotify-ai-agent
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/component: external-access
+    app.kubernetes.io/part-of: spotify-ai-agent
+    environment: development
+    team: spotify-ai-agent-dev
+  annotations:
+    created-by: "Fahed Mlaiel Development Team"
+    description: "External access service for development environment"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: spotify-ai-agent-backend
+    environment: development
+  sessionAffinity: None
+  loadBalancerSourceRanges:
+  - "10.0.0.0/8"    # Private networks only
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"

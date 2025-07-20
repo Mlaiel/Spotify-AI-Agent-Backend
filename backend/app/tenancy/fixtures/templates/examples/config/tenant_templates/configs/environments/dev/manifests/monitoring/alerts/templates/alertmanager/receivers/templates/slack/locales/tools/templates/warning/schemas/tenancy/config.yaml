@@ -1,0 +1,350 @@
+# Configuration par défaut pour les schémas Tenancy
+# ================================================
+
+# Paramètres globaux
+tenancy:
+  schema_version: "1.0.0"
+  default_locale: "en"
+  supported_locales: ["en", "fr", "de", "es"]
+  max_tenants: 10000
+  max_alerts_per_tenant: 1000
+  max_warnings_per_tenant: 5000
+  max_notifications_per_tenant: 10000
+
+# Configuration des types de tenant
+tenant_types:
+  trial:
+    max_users: 10
+    max_storage_gb: 10
+    max_api_calls_per_hour: 1000
+    features:
+      - "basic_monitoring"
+      - "email_notifications"
+    compliance_levels: []
+    sla:
+      uptime_percentage: 99.0
+      response_time_ms: 2000
+      support_response_minutes: 480
+
+  standard:
+    max_users: 100
+    max_storage_gb: 100
+    max_api_calls_per_hour: 5000
+    features:
+      - "basic_monitoring"
+      - "email_notifications"
+      - "slack_notifications"
+      - "basic_analytics"
+    compliance_levels: ["basic"]
+    sla:
+      uptime_percentage: 99.5
+      response_time_ms: 1000
+      support_response_minutes: 240
+
+  professional:
+    max_users: 500
+    max_storage_gb: 500
+    max_api_calls_per_hour: 25000
+    features:
+      - "advanced_monitoring"
+      - "multi_channel_notifications"
+      - "advanced_analytics"
+      - "custom_alerts"
+      - "api_access"
+    compliance_levels: ["basic", "gdpr"]
+    sla:
+      uptime_percentage: 99.9
+      response_time_ms: 500
+      support_response_minutes: 120
+
+  enterprise:
+    max_users: 10000
+    max_storage_gb: 10000
+    max_api_calls_per_hour: 100000
+    features:
+      - "premium_monitoring"
+      - "all_notifications"
+      - "premium_analytics"
+      - "custom_everything"
+      - "priority_api_access"
+      - "custom_branding"
+      - "sso_integration"
+      - "dedicated_support"
+    compliance_levels: ["basic", "gdpr", "soc2", "iso27001", "hipaa"]
+    sla:
+      uptime_percentage: 99.99
+      response_time_ms: 200
+      support_response_minutes: 30
+
+# Configuration des alertes
+alerts:
+  default_severity_thresholds:
+    cpu_usage_percent:
+      warning: 75.0
+      critical: 90.0
+    memory_usage_percent:
+      warning: 80.0
+      critical: 95.0
+    disk_usage_percent:
+      warning: 85.0
+      critical: 95.0
+    response_time_ms:
+      warning: 1000.0
+      critical: 5000.0
+    error_rate_percent:
+      warning: 5.0
+      critical: 10.0
+
+  escalation_rules:
+    critical:
+      initial_notification: ["email", "sms", "slack"]
+      escalation_delay_minutes: 15
+      escalation_levels:
+        - level: "l2"
+          delay_minutes: 15
+          channels: ["email", "sms", "phone"]
+        - level: "l3"
+          delay_minutes: 30
+          channels: ["email", "phone", "pagerduty"]
+        - level: "executive"
+          delay_minutes: 60
+          channels: ["email", "phone"]
+
+    high:
+      initial_notification: ["email", "slack"]
+      escalation_delay_minutes: 30
+      escalation_levels:
+        - level: "l2"
+          delay_minutes: 30
+          channels: ["email", "slack"]
+        - level: "l3"
+          delay_minutes: 60
+          channels: ["email", "phone"]
+
+# Configuration des avertissements
+warnings:
+  ml_models:
+    anomaly_detection:
+      algorithm: "isolation_forest"
+      contamination: 0.1
+      n_estimators: 100
+    
+    trend_prediction:
+      algorithm: "arima"
+      forecast_periods: 24
+      confidence_interval: 0.95
+    
+    escalation_prediction:
+      algorithm: "gradient_boosting"
+      features: ["severity", "historical_escalations", "time_of_day", "day_of_week"]
+      threshold: 0.7
+
+  thresholds:
+    anomaly_confidence: 0.8
+    trend_confidence: 0.75
+    escalation_probability: 0.6
+
+# Configuration des notifications
+notifications:
+  channels:
+    email:
+      provider: "sendgrid"
+      rate_limit: 1000  # par heure
+      retry_attempts: 3
+      templates:
+        alert: "alert_email_template"
+        warning: "warning_email_template"
+        notification: "notification_email_template"
+
+    sms:
+      provider: "twilio"
+      rate_limit: 100   # par heure
+      retry_attempts: 3
+      templates:
+        alert: "alert_sms_template"
+        urgent: "urgent_sms_template"
+
+    slack:
+      rate_limit: 500   # par heure
+      retry_attempts: 3
+      templates:
+        alert: "alert_slack_template"
+        warning: "warning_slack_template"
+        info: "info_slack_template"
+
+    webhook:
+      timeout_seconds: 30
+      retry_attempts: 5
+      retry_delay_seconds: 60
+
+  batch_processing:
+    email:
+      batch_size: 100
+      delay_between_batches_seconds: 1
+    
+    sms:
+      batch_size: 50
+      delay_between_batches_seconds: 2
+
+# Configuration du monitoring
+monitoring:
+  collection_intervals:
+    high_frequency: 15    # secondes
+    normal_frequency: 60  # secondes
+    low_frequency: 300    # secondes
+
+  retention_periods:
+    raw_data: "7d"
+    aggregated_1m: "30d"
+    aggregated_5m: "90d"
+    aggregated_1h: "1y"
+    aggregated_1d: "3y"
+
+  default_metrics:
+    system:
+      - "cpu_usage_percent"
+      - "memory_usage_percent"
+      - "disk_usage_percent"
+      - "network_io_bytes"
+      - "disk_io_bytes"
+    
+    application:
+      - "response_time_ms"
+      - "request_rate_per_second"
+      - "error_rate_percent"
+      - "active_connections"
+      - "queue_length"
+    
+    business:
+      - "user_sessions"
+      - "transactions_per_minute"
+      - "revenue_per_hour"
+      - "conversion_rate_percent"
+
+# Configuration de la compliance
+compliance:
+  standards:
+    gdpr:
+      data_retention_default_days: 730
+      consent_required: true
+      right_to_erasure: true
+      data_portability: true
+      breach_notification_hours: 72
+
+    hipaa:
+      encryption_required: true
+      audit_logs_required: true
+      access_controls_required: true
+      data_retention_years: 6
+
+    soc2:
+      security_controls_required: true
+      availability_controls_required: true
+      processing_integrity_required: false
+      confidentiality_required: true
+      privacy_required: false
+
+    iso27001:
+      isms_required: true
+      risk_assessment_required: true
+      security_awareness_training: true
+      incident_management: true
+
+  audit_requirements:
+    log_retention_years: 7
+    audit_trail_immutable: true
+    periodic_reviews: "quarterly"
+    penetration_testing: "annually"
+
+# Configuration des performances
+performance:
+  baseline_calculation:
+    observation_period_days: 30
+    confidence_level: 95
+    minimum_samples: 1000
+
+  anomaly_detection:
+    sensitivity: 0.8
+    seasonal_adjustment: true
+    trend_adjustment: true
+
+  optimization:
+    auto_scaling:
+      enabled: false
+      cpu_threshold: 80
+      memory_threshold: 85
+      scale_up_cooldown_minutes: 5
+      scale_down_cooldown_minutes: 15
+
+    caching:
+      enabled: true
+      ttl_seconds: 300
+      max_size_mb: 100
+
+# Configuration de sécurité
+security:
+  encryption:
+    algorithm: "AES-256-GCM"
+    key_rotation_days: 90
+    
+  authentication:
+    session_timeout_minutes: 60
+    max_failed_attempts: 5
+    lockout_duration_minutes: 30
+    
+  api_security:
+    rate_limiting:
+      requests_per_minute: 1000
+      burst_limit: 100
+    
+    cors:
+      allowed_origins: ["https://*.spotify-ai-agent.com"]
+      allowed_methods: ["GET", "POST", "PUT", "DELETE"]
+      max_age_seconds: 86400
+
+# Configuration du logging
+logging:
+  level: "INFO"
+  format: "json"
+  
+  handlers:
+    console:
+      enabled: true
+      level: "INFO"
+    
+    file:
+      enabled: true
+      level: "DEBUG"
+      path: "/var/log/tenancy/"
+      max_size_mb: 100
+      backup_count: 10
+    
+    syslog:
+      enabled: false
+      facility: "local0"
+    
+    elasticsearch:
+      enabled: false
+      hosts: ["localhost:9200"]
+      index_prefix: "tenancy-logs"
+
+# Configuration des métriques Prometheus
+prometheus:
+  enabled: true
+  port: 8090
+  path: "/metrics"
+  
+  custom_metrics:
+    tenant_count:
+      type: "gauge"
+      description: "Number of active tenants"
+    
+    alert_count:
+      type: "counter"
+      description: "Total number of alerts generated"
+      labels: ["tenant_id", "severity", "category"]
+    
+    response_time_histogram:
+      type: "histogram"
+      description: "Response time distribution"
+      buckets: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]

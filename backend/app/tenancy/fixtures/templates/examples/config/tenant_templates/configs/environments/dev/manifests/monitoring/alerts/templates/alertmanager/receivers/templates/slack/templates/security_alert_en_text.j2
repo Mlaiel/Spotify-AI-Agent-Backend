@@ -1,0 +1,141 @@
+# Enterprise Security Alert Template (English) - Advanced Industrial Grade
+{% set security_icons = {
+    'intrusion': '🛡️',
+    'authentication': '🔐',
+    'authorization': '👮',
+    'data_breach': '💀',
+    'malware': '🦠',
+    'ddos': '⚡',
+    'vulnerability': '🔍',
+    'compliance': '📋',
+    'audit': '🔍',
+    'encryption': '🔒'
+} %}
+
+🔴 **SECURITY ALERT** 🔴
+
+**{{ security_icons.get(alert.security_context.threat_type, '🛡️') }} Security Incident Detection**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Security Context**
+• **Alert Type**: `{{ alert.security_context.threat_type | title }}`
+• **Severity**: `{{ alert.severity.upper() }}` (Risk Score: {{ alert.security_context.risk_score | default(0) }}/10)
+• **Classification**: `{{ alert.security_context.classification | title }}`
+• **Environment**: `{{ environment | upper }}`
+• **Service**: `{{ alert.context.service_name }}`
+
+🚨 **Threat Details**
+• **Incident**: {{ alert.title }}
+• **Description**: {{ alert.description }}
+• **Detected**: {{ format_date(alert.created_at) }}
+• **Source**: {{ alert.security_context.source_ip | default('Unknown') }}
+• **Target**: {{ alert.security_context.target_resource }}
+
+{% if alert.security_context.attack_vector %}
+🎯 **Attack Vector Analysis**
+• **Vector Type**: {{ alert.security_context.attack_vector.type }}
+• **Method**: {{ alert.security_context.attack_vector.method }}
+• **Payload Size**: {{ alert.security_context.attack_vector.payload_size | default('N/A') }}
+• **Frequency**: {{ alert.security_context.attack_vector.frequency }}
+• **Pattern**: {{ alert.security_context.attack_vector.pattern | default('Unknown') }}
+{% endif %}
+
+{% if alert.security_context.geolocation %}
+🌍 **Geolocation Intelligence**
+• **Source Country**: {{ alert.security_context.geolocation.country }} {{ alert.security_context.geolocation.flag | default('') }}
+• **City**: {{ alert.security_context.geolocation.city }}
+• **ISP**: {{ alert.security_context.geolocation.isp }}
+• **Threat Intel**: {{ alert.security_context.geolocation.threat_score }}/10 risk
+• **Known Bad Actor**: {{ alert.security_context.geolocation.is_known_bad | ternary('❌ YES', '✅ No') }}
+{% endif %}
+
+{% if alert.security_context.user_context %}
+👤 **User Context**
+• **User ID**: `{{ alert.security_context.user_context.user_id | default('Anonymous') }}`
+• **Session ID**: `{{ alert.security_context.user_context.session_id }}`
+• **User Agent**: {{ alert.security_context.user_context.user_agent | truncate(50) }}
+• **Account Status**: {{ alert.security_context.user_context.account_status }}
+• **Previous Violations**: {{ alert.security_context.user_context.violation_count | default(0) }}
+{% endif %}
+
+{% if alert.security_context.compliance_impact %}
+📋 **Compliance Impact Assessment**
+• **Affected Regulations**: {{ alert.security_context.compliance_impact.regulations | join(', ') }}
+• **Data Classification**: {{ alert.security_context.compliance_impact.data_classification }}
+• **Breach Notification Required**: {{ alert.security_context.compliance_impact.notification_required | ternary('❌ YES', '✅ No') }}
+• **Regulatory Risk**: {{ alert.security_context.compliance_impact.regulatory_risk_level }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🧠 **AI Security Analysis**
+{% if alert.ai_insights.threat_classification %}
+**🔍 Threat Classification**: {{ alert.ai_insights.threat_classification.type }} ({{ alert.ai_insights.threat_classification.confidence }}% confidence)
+{% endif %}
+
+{% if alert.ai_insights.attack_prediction %}
+**🔮 Attack Prediction**: {{ alert.ai_insights.attack_prediction.escalation_probability }}% chance of escalation
+**⏰ Estimated Impact Window**: {{ alert.ai_insights.attack_prediction.impact_window }}
+{% endif %}
+
+{% if alert.ai_insights.recommended_actions %}
+**🛡️ Immediate Security Actions**:
+{% for action in alert.ai_insights.recommended_actions[:4] %}
+{{ loop.index }}. {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.similar_attacks %}
+**📊 Attack Pattern Match**: {{ alert.ai_insights.similar_attacks.count }} similar incidents
+**🎯 Success Rate**: {{ alert.ai_insights.similar_attacks.success_rate }}% of similar attacks blocked
+{% endif %}
+{% endif %}
+
+{% if alert.security_context.affected_resources %}
+🎯 **Affected Resources**
+{% for resource in alert.security_context.affected_resources %}
+• **{{ resource.type | title }}**: `{{ resource.identifier }}` ({{ resource.impact_level }})
+{% endfor %}
+{% endif %}
+
+{% if alert.security_context.forensics %}
+🔬 **Forensics Data Available**
+• **Logs Captured**: {{ alert.security_context.forensics.logs_size }}
+• **Network Packets**: {{ alert.security_context.forensics.packet_count }}
+• **File Hashes**: {{ alert.security_context.forensics.file_hashes | length }} files
+• **Memory Dump**: {{ alert.security_context.forensics.memory_dump_available | ternary('✅ Available', '❌ Not captured') }}
+{% endif %}
+
+🚀 **Security Response Actions**
+• [🛡️ Security Dashboard]({{ dashboard_url }}/security/incidents/{{ alert.alert_id }})
+• [🔍 Threat Intelligence]({{ threat_intel_url }}/ip/{{ alert.security_context.source_ip }})
+• [📊 Attack Timeline]({{ dashboard_url }}/security/timeline/{{ alert.alert_id }})
+• [🔬 Forensics Viewer]({{ forensics_url }}/incident/{{ alert.alert_id }})
+• [📋 Incident Response]({{ dashboard_url }}/security/response/{{ alert.alert_id }})
+{% if alert.security_context.siem_case_id %}
+• [🔎 SIEM Case]({{ siem_url }}/cases/{{ alert.security_context.siem_case_id }})
+{% endif %}
+
+{% if alert.auto_response %}
+🤖 **Automated Response Status**
+• **Auto-Block**: {{ alert.auto_response.auto_block_enabled | ternary('✅ ACTIVE', '❌ Disabled') }}
+• **Quarantine**: {{ alert.auto_response.quarantine_status | default('Not applicable') }}
+• **Traffic Filtering**: {{ alert.auto_response.traffic_filtering | default('Normal') }}
+• **Account Actions**: {{ alert.auto_response.account_actions | default('None taken') }}
+{% endif %}
+
+⚡ **Escalation & Response Team**
+• **Security Team**: @security-team
+• **SOC Analyst**: @{{ alert.security_context.assigned_analyst | default('on-call-soc') }}
+• **Incident Commander**: @{{ alert.security_context.incident_commander | default('security-lead') }}
+• **Response Time**: {{ alert.security_context.target_response_time | default('15 minutes') }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Security Alert ID**: `{{ alert.alert_id }}`
+**Incident ID**: `{{ alert.security_context.incident_id }}`
+**SIEM Rule**: `{{ alert.security_context.siem_rule_id | default('N/A') }}`
+**Threat Level**: `{{ alert.security_context.threat_level | upper }}`
+
+*🛡️ Spotify AI Agent Security Operations Center*
+*Alert Generated: {{ format_date(now, 'iso') }}*
+*Classification: {{ alert.security_context.classification | upper }}*
+*⚠️ This is a SECURITY INCIDENT - Follow incident response procedures*

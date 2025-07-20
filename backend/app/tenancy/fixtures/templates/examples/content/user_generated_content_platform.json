@@ -1,0 +1,696 @@
+{
+  "_metadata": {
+    "template_type": "user_generated_content_platform",
+    "template_version": "2.9.0",
+    "schema_version": "2024.1",
+    "created_at": "{{ current_timestamp() }}",
+    "generator": "UGCPlatformTemplateGenerator",
+    "tags": ["ugc", "community", "creation", "moderation", "social", "monetization"],
+    "description": "Comprehensive user-generated content platform with creation tools, community features, and monetization"
+  },
+  "platform_id": "{{ platform_id }}",
+  "tenant_id": "{{ tenant_id }}",
+  "creator_id": "{{ creator_id }}",
+  "platform_configuration": {
+    "platform_name": "{{ platform_name | default('Music Creator Hub') }}",
+    "platform_type": "{{ platform_type | default('music_creation_community') }}",
+    "target_audience": "{{ target_audience | default('musicians_and_music_lovers') }}",
+    "content_types": "{{ content_types | default(['audio', 'video', 'playlist', 'remix', 'cover', 'original']) }}",
+    "collaboration_enabled": "{{ collaboration_enabled | default(true) }}",
+    "monetization_enabled": "{{ monetization_enabled | default(true) }}",
+    "live_streaming": "{{ live_streaming_enabled | default(true) }}",
+    "mobile_app_support": "{{ mobile_app_support | default(true) }}",
+    "web_platform_support": "{{ web_platform_support | default(true) }}"
+  },
+  "content_creation_tools": {
+    "audio_production": {
+      "digital_audio_workstation": {
+        "enabled": "{{ daw_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "multi_track_recording",
+            "enabled": "{{ multi_track_recording | default(true) }}",
+            "max_tracks": "{{ max_audio_tracks | default(32) }}",
+            "real_time_collaboration": "{{ real_time_audio_collaboration | default(true) }}"
+          },
+          {
+            "feature": "virtual_instruments",
+            "enabled": "{{ virtual_instruments_enabled | default(true) }}",
+            "instrument_library": [
+              {
+                "instrument": "piano",
+                "samples": "{{ piano_samples | default(88) }}",
+                "velocity_layers": "{{ piano_velocity_layers | default(5) }}"
+              },
+              {
+                "instrument": "drums",
+                "kit_variations": "{{ drum_kit_variations | default(10) }}",
+                "sample_library_size": "{{ drum_sample_library | default(500) }}"
+              },
+              {
+                "instrument": "synthesizer",
+                "preset_count": "{{ synth_preset_count | default(200) }}",
+                "custom_synthesis": "{{ custom_synthesis_enabled | default(true) }}"
+              },
+              {
+                "instrument": "guitar",
+                "amp_simulations": "{{ guitar_amp_simulations | default(15) }}",
+                "effect_pedals": "{{ guitar_effect_pedals | default(25) }}"
+              }
+            ]
+          },
+          {
+            "feature": "audio_effects",
+            "enabled": "{{ audio_effects_enabled | default(true) }}",
+            "effect_categories": [
+              {
+                "category": "dynamics",
+                "effects": ["compressor", "limiter", "expander", "gate"],
+                "presets_per_effect": "{{ dynamics_presets | default(10) }}"
+              },
+              {
+                "category": "time_based",
+                "effects": ["reverb", "delay", "chorus", "flanger"],
+                "impulse_responses": "{{ impulse_responses | default(50) }}"
+              },
+              {
+                "category": "modulation",
+                "effects": ["phaser", "tremolo", "vibrato", "ring_modulator"],
+                "lfo_shapes": "{{ lfo_shapes | default(8) }}"
+              },
+              {
+                "category": "distortion",
+                "effects": ["overdrive", "distortion", "fuzz", "bitcrusher"],
+                "saturation_models": "{{ saturation_models | default(12) }}"
+              }
+            ]
+          },
+          {
+            "feature": "mixing_console",
+            "enabled": "{{ mixing_console_enabled | default(true) }}",
+            "channel_count": "{{ mixing_channel_count | default(64) }}",
+            "eq_bands": "{{ eq_bands_per_channel | default(8) }}",
+            "send_effects": "{{ send_effects_count | default(8) }}",
+            "automation": "{{ mixing_automation_enabled | default(true) }}"
+          }
+        ],
+        "export_formats": ["wav", "mp3", "flac", "aac", "ogg"],
+        "quality_settings": {
+          "sample_rates": ["44100", "48000", "96000", "192000"],
+          "bit_depths": ["16", "24", "32"],
+          "export_quality": "{{ default_export_quality | default('high') }}"
+        }
+      },
+      "sample_library": {
+        "enabled": "{{ sample_library_enabled | default(true) }}",
+        "library_size": "{{ sample_library_size | default(10000) }}",
+        "categories": [
+          {
+            "category": "loops",
+            "subcategories": ["drum_loops", "bass_loops", "melody_loops", "vocal_loops"],
+            "samples_per_category": "{{ loops_per_category | default(500) }}",
+            "bpm_range": ["{{ min_loop_bpm | default(60) }}", "{{ max_loop_bpm | default(200) }}"]
+          },
+          {
+            "category": "one_shots",
+            "subcategories": ["kicks", "snares", "hi_hats", "vocals", "instruments"],
+            "samples_per_category": "{{ one_shots_per_category | default(300) }}",
+            "tagged_samples": "{{ tagged_samples_enabled | default(true) }}"
+          },
+          {
+            "category": "construction_kits",
+            "kit_count": "{{ construction_kit_count | default(100) }}",
+            "stems_per_kit": "{{ stems_per_kit | default(8) }}",
+            "genre_variety": "{{ construction_kit_genres | default(['pop', 'hip-hop', 'electronic', 'rock', 'jazz']) }}"
+          }
+        ],
+        "user_uploads": {
+          "enabled": "{{ user_sample_uploads | default(true) }}",
+          "max_file_size_mb": "{{ max_sample_file_size | default(50) }}",
+          "supported_formats": ["wav", "mp3", "flac", "aiff"],
+          "moderation": "{{ sample_moderation_enabled | default(true) }}",
+          "revenue_sharing": "{{ sample_revenue_sharing | default(true) }}"
+        }
+      },
+      "ai_assistance": {
+        "enabled": "{{ ai_assistance_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "chord_progression_generator",
+            "enabled": "{{ chord_progression_ai | default(true) }}",
+            "music_theory_integration": "{{ music_theory_integration | default(true) }}",
+            "genre_specific_progressions": "{{ genre_specific_chords | default(true) }}"
+          },
+          {
+            "feature": "melody_generator",
+            "enabled": "{{ melody_generator_ai | default(true) }}",
+            "melodic_styles": "{{ melodic_styles_count | default(20) }}",
+            "harmony_awareness": "{{ harmony_aware_melody | default(true) }}"
+          },
+          {
+            "feature": "drum_pattern_generator",
+            "enabled": "{{ drum_pattern_ai | default(true) }}",
+            "groove_templates": "{{ groove_templates_count | default(50) }}",
+            "humanization": "{{ drum_humanization | default(true) }}"
+          },
+          {
+            "feature": "mastering_assistant",
+            "enabled": "{{ mastering_assistant_ai | default(true) }}",
+            "automatic_mastering": "{{ automatic_mastering | default(true) }}",
+            "reference_track_matching": "{{ reference_track_matching | default(true) }}"
+          },
+          {
+            "feature": "lyric_generation",
+            "enabled": "{{ lyric_generation_ai | default(true) }}",
+            "rhyme_schemes": "{{ rhyme_schemes_supported | default(15) }}",
+            "genre_appropriate_lyrics": "{{ genre_appropriate_lyrics | default(true) }}"
+          }
+        ]
+      }
+    },
+    "video_production": {
+      "music_video_editor": {
+        "enabled": "{{ video_editor_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "timeline_editor",
+            "enabled": "{{ timeline_editor_enabled | default(true) }}",
+            "video_tracks": "{{ video_tracks_count | default(8) }}",
+            "audio_tracks": "{{ video_audio_tracks | default(16) }}",
+            "precision_editing": "{{ frame_precision_editing | default(true) }}"
+          },
+          {
+            "feature": "visual_effects",
+            "enabled": "{{ visual_effects_enabled | default(true) }}",
+            "effect_library": [
+              {
+                "category": "transitions",
+                "effects": ["fade", "wipe", "slide", "zoom", "rotate"],
+                "customizable": "{{ customizable_transitions | default(true) }}"
+              },
+              {
+                "category": "filters",
+                "effects": ["color_grading", "vintage", "black_white", "sepia", "glow"],
+                "real_time_preview": "{{ real_time_filter_preview | default(true) }}"
+              },
+              {
+                "category": "animations",
+                "effects": ["text_animations", "logo_animations", "particle_effects"],
+                "keyframe_animation": "{{ keyframe_animation | default(true) }}"
+              }
+            ]
+          },
+          {
+            "feature": "audio_visualization",
+            "enabled": "{{ audio_visualization_enabled | default(true) }}",
+            "visualization_types": [
+              {
+                "type": "spectrum_analyzer",
+                "customizable": "{{ spectrum_customizable | default(true) }}",
+                "real_time_response": "{{ spectrum_real_time | default(true) }}"
+              },
+              {
+                "type": "waveform",
+                "styles": "{{ waveform_styles | default(10) }}",
+                "color_schemes": "{{ waveform_color_schemes | default(20) }}"
+              },
+              {
+                "type": "particle_system",
+                "particle_count": "{{ max_particles | default(1000) }}",
+                "physics_simulation": "{{ particle_physics | default(true) }}"
+              }
+            ]
+          }
+        ],
+        "export_settings": {
+          "resolutions": ["720p", "1080p", "4K"],
+          "frame_rates": ["24", "30", "60"],
+          "formats": ["mp4", "mov", "avi", "webm"],
+          "compression": "{{ video_compression_quality | default('high') }}"
+        }
+      },
+      "live_streaming": {
+        "enabled": "{{ live_streaming_video_enabled | default(true) }}",
+        "streaming_features": [
+          {
+            "feature": "multi_camera_support",
+            "enabled": "{{ multi_camera_streaming | default(true) }}",
+            "max_cameras": "{{ max_streaming_cameras | default(4) }}",
+            "camera_switching": "{{ live_camera_switching | default(true) }}"
+          },
+          {
+            "feature": "screen_sharing",
+            "enabled": "{{ screen_sharing_streaming | default(true) }}",
+            "partial_screen_capture": "{{ partial_screen_capture | default(true) }}",
+            "application_capture": "{{ application_capture | default(true) }}"
+          },
+          {
+            "feature": "real_time_chat",
+            "enabled": "{{ streaming_chat_enabled | default(true) }}",
+            "chat_moderation": "{{ chat_moderation_enabled | default(true) }}",
+            "emoji_reactions": "{{ emoji_reactions_streaming | default(true) }}"
+          },
+          {
+            "feature": "interactive_elements",
+            "enabled": "{{ interactive_streaming_elements | default(true) }}",
+            "polls": "{{ streaming_polls | default(true) }}",
+            "q_and_a": "{{ streaming_qa | default(true) }}",
+            "virtual_tips": "{{ virtual_tips_streaming | default(true) }}"
+          }
+        ],
+        "streaming_destinations": [
+          {
+            "platform": "internal",
+            "enabled": "{{ internal_streaming_enabled | default(true) }}",
+            "viewer_capacity": "{{ internal_viewer_capacity | default(10000) }}"
+          },
+          {
+            "platform": "youtube",
+            "enabled": "{{ youtube_streaming_enabled | default(true) }}",
+            "api_integration": "{{ youtube_api_integration | default(true) }}"
+          },
+          {
+            "platform": "twitch",
+            "enabled": "{{ twitch_streaming_enabled | default(true) }}",
+            "api_integration": "{{ twitch_api_integration | default(true) }}"
+          },
+          {
+            "platform": "facebook",
+            "enabled": "{{ facebook_streaming_enabled | default(true) }}",
+            "api_integration": "{{ facebook_api_integration | default(true) }}"
+          }
+        ]
+      }
+    },
+    "collaborative_tools": {
+      "real_time_collaboration": {
+        "enabled": "{{ real_time_collaboration_enabled | default(true) }}",
+        "collaboration_types": [
+          {
+            "type": "audio_production",
+            "enabled": "{{ audio_collaboration_enabled | default(true) }}",
+            "max_collaborators": "{{ max_audio_collaborators | default(8) }}",
+            "version_control": "{{ audio_version_control | default(true) }}",
+            "conflict_resolution": "{{ audio_conflict_resolution | default('automatic') }}"
+          },
+          {
+            "type": "video_editing",
+            "enabled": "{{ video_collaboration_enabled | default(true) }}",
+            "max_collaborators": "{{ max_video_collaborators | default(4) }}",
+            "asset_locking": "{{ video_asset_locking | default(true) }}",
+            "real_time_preview": "{{ collaborative_video_preview | default(true) }}"
+          },
+          {
+            "type": "lyric_writing",
+            "enabled": "{{ lyric_collaboration_enabled | default(true) }}",
+            "max_collaborators": "{{ max_lyric_collaborators | default(10) }}",
+            "suggestion_system": "{{ lyric_suggestion_system | default(true) }}",
+            "version_history": "{{ lyric_version_history | default(true) }}"
+          }
+        ],
+        "communication": {
+          "voice_chat": "{{ voice_chat_collaboration | default(true) }}",
+          "video_chat": "{{ video_chat_collaboration | default(true) }}",
+          "text_chat": "{{ text_chat_collaboration | default(true) }}",
+          "annotation_system": "{{ annotation_system_enabled | default(true) }}",
+          "comment_threads": "{{ comment_threads_enabled | default(true) }}"
+        }
+      },
+      "project_management": {
+        "enabled": "{{ project_management_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "task_management",
+            "enabled": "{{ task_management_enabled | default(true) }}",
+            "task_assignment": "{{ task_assignment_enabled | default(true) }}",
+            "deadline_tracking": "{{ deadline_tracking_enabled | default(true) }}",
+            "progress_visualization": "{{ progress_visualization | default(true) }}"
+          },
+          {
+            "feature": "file_organization",
+            "enabled": "{{ file_organization_enabled | default(true) }}",
+            "folder_structure": "{{ custom_folder_structure | default(true) }}",
+            "tagging_system": "{{ file_tagging_system | default(true) }}",
+            "search_functionality": "{{ file_search_enabled | default(true) }}"
+          },
+          {
+            "feature": "milestone_tracking",
+            "enabled": "{{ milestone_tracking_enabled | default(true) }}",
+            "custom_milestones": "{{ custom_milestones_enabled | default(true) }}",
+            "achievement_system": "{{ achievement_system_enabled | default(true) }}",
+            "progress_reports": "{{ progress_reports_enabled | default(true) }}"
+          }
+        ]
+      },
+      "rights_management": {
+        "enabled": "{{ rights_management_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "ownership_tracking",
+            "enabled": "{{ ownership_tracking_enabled | default(true) }}",
+            "contribution_percentage": "{{ contribution_percentage_tracking | default(true) }}",
+            "automatic_splits": "{{ automatic_split_calculation | default(true) }}",
+            "legal_documentation": "{{ legal_documentation_generation | default(true) }}"
+          },
+          {
+            "feature": "licensing_management",
+            "enabled": "{{ licensing_management_enabled | default(true) }}",
+            "license_templates": "{{ license_templates_available | default(10) }}",
+            "custom_licensing": "{{ custom_licensing_enabled | default(true) }}",
+            "usage_tracking": "{{ license_usage_tracking | default(true) }}"
+          },
+          {
+            "feature": "revenue_sharing",
+            "enabled": "{{ revenue_sharing_enabled | default(true) }}",
+            "automatic_distribution": "{{ automatic_revenue_distribution | default(true) }}",
+            "transparent_reporting": "{{ transparent_revenue_reporting | default(true) }}",
+            "payment_integration": "{{ payment_integration_enabled | default(true) }}"
+          }
+        ]
+      }
+    }
+  },
+  "community_features": {
+    "social_networking": {
+      "user_profiles": {
+        "enabled": "{{ user_profiles_enabled | default(true) }}",
+        "profile_features": [
+          {
+            "feature": "artist_showcase",
+            "enabled": "{{ artist_showcase_enabled | default(true) }}",
+            "portfolio_tracks": "{{ max_portfolio_tracks | default(20) }}",
+            "featured_content": "{{ featured_content_enabled | default(true) }}",
+            "bio_section": "{{ bio_section_enabled | default(true) }}"
+          },
+          {
+            "feature": "social_connections",
+            "enabled": "{{ social_connections_enabled | default(true) }}",
+            "follower_system": "{{ follower_system_enabled | default(true) }}",
+            "friend_connections": "{{ friend_connections_enabled | default(true) }}",
+            "collaboration_history": "{{ collaboration_history_visible | default(true) }}"
+          },
+          {
+            "feature": "achievement_system",
+            "enabled": "{{ achievement_system_social | default(true) }}",
+            "badges": "{{ badges_enabled | default(true) }}",
+            "leaderboards": "{{ leaderboards_enabled | default(true) }}",
+            "skill_ratings": "{{ skill_ratings_enabled | default(true) }}"
+          }
+        ],
+        "privacy_controls": {
+          "profile_visibility": "{{ profile_visibility_controls | default(true) }}",
+          "content_privacy": "{{ content_privacy_controls | default(true) }}",
+          "contact_preferences": "{{ contact_preferences_enabled | default(true) }}",
+          "data_export": "{{ data_export_enabled | default(true) }}"
+        }
+      },
+      "content_discovery": {
+        "enabled": "{{ content_discovery_enabled | default(true) }}",
+        "discovery_methods": [
+          {
+            "method": "trending_content",
+            "enabled": "{{ trending_content_discovery | default(true) }}",
+            "trending_algorithms": ["engagement_based", "velocity_based", "quality_weighted"],
+            "time_windows": ["hourly", "daily", "weekly", "monthly"]
+          },
+          {
+            "method": "personalized_recommendations",
+            "enabled": "{{ personalized_recommendations_discovery | default(true) }}",
+            "recommendation_engine": "{{ discovery_recommendation_engine | default('hybrid') }}",
+            "user_preference_learning": "{{ user_preference_learning | default(true) }}"
+          },
+          {
+            "method": "genre_exploration",
+            "enabled": "{{ genre_exploration_discovery | default(true) }}",
+            "genre_categories": "{{ genre_categories_count | default(25) }}",
+            "subgenre_drilling": "{{ subgenre_drilling_enabled | default(true) }}"
+          },
+          {
+            "method": "collaborative_playlists",
+            "enabled": "{{ collaborative_playlists_discovery | default(true) }}",
+            "public_playlists": "{{ public_playlists_enabled | default(true) }}",
+            "playlist_collaboration": "{{ playlist_collaboration_enabled | default(true) }}"
+          }
+        ]
+      },
+      "engagement_features": {
+        "enabled": "{{ engagement_features_enabled | default(true) }}",
+        "features": [
+          {
+            "feature": "likes_and_reactions",
+            "enabled": "{{ likes_reactions_enabled | default(true) }}",
+            "reaction_types": ["like", "love", "fire", "mind_blown", "groove"],
+            "reaction_analytics": "{{ reaction_analytics_enabled | default(true) }}"
+          },
+          {
+            "feature": "comments_and_feedback",
+            "enabled": "{{ comments_feedback_enabled | default(true) }}",
+            "threaded_comments": "{{ threaded_comments_enabled | default(true) }}",
+            "timestamp_comments": "{{ timestamp_comments_enabled | default(true) }}",
+            "constructive_feedback_tools": "{{ constructive_feedback_tools | default(true) }}"
+          },
+          {
+            "feature": "sharing_and_distribution",
+            "enabled": "{{ sharing_distribution_enabled | default(true) }}",
+            "internal_sharing": "{{ internal_sharing_enabled | default(true) }}",
+            "external_platform_sharing": "{{ external_platform_sharing | default(true) }}",
+            "embed_codes": "{{ embed_codes_enabled | default(true) }}"
+          },
+          {
+            "feature": "contests_and_challenges",
+            "enabled": "{{ contests_challenges_enabled | default(true) }}",
+            "user_generated_challenges": "{{ user_generated_challenges | default(true) }}",
+            "voting_system": "{{ challenge_voting_system | default(true) }}",
+            "prize_integration": "{{ prize_integration_enabled | default(true) }}"
+          }
+        ]
+      }
+    },
+    "community_moderation": {
+      "automated_moderation": {
+        "enabled": "{{ automated_moderation_enabled | default(true) }}",
+        "moderation_features": [
+          {
+            "feature": "content_scanning",
+            "enabled": "{{ content_scanning_enabled | default(true) }}",
+            "inappropriate_content_detection": "{{ inappropriate_content_detection | default(true) }}",
+            "copyright_detection": "{{ copyright_detection_enabled | default(true) }}",
+            "spam_detection": "{{ spam_detection_enabled | default(true) }}"
+          },
+          {
+            "feature": "behavior_monitoring",
+            "enabled": "{{ behavior_monitoring_enabled | default(true) }}",
+            "harassment_detection": "{{ harassment_detection_enabled | default(true) }}",
+            "fake_engagement_detection": "{{ fake_engagement_detection | default(true) }}",
+            "suspicious_activity_alerts": "{{ suspicious_activity_alerts | default(true) }}"
+          },
+          {
+            "feature": "quality_assessment",
+            "enabled": "{{ quality_assessment_moderation | default(true) }}",
+            "audio_quality_filtering": "{{ audio_quality_filtering | default(true) }}",
+            "content_completeness_check": "{{ content_completeness_check | default(true) }}",
+            "metadata_validation": "{{ metadata_validation_moderation | default(true) }}"
+          }
+        ]
+      },
+      "human_moderation": {
+        "enabled": "{{ human_moderation_enabled | default(true) }}",
+        "moderator_roles": [
+          {
+            "role": "community_manager",
+            "enabled": "{{ community_manager_enabled | default(true) }}",
+            "responsibilities": ["community_guidelines", "user_support", "conflict_resolution"],
+            "escalation_authority": "{{ community_manager_escalation | default(true) }}"
+          },
+          {
+            "role": "content_reviewer",
+            "enabled": "{{ content_reviewer_enabled | default(true) }}",
+            "responsibilities": ["content_approval", "quality_assessment", "policy_enforcement"],
+            "review_queue_management": "{{ review_queue_management | default(true) }}"
+          },
+          {
+            "role": "technical_moderator",
+            "enabled": "{{ technical_moderator_enabled | default(true) }}",
+            "responsibilities": ["copyright_claims", "technical_issues", "platform_abuse"],
+            "technical_escalation": "{{ technical_escalation_enabled | default(true) }}"
+          }
+        ]
+      },
+      "community_guidelines": {
+        "enabled": "{{ community_guidelines_enabled | default(true) }}",
+        "guideline_categories": [
+          {
+            "category": "content_standards",
+            "rules": ["original_content_encouraged", "quality_standards", "appropriate_content"],
+            "enforcement_level": "{{ content_standards_enforcement | default('strict') }}"
+          },
+          {
+            "category": "community_behavior",
+            "rules": ["respectful_interaction", "constructive_feedback", "no_harassment"],
+            "enforcement_level": "{{ behavior_enforcement_level | default('strict') }}"
+          },
+          {
+            "category": "intellectual_property",
+            "rules": ["copyright_respect", "fair_use", "attribution_requirements"],
+            "enforcement_level": "{{ ip_enforcement_level | default('very_strict') }}"
+          },
+          {
+            "category": "platform_usage",
+            "rules": ["no_spam", "authentic_engagement", "proper_categorization"],
+            "enforcement_level": "{{ platform_usage_enforcement | default('moderate') }}"
+          }
+        ]
+      }
+    }
+  },
+  "monetization_system": {
+    "revenue_streams": [
+      {
+        "stream": "content_sales",
+        "enabled": "{{ content_sales_enabled | default(true) }}",
+        "pricing_models": [
+          {
+            "model": "per_track",
+            "enabled": "{{ per_track_pricing | default(true) }}",
+            "price_range": ["{{ min_track_price | default(0.99) }}", "{{ max_track_price | default(9.99) }}"],
+            "creator_percentage": "{{ track_creator_percentage | default(0.7) }}"
+          },
+          {
+            "model": "album_bundles",
+            "enabled": "{{ album_bundle_pricing | default(true) }}",
+            "bundle_discount": "{{ album_bundle_discount | default(0.2) }}",
+            "creator_percentage": "{{ album_creator_percentage | default(0.7) }}"
+          },
+          {
+            "model": "exclusive_content",
+            "enabled": "{{ exclusive_content_pricing | default(true) }}",
+            "premium_multiplier": "{{ exclusive_premium_multiplier | default(2.0) }}",
+            "creator_percentage": "{{ exclusive_creator_percentage | default(0.8) }}"
+          }
+        ]
+      },
+      {
+        "stream": "subscription_tiers",
+        "enabled": "{{ subscription_tiers_enabled | default(true) }}",
+        "tiers": [
+          {
+            "tier": "basic",
+            "enabled": "{{ basic_tier_enabled | default(true) }}",
+            "monthly_price": "{{ basic_monthly_price | default(4.99) }}",
+            "features": ["ad_supported", "limited_downloads", "basic_quality"],
+            "creator_revenue_share": "{{ basic_creator_share | default(0.5) }}"
+          },
+          {
+            "tier": "premium",
+            "enabled": "{{ premium_tier_enabled | default(true) }}",
+            "monthly_price": "{{ premium_monthly_price | default(9.99) }}",
+            "features": ["ad_free", "unlimited_downloads", "high_quality", "early_access"],
+            "creator_revenue_share": "{{ premium_creator_share | default(0.6) }}"
+          },
+          {
+            "tier": "creator_pro",
+            "enabled": "{{ creator_pro_tier_enabled | default(true) }}",
+            "monthly_price": "{{ creator_pro_monthly_price | default(19.99) }}",
+            "features": ["all_premium_features", "advanced_analytics", "collaboration_tools", "priority_support"],
+            "creator_revenue_share": "{{ creator_pro_share | default(0.7) }}"
+          }
+        ]
+      },
+      {
+        "stream": "virtual_tips",
+        "enabled": "{{ virtual_tips_enabled | default(true) }}",
+        "tip_amounts": ["{{ tip_amount_1 | default(1.00) }}", "{{ tip_amount_2 | default(5.00) }}", "{{ tip_amount_3 | default(10.00) }}", "{{ tip_amount_4 | default(25.00) }}"],
+        "custom_tip_enabled": "{{ custom_tip_enabled | default(true) }}",
+        "creator_percentage": "{{ tip_creator_percentage | default(0.95) }}",
+        "tip_goals": "{{ tip_goals_enabled | default(true) }}"
+      },
+      {
+        "stream": "licensing_marketplace",
+        "enabled": "{{ licensing_marketplace_enabled | default(true) }}",
+        "license_types": [
+          {
+            "type": "sync_licensing",
+            "enabled": "{{ sync_licensing_enabled | default(true) }}",
+            "use_cases": ["film", "tv", "commercials", "games"],
+            "pricing_model": "{{ sync_licensing_pricing | default('negotiated') }}"
+          },
+          {
+            "type": "sampling_rights",
+            "enabled": "{{ sampling_rights_enabled | default(true) }}",
+            "automated_clearing": "{{ automated_sample_clearing | default(true) }}",
+            "royalty_splits": "{{ sample_royalty_splits | default(true) }}"
+          },
+          {
+            "type": "remix_licensing",
+            "enabled": "{{ remix_licensing_enabled | default(true) }}",
+            "official_remix_program": "{{ official_remix_program | default(true) }}",
+            "remix_competitions": "{{ remix_competitions_enabled | default(true) }}"
+          }
+        ]
+      }
+    ],
+    "payment_processing": {
+      "payment_providers": [
+        {
+          "provider": "stripe",
+          "enabled": "{{ stripe_payment_enabled | default(true) }}",
+          "supported_methods": ["credit_card", "debit_card", "bank_transfer"],
+          "international_support": "{{ stripe_international_support | default(true) }}"
+        },
+        {
+          "provider": "paypal",
+          "enabled": "{{ paypal_payment_enabled | default(true) }}",
+          "supported_methods": ["paypal_account", "credit_card"],
+          "international_support": "{{ paypal_international_support | default(true) }}"
+        },
+        {
+          "provider": "cryptocurrency",
+          "enabled": "{{ crypto_payment_enabled | default(false) }}",
+          "supported_currencies": ["bitcoin", "ethereum", "litecoin"],
+          "wallet_integration": "{{ crypto_wallet_integration | default(true) }}"
+        }
+      ],
+      "payout_system": {
+        "enabled": "{{ payout_system_enabled | default(true) }}",
+        "payout_frequency": "{{ payout_frequency | default('monthly') }}",
+        "minimum_payout": "{{ minimum_payout_amount | default(25.00) }}",
+        "payout_methods": ["bank_transfer", "paypal", "cryptocurrency"],
+        "tax_reporting": "{{ tax_reporting_enabled | default(true) }}"
+      }
+    },
+    "analytics_and_insights": {
+      "creator_analytics": {
+        "enabled": "{{ creator_analytics_enabled | default(true) }}",
+        "metrics": [
+          {
+            "category": "engagement",
+            "metrics": ["plays", "likes", "shares", "comments", "downloads"],
+            "real_time_tracking": "{{ engagement_real_time_tracking | default(true) }}"
+          },
+          {
+            "category": "audience",
+            "metrics": ["demographics", "geographic_distribution", "listening_patterns"],
+            "audience_insights": "{{ audience_insights_enabled | default(true) }}"
+          },
+          {
+            "category": "revenue",
+            "metrics": ["total_earnings", "revenue_streams", "payout_history"],
+            "revenue_forecasting": "{{ revenue_forecasting_enabled | default(true) }}"
+          },
+          {
+            "category": "performance",
+            "metrics": ["trending_score", "discovery_rate", "retention_rate"],
+            "performance_benchmarking": "{{ performance_benchmarking | default(true) }}"
+          }
+        ]
+      },
+      "platform_analytics": {
+        "enabled": "{{ platform_analytics_enabled | default(true) }}",
+        "business_intelligence": "{{ business_intelligence_enabled | default(true) }}",
+        "user_behavior_analysis": "{{ user_behavior_analysis_enabled | default(true) }}",
+        "content_performance_analysis": "{{ content_performance_analysis | default(true) }}",
+        "market_trend_analysis": "{{ market_trend_analysis_enabled | default(true) }}"
+      }
+    }
+  }
+}

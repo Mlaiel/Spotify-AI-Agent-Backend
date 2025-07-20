@@ -1,0 +1,146 @@
+{
+  "cpu_high": {
+    "category": "performance",
+    "severity": "high",
+    "title": "🚨 ALERTE UTILISATION CPU ÉLEVÉE",
+    "message": "Utilisation CPU critique détectée : {cpu_usage} % sur le tenant '{tenant_id}'. Seuil : {threshold} %. Action immédiate requise pour éviter la dégradation du service.",
+    "action": "Augmenter les ressources ou investiguer les processus haute consommation CPU immédiatement.",
+    "metadata": {
+      "escalation_timeout": 300,
+      "auto_scale": true,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "memory_high": {
+    "category": "performance", 
+    "severity": "high",
+    "title": "⚠️ AVERTISSEMENT UTILISATION MÉMOIRE ÉLEVÉE",
+    "message": "Utilisation mémoire élevée détectée : {memory_usage} % sur l'instance '{instance_id}'. Utilisation actuelle : {current_memory} / {total_memory}. Surveillance renforcée activée.",
+    "action": "Considérer l'augmentation des ressources mémoire ou l'optimisation des processus consommateurs.",
+    "metadata": {
+      "escalation_timeout": 600,
+      "auto_scale": false,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "disk_space_low": {
+    "category": "system",
+    "severity": "medium", 
+    "title": "📁 AVERTISSEMENT ESPACE DISQUE FAIBLE",
+    "message": "Espace disque faible détecté : Seulement {free_space_percentage} % d'espace libre restant sur '{mount_point}' (instance : {instance_id}). Disponible : {free_space} / {total_space}.",
+    "action": "Nettoyer les fichiers inutiles ou étendre la capacité disque.",
+    "metadata": {
+      "escalation_timeout": 3600,
+      "auto_cleanup": true,
+      "notification_channels": ["slack"]
+    }
+  },
+  "api_response_slow": {
+    "category": "performance",
+    "severity": "medium",
+    "title": "⚡ TEMPS DE RÉPONSE API LENT",
+    "message": "Dégradation du temps de réponse API détectée : {avg_response_time} ms (objectif : < {target_response_time} ms) sur l'endpoint '{endpoint}'. Requêtes affectées : {affected_requests}.",
+    "action": "Investiguer les requêtes base de données, performance du cache, ou considérer l'augmentation des instances API.",
+    "metadata": {
+      "escalation_timeout": 900,
+      "auto_scale": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "database_connection_high": {
+    "category": "system",
+    "severity": "high",
+    "title": "🗄️ CONNEXIONS BASE DE DONNÉES ÉLEVÉES",
+    "message": "Nombre élevé de connexions base de données : {active_connections} / {max_connections} ({connection_percentage} %) sur la base '{database_id}'. Risque d'épuisement du pool de connexions.",
+    "action": "Réviser la configuration du pooling de connexions et investiguer les fuites de connexions.",
+    "metadata": {
+      "escalation_timeout": 600,
+      "auto_scale": false,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "error_rate_high": {
+    "category": "system",
+    "severity": "critical",
+    "title": "🔥 TAUX D'ERREUR CRITIQUE",
+    "message": "Pic critique du taux d'erreur détecté : {error_rate} % (seuil : {threshold} %) dans les dernières {time_window} minutes sur le service '{service_name}'. Total erreurs : {error_count}.",
+    "action": "Investigation immédiate requise. Vérifier les logs et effectuer un rollback des déploiements récents si nécessaire.",
+    "metadata": {
+      "escalation_timeout": 180,
+      "auto_rollback": true,
+      "notification_channels": ["slack", "email", "pagerduty", "sms"]
+    }
+  },
+  "user_authentication_failed": {
+    "category": "security",
+    "severity": "medium",
+    "title": "🔐 ÉCHECS D'AUTHENTIFICATION",
+    "message": "Multiples échecs d'authentification détectés : {failed_attempts} tentatives échouées en {time_window} minutes depuis l'IP '{source_ip}' pour le tenant '{tenant_id}'.",
+    "action": "Investiguer une potentielle attaque par force brute. Considérer le blocage IP si le pattern continue.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_block": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "payment_processing_error": {
+    "category": "business",
+    "severity": "high",
+    "title": "💳 ERREURS DE TRAITEMENT PAIEMENT",
+    "message": "Erreurs de traitement paiement détectées : {error_count} transactions échouées totalisant {failed_amount} dans les dernières {time_window} minutes. Taux de succès : {success_rate} %.",
+    "action": "Investiguer la connectivité de la passerelle de paiement et notifier l'équipe financière immédiatement.",
+    "metadata": {
+      "escalation_timeout": 300,
+      "notify_finance": true,
+      "notification_channels": ["slack", "email", "pagerduty"]
+    }
+  },
+  "ai_model_prediction_accuracy_low": {
+    "category": "business",
+    "severity": "medium",
+    "title": "🤖 DÉGRADATION PRÉCISION MODÈLE IA",
+    "message": "Précision du modèle IA sous le seuil : {current_accuracy} % (objectif : > {target_accuracy} %) pour le modèle '{model_name}' sur le tenant '{tenant_id}'. Prédictions affectées : {affected_predictions}.",
+    "action": "Réviser les performances du modèle, réentraîner si nécessaire, ou revenir à la version précédente du modèle.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_retrain": false,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "spotify_api_rate_limit": {
+    "category": "system",
+    "severity": "medium",
+    "title": "🎵 LIMITE TAUX API SPOTIFY APPROCHÉE",
+    "message": "Approche de la limite de taux API Spotify : {current_requests} / {rate_limit} requêtes utilisées ({usage_percentage} %) dans la fenêtre actuelle. Tenant : '{tenant_id}'. Temps de reset : {reset_time}.",
+    "action": "Optimiser les patterns d'utilisation API, implémenter la mise en cache des requêtes, ou upgrader le tier API si nécessaire.",
+    "metadata": {
+      "escalation_timeout": 3600,
+      "enable_caching": true,
+      "notification_channels": ["slack"]
+    }
+  },
+  "tenant_quota_exceeded": {
+    "category": "business",
+    "severity": "high",
+    "title": "📊 QUOTA TENANT DÉPASSÉ",
+    "message": "Quota tenant dépassé : utilisation '{quota_type}' à {current_usage} / {quota_limit} ({usage_percentage} %) pour le tenant '{tenant_id}'. Dépassement : {overage_amount}.",
+    "action": "Notifier le tenant du dépassement de quota et considérer la facturation automatique du dépassement ou la limitation du service.",
+    "metadata": {
+      "escalation_timeout": 1800,
+      "auto_bill": true,
+      "notification_channels": ["slack", "email"]
+    }
+  },
+  "ssl_certificate_expiring": {
+    "category": "security",
+    "severity": "medium",
+    "title": "🔒 CERTIFICAT SSL EXPIRANT",
+    "message": "Certificat SSL expirant bientôt : Le certificat pour '{domain}' expire dans {days_until_expiry} jours ({expiry_date}). Service : '{service_name}'.",
+    "action": "Renouveler le certificat SSL avant expiration pour éviter l'interruption du service.",
+    "metadata": {
+      "escalation_timeout": 86400,
+      "auto_renew": true,
+      "notification_channels": ["slack", "email"]
+    }
+  }
+}

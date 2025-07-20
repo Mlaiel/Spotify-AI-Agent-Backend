@@ -1,0 +1,419 @@
+# Configuration Pré-production - Outils Slack Localisés
+# Environnement: staging
+# Maintenu par: Fahed Mlaiel - Lead Developer & Architecte IA
+# Version: 2.0.0
+# Dernière mise à jour: 2025-01-18
+
+# Configuration Redis Pré-production
+redis:
+  # Connexion Redis Staging
+  host: "${REDIS_STAGING_HOST}"
+  port: 6379
+  db: 5
+  password: "${REDIS_STAGING_PASSWORD}"
+  ssl: true
+  ssl_cert_reqs: "required"
+  ssl_ca_certs: "/etc/ssl/certs/redis-ca.crt"
+  timeout: 15
+  max_connections: 30
+  min_connections: 10
+  retry_on_timeout: true
+  retry_attempts: 5
+  retry_backoff: 1.0
+  health_check_interval: 20
+  
+  # Configuration Pool de connexions Staging
+  connection_pool:
+    enabled: true
+    max_idle_connections: 15
+    connection_lifetime: 1800
+    connection_check_interval: 180
+    
+  # Configuration Sentinel Staging
+  sentinel:
+    enabled: true
+    master_name: "slack-tools-staging"
+    hosts: 
+      - "${REDIS_SENTINEL_STAGING_1}:26379"
+      - "${REDIS_SENTINEL_STAGING_2}:26379"
+    socket_timeout: 5
+    
+  # Monitoring Redis Staging
+  monitoring:
+    enabled: true
+    slow_query_threshold: 50
+    memory_warning_threshold: 1024
+    connection_warning_threshold: 25
+
+# Configuration Cache Pré-production
+cache:
+  enabled: true
+  default_ttl: 600  # 10 minutes
+  max_cache_size: 5000
+  compression_threshold: 512
+  compression_enabled: true
+  compression_algorithm: "lz4"
+  
+  # Cache L1 (mémoire locale) Staging
+  l1_cache:
+    enabled: true
+    size: 1000
+    ttl: 120
+    eviction_policy: "lru"
+    
+  # Cache L2 (Redis) Staging
+  l2_cache:
+    enabled: true
+    ttl: 600
+    max_size: 50000
+    key_prefix: "slack_tools_staging"
+    
+  # Configuration avancée Staging
+  advanced:
+    cache_warmer_enabled: true
+    cache_warmer_interval: 180
+    invalidation_enabled: true
+    metrics_enabled: true
+    distributed_invalidation: true
+    
+  # Stratégies de cache Staging
+  strategies:
+    read_through: true
+    write_through: true
+    write_behind: false
+    refresh_ahead: true
+
+# Configuration Slack Pré-production
+slack:
+  # Configuration de base Staging
+  default_locale: "fr_FR"
+  supported_locales: ["fr_FR", "en_US", "de_DE", "es_ES", "it_IT"]
+  timeout: 15
+  retry_attempts: 5
+  retry_backoff: 0.5
+  
+  # Rate limiting Staging
+  rate_limit:
+    requests_per_minute: 200
+    requests_per_hour: 10000
+    burst_limit: 30
+    per_tenant_limit: true
+    global_limit: 5000
+    
+  # Configuration Webhooks Staging
+  webhooks:
+    enabled: true
+    signature_verification: true
+    signature_algorithm: "sha256"
+    timeout: 5
+    max_payload_size: 2097152  # 2MB
+    ssl_verify: true
+    allowed_events: ["app_mention", "message", "reaction_added", "team_join"]
+    
+  # Configuration Bot Staging
+  bot:
+    name: "Spotify AI Staging Bot"
+    icon_emoji: ":test_tube:"
+    username: "spotify-ai-staging"
+    display_name: "Spotify AI Staging"
+    
+  # Channels Staging
+  channels:
+    default: "#alerts-staging"
+    critical: "#critical-alerts-staging"
+    warning: "#warnings-staging"
+    info: "#info-staging"
+    monitoring: "#monitoring-staging"
+    performance: "#performance-staging"
+
+# Configuration AlertManager Pré-production
+alertmanager:
+  template_engine: "jinja2"
+  cache_ttl: 600
+  batch_size: 100
+  compression: true
+  compression_algorithm: "gzip"
+  
+  # Aggregation Staging
+  aggregation:
+    enabled: true
+    window_seconds: 180
+    max_size: 20
+    group_by: ["alertname", "tenant", "severity"]
+    
+  # Validation Staging
+  validation:
+    enabled: true
+    strict_mode: true
+    schema_validation: true
+    
+  # Templates Staging
+  templates:
+    cache_enabled: true
+    auto_reload: false
+    sandbox_enabled: true
+    
+  # Routing Staging
+  routing:
+    group_wait: "10s"
+    group_interval: "5m"
+    repeat_interval: "1h"
+
+# Configuration Tenant Pré-production
+tenant:
+  isolation_level: "strict"
+  context_cache_ttl: 300
+  max_context_size: 2048
+  audit_enabled: true
+  encryption_enabled: true
+  encryption_algorithm: "aes-256-gcm"
+  max_tenants: 50
+  
+  # Quotas par tenant Staging
+  quotas:
+    max_alerts_per_hour: 500
+    max_storage_mb: 100
+    max_concurrent_requests: 20
+    max_webhook_calls_per_minute: 100
+
+# Configuration Localisation Pré-production
+localization:
+  default_locale: "fr_FR"
+  cache_ttl: 1800
+  hot_reload: false
+  validation_enabled: true
+  
+  supported_locales:
+    - code: "fr_FR"
+      name: "Français"
+      fallback: "en_US"
+      enabled: true
+    - code: "en_US" 
+      name: "English"
+      fallback: null
+      enabled: true
+    - code: "de_DE"
+      name: "Deutsch"
+      fallback: "en_US"
+      enabled: true
+    - code: "es_ES"
+      name: "Español"
+      fallback: "en_US"
+      enabled: true
+    - code: "it_IT"
+      name: "Italiano"
+      fallback: "en_US"
+      enabled: true
+      
+  # Configuration avancée de localisation
+  advanced:
+    pluralization_enabled: true
+    number_formatting: true
+    date_formatting: true
+    timezone_conversion: true
+
+# Configuration Templates Pré-production
+templates:
+  auto_reload: false
+  sandbox_enabled: true
+  cache_ttl: 600
+  validation_enabled: true
+  
+  severity_templates:
+    critical: "alert_critical_staging.json.j2"
+    warning: "alert_warning_staging.json.j2"
+    info: "alert_info_staging.json.j2"
+    resolved: "alert_resolved_staging.json.j2"
+    
+  # Templates avancés
+  advanced_templates:
+    summary: "alert_summary_staging.json.j2"
+    escalation: "alert_escalation_staging.json.j2"
+    acknowledgment: "alert_ack_staging.json.j2"
+
+# Configuration Métriques Pré-production
+monitoring:
+  metrics_enabled: true
+  collection_interval: 15
+  system_metrics_enabled: true
+  export_enabled: true
+  namespace: "slack_tools_staging"
+  
+  # Seuils d'alerte Staging
+  alert_thresholds:
+    cpu_warning: 70
+    cpu_critical: 85
+    memory_warning: 70
+    memory_critical: 85
+    disk_warning: 80
+    disk_critical: 90
+    error_rate_warning: 2
+    error_rate_critical: 5
+    latency_warning: 500
+    latency_critical: 1000
+    
+  performance_tracking: true
+  max_history_size: 5000
+  
+  # Métriques personnalisées
+  custom_metrics:
+    business_metrics_enabled: true
+    tenant_metrics_enabled: true
+    application_metrics_enabled: true
+
+# Configuration Logging Pré-production
+logging:
+  level: "INFO"
+  format: "json"
+  structured: true
+  correlation_id: true
+  
+  components:
+    localization_engine: "INFO"
+    template_renderer: "INFO"
+    cache_manager: "INFO"
+    tenant_context: "INFO"
+    alert_formatter: "INFO"
+    metrics_collector: "INFO"
+    security_handler: "INFO"
+    
+  # Configuration avancée de logging
+  advanced:
+    log_rotation: true
+    max_file_size: "100MB"
+    backup_count: 10
+    compression: true
+    
+  # Intégration avec des systèmes externes
+  external:
+    elasticsearch_enabled: false
+    logstash_enabled: false
+    fluentd_enabled: false
+
+# Configuration Sécurité Pré-production
+security:
+  # Validation stricte
+  validation:
+    strict_input: true
+    sanitize_output: true
+    xss_protection: true
+    sql_injection_protection: true
+    
+  # Rate limiting avancé
+  rate_limiting:
+    enabled: true
+    per_tenant: true
+    per_user: true
+    global_limit: 5000
+    tenant_limit: 1000
+    user_limit: 100
+    
+  # Audit et traçabilité
+  audit:
+    enabled: true
+    detailed_logging: true
+    retention_days: 90
+    encryption_enabled: true
+    
+  # Chiffrement
+  encryption:
+    algorithm: "aes-256-gcm"
+    key_rotation_days: 30
+    at_rest_enabled: true
+    in_transit_enabled: true
+    
+  # Authentification et autorisation
+  auth:
+    jwt_enabled: true
+    jwt_expiry: 3600
+    rbac_enabled: true
+    mfa_enabled: false
+
+# Configuration Performance Pré-production
+performance:
+  optimization_enabled: true
+  concurrent_requests: 100
+  request_timeout: 15
+  
+  # Circuit breaker Staging
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    success_threshold: 3
+    recovery_timeout: 30
+    
+  # Connection pooling Staging
+  connection_pooling:
+    enabled: true
+    max_connections: 50
+    min_connections: 10
+    idle_timeout: 300
+    
+  # Optimisations avancées
+  advanced:
+    async_processing: true
+    batch_processing: true
+    compression_enabled: true
+    keep_alive_enabled: true
+
+# Configuration Staging Spécifique
+staging:
+  debug_mode: false
+  mock_external_services: false
+  test_data_enabled: true
+  auto_reload_templates: false
+  verbose_errors: false
+  profiling_enabled: true
+  load_testing_enabled: true
+  chaos_testing_enabled: true
+  
+# URLs et Endpoints Staging
+urls:
+  base_url: "https://staging-slack-tools.spotify-ai.com"
+  metrics_endpoint: "/metrics"
+  health_endpoint: "/health"
+  webhook_base: "/webhook/slack"
+  admin_endpoint: "/admin"
+  
+# Configuration par défaut des tenants Staging
+default_tenant_config:
+  slack_config:
+    channel: "#alerts-staging"
+    bot_name: "Spotify AI Staging"
+    icon_emoji: ":test_tube:"
+  locale: "fr_FR"
+  timezone: "Europe/Paris"
+  alert_config:
+    max_alerts_per_hour: 500
+    severity_filter: ["warning", "critical"]
+    auto_resolve: true
+    escalation_enabled: true
+  permissions:
+    level: "read_write"
+    resources: ["alerts", "notifications", "templates", "metrics"]
+    operations: ["view", "create", "update", "delete"]
+    
+# Configuration Backup et Recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Tous les jours à 2h du matin
+  retention_days: 30
+  compression: true
+  encryption: true
+  remote_storage: true
+  
+# Configuration Monitoring externe
+external_monitoring:
+  prometheus:
+    enabled: true
+    endpoint: "${PROMETHEUS_STAGING_ENDPOINT}"
+    push_gateway: "${PROMETHEUS_PUSH_GATEWAY_STAGING}"
+  
+  grafana:
+    enabled: true
+    endpoint: "${GRAFANA_STAGING_ENDPOINT}"
+    dashboard_id: "slack-tools-staging"
+    
+  alertmanager:
+    enabled: true
+    endpoint: "${ALERTMANAGER_STAGING_ENDPOINT}"

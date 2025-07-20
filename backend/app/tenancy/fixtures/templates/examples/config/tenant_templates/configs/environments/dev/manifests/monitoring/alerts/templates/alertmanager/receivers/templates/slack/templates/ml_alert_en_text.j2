@@ -1,0 +1,131 @@
+# Enterprise ML/AI Alert Template (English) - Advanced Industrial Grade
+{% set ml_icons = {
+    'model_drift': '📊',
+    'performance_degradation': '📉',
+    'data_quality': '🔍',
+    'training_failure': '🚫',
+    'inference_latency': '⏱️',
+    'resource_exhaustion': '💾',
+    'model_bias': '⚖️',
+    'prediction_anomaly': '🎯'
+} %}
+
+🤖 **AI/ML SYSTEM ALERT** 🤖
+
+**{{ ml_icons.get(alert.ml_context.alert_type, '🔧') }} Machine Learning Monitoring**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **ML System Context**
+• **Model Name**: `{{ alert.ml_context.model_name }}`
+• **Model Version**: `{{ alert.ml_context.model_version }}`
+• **Pipeline**: `{{ alert.ml_context.pipeline_name }}`
+• **Environment**: `{{ environment | upper }}`
+• **Alert Type**: `{{ alert.ml_context.alert_type | title }}`
+
+🔥 **Alert Details**
+• **Issue**: {{ alert.title }}
+• **Description**: {{ alert.description }}
+• **Severity**: `{{ alert.severity.upper() }}` ({{ alert.priority_score | default(0) }}/10)
+• **Detected**: {{ format_date(alert.created_at) }}
+• **Duration**: {{ alert.duration | duration_format | default('Just detected') }}
+
+{% if alert.ml_context.model_metrics %}
+📊 **Model Performance Metrics**
+{% for metric_name, metric_value in alert.ml_context.model_metrics.items() %}
+• **{{ metric_name | title }}**: {{ metric_value.current }} (Baseline: {{ metric_value.baseline }})
+  {% if metric_value.trend %}→ Trend: {{ metric_value.trend }}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if alert.ml_context.data_quality %}
+🔍 **Data Quality Assessment**
+• **Input Data Quality Score**: {{ alert.ml_context.data_quality.score }}/10
+• **Missing Values**: {{ alert.ml_context.data_quality.missing_percentage }}%
+• **Schema Drift**: {{ alert.ml_context.data_quality.schema_drift | ternary('❌ Detected', '✅ Stable') }}
+• **Feature Drift**: {{ alert.ml_context.data_quality.feature_drift_count }} features affected
+{% if alert.ml_context.data_quality.anomalous_features %}
+• **Anomalous Features**: {{ alert.ml_context.data_quality.anomalous_features | join(', ') }}
+{% endif %}
+{% endif %}
+
+{% if alert.ml_context.inference_stats %}
+⚡ **Inference Statistics**
+• **Requests/min**: {{ alert.ml_context.inference_stats.requests_per_minute }}
+• **Avg Latency**: {{ alert.ml_context.inference_stats.avg_latency }}ms
+• **Error Rate**: {{ alert.ml_context.inference_stats.error_rate }}%
+• **Throughput**: {{ alert.ml_context.inference_stats.throughput }} predictions/sec
+{% endif %}
+
+{% if alert.ml_context.resource_usage %}
+💾 **Resource Utilization**
+• **GPU Memory**: {{ alert.ml_context.resource_usage.gpu_memory_percent }}%
+• **CPU Usage**: {{ alert.ml_context.resource_usage.cpu_percent }}%
+• **RAM Usage**: {{ alert.ml_context.resource_usage.memory_percent }}%
+• **Disk I/O**: {{ alert.ml_context.resource_usage.disk_io }}
+{% endif %}
+
+{% if alert.ai_insights %}
+🧠 **AI-Powered Analysis**
+{% if alert.ai_insights.root_cause_analysis %}
+**🔍 Automated Root Cause Analysis**:
+{{ alert.ai_insights.root_cause_analysis }}
+{% endif %}
+
+{% if alert.ai_insights.recommended_actions %}
+**🛠️ ML-Specific Recommendations**:
+{% for action in alert.ai_insights.recommended_actions[:4] %}
+{{ loop.index }}. {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if alert.ai_insights.model_health_score %}
+**📊 Model Health Score**: {{ alert.ai_insights.model_health_score }}/100
+{% endif %}
+
+{% if alert.ai_insights.retraining_recommendation %}
+**🔄 Retraining Recommendation**: {{ alert.ai_insights.retraining_recommendation.urgency }} priority
+**📅 Suggested Timeline**: {{ alert.ai_insights.retraining_recommendation.timeline }}
+{% endif %}
+{% endif %}
+
+{% if alert.ml_context.experiment_tracking %}
+🧪 **Experiment Context**
+• **Experiment ID**: `{{ alert.ml_context.experiment_tracking.experiment_id }}`
+• **Run ID**: `{{ alert.ml_context.experiment_tracking.run_id }}`
+• **A/B Test**: {{ alert.ml_context.experiment_tracking.ab_test_name | default('Not applicable') }}
+• **Control Group Impact**: {{ alert.ml_context.experiment_tracking.control_impact | default('Unknown') }}
+{% endif %}
+
+{% if alert.ml_context.business_metrics %}
+💼 **Business Impact on ML**
+• **Model Confidence Drop**: {{ alert.ml_context.business_metrics.confidence_drop }}%
+• **Prediction Accuracy**: {{ alert.ml_context.business_metrics.accuracy_current }}% (was {{ alert.ml_context.business_metrics.accuracy_baseline }}%)
+• **Revenue Impact**: {{ alert.ml_context.business_metrics.revenue_impact | default('Calculating...') }}
+• **User Experience Score**: {{ alert.ml_context.business_metrics.ux_score }}/10
+{% endif %}
+
+🚀 **ML-Specific Quick Actions**
+• [🧠 Model Dashboard]({{ dashboard_url }}/ml/models/{{ alert.ml_context.model_name }})
+• [📊 Training Metrics]({{ metrics_url }}/ml/training/{{ alert.ml_context.model_version }})
+• [🔍 Feature Analysis]({{ dashboard_url }}/ml/features/{{ alert.ml_context.pipeline_name }})
+• [📈 Drift Detection]({{ dashboard_url }}/ml/drift/{{ alert.ml_context.model_name }})
+• [🧪 Experiment Tracking]({{ mlflow_url }}/experiments/{{ alert.ml_context.experiment_tracking.experiment_id | default('latest') }})
+{% if alert.ml_context.model_registry_url %}
+• [📚 Model Registry]({{ alert.ml_context.model_registry_url }})
+{% endif %}
+
+{% if alert.auto_remediation %}
+🤖 **Auto-Remediation Status**
+• **Auto-retry**: {{ alert.auto_remediation.retry_enabled | ternary('✅ Enabled', '❌ Disabled') }}
+• **Fallback Model**: {{ alert.auto_remediation.fallback_model | default('None configured') }}
+• **Traffic Routing**: {{ alert.auto_remediation.traffic_routing | default('Normal') }}
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Alert ID**: `{{ alert.alert_id }}`
+**Model Hash**: `{{ alert.ml_context.model_hash | default('N/A') }}`
+**Pipeline Version**: `{{ alert.ml_context.pipeline_version | default('latest') }}`
+
+*🎵 Spotify AI Agent ML Monitoring*
+*Generated: {{ format_date(now, 'iso') }}*
+*ML Ops Team: Contact @ml-ops for critical issues*

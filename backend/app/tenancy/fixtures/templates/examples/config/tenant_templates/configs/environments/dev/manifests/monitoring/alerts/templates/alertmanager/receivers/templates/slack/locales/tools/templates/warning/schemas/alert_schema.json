@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spotify-ai-agent.com/schemas/monitoring/alert-schema.json",
+  "title": "Spotify AI Agent - Alert Schema",
+  "description": "Schéma JSON pour les alertes de monitoring avancées",
+  "type": "object",
+  "required": [
+    "alert_id",
+    "timestamp",
+    "severity",
+    "source",
+    "message",
+    "status"
+  ],
+  "properties": {
+    "alert_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Identifiant unique de l'alerte"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage de création de l'alerte au format ISO 8601"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "info"],
+      "description": "Niveau de sévérité de l'alerte"
+    },
+    "source": {
+      "type": "object",
+      "required": ["system", "component"],
+      "properties": {
+        "system": {
+          "type": "string",
+          "enum": [
+            "ml_detector",
+            "threshold_detector", 
+            "pattern_detector",
+            "security_detector",
+            "performance_analyzer",
+            "user_behavior_analyzer",
+            "content_analyzer",
+            "infrastructure_monitor"
+          ],
+          "description": "Système source de l'alerte"
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Composant spécifique qui a généré l'alerte"
+        },
+        "detector_type": {
+          "type": "string",
+          "enum": [
+            "anomaly",
+            "threshold", 
+            "pattern",
+            "statistical",
+            "ml_based",
+            "behavioral",
+            "security",
+            "performance"
+          ],
+          "description": "Type de détecteur utilisé"
+        },
+        "algorithm": {
+          "type": "string",
+          "description": "Algorithme spécifique utilisé pour la détection"
+        }
+      },
+      "additionalProperties": false
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "Message descriptif de l'alerte"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "acknowledged", "resolved", "suppressed"],
+      "description": "Statut actuel de l'alerte"
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Score de confiance dans la détection (0.0 à 1.0)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_:-]+$"
+      },
+      "uniqueItems": true,
+      "maxItems": 20,
+      "description": "Étiquettes pour catégoriser l'alerte"
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Identifiant du tenant concerné"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["dev", "staging", "production"],
+          "description": "Environnement où l'alerte s'est produite"
+        },
+        "region": {
+          "type": "string",
+          "description": "Région géographique"
+        },
+        "affected_services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Services affectés par l'incident"
+        },
+        "user_impact": {
+          "type": "object",
+          "properties": {
+            "estimated_users_affected": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "impact_level": {
+              "type": "string",
+              "enum": ["none", "minimal", "moderate", "significant", "severe"]
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "current_value": {
+          "type": "number",
+          "description": "Valeur actuelle de la métrique"
+        },
+        "threshold_value": {
+          "type": "number", 
+          "description": "Valeur de seuil dépassée"
+        },
+        "baseline_value": {
+          "type": "number",
+          "description": "Valeur de référence normale"
+        },
+        "deviation_percentage": {
+          "type": "number",
+          "description": "Pourcentage de déviation par rapport à la normale"
+        },
+        "trend": {
+          "type": "string",
+          "enum": ["increasing", "decreasing", "stable", "volatile"],
+          "description": "Tendance observée"
+        },
+        "historical_data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": ["timestamp", "value"]
+          },
+          "maxItems": 100,
+          "description": "Données historiques récentes"
+        }
+      },
+      "additionalProperties": true
+    },
+    "detection_details": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "Méthode de détection utilisée"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Paramètres de détection"
+        },
+        "features_analyzed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Features analysées par l'algorithme"
+        },
+        "model_version": {
+          "type": "string",
+          "description": "Version du modèle de détection"
+        },
+        "processing_time_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Temps de traitement en millisecondes"
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Action recommandée"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["immediate", "urgent", "normal", "low"],
+            "description": "Priorité de l'action"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "investigation",
+              "mitigation", 
+              "optimization",
+              "monitoring",
+              "escalation",
+              "prevention"
+            ],
+            "description": "Catégorie de l'action"
+          },
+          "estimated_effort": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Effort estimé pour réaliser l'action"
+          },
+          "automation_available": {
+            "type": "boolean",
+            "description": "Indique si l'action peut être automatisée"
+          }
+        },
+        "required": ["action", "priority", "category"],
+        "additionalProperties": false
+      },
+      "maxItems": 10,
+      "description": "Actions recommandées pour traiter l'alerte"
+    },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "auto_escalate": {
+          "type": "boolean",
+          "description": "Escalade automatique activée"
+        },
+        "escalation_levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "trigger_after_minutes": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "notification_channels": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["slack", "email", "sms", "pagerduty", "webhook"]
+                }
+              },
+              "recipients": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["level", "trigger_after_minutes", "notification_channels"]
+          }
+        }
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "properties": {
+        "resolved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage de résolution"
+        },
+        "resolved_by": {
+          "type": "string",
+          "description": "Utilisateur ou système qui a résolu l'alerte"
+        },
+        "resolution_method": {
+          "type": "string",
+          "enum": ["automatic", "manual", "external"],
+          "description": "Méthode de résolution"
+        },
+        "resolution_notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Notes sur la résolution"
+        },
+        "duration_minutes": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Durée de l'incident en minutes"
+        },
+        "false_positive": {
+          "type": "boolean",
+          "description": "Indique si l'alerte était un faux positif"
+        }
+      }
+    },
+    "notification_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["slack", "email", "sms", "pagerduty", "webhook"]
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["sent", "delivered", "failed", "acknowledged"]
+          },
+          "response_time_ms": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": ["timestamp", "channel", "status"]
+      },
+      "description": "Historique des notifications envoyées"
+    },
+    "related_alerts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$"
+      },
+      "uniqueItems": true,
+      "maxItems": 50,
+      "description": "IDs des alertes liées ou corrélées"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["graph", "log", "screenshot", "report", "trace"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["type", "url", "title"]
+      },
+      "maxItems": 10,
+      "description": "Pièces jointes (graphiques, logs, etc.)"
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Champs personnalisés spécifiques au tenant ou à l'organisation",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "alert_id": "spotify-ai-2024-001-cpu-spike",
+      "timestamp": "2024-07-20T10:30:00Z",
+      "severity": "high",
+      "source": {
+        "system": "threshold_detector",
+        "component": "cpu_monitor",
+        "detector_type": "threshold",
+        "algorithm": "adaptive_zscore"
+      },
+      "message": "CPU usage exceeded threshold: 95% for 5 consecutive minutes",
+      "status": "active",
+      "confidence_score": 0.95,
+      "tags": ["cpu", "performance", "infrastructure"],
+      "context": {
+        "tenant_id": "spotify-tenant-001",
+        "environment": "production",
+        "region": "us-east-1",
+        "affected_services": ["audio-processing", "recommendation-engine"],
+        "user_impact": {
+          "estimated_users_affected": 15000,
+          "impact_level": "moderate"
+        }
+      },
+      "metrics": {
+        "current_value": 95.2,
+        "threshold_value": 85.0,
+        "baseline_value": 45.0,
+        "deviation_percentage": 111.0,
+        "trend": "increasing"
+      },
+      "recommendations": [
+        {
+          "action": "Scale up the audio-processing service immediately",
+          "priority": "immediate",
+          "category": "mitigation",
+          "estimated_effort": "low",
+          "automation_available": true
+        },
+        {
+          "action": "Investigate the root cause of increased CPU usage",
+          "priority": "urgent",
+          "category": "investigation", 
+          "estimated_effort": "medium",
+          "automation_available": false
+        }
+      ],
+      "escalation": {
+        "auto_escalate": true,
+        "escalation_levels": [
+          {
+            "level": 1,
+            "trigger_after_minutes": 5,
+            "notification_channels": ["slack"],
+            "recipients": ["on-call-engineer"]
+          },
+          {
+            "level": 2,
+            "trigger_after_minutes": 15,
+            "notification_channels": ["slack", "email"],
+            "recipients": ["team-lead", "sre-team"]
+          }
+        ]
+      }
+    }
+  ]
+}

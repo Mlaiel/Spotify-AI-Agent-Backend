@@ -1,0 +1,981 @@
+# ML/AI Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - ML/AI architecture with enterprise AI optimization
+# - Senior ML Engineer: TensorFlow/PyTorch enterprise ML patterns and model serving
+# - AI/ML Infrastructure Specialist: Kubeflow, MLflow, and AI/ML platform orchestration
+# - Data Scientist: Model development, experimentation, and ML lifecycle management
+# - DevOps/MLOps Engineer: ML model deployment, monitoring, and CI/CD pipelines
+
+# ==========================================
+# ML/AI CONFIGURATION
+# ==========================================
+
+ml:
+  # General Settings
+  general:
+    enabled: ${ML_ENABLED:-true}
+    environment: "${ML_ENVIRONMENT:-production}"
+    
+    # Platform Information
+    platform_info:
+      platform_name: "${ML_PLATFORM_NAME:-Spotify AI Agent ML Platform}"
+      version: "${ML_PLATFORM_VERSION:-2.0.0}"
+      deployment_mode: "${ML_DEPLOYMENT_MODE:-kubernetes}"  # local, docker, kubernetes, cloud
+      
+      # Resource Allocation
+      resource_allocation:
+        cpu_cores: ${ML_CPU_CORES:-8}
+        memory_gb: ${ML_MEMORY_GB:-32}
+        gpu_count: ${ML_GPU_COUNT:-2}
+        gpu_type: "${ML_GPU_TYPE:-NVIDIA_V100}"
+        storage_gb: ${ML_STORAGE_GB:-500}
+    
+    # ML Platform Components
+    platform_components:
+      model_training: ${ML_MODEL_TRAINING:-true}
+      model_serving: ${ML_MODEL_SERVING:-true}
+      experiment_tracking: ${ML_EXPERIMENT_TRACKING:-true}
+      model_registry: ${ML_MODEL_REGISTRY:-true}
+      feature_store: ${ML_FEATURE_STORE:-true}
+      data_pipeline: ${ML_DATA_PIPELINE:-true}
+      model_monitoring: ${ML_MODEL_MONITORING:-true}
+
+  # TensorFlow Configuration
+  tensorflow:
+    # TensorFlow Serving
+    tensorflow_serving:
+      enabled: ${TF_SERVING_ENABLED:-true}
+      version: "${TF_SERVING_VERSION:-2.13.0}"
+      
+      # Server Configuration
+      server_config:
+        port: ${TF_SERVING_PORT:-8501}
+        grpc_port: ${TF_SERVING_GRPC_PORT:-8500}
+        model_base_path: "${TF_SERVING_MODEL_BASE_PATH:-/models}"
+        model_config_file: "${TF_SERVING_MODEL_CONFIG_FILE:-/config/models.config}"
+        
+        # Performance Settings
+        performance:
+          batching_enabled: ${TF_SERVING_BATCHING:-true}
+          max_batch_size: ${TF_SERVING_MAX_BATCH_SIZE:-128}
+          batch_timeout_micros: ${TF_SERVING_BATCH_TIMEOUT:-1000}
+          max_enqueued_batches: ${TF_SERVING_MAX_ENQUEUED_BATCHES:-1000}
+          num_batch_threads: ${TF_SERVING_NUM_BATCH_THREADS:-4}
+          
+          # Resource Configuration
+          inter_op_parallelism_threads: ${TF_SERVING_INTER_OP_THREADS:-0}  # 0 = auto
+          intra_op_parallelism_threads: ${TF_SERVING_INTRA_OP_THREADS:-0}  # 0 = auto
+          
+          # GPU Configuration
+          gpu_options:
+            allow_growth: ${TF_SERVING_GPU_ALLOW_GROWTH:-true}
+            memory_fraction: ${TF_SERVING_GPU_MEMORY_FRACTION:-0.8}
+      
+      # Model Management
+      model_management:
+        auto_reload: ${TF_SERVING_AUTO_RELOAD:-true}
+        model_version_policy: "${TF_SERVING_VERSION_POLICY:-latest}"  # latest, all, specific
+        polling_frequency: ${TF_SERVING_POLLING_FREQUENCY:-30}  # seconds
+        
+        # Model Versions
+        model_versions:
+          max_versions: ${TF_SERVING_MAX_VERSIONS:-3}
+          version_labels: ["stable", "canary", "experimental"]
+          
+        # Model Warmup
+        warmup:
+          enabled: ${TF_SERVING_WARMUP_ENABLED:-true}
+          warmup_requests: ${TF_SERVING_WARMUP_REQUESTS:-10}
+          warmup_batch_size: ${TF_SERVING_WARMUP_BATCH_SIZE:-1}
+      
+      # Monitoring and Logging
+      monitoring:
+        prometheus_enabled: ${TF_SERVING_PROMETHEUS:-true}
+        prometheus_port: ${TF_SERVING_PROMETHEUS_PORT:-8502}
+        
+        # Metrics Configuration
+        metrics:
+          model_metrics: ${TF_SERVING_MODEL_METRICS:-true}
+          request_metrics: ${TF_SERVING_REQUEST_METRICS:-true}
+          resource_metrics: ${TF_SERVING_RESOURCE_METRICS:-true}
+          
+          # Custom Metrics
+          custom_metrics:
+            - metric_name: "prediction_latency"
+              metric_type: "histogram"
+              description: "Time taken for model predictions"
+            
+            - metric_name: "model_accuracy"
+              metric_type: "gauge"
+              description: "Current model accuracy"
+            
+            - metric_name: "data_drift_score"
+              metric_type: "gauge"
+              description: "Data drift detection score"
+    
+    # TensorFlow Extended (TFX)
+    tfx:
+      enabled: ${TFX_ENABLED:-true}
+      version: "${TFX_VERSION:-1.14.0}"
+      
+      # Pipeline Configuration
+      pipeline_config:
+        pipeline_name: "${TFX_PIPELINE_NAME:-spotify_ai_pipeline}"
+        pipeline_root: "${TFX_PIPELINE_ROOT:-/tfx/pipelines}"
+        metadata_connection_config: "${TFX_METADATA_CONNECTION:-sqlite:///tfx/metadata.db}"
+        
+        # Pipeline Components
+        components:
+          example_gen: ${TFX_EXAMPLE_GEN:-true}
+          statistics_gen: ${TFX_STATISTICS_GEN:-true}
+          schema_gen: ${TFX_SCHEMA_GEN:-true}
+          example_validator: ${TFX_EXAMPLE_VALIDATOR:-true}
+          transform: ${TFX_TRANSFORM:-true}
+          trainer: ${TFX_TRAINER:-true}
+          tuner: ${TFX_TUNER:-false}
+          evaluator: ${TFX_EVALUATOR:-true}
+          pusher: ${TFX_PUSHER:-true}
+          
+        # Advanced Components
+        advanced_components:
+          bulk_inferrer: ${TFX_BULK_INFERRER:-false}
+          model_validator: ${TFX_MODEL_VALIDATOR:-true}
+          infra_validator: ${TFX_INFRA_VALIDATOR:-true}
+      
+      # Data Validation
+      data_validation:
+        schema_validation: ${TFX_SCHEMA_VALIDATION:-true}
+        anomaly_detection: ${TFX_ANOMALY_DETECTION:-true}
+        data_drift_detection: ${TFX_DATA_DRIFT_DETECTION:-true}
+        
+        # Validation Thresholds
+        thresholds:
+          missing_feature_threshold: ${TFX_MISSING_FEATURE_THRESHOLD:-0.1}
+          drift_threshold: ${TFX_DRIFT_THRESHOLD:-0.05}
+          skew_threshold: ${TFX_SKEW_THRESHOLD:-0.01}
+    
+    # TensorBoard
+    tensorboard:
+      enabled: ${TENSORBOARD_ENABLED:-true}
+      port: ${TENSORBOARD_PORT:-6006}
+      
+      # Configuration
+      configuration:
+        log_dir: "${TENSORBOARD_LOG_DIR:-/logs/tensorboard}"
+        reload_interval: ${TENSORBOARD_RELOAD_INTERVAL:-5}  # seconds
+        max_reload_threads: ${TENSORBOARD_MAX_RELOAD_THREADS:-1}
+        
+        # Plugins
+        plugins:
+          scalars: ${TENSORBOARD_SCALARS:-true}
+          images: ${TENSORBOARD_IMAGES:-true}
+          histograms: ${TENSORBOARD_HISTOGRAMS:-true}
+          distributions: ${TENSORBOARD_DISTRIBUTIONS:-true}
+          text: ${TENSORBOARD_TEXT:-true}
+          audio: ${TENSORBOARD_AUDIO:-true}
+          profile: ${TENSORBOARD_PROFILE:-true}
+          hparams: ${TENSORBOARD_HPARAMS:-true}
+
+  # PyTorch Configuration
+  pytorch:
+    # TorchServe
+    torchserve:
+      enabled: ${TORCHSERVE_ENABLED:-true}
+      version: "${TORCHSERVE_VERSION:-0.8.2}"
+      
+      # Server Configuration
+      server_config:
+        inference_port: ${TORCHSERVE_INFERENCE_PORT:-8080}
+        management_port: ${TORCHSERVE_MANAGEMENT_PORT:-8081}
+        metrics_port: ${TORCHSERVE_METRICS_PORT:-8082}
+        
+        # Model Store
+        model_store: "${TORCHSERVE_MODEL_STORE:-/models}"
+        load_models: "${TORCHSERVE_LOAD_MODELS:-all}"
+        
+        # Performance Settings
+        performance:
+          default_workers_per_model: ${TORCHSERVE_DEFAULT_WORKERS:-1}
+          max_workers: ${TORCHSERVE_MAX_WORKERS:-4}
+          max_batch_delay: ${TORCHSERVE_MAX_BATCH_DELAY:-100}  # milliseconds
+          response_timeout: ${TORCHSERVE_RESPONSE_TIMEOUT:-120}  # seconds
+          
+          # Resource Configuration
+          job_queue_size: ${TORCHSERVE_JOB_QUEUE_SIZE:-1000}
+          async_communication: ${TORCHSERVE_ASYNC_COMMUNICATION:-true}
+          
+          # GPU Configuration
+          number_of_gpu: ${TORCHSERVE_NUMBER_OF_GPU:-1}
+          gpu_memory_fraction: ${TORCHSERVE_GPU_MEMORY_FRACTION:-0.8}
+      
+      # Model Management
+      model_management:
+        model_versions: ${TORCHSERVE_MODEL_VERSIONS:-true}
+        model_versioning_policy: "${TORCHSERVE_VERSIONING_POLICY:-latest}"
+        
+        # A/B Testing
+        ab_testing:
+          enabled: ${TORCHSERVE_AB_TESTING:-false}
+          traffic_split:
+            model_a: 0.9
+            model_b: 0.1
+        
+        # Model Store Configuration
+        model_store_config:
+          s3_enabled: ${TORCHSERVE_S3_ENABLED:-false}
+          s3_bucket: "${TORCHSERVE_S3_BUCKET:-}"
+          local_storage: ${TORCHSERVE_LOCAL_STORAGE:-true}
+      
+      # Monitoring and Logging
+      monitoring:
+        enable_envvars_config: ${TORCHSERVE_ENVVARS_CONFIG:-true}
+        metrics_mode: "${TORCHSERVE_METRICS_MODE:-prometheus}"  # log, prometheus
+        
+        # Custom Metrics
+        custom_metrics:
+          - metric_name: "requests_per_second"
+            metric_type: "counter"
+            description: "Number of requests per second"
+          
+          - metric_name: "prediction_latency_ms"
+            metric_type: "histogram"
+            description: "Prediction latency in milliseconds"
+          
+          - metric_name: "model_memory_usage"
+            metric_type: "gauge"
+            description: "Memory usage by model"
+    
+    # PyTorch Lightning
+    pytorch_lightning:
+      enabled: ${PYTORCH_LIGHTNING_ENABLED:-true}
+      version: "${PYTORCH_LIGHTNING_VERSION:-2.0.0}"
+      
+      # Trainer Configuration
+      trainer_config:
+        # Basic Settings
+        max_epochs: ${PL_MAX_EPOCHS:-100}
+        min_epochs: ${PL_MIN_EPOCHS:-1}
+        max_steps: ${PL_MAX_STEPS:--1}
+        min_steps: ${PL_MIN_STEPS:-0}
+        
+        # Hardware Configuration
+        accelerator: "${PL_ACCELERATOR:-auto}"  # cpu, gpu, tpu, auto
+        devices: ${PL_DEVICES:-auto}
+        strategy: "${PL_STRATEGY:-auto}"  # dp, ddp, ddp_spawn, deepspeed
+        precision: "${PL_PRECISION:-32-true}"  # 16-mixed, 32-true, 64-true
+        
+        # Optimization
+        gradient_clip_val: ${PL_GRADIENT_CLIP_VAL:-0.0}
+        gradient_clip_algorithm: "${PL_GRADIENT_CLIP_ALGORITHM:-norm}"
+        accumulate_grad_batches: ${PL_ACCUMULATE_GRAD_BATCHES:-1}
+        
+        # Validation and Testing
+        val_check_interval: ${PL_VAL_CHECK_INTERVAL:-1.0}
+        check_val_every_n_epoch: ${PL_CHECK_VAL_EVERY_N_EPOCH:-1}
+        num_sanity_val_steps: ${PL_NUM_SANITY_VAL_STEPS:-2}
+      
+      # Callbacks
+      callbacks:
+        # Model Checkpointing
+        model_checkpoint:
+          enabled: ${PL_MODEL_CHECKPOINT:-true}
+          dirpath: "${PL_CHECKPOINT_DIRPATH:-/checkpoints}"
+          filename: "${PL_CHECKPOINT_FILENAME:-{epoch}-{val_loss:.2f}}"
+          monitor: "${PL_CHECKPOINT_MONITOR:-val_loss}"
+          mode: "${PL_CHECKPOINT_MODE:-min}"
+          save_top_k: ${PL_CHECKPOINT_SAVE_TOP_K:-3}
+          every_n_epochs: ${PL_CHECKPOINT_EVERY_N_EPOCHS:-1}
+        
+        # Early Stopping
+        early_stopping:
+          enabled: ${PL_EARLY_STOPPING:-true}
+          monitor: "${PL_EARLY_STOPPING_MONITOR:-val_loss}"
+          mode: "${PL_EARLY_STOPPING_MODE:-min}"
+          patience: ${PL_EARLY_STOPPING_PATIENCE:-10}
+          min_delta: ${PL_EARLY_STOPPING_MIN_DELTA:-0.001}
+        
+        # Learning Rate Monitor
+        lr_monitor:
+          enabled: ${PL_LR_MONITOR:-true}
+          logging_interval: "${PL_LR_MONITOR_INTERVAL:-epoch}"  # step, epoch
+        
+        # Progress Bar
+        progress_bar:
+          enabled: ${PL_PROGRESS_BAR:-true}
+          refresh_rate: ${PL_PROGRESS_BAR_REFRESH_RATE:-1}
+
+  # Kubeflow Configuration
+  kubeflow:
+    enabled: ${KUBEFLOW_ENABLED:-true}
+    version: "${KUBEFLOW_VERSION:-1.7.0}"
+    
+    # Kubeflow Pipelines
+    pipelines:
+      enabled: ${KUBEFLOW_PIPELINES_ENABLED:-true}
+      
+      # Pipeline Configuration
+      pipeline_config:
+        pipeline_root: "${KUBEFLOW_PIPELINE_ROOT:-gs://ml-pipeline-artifacts}"
+        default_image: "${KUBEFLOW_DEFAULT_IMAGE:-tensorflow/tensorflow:2.13.0}"
+        
+        # Component Base Images
+        component_images:
+          data_processing: "${KUBEFLOW_DATA_PROCESSING_IMAGE:-python:3.9}"
+          model_training: "${KUBEFLOW_MODEL_TRAINING_IMAGE:-tensorflow/tensorflow:2.13.0-gpu}"
+          model_evaluation: "${KUBEFLOW_MODEL_EVALUATION_IMAGE:-tensorflow/tensorflow:2.13.0}"
+          model_serving: "${KUBEFLOW_MODEL_SERVING_IMAGE:-tensorflow/serving:2.13.0}"
+        
+        # Resource Requests
+        resource_requests:
+          cpu: "${KUBEFLOW_CPU_REQUEST:-1}"
+          memory: "${KUBEFLOW_MEMORY_REQUEST:-2Gi}"
+          gpu: "${KUBEFLOW_GPU_REQUEST:-0}"
+        
+        # Resource Limits
+        resource_limits:
+          cpu: "${KUBEFLOW_CPU_LIMIT:-4}"
+          memory: "${KUBEFLOW_MEMORY_LIMIT:-8Gi}"
+          gpu: "${KUBEFLOW_GPU_LIMIT:-1}"
+      
+      # Pipeline Templates
+      pipeline_templates:
+        # Training Pipeline
+        training_pipeline:
+          enabled: ${KUBEFLOW_TRAINING_PIPELINE:-true}
+          components:
+            - "data_ingestion"
+            - "data_validation"
+            - "data_preprocessing"
+            - "feature_engineering"
+            - "model_training"
+            - "model_evaluation"
+            - "model_validation"
+            - "model_deployment"
+        
+        # Inference Pipeline
+        inference_pipeline:
+          enabled: ${KUBEFLOW_INFERENCE_PIPELINE:-true}
+          components:
+            - "data_ingestion"
+            - "data_preprocessing"
+            - "model_prediction"
+            - "result_postprocessing"
+            - "result_storage"
+        
+        # Retraining Pipeline
+        retraining_pipeline:
+          enabled: ${KUBEFLOW_RETRAINING_PIPELINE:-true}
+          trigger: "schedule"  # schedule, data_drift, performance_degradation
+          schedule: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+    
+    # Katib (Hyperparameter Tuning)
+    katib:
+      enabled: ${KUBEFLOW_KATIB_ENABLED:-true}
+      
+      # Experiment Configuration
+      experiment_config:
+        algorithm: "${KATIB_ALGORITHM:-random}"  # random, grid, bayesianoptimization, hyperband
+        objective:
+          type: "${KATIB_OBJECTIVE_TYPE:-maximize}"  # minimize, maximize
+          objective_metric_name: "${KATIB_OBJECTIVE_METRIC:-accuracy}"
+        
+        # Parameter Space
+        parameters:
+          learning_rate:
+            parameter_type: "double"
+            feasible_space:
+              min: "0.001"
+              max: "0.1"
+          
+          batch_size:
+            parameter_type: "int"
+            feasible_space:
+              min: "16"
+              max: "128"
+              step: "16"
+          
+          num_layers:
+            parameter_type: "int"
+            feasible_space:
+              min: "2"
+              max: "8"
+        
+        # Trial Configuration
+        trial_template:
+          max_trial_count: ${KATIB_MAX_TRIAL_COUNT:-20}
+          max_failed_trial_count: ${KATIB_MAX_FAILED_TRIAL_COUNT:-3}
+          parallel_trial_count: ${KATIB_PARALLEL_TRIAL_COUNT:-3}
+    
+    # KFServing / KServe
+    kserve:
+      enabled: ${KUBEFLOW_KSERVE_ENABLED:-true}
+      version: "${KSERVE_VERSION:-0.11.0}"
+      
+      # Serving Configuration
+      serving_config:
+        # Predictor Configuration
+        predictor:
+          min_replicas: ${KSERVE_MIN_REPLICAS:-1}
+          max_replicas: ${KSERVE_MAX_REPLICAS:-10}
+          scale_target: ${KSERVE_SCALE_TARGET:-70}  # CPU utilization percentage
+          
+          # Resource Configuration
+          resources:
+            requests:
+              cpu: "${KSERVE_CPU_REQUEST:-100m}"
+              memory: "${KSERVE_MEMORY_REQUEST:-1Gi}"
+            limits:
+              cpu: "${KSERVE_CPU_LIMIT:-1}"
+              memory: "${KSERVE_MEMORY_LIMIT:-2Gi}"
+        
+        # Transformer Configuration
+        transformer:
+          enabled: ${KSERVE_TRANSFORMER_ENABLED:-false}
+          min_replicas: ${KSERVE_TRANSFORMER_MIN_REPLICAS:-1}
+          max_replicas: ${KSERVE_TRANSFORMER_MAX_REPLICAS:-5}
+        
+        # Explainer Configuration
+        explainer:
+          enabled: ${KSERVE_EXPLAINER_ENABLED:-false}
+          type: "${KSERVE_EXPLAINER_TYPE:-lime}"  # lime, shap, anchor
+      
+      # Model Formats
+      model_formats:
+        tensorflow:
+          enabled: ${KSERVE_TENSORFLOW_ENABLED:-true}
+          runtime_version: "${KSERVE_TENSORFLOW_RUNTIME:-2.13.0}"
+        
+        pytorch:
+          enabled: ${KSERVE_PYTORCH_ENABLED:-true}
+          runtime_version: "${KSERVE_PYTORCH_RUNTIME:-1.13.0}"
+        
+        sklearn:
+          enabled: ${KSERVE_SKLEARN_ENABLED:-true}
+          runtime_version: "${KSERVE_SKLEARN_RUNTIME:-1.3.0}"
+        
+        xgboost:
+          enabled: ${KSERVE_XGBOOST_ENABLED:-false}
+          runtime_version: "${KSERVE_XGBOOST_RUNTIME:-1.7.0}"
+
+  # MLflow Configuration
+  mlflow:
+    enabled: ${MLFLOW_ENABLED:-true}
+    version: "${MLFLOW_VERSION:-2.6.0}"
+    
+    # Tracking Server
+    tracking_server:
+      enabled: ${MLFLOW_TRACKING_ENABLED:-true}
+      host: "${MLFLOW_TRACKING_HOST:-0.0.0.0}"
+      port: ${MLFLOW_TRACKING_PORT:-5000}
+      
+      # Backend Store
+      backend_store:
+        type: "${MLFLOW_BACKEND_STORE_TYPE:-postgresql}"  # file, postgresql, mysql, sqlite
+        uri: "${MLFLOW_BACKEND_STORE_URI:-postgresql://mlflow:password@localhost:5432/mlflow}"
+      
+      # Artifact Store
+      artifact_store:
+        type: "${MLFLOW_ARTIFACT_STORE_TYPE:-s3}"  # local, s3, gcs, azure
+        uri: "${MLFLOW_ARTIFACT_STORE_URI:-s3://mlflow-artifacts}"
+        
+        # S3 Configuration
+        s3_config:
+          access_key_id: "${MLFLOW_S3_ACCESS_KEY_ID:-}"
+          secret_access_key: "${MLFLOW_S3_SECRET_ACCESS_KEY:-}"
+          region: "${MLFLOW_S3_REGION:-us-west-2}"
+      
+      # Authentication
+      authentication:
+        enabled: ${MLFLOW_AUTH_ENABLED:-true}
+        auth_config_path: "${MLFLOW_AUTH_CONFIG_PATH:-/config/auth.ini}"
+        default_permission: "${MLFLOW_DEFAULT_PERMISSION:-READ}"
+    
+    # Model Registry
+    model_registry:
+      enabled: ${MLFLOW_MODEL_REGISTRY_ENABLED:-true}
+      
+      # Model Stages
+      model_stages: ["None", "Staging", "Production", "Archived"]
+      
+      # Model Validation
+      model_validation:
+        enabled: ${MLFLOW_MODEL_VALIDATION_ENABLED:-true}
+        validation_thresholds:
+          accuracy: ${MLFLOW_VALIDATION_ACCURACY_THRESHOLD:-0.85}
+          precision: ${MLFLOW_VALIDATION_PRECISION_THRESHOLD:-0.80}
+          recall: ${MLFLOW_VALIDATION_RECALL_THRESHOLD:-0.80}
+          f1_score: ${MLFLOW_VALIDATION_F1_THRESHOLD:-0.80}
+      
+      # Model Deployment
+      model_deployment:
+        auto_deployment: ${MLFLOW_AUTO_DEPLOYMENT:-false}
+        deployment_targets: ["kubernetes", "sagemaker", "azure_ml"]
+        approval_required: ${MLFLOW_DEPLOYMENT_APPROVAL_REQUIRED:-true}
+    
+    # Projects Configuration
+    projects:
+      enabled: ${MLFLOW_PROJECTS_ENABLED:-true}
+      
+      # Docker Configuration
+      docker_config:
+        default_image: "${MLFLOW_DOCKER_DEFAULT_IMAGE:-python:3.9}"
+        registry: "${MLFLOW_DOCKER_REGISTRY:-}"
+        
+      # Kubernetes Configuration
+      kubernetes_config:
+        namespace: "${MLFLOW_K8S_NAMESPACE:-mlflow}"
+        service_account: "${MLFLOW_K8S_SERVICE_ACCOUNT:-mlflow}"
+        
+        # Resource Configuration
+        resources:
+          requests:
+            cpu: "${MLFLOW_K8S_CPU_REQUEST:-500m}"
+            memory: "${MLFLOW_K8S_MEMORY_REQUEST:-1Gi}"
+          limits:
+            cpu: "${MLFLOW_K8S_CPU_LIMIT:-2}"
+            memory: "${MLFLOW_K8S_MEMORY_LIMIT:-4Gi}"
+
+  # Feature Store Configuration
+  feature_store:
+    enabled: ${FEATURE_STORE_ENABLED:-true}
+    provider: "${FEATURE_STORE_PROVIDER:-feast}"  # feast, tecton, hopsworks
+    
+    # Feast Configuration
+    feast:
+      enabled: ${FEAST_ENABLED:-true}
+      version: "${FEAST_VERSION:-0.32.0}"
+      
+      # Registry Configuration
+      registry:
+        registry_store_type: "${FEAST_REGISTRY_STORE_TYPE:-postgresql}"
+        path: "${FEAST_REGISTRY_PATH:-postgresql://feast:password@localhost:5432/feast}"
+      
+      # Offline Store
+      offline_store:
+        type: "${FEAST_OFFLINE_STORE_TYPE:-bigquery}"  # file, bigquery, redshift, postgresql
+        config:
+          project_id: "${FEAST_OFFLINE_PROJECT_ID:-}"
+          dataset_id: "${FEAST_OFFLINE_DATASET_ID:-feast_offline_store}"
+      
+      # Online Store
+      online_store:
+        type: "${FEAST_ONLINE_STORE_TYPE:-redis}"  # redis, dynamodb, datastore
+        config:
+          connection_string: "${FEAST_ONLINE_CONNECTION_STRING:-redis://localhost:6379}"
+          
+        # Performance Configuration
+        performance:
+          max_connections: ${FEAST_ONLINE_MAX_CONNECTIONS:-100}
+          timeout_seconds: ${FEAST_ONLINE_TIMEOUT:-10}
+      
+      # Feature Definition
+      feature_definition:
+        # Entities
+        entities:
+          user:
+            description: "User entity"
+            value_type: "INT64"
+          
+          item:
+            description: "Item entity"
+            value_type: "STRING"
+        
+        # Feature Views
+        feature_views:
+          user_features:
+            entities: ["user"]
+            ttl_seconds: 86400  # 1 day
+            features:
+              - "age"
+              - "gender"
+              - "location"
+              - "subscription_type"
+          
+          item_features:
+            entities: ["item"]
+            ttl_seconds: 604800  # 1 week
+            features:
+              - "genre"
+              - "artist"
+              - "release_date"
+              - "popularity_score"
+          
+          interaction_features:
+            entities: ["user", "item"]
+            ttl_seconds: 3600  # 1 hour
+            features:
+              - "play_count"
+              - "skip_count"
+              - "rating"
+              - "last_played"
+
+  # Data Pipeline Configuration
+  data_pipeline:
+    enabled: ${DATA_PIPELINE_ENABLED:-true}
+    orchestrator: "${DATA_PIPELINE_ORCHESTRATOR:-airflow}"  # airflow, prefect, kubeflow
+    
+    # Apache Airflow
+    airflow:
+      enabled: ${AIRFLOW_ENABLED:-true}
+      version: "${AIRFLOW_VERSION:-2.7.0}"
+      
+      # Configuration
+      configuration:
+        executor: "${AIRFLOW_EXECUTOR:-KubernetesExecutor}"  # SequentialExecutor, LocalExecutor, CeleryExecutor, KubernetesExecutor
+        sql_alchemy_conn: "${AIRFLOW_SQL_ALCHEMY_CONN:-postgresql://airflow:password@localhost:5432/airflow}"
+        
+        # Webserver Configuration
+        webserver:
+          web_server_port: ${AIRFLOW_WEBSERVER_PORT:-8080}
+          workers: ${AIRFLOW_WEBSERVER_WORKERS:-4}
+          worker_timeout: ${AIRFLOW_WEBSERVER_WORKER_TIMEOUT:-120}
+          
+        # Scheduler Configuration
+        scheduler:
+          job_heartbeat_sec: ${AIRFLOW_SCHEDULER_HEARTBEAT:-5}
+          max_threads: ${AIRFLOW_SCHEDULER_MAX_THREADS:-2}
+          catchup_by_default: ${AIRFLOW_CATCHUP_BY_DEFAULT:-false}
+      
+      # DAG Configuration
+      dag_configuration:
+        dag_dir: "${AIRFLOW_DAG_DIR:-/dags}"
+        dag_file_processor_timeout: ${AIRFLOW_DAG_FILE_PROCESSOR_TIMEOUT:-50}
+        
+        # Default DAG Arguments
+        default_args:
+          owner: "${AIRFLOW_DEFAULT_OWNER:-ml_team}"
+          depends_on_past: ${AIRFLOW_DEPENDS_ON_PAST:-false}
+          start_date: "${AIRFLOW_START_DATE:-2023-01-01}"
+          email_on_failure: ${AIRFLOW_EMAIL_ON_FAILURE:-true}
+          email_on_retry: ${AIRFLOW_EMAIL_ON_RETRY:-false}
+          retries: ${AIRFLOW_RETRIES:-1}
+          retry_delay_minutes: ${AIRFLOW_RETRY_DELAY:-5}
+      
+      # Operators
+      operators:
+        kubernetes_pod_operator:
+          enabled: ${AIRFLOW_K8S_POD_OPERATOR:-true}
+          namespace: "${AIRFLOW_K8S_NAMESPACE:-airflow}"
+          
+        python_operator:
+          enabled: ${AIRFLOW_PYTHON_OPERATOR:-true}
+          
+        bash_operator:
+          enabled: ${AIRFLOW_BASH_OPERATOR:-true}
+        
+        docker_operator:
+          enabled: ${AIRFLOW_DOCKER_OPERATOR:-false}
+    
+    # Data Processing Tasks
+    data_processing_tasks:
+      # Data Ingestion
+      data_ingestion:
+        enabled: ${DATA_INGESTION_ENABLED:-true}
+        schedule_interval: "${DATA_INGESTION_SCHEDULE:-@daily}"
+        sources: ["database", "api", "file_system", "streaming"]
+        
+        # Data Sources Configuration
+        sources_config:
+          database:
+            connection_id: "postgres_default"
+            tables: ["users", "tracks", "interactions"]
+          
+          api:
+            endpoints: ["/api/v1/user_events", "/api/v1/track_metadata"]
+            authentication: "oauth2"
+          
+          streaming:
+            kafka_brokers: ["kafka:9092"]
+            topics: ["user_events", "track_plays"]
+      
+      # Data Preprocessing
+      data_preprocessing:
+        enabled: ${DATA_PREPROCESSING_ENABLED:-true}
+        schedule_interval: "${DATA_PREPROCESSING_SCHEDULE:-@daily}"
+        
+        # Processing Steps
+        processing_steps:
+          - "data_cleaning"
+          - "feature_engineering"
+          - "data_validation"
+          - "data_transformation"
+          - "data_splitting"
+        
+        # Data Quality Checks
+        data_quality_checks:
+          null_check: ${DATA_QUALITY_NULL_CHECK:-true}
+          duplicate_check: ${DATA_QUALITY_DUPLICATE_CHECK:-true}
+          schema_validation: ${DATA_QUALITY_SCHEMA_VALIDATION:-true}
+          range_validation: ${DATA_QUALITY_RANGE_VALIDATION:-true}
+
+  # Model Monitoring Configuration
+  model_monitoring:
+    enabled: ${MODEL_MONITORING_ENABLED:-true}
+    
+    # Data Drift Detection
+    data_drift:
+      enabled: ${DATA_DRIFT_ENABLED:-true}
+      detection_method: "${DATA_DRIFT_METHOD:-kolmogorov_smirnov}"  # kolmogorov_smirnov, chi_square, jensen_shannon
+      
+      # Drift Thresholds
+      thresholds:
+        warning_threshold: ${DATA_DRIFT_WARNING_THRESHOLD:-0.05}
+        critical_threshold: ${DATA_DRIFT_CRITICAL_THRESHOLD:-0.1}
+        
+      # Monitoring Schedule
+      monitoring_schedule: "${DATA_DRIFT_SCHEDULE:-@hourly}"
+      
+      # Reference Data
+      reference_data:
+        window_size: ${DATA_DRIFT_REFERENCE_WINDOW:-7}  # days
+        update_frequency: "${DATA_DRIFT_REFERENCE_UPDATE:-weekly}"
+    
+    # Model Performance Monitoring
+    performance_monitoring:
+      enabled: ${PERFORMANCE_MONITORING_ENABLED:-true}
+      
+      # Performance Metrics
+      metrics:
+        accuracy: ${PERF_MONITOR_ACCURACY:-true}
+        precision: ${PERF_MONITOR_PRECISION:-true}
+        recall: ${PERF_MONITOR_RECALL:-true}
+        f1_score: ${PERF_MONITOR_F1:-true}
+        auc_roc: ${PERF_MONITOR_AUC_ROC:-true}
+        
+      # Performance Thresholds
+      thresholds:
+        accuracy_threshold: ${PERF_ACCURACY_THRESHOLD:-0.85}
+        precision_threshold: ${PERF_PRECISION_THRESHOLD:-0.80}
+        recall_threshold: ${PERF_RECALL_THRESHOLD:-0.80}
+        f1_threshold: ${PERF_F1_THRESHOLD:-0.80}
+        
+      # Alerting
+      alerting:
+        enabled: ${PERF_ALERTING_ENABLED:-true}
+        alert_channels: ["email", "slack", "pagerduty"]
+        alert_frequency: "${PERF_ALERT_FREQUENCY:-immediate}"
+    
+    # Model Explainability
+    explainability:
+      enabled: ${MODEL_EXPLAINABILITY_ENABLED:-true}
+      
+      # Explanation Methods
+      methods:
+        lime: ${EXPLAINABILITY_LIME:-true}
+        shap: ${EXPLAINABILITY_SHAP:-true}
+        anchor: ${EXPLAINABILITY_ANCHOR:-false}
+        
+      # Global Explanations
+      global_explanations:
+        enabled: ${GLOBAL_EXPLANATIONS_ENABLED:-true}
+        update_frequency: "${GLOBAL_EXPLANATIONS_UPDATE:-weekly}"
+        feature_importance_threshold: ${FEATURE_IMPORTANCE_THRESHOLD:-0.01}
+      
+      # Local Explanations
+      local_explanations:
+        enabled: ${LOCAL_EXPLANATIONS_ENABLED:-true}
+        explanation_sample_rate: ${LOCAL_EXPLANATION_SAMPLE_RATE:-0.1}
+
+  # Security and Governance
+  security:
+    # Model Security
+    model_security:
+      model_signing: ${MODEL_SIGNING_ENABLED:-true}
+      model_encryption: ${MODEL_ENCRYPTION_ENABLED:-true}
+      
+      # Access Control
+      access_control:
+        rbac_enabled: ${ML_RBAC_ENABLED:-true}
+        api_authentication: ${ML_API_AUTH_ENABLED:-true}
+        
+        # Roles
+        roles:
+          data_scientist:
+            permissions: ["read", "experiment", "train"]
+            resources: ["datasets", "experiments", "models"]
+          
+          ml_engineer:
+            permissions: ["read", "deploy", "monitor"]
+            resources: ["models", "deployments", "monitoring"]
+          
+          admin:
+            permissions: ["read", "write", "delete", "admin"]
+            resources: ["all"]
+    
+    # Data Privacy
+    data_privacy:
+      pii_detection: ${PII_DETECTION_ENABLED:-true}
+      data_anonymization: ${DATA_ANONYMIZATION_ENABLED:-true}
+      
+      # Privacy Techniques
+      privacy_techniques:
+        differential_privacy: ${DIFFERENTIAL_PRIVACY_ENABLED:-false}
+        federated_learning: ${FEDERATED_LEARNING_ENABLED:-false}
+        homomorphic_encryption: ${HOMOMORPHIC_ENCRYPTION_ENABLED:-false}
+    
+    # Audit and Compliance
+    audit:
+      audit_logging: ${ML_AUDIT_LOGGING_ENABLED:-true}
+      compliance_checks: ${ML_COMPLIANCE_CHECKS_ENABLED:-true}
+      
+      # Audit Events
+      audit_events:
+        - "model_training"
+        - "model_deployment"
+        - "data_access"
+        - "experiment_creation"
+        - "model_prediction"
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      general:
+        enabled: true
+        deployment_mode: "local"
+      
+      platform_components:
+        model_serving: false
+        model_monitoring: false
+      
+      tensorflow:
+        tensorflow_serving:
+          enabled: false
+        
+        tfx:
+          enabled: false
+      
+      pytorch:
+        torchserve:
+          enabled: false
+      
+      kubeflow:
+        enabled: false
+      
+      mlflow:
+        tracking_server:
+          backend_store:
+            type: "sqlite"
+            uri: "sqlite:///mlflow.db"
+          
+          artifact_store:
+            type: "local"
+            uri: "./mlflow-artifacts"
+    
+    testing:
+      general:
+        enabled: true
+        deployment_mode: "docker"
+      
+      tensorflow:
+        tensorflow_serving:
+          enabled: true
+          server_config:
+            performance:
+              max_batch_size: 32
+      
+      pytorch:
+        torchserve:
+          enabled: true
+          server_config:
+            performance:
+              max_workers: 2
+      
+      mlflow:
+        model_registry:
+          model_validation:
+            validation_thresholds:
+              accuracy: 0.70
+              precision: 0.65
+              recall: 0.65
+              f1_score: 0.65
+    
+    production:
+      general:
+        enabled: true
+        deployment_mode: "kubernetes"
+      
+      platform_components:
+        model_training: true
+        model_serving: true
+        experiment_tracking: true
+        model_registry: true
+        feature_store: true
+        data_pipeline: true
+        model_monitoring: true
+      
+      tensorflow:
+        tensorflow_serving:
+          enabled: true
+          server_config:
+            performance:
+              batching_enabled: true
+              max_batch_size: 128
+              num_batch_threads: 8
+          
+          monitoring:
+            prometheus_enabled: true
+            model_metrics: true
+      
+      pytorch:
+        torchserve:
+          enabled: true
+          server_config:
+            performance:
+              max_workers: 4
+              async_communication: true
+          
+          monitoring:
+            metrics_mode: "prometheus"
+      
+      kubeflow:
+        enabled: true
+        pipelines:
+          enabled: true
+        
+        katib:
+          enabled: true
+        
+        kserve:
+          enabled: true
+          serving_config:
+            predictor:
+              min_replicas: 2
+              max_replicas: 20
+      
+      mlflow:
+        tracking_server:
+          authentication:
+            enabled: true
+        
+        model_registry:
+          model_validation:
+            enabled: true
+          
+          model_deployment:
+            approval_required: true
+      
+      model_monitoring:
+        enabled: true
+        data_drift:
+          enabled: true
+        
+        performance_monitoring:
+          enabled: true
+          alerting:
+            enabled: true
+      
+      security:
+        model_security:
+          model_signing: true
+          model_encryption: true
+        
+        access_control:
+          rbac_enabled: true
+          api_authentication: true
+        
+        audit:
+          audit_logging: true
+          compliance_checks: true

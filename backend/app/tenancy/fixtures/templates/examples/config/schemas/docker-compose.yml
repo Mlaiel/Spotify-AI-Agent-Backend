@@ -1,0 +1,78 @@
+
+version: '3.8'
+
+services:
+  schema-validator:
+    build: .
+    container_name: spotify-schema-validator
+    ports:
+      - "8080:8080"
+    environment:
+      - SCHEMA_VALIDATION_MODE=enterprise
+      - AI_FEATURES_ENABLED=true
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:password@postgres:5432/schemas
+    volumes:
+      - ./schemas:/app/schemas/data
+      - ./logs:/app/schemas/logs
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - schema-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: spotify-schema-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - schema-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: spotify-schema-postgres
+    environment:
+      - POSTGRES_DB=schemas
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - schema-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: spotify-schema-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - schema-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: spotify-schema-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - schema-network
+
+volumes:
+  redis_data:
+  postgres_data:
+  grafana_data:
+
+networks:
+  schema-network:
+    driver: bridge

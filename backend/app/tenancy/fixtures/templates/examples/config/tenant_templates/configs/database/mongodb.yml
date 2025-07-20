@@ -1,0 +1,705 @@
+# MongoDB Advanced Configuration Template for Enterprise Tenant Templates
+# ======================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced MongoDB architecture with AI document optimization
+# - Senior Backend Developer: Python/FastAPI/Django MongoDB enterprise patterns
+# - DBA & Data Engineer: MongoDB performance tuning, sharding, and replica sets
+# - Backend Security Specialist: MongoDB security hardening and encryption
+# - Microservices Architect: MongoDB service mesh integration and monitoring
+
+# ==========================================
+# MONGODB ENTERPRISE CONFIGURATION
+# ==========================================
+
+mongodb:
+  # Connection Configuration
+  connection:
+    # Basic Connection Settings
+    host: "${MONGO_HOST:-localhost}"
+    port: ${MONGO_PORT:-27017}
+    database: "${MONGO_DATABASE:-spotify_ai_agent}"
+    username: "${MONGO_USERNAME:-}"
+    password: "${MONGO_PASSWORD:-}"
+    
+    # Authentication Database
+    auth_source: "${MONGO_AUTH_SOURCE:-admin}"
+    auth_mechanism: "${MONGO_AUTH_MECHANISM:-SCRAM-SHA-256}"
+    
+    # Connection Options
+    options:
+      # Connection Pool
+      maxPoolSize: ${MONGO_MAX_POOL_SIZE:-100}
+      minPoolSize: ${MONGO_MIN_POOL_SIZE:-5}
+      maxIdleTimeMS: ${MONGO_MAX_IDLE_TIME:-30000}
+      waitQueueTimeoutMS: ${MONGO_WAIT_QUEUE_TIMEOUT:-5000}
+      
+      # Timeouts
+      connectTimeoutMS: ${MONGO_CONNECT_TIMEOUT:-10000}
+      socketTimeoutMS: ${MONGO_SOCKET_TIMEOUT:-20000}
+      serverSelectionTimeoutMS: ${MONGO_SERVER_SELECTION_TIMEOUT:-5000}
+      heartbeatFrequencyMS: ${MONGO_HEARTBEAT_FREQUENCY:-10000}
+      
+      # Read/Write Preferences
+      readPreference: "${MONGO_READ_PREFERENCE:-primaryPreferred}"
+      readConcern: "${MONGO_READ_CONCERN:-local}"
+      writeConcern:
+        w: "${MONGO_WRITE_CONCERN_W:-majority}"
+        j: ${MONGO_WRITE_CONCERN_J:-true}
+        wtimeout: ${MONGO_WRITE_CONCERN_TIMEOUT:-5000}
+      
+      # Other Options
+      retryWrites: ${MONGO_RETRY_WRITES:-true}
+      retryReads: ${MONGO_RETRY_READS:-true}
+      compressors: "${MONGO_COMPRESSORS:-snappy,zlib,zstd}"
+      zlibCompressionLevel: ${MONGO_ZLIB_COMPRESSION_LEVEL:-6}
+
+  # Replica Set Configuration
+  replica_set:
+    enabled: ${MONGO_REPLICA_SET_ENABLED:-false}
+    name: "${MONGO_REPLICA_SET_NAME:-rs0}"
+    
+    # Replica Set Members
+    members:
+      - host: "${MONGO_RS_MEMBER1_HOST:-localhost}"
+        port: ${MONGO_RS_MEMBER1_PORT:-27017}
+        priority: ${MONGO_RS_MEMBER1_PRIORITY:-1}
+        votes: ${MONGO_RS_MEMBER1_VOTES:-1}
+        hidden: ${MONGO_RS_MEMBER1_HIDDEN:-false}
+        arbiterOnly: ${MONGO_RS_MEMBER1_ARBITER:-false}
+      
+      - host: "${MONGO_RS_MEMBER2_HOST:-localhost}"
+        port: ${MONGO_RS_MEMBER2_PORT:-27018}
+        priority: ${MONGO_RS_MEMBER2_PRIORITY:-1}
+        votes: ${MONGO_RS_MEMBER2_VOTES:-1}
+        hidden: ${MONGO_RS_MEMBER2_HIDDEN:-false}
+        arbiterOnly: ${MONGO_RS_MEMBER2_ARBITER:-false}
+      
+      - host: "${MONGO_RS_MEMBER3_HOST:-localhost}"
+        port: ${MONGO_RS_MEMBER3_PORT:-27019}
+        priority: ${MONGO_RS_MEMBER3_PRIORITY:-1}
+        votes: ${MONGO_RS_MEMBER3_VOTES:-1}
+        hidden: ${MONGO_RS_MEMBER3_HIDDEN:-false}
+        arbiterOnly: ${MONGO_RS_MEMBER3_ARBITER:-false}
+    
+    # Replica Set Settings
+    settings:
+      # Election Settings
+      electionTimeoutMillis: ${MONGO_RS_ELECTION_TIMEOUT:-10000}
+      heartbeatIntervalMillis: ${MONGO_RS_HEARTBEAT_INTERVAL:-2000}
+      heartbeatTimeoutSecs: ${MONGO_RS_HEARTBEAT_TIMEOUT:-10}
+      
+      # Replication Settings
+      catchUpTimeoutMillis: ${MONGO_RS_CATCHUP_TIMEOUT:-60000}
+      catchUpTakeoverDelayMillis: ${MONGO_RS_CATCHUP_TAKEOVER_DELAY:-30000}
+      
+      # Chaining Settings
+      chainingAllowed: ${MONGO_RS_CHAINING_ALLOWED:-true}
+      
+      # Write Concern Majority
+      getLastErrorModes: {}
+      getLastErrorDefaults:
+        w: "majority"
+        wtimeout: 5000
+
+  # Sharding Configuration
+  sharding:
+    enabled: ${MONGO_SHARDING_ENABLED:-false}
+    
+    # Config Servers
+    config_servers:
+      - host: "${MONGO_CONFIG_SERVER1_HOST:-localhost}"
+        port: ${MONGO_CONFIG_SERVER1_PORT:-27019}
+      - host: "${MONGO_CONFIG_SERVER2_HOST:-localhost}"
+        port: ${MONGO_CONFIG_SERVER2_PORT:-27020}
+      - host: "${MONGO_CONFIG_SERVER3_HOST:-localhost}"
+        port: ${MONGO_CONFIG_SERVER3_PORT:-27021}
+    
+    # Mongos Routers
+    mongos_routers:
+      - host: "${MONGO_MONGOS1_HOST:-localhost}"
+        port: ${MONGO_MONGOS1_PORT:-27017}
+      - host: "${MONGO_MONGOS2_HOST:-localhost}"
+        port: ${MONGO_MONGOS2_PORT:-27018}
+    
+    # Shard Configuration
+    shards:
+      - name: "shard0001"
+        replica_set: "shard0001rs"
+        members:
+          - host: "${MONGO_SHARD1_RS1_HOST:-localhost}"
+            port: ${MONGO_SHARD1_RS1_PORT:-27030}
+          - host: "${MONGO_SHARD1_RS2_HOST:-localhost}"
+            port: ${MONGO_SHARD1_RS2_PORT:-27031}
+          - host: "${MONGO_SHARD1_RS3_HOST:-localhost}"
+            port: ${MONGO_SHARD1_RS3_PORT:-27032}
+      
+      - name: "shard0002"
+        replica_set: "shard0002rs"
+        members:
+          - host: "${MONGO_SHARD2_RS1_HOST:-localhost}"
+            port: ${MONGO_SHARD2_RS1_PORT:-27040}
+          - host: "${MONGO_SHARD2_RS2_HOST:-localhost}"
+            port: ${MONGO_SHARD2_RS2_PORT:-27041}
+          - host: "${MONGO_SHARD2_RS3_HOST:-localhost}"
+            port: ${MONGO_SHARD2_RS3_PORT:-27042}
+    
+    # Sharding Settings
+    settings:
+      # Balancer Settings
+      balancer:
+        enabled: ${MONGO_BALANCER_ENABLED:-true}
+        activeWindow:
+          start: "${MONGO_BALANCER_WINDOW_START:-01:00}"
+          stop: "${MONGO_BALANCER_WINDOW_STOP:-05:00}"
+        chunkSize: ${MONGO_CHUNK_SIZE:-64}  # MB
+      
+      # Auto-split Settings
+      autoSplit: ${MONGO_AUTO_SPLIT:-true}
+      
+      # Migration Settings
+      waitForDelete: ${MONGO_WAIT_FOR_DELETE:-false}
+
+  # Storage Engine Configuration
+  storage:
+    # Storage Engine Selection
+    engine: "${MONGO_STORAGE_ENGINE:-wiredTiger}"
+    
+    # WiredTiger Configuration
+    wiredTiger:
+      # Engine Options
+      engineConfig:
+        cacheSizeGB: ${MONGO_WT_CACHE_SIZE:-1}
+        journalCompressor: "${MONGO_WT_JOURNAL_COMPRESSOR:-snappy}"
+        directoryForIndexes: ${MONGO_WT_DIRECTORY_FOR_INDEXES:-false}
+        maxCacheOverflowFileSizeGB: ${MONGO_WT_MAX_CACHE_OVERFLOW:-0}
+      
+      # Collection Options
+      collectionConfig:
+        blockCompressor: "${MONGO_WT_COLLECTION_COMPRESSOR:-snappy}"
+      
+      # Index Options
+      indexConfig:
+        prefixCompression: ${MONGO_WT_INDEX_PREFIX_COMPRESSION:-true}
+    
+    # MMAPv1 Configuration (Legacy)
+    mmapv1:
+      # Deprecated - Use WiredTiger
+      quota:
+        enforced: false
+        maxFilesPerDB: 8
+      
+      smallFiles: false
+      journal:
+        enabled: true
+        commitIntervalMs: 100
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # Basic Authentication
+      enabled: ${MONGO_AUTH_ENABLED:-true}
+      
+      # Authentication Mechanisms
+      mechanisms:
+        - "SCRAM-SHA-1"
+        - "SCRAM-SHA-256"
+        - "MONGODB-CR"  # Deprecated
+      
+      # Kerberos Configuration
+      kerberos:
+        enabled: ${MONGO_KERBEROS_ENABLED:-false}
+        serviceName: "${MONGO_KERBEROS_SERVICE_NAME:-mongodb}"
+        serviceHostname: "${MONGO_KERBEROS_SERVICE_HOSTNAME:-}"
+      
+      # LDAP Configuration
+      ldap:
+        enabled: ${MONGO_LDAP_ENABLED:-false}
+        servers: "${MONGO_LDAP_SERVERS:-}"
+        bind:
+          method: "${MONGO_LDAP_BIND_METHOD:-simple}"
+          saslMechanisms: "${MONGO_LDAP_SASL_MECHANISMS:-PLAIN}"
+          queryUser: "${MONGO_LDAP_QUERY_USER:-}"
+          queryPassword: "${MONGO_LDAP_QUERY_PASSWORD:-}"
+        
+        # User Mapping
+        userToDNMapping: "${MONGO_LDAP_USER_TO_DN_MAPPING:-}"
+        authzQueryTemplate: "${MONGO_LDAP_AUTHZ_QUERY_TEMPLATE:-}"
+    
+    # Authorization
+    authorization:
+      enabled: ${MONGO_AUTHZ_ENABLED:-true}
+      
+      # Role-Based Access Control
+      roles:
+        # Admin Roles
+        - role: "userAdminAnyDatabase"
+          db: "admin"
+          users:
+            - "${MONGO_ADMIN_USER:-admin}"
+        
+        - role: "dbAdminAnyDatabase"
+          db: "admin"
+          users:
+            - "${MONGO_ADMIN_USER:-admin}"
+        
+        - role: "clusterAdmin"
+          db: "admin"
+          users:
+            - "${MONGO_ADMIN_USER:-admin}"
+        
+        # Application Roles
+        - role: "readWrite"
+          db: "${MONGO_DATABASE:-spotify_ai_agent}"
+          users:
+            - "${MONGO_APP_USER:-app_user}"
+        
+        - role: "read"
+          db: "${MONGO_DATABASE:-spotify_ai_agent}"
+          users:
+            - "${MONGO_READONLY_USER:-readonly_user}"
+    
+    # Encryption
+    encryption:
+      # Encryption at Rest
+      at_rest:
+        enabled: ${MONGO_ENCRYPTION_AT_REST_ENABLED:-false}
+        encryptionKeyFile: "${MONGO_ENCRYPTION_KEY_FILE:-}"
+        
+        # KMIP Configuration
+        kmip:
+          enabled: ${MONGO_KMIP_ENABLED:-false}
+          serverName: "${MONGO_KMIP_SERVER_NAME:-}"
+          port: ${MONGO_KMIP_PORT:-5696}
+          clientCertificateFile: "${MONGO_KMIP_CLIENT_CERT:-}"
+          clientCertificatePassword: "${MONGO_KMIP_CLIENT_CERT_PASSWORD:-}"
+          serverCAFile: "${MONGO_KMIP_SERVER_CA:-}"
+      
+      # Field Level Encryption
+      field_level:
+        enabled: ${MONGO_FLE_ENABLED:-false}
+        keyVaultNamespace: "${MONGO_FLE_KEY_VAULT_NAMESPACE:-encryption.__keyVault}"
+        schemaMap: {}
+        
+        # Auto Encryption
+        auto_encryption:
+          keyVaultClient: null
+          kmsProviders: {}
+          schemaMap: {}
+          bypassAutoEncryption: false
+    
+    # TLS/SSL Configuration
+    tls:
+      enabled: ${MONGO_TLS_ENABLED:-false}
+      
+      # TLS Options
+      options:
+        mode: "${MONGO_TLS_MODE:-requireTLS}"  # allowTLS, preferTLS, requireTLS
+        certificateKeyFile: "${MONGO_TLS_CERT_KEY_FILE:-}"
+        certificateKeyFilePassword: "${MONGO_TLS_CERT_KEY_PASSWORD:-}"
+        CAFile: "${MONGO_TLS_CA_FILE:-}"
+        CRLFile: "${MONGO_TLS_CRL_FILE:-}"
+        allowConnectionsWithoutCertificates: ${MONGO_TLS_ALLOW_NO_CERT:-false}
+        allowInvalidCertificates: ${MONGO_TLS_ALLOW_INVALID_CERT:-false}
+        allowInvalidHostnames: ${MONGO_TLS_ALLOW_INVALID_HOSTNAME:-false}
+        disabledProtocols: "${MONGO_TLS_DISABLED_PROTOCOLS:-TLS1_0,TLS1_1}"
+        
+        # Client Certificate Validation
+        FIPSMode: ${MONGO_TLS_FIPS_MODE:-false}
+        clusterFile: "${MONGO_TLS_CLUSTER_FILE:-}"
+        clusterPassword: "${MONGO_TLS_CLUSTER_PASSWORD:-}"
+
+  # Performance Optimization
+  performance:
+    # Query Optimization
+    query:
+      # Query Planning
+      planCacheSizeGB: ${MONGO_PLAN_CACHE_SIZE:-0.5}
+      
+      # Cursor Settings
+      cursorTimeoutMillis: ${MONGO_CURSOR_TIMEOUT:-600000}
+      
+      # Query Logging
+      slowOpThresholdMs: ${MONGO_SLOW_OP_THRESHOLD:-100}
+      slowOpSampleRate: ${MONGO_SLOW_OP_SAMPLE_RATE:-1.0}
+      
+      # Profiling
+      profiling:
+        enabled: ${MONGO_PROFILING_ENABLED:-false}
+        level: ${MONGO_PROFILING_LEVEL:-0}  # 0=off, 1=slow ops, 2=all ops
+        slowms: ${MONGO_PROFILING_SLOWMS:-100}
+        sampleRate: ${MONGO_PROFILING_SAMPLE_RATE:-1.0}
+    
+    # Indexing Strategy
+    indexing:
+      # Background Index Building
+      background: ${MONGO_INDEX_BACKGROUND:-true}
+      
+      # Index Options
+      options:
+        # Compound Index Strategy
+        compound_indexes:
+          enabled: true
+          max_fields: 31
+        
+        # Partial Indexes
+        partial_indexes:
+          enabled: true
+        
+        # Sparse Indexes
+        sparse_indexes:
+          enabled: true
+        
+        # Text Indexes
+        text_indexes:
+          enabled: true
+          default_language: "english"
+          case_sensitive: false
+          diacritic_sensitive: false
+        
+        # 2dsphere Indexes (Geospatial)
+        geospatial_indexes:
+          enabled: true
+          default_crs: "EPSG:4326"
+    
+    # Memory Management
+    memory:
+      # WiredTiger Cache
+      wiredTiger:
+        cacheSizeGB: ${MONGO_WT_CACHE_SIZE:-1}
+        maxCacheOverflowFileSizeGB: ${MONGO_WT_MAX_CACHE_OVERFLOW:-0}
+      
+      # Journal Settings
+      journal:
+        enabled: ${MONGO_JOURNAL_ENABLED:-true}
+        commitIntervalMs: ${MONGO_JOURNAL_COMMIT_INTERVAL:-100}
+
+  # Monitoring and Logging
+  monitoring:
+    # Logging Configuration
+    logging:
+      # Log Levels
+      verbosity: ${MONGO_LOG_VERBOSITY:-0}  # 0-5
+      
+      # Log Components
+      components:
+        accessControl:
+          verbosity: ${MONGO_LOG_ACCESS_CONTROL:-0}
+        command:
+          verbosity: ${MONGO_LOG_COMMAND:-0}
+        control:
+          verbosity: ${MONGO_LOG_CONTROL:-0}
+        geo:
+          verbosity: ${MONGO_LOG_GEO:-0}
+        index:
+          verbosity: ${MONGO_LOG_INDEX:-0}
+        network:
+          verbosity: ${MONGO_LOG_NETWORK:-0}
+        query:
+          verbosity: ${MONGO_LOG_QUERY:-0}
+        replication:
+          verbosity: ${MONGO_LOG_REPLICATION:-0}
+        sharding:
+          verbosity: ${MONGO_LOG_SHARDING:-0}
+        storage:
+          verbosity: ${MONGO_LOG_STORAGE:-0}
+        write:
+          verbosity: ${MONGO_LOG_WRITE:-0}
+      
+      # Log Destinations
+      destination: "${MONGO_LOG_DESTINATION:-file}"  # file, syslog
+      path: "${MONGO_LOG_PATH:-/var/log/mongodb/mongod.log}"
+      logAppend: ${MONGO_LOG_APPEND:-true}
+      logRotate: "${MONGO_LOG_ROTATE:-rename}"  # rename, reopen
+      
+      # Syslog Settings
+      syslog:
+        facility: "${MONGO_SYSLOG_FACILITY:-user}"
+        
+      # Quiet Mode
+      quiet: ${MONGO_QUIET:-false}
+    
+    # Performance Monitoring
+    performance_monitoring:
+      # Database Profiler
+      profiler:
+        enabled: ${MONGO_PROFILER_ENABLED:-false}
+        level: ${MONGO_PROFILER_LEVEL:-0}
+        slowms: ${MONGO_PROFILER_SLOWMS:-100}
+        sampleRate: ${MONGO_PROFILER_SAMPLE_RATE:-1.0}
+      
+      # Free Monitoring
+      free_monitoring:
+        enabled: ${MONGO_FREE_MONITORING_ENABLED:-false}
+        state: "${MONGO_FREE_MONITORING_STATE:-runtime}"  # on, off, runtime
+      
+      # Custom Metrics
+      custom_metrics:
+        - name: "connections_current"
+          command: "serverStatus"
+          path: "connections.current"
+        
+        - name: "connections_available"
+          command: "serverStatus"
+          path: "connections.available"
+        
+        - name: "opcounters_insert"
+          command: "serverStatus"
+          path: "opcounters.insert"
+        
+        - name: "opcounters_query"
+          command: "serverStatus"
+          path: "opcounters.query"
+        
+        - name: "opcounters_update"
+          command: "serverStatus"
+          path: "opcounters.update"
+        
+        - name: "opcounters_delete"
+          command: "serverStatus"
+          path: "opcounters.delete"
+        
+        - name: "memory_resident"
+          command: "serverStatus"
+          path: "mem.resident"
+        
+        - name: "memory_virtual"
+          command: "serverStatus"
+          path: "mem.virtual"
+
+  # Database Schema Management
+  schema:
+    # Collections Configuration
+    collections:
+      # Users Collection
+      users:
+        indexes:
+          - keys: { "email": 1 }
+            options: { "unique": true, "background": true }
+          - keys: { "username": 1 }
+            options: { "unique": true, "background": true }
+          - keys: { "created_at": 1 }
+            options: { "background": true }
+          - keys: { "last_login": 1 }
+            options: { "background": true }
+        
+        validation:
+          $jsonSchema:
+            bsonType: "object"
+            required: ["email", "username", "password_hash"]
+            properties:
+              email:
+                bsonType: "string"
+                pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+              username:
+                bsonType: "string"
+                minLength: 3
+                maxLength: 50
+              password_hash:
+                bsonType: "string"
+                minLength: 60
+      
+      # Playlists Collection
+      playlists:
+        indexes:
+          - keys: { "user_id": 1 }
+            options: { "background": true }
+          - keys: { "name": 1, "user_id": 1 }
+            options: { "background": true }
+          - keys: { "created_at": 1 }
+            options: { "background": true }
+          - keys: { "tags": 1 }
+            options: { "background": true }
+          - keys: { "is_public": 1 }
+            options: { "background": true }
+        
+        validation:
+          $jsonSchema:
+            bsonType: "object"
+            required: ["name", "user_id", "tracks"]
+            properties:
+              name:
+                bsonType: "string"
+                minLength: 1
+                maxLength: 100
+              user_id:
+                bsonType: "objectId"
+              tracks:
+                bsonType: "array"
+                items:
+                  bsonType: "object"
+      
+      # Music Analytics Collection
+      music_analytics:
+        indexes:
+          - keys: { "user_id": 1, "timestamp": 1 }
+            options: { "background": true }
+          - keys: { "track_id": 1 }
+            options: { "background": true }
+          - keys: { "event_type": 1 }
+            options: { "background": true }
+          - keys: { "timestamp": 1 }
+            options: { "expireAfterSeconds": 7776000, "background": true }  # 90 days
+        
+        validation:
+          $jsonSchema:
+            bsonType: "object"
+            required: ["user_id", "event_type", "timestamp"]
+            properties:
+              user_id:
+                bsonType: "objectId"
+              event_type:
+                bsonType: "string"
+                enum: ["play", "pause", "skip", "like", "dislike", "share"]
+              timestamp:
+                bsonType: "date"
+      
+      # AI Model Results Collection
+      ai_model_results:
+        indexes:
+          - keys: { "user_id": 1, "model_name": 1 }
+            options: { "background": true }
+          - keys: { "model_name": 1, "model_version": 1 }
+            options: { "background": true }
+          - keys: { "created_at": 1 }
+            options: { "expireAfterSeconds": 2592000, "background": true }  # 30 days
+        
+        validation:
+          $jsonSchema:
+            bsonType: "object"
+            required: ["user_id", "model_name", "model_version", "result"]
+            properties:
+              user_id:
+                bsonType: "objectId"
+              model_name:
+                bsonType: "string"
+              model_version:
+                bsonType: "string"
+              result:
+                bsonType: "object"
+
+  # Backup and Recovery
+  backup:
+    # MongoDB Dump Settings
+    mongodump:
+      enabled: ${MONGO_BACKUP_ENABLED:-true}
+      
+      # Backup Options
+      options:
+        gzip: true
+        oplog: true
+        dumpDbUsersAndRoles: true
+        excludeCollection: []
+        excludeCollectionsWithPrefix: []
+      
+      # Scheduling
+      schedule:
+        full_backup: "0 2 * * *"  # Daily at 2 AM
+        incremental_backup: "0 */6 * * *"  # Every 6 hours
+        oplog_backup: "*/15 * * * *"  # Every 15 minutes
+        retention_days: 30
+      
+      # Storage Configuration
+      storage:
+        type: "${MONGO_BACKUP_STORAGE_TYPE:-s3}"
+        location: "${MONGO_BACKUP_STORAGE_LOCATION:-s3://mongo-backups/}"
+        encryption: ${MONGO_BACKUP_ENCRYPTION:-true}
+        compression: ${MONGO_BACKUP_COMPRESSION:-true}
+    
+    # Point-in-Time Recovery
+    pit_recovery:
+      enabled: ${MONGO_PIT_RECOVERY_ENABLED:-false}
+      oplog_size: "${MONGO_OPLOG_SIZE:-10240}"  # MB
+      oplog_retention: ${MONGO_OPLOG_RETENTION:-7}  # days
+
+  # Environment-specific Overrides
+  environment_overrides:
+    development:
+      connection:
+        options:
+          maxPoolSize: 10
+          minPoolSize: 1
+      
+      security:
+        authentication:
+          enabled: false
+        authorization:
+          enabled: false
+        tls:
+          enabled: false
+      
+      performance:
+        query:
+          profiling:
+            enabled: true
+            level: 2
+            slowms: 0
+      
+      monitoring:
+        logging:
+          verbosity: 2
+          components:
+            query:
+              verbosity: 2
+            command:
+              verbosity: 2
+    
+    production:
+      connection:
+        options:
+          maxPoolSize: 100
+          minPoolSize: 10
+          readPreference: "primaryPreferred"
+          readConcern: "majority"
+      
+      security:
+        authentication:
+          enabled: true
+        authorization:
+          enabled: true
+        tls:
+          enabled: true
+        encryption:
+          at_rest:
+            enabled: true
+      
+      performance:
+        query:
+          profiling:
+            enabled: true
+            level: 1
+            slowms: 100
+      
+      monitoring:
+        logging:
+          verbosity: 0
+          destination: "file"
+      
+      replica_set:
+        enabled: true
+      
+      backup:
+        mongodump:
+          enabled: true
+
+# ==========================================
+# CONNECTION STRING TEMPLATES
+# ==========================================
+
+connection_strings:
+  # Standard MongoDB Connection
+  standard: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}?authSource=${MONGO_AUTH_SOURCE}"
+  
+  # MongoDB with Replica Set
+  replica_set: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_RS_MEMBER1_HOST}:${MONGO_RS_MEMBER1_PORT},${MONGO_RS_MEMBER2_HOST}:${MONGO_RS_MEMBER2_PORT},${MONGO_RS_MEMBER3_HOST}:${MONGO_RS_MEMBER3_PORT}/${MONGO_DATABASE}?replicaSet=${MONGO_REPLICA_SET_NAME}&authSource=${MONGO_AUTH_SOURCE}"
+  
+  # MongoDB with TLS/SSL
+  secure: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}?ssl=true&authSource=${MONGO_AUTH_SOURCE}"
+  
+  # MongoDB Sharded Cluster
+  sharded: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_MONGOS1_HOST}:${MONGO_MONGOS1_PORT},${MONGO_MONGOS2_HOST}:${MONGO_MONGOS2_PORT}/${MONGO_DATABASE}?authSource=${MONGO_AUTH_SOURCE}"
+  
+  # MongoDB Atlas
+  atlas: "mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_ATLAS_CLUSTER}.mongodb.net/${MONGO_DATABASE}?retryWrites=true&w=majority"

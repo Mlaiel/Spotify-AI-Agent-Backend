@@ -1,0 +1,93 @@
+# docker-compose.prod.yml – Production
+# -----------------------------------
+# Rollen: Lead Dev, Architecte IA, Backend Senior, ML Engineer, DBA/Data Engineer, Security Specialist, Microservices Architect
+# Prod-Stack: Backend, Celery, Redis, Postgres, Nginx, Volumes, Netzwerke, Secrets
+
+version: '3.9'
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    command: gunicorn -c /app/docker/configs/gunicorn.conf.py app.asgi:app
+    env_file:
+      - ../config/environments/.env.production
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+    networks:
+      - backend-net
+    restart: always
+
+  celery-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    command: celery -A app.tasks.celery_app.celery_app worker --loglevel=info
+    env_file:
+      - ../config/environments/.env.production
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - backend-net
+    restart: always
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    command: celery -A app.tasks.celery_app.celery_app beat --loglevel=info
+    env_file:
+      - ../config/environments/.env.production
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - backend-net
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-net
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: spotify_ai_agent
+      POSTGRES_USER: prod_user
+      POSTGRES_PASSWORD: prod-db-password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    restart: always
+
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./configs/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../static:/app/static
+      - ../media:/app/media
+    depends_on:
+      - backend
+    networks:
+      - backend-net
+    restart: always
+
+volumes:
+  pgdata:
+
+networks:
+  backend-net:
+    driver: bridge

@@ -1,0 +1,748 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Environment Configuration Schema",
+  "description": "Schéma de configuration pour les environnements multi-tenant",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["development", "staging", "production", "test"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["basic", "standard", "premium", "enterprise"]
+        },
+        "region": {
+          "type": "string"
+        },
+        "availability_zone": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["name", "tier", "region"]
+    },
+    "infrastructure": {
+      "type": "object",
+      "properties": {
+        "compute": {
+          "type": "object",
+          "properties": {
+            "instances": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "cpu": {
+                    "type": "number"
+                  },
+                  "memory": {
+                    "type": "string"
+                  },
+                  "storage": {
+                    "type": "string"
+                  },
+                  "min_instances": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_instances": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "auto_scaling": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "cpu_threshold": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "memory_threshold": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "scale_up_cooldown": {
+                        "type": "string"
+                      },
+                      "scale_down_cooldown": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "required": ["name", "type", "min_instances", "max_instances"]
+              }
+            },
+            "load_balancer": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["application", "network", "classic"]
+                },
+                "health_check": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "interval": {
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "type": "string"
+                    },
+                    "healthy_threshold": {
+                      "type": "integer"
+                    },
+                    "unhealthy_threshold": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "networking": {
+          "type": "object",
+          "properties": {
+            "vpc": {
+              "type": "object",
+              "properties": {
+                "cidr": {
+                  "type": "string"
+                },
+                "enable_dns_hostnames": {
+                  "type": "boolean"
+                },
+                "enable_dns_support": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "subnets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["public", "private", "isolated"]
+                  },
+                  "cidr": {
+                    "type": "string"
+                  },
+                  "availability_zone": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "security_groups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "ingress_rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "protocol": {
+                          "type": "string"
+                        },
+                        "from_port": {
+                          "type": "integer"
+                        },
+                        "to_port": {
+                          "type": "integer"
+                        },
+                        "source": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "egress_rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "protocol": {
+                          "type": "string"
+                        },
+                        "from_port": {
+                          "type": "integer"
+                        },
+                        "to_port": {
+                          "type": "integer"
+                        },
+                        "destination": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "databases": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "string",
+              "enum": ["postgresql", "mysql", "mariadb", "oracle", "mssql"]
+            },
+            "version": {
+              "type": "string"
+            },
+            "instance_class": {
+              "type": "string"
+            },
+            "allocated_storage": {
+              "type": "integer"
+            },
+            "max_allocated_storage": {
+              "type": "integer"
+            },
+            "storage_type": {
+              "type": "string",
+              "enum": ["standard", "gp2", "gp3", "io1", "io2"]
+            },
+            "iops": {
+              "type": "integer"
+            },
+            "multi_az": {
+              "type": "boolean"
+            },
+            "backup": {
+              "type": "object",
+              "properties": {
+                "retention_period": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 35
+                },
+                "backup_window": {
+                  "type": "string"
+                },
+                "maintenance_window": {
+                  "type": "string"
+                },
+                "point_in_time_recovery": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "enhanced_monitoring": {
+                  "type": "boolean"
+                },
+                "performance_insights": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "required": ["engine", "version", "instance_class"]
+        },
+        "read_replicas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "string"
+              },
+              "instance_class": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "availability_zone": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "string",
+              "enum": ["redis", "memcached"]
+            },
+            "version": {
+              "type": "string"
+            },
+            "node_type": {
+              "type": "string"
+            },
+            "num_cache_nodes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "replication_group": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "num_node_groups": {
+                  "type": "integer"
+                },
+                "replicas_per_node_group": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "object_storage": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["s3", "gcs", "azure_blob", "minio"]
+            },
+            "buckets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": ["uploads", "backups", "logs", "static", "media"]
+                  },
+                  "storage_class": {
+                    "type": "string"
+                  },
+                  "versioning": {
+                    "type": "boolean"
+                  },
+                  "lifecycle_policy": {
+                    "type": "object",
+                    "properties": {
+                      "transitions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "days": {
+                              "type": "integer"
+                            },
+                            "storage_class": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "expiration": {
+                        "type": "object",
+                        "properties": {
+                          "days": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "block_storage": {
+          "type": "object",
+          "properties": {
+            "volumes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["standard", "gp2", "gp3", "io1", "io2"]
+                  },
+                  "encrypted": {
+                    "type": "boolean"
+                  },
+                  "snapshot_schedule": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "messaging": {
+      "type": "object",
+      "properties": {
+        "queues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["sqs", "rabbitmq", "kafka", "redis"]
+              },
+              "dlq_enabled": {
+                "type": "boolean"
+              },
+              "max_receive_count": {
+                "type": "integer"
+              },
+              "visibility_timeout": {
+                "type": "string"
+              },
+              "message_retention": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["sns", "kafka", "eventbridge"]
+              },
+              "subscriptions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string"
+                    },
+                    "endpoint": {
+                      "type": "string"
+                    },
+                    "filter_policy": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["cloudwatch", "prometheus", "datadog", "newrelic"]
+            },
+            "retention_days": {
+              "type": "integer"
+            },
+            "custom_metrics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "namespace": {
+                    "type": "string"
+                  },
+                  "dimensions": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["cloudwatch", "elasticsearch", "splunk", "fluentd"]
+            },
+            "log_groups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "retention_days": {
+                    "type": "integer"
+                  },
+                  "log_level": {
+                    "type": "string",
+                    "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "alerting": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["cloudwatch", "prometheus", "pagerduty", "opsgenie"]
+            },
+            "notification_channels": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["email", "slack", "webhook", "sms"]
+                  },
+                  "endpoint": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["critical", "high", "medium", "low"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "at_rest": {
+              "type": "boolean"
+            },
+            "in_transit": {
+              "type": "boolean"
+            },
+            "kms_key_id": {
+              "type": "string"
+            }
+          }
+        },
+        "access_control": {
+          "type": "object",
+          "properties": {
+            "iam_roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "policies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "service_accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "network_security": {
+          "type": "object",
+          "properties": {
+            "waf_enabled": {
+              "type": "boolean"
+            },
+            "ddos_protection": {
+              "type": "boolean"
+            },
+            "ip_whitelist": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "feature_flags": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["launchdarkly", "split", "flagsmith", "internal"]
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "rollout_percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["gdpr", "hipaa", "sox", "pci", "iso27001"]
+          }
+        },
+        "data_residency": {
+          "type": "object",
+          "properties": {
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cross_border_transfer": {
+              "type": "boolean"
+            }
+          }
+        },
+        "audit_logging": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "retention_years": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["environment", "infrastructure", "databases", "storage", "monitoring", "security"],
+  "additionalProperties": false
+}

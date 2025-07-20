@@ -1,0 +1,303 @@
+# Multi-Tenant Specific Alert Rules
+# Dynamic tenant-based monitoring with isolation and security
+# Version: 1.0.0
+
+groups:
+  # ====================================================================
+  # TENANT ISOLATION & RESOURCE MONITORING
+  # ====================================================================
+  - name: multi_tenant_resource_management
+    interval: 30s
+    rules:
+      - alert: TenantResourceQuotaExceeded
+        expr: |
+          (
+            sum(container_memory_usage_bytes{container!="POD",container!=""}) by (tenant_id) 
+            / 
+            sum(kube_resourcequota_memory_hard) by (tenant_id)
+          ) > 0.9
+        for: 2m
+        labels:
+          severity: warning
+          service: multi_tenancy
+          category: resource_quota
+          team: platform
+        annotations:
+          summary: "Tenant {{ $labels.tenant_id }} approaching memory quota limit"
+          description: "Tenant is using {{ printf \"%.1f\" ($value * 100) }}% of allocated memory quota"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/tenant-quota"
+          auto_remediation: "notify_tenant_admin,suggest_upgrade"
+
+      - alert: TenantCPUThrottling
+        expr: |
+          rate(container_cpu_cfs_throttled_seconds_total[5m]) 
+          / 
+          rate(container_cpu_cfs_periods_total[5m]) > 0.25
+        for: 3m
+        labels:
+          severity: warning
+          service: multi_tenancy
+          category: performance
+          team: platform
+        annotations:
+          summary: "High CPU throttling for tenant {{ $labels.tenant_id }}"
+          description: "Tenant experiencing {{ printf \"%.1f\" ($value * 100) }}% CPU throttling"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/cpu-throttling"
+          tenant_impact: "Performance degradation for tenant workloads"
+
+      - alert: TenantStorageQuotaWarning
+        expr: |
+          (
+            sum(kubelet_volume_stats_used_bytes) by (tenant_id, persistentvolumeclaim) 
+            / 
+            sum(kubelet_volume_stats_capacity_bytes) by (tenant_id, persistentvolumeclaim)
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: storage
+          category: resource_quota
+          team: platform
+        annotations:
+          summary: "Tenant {{ $labels.tenant_id }} storage usage high"
+          description: "PVC {{ $labels.persistentvolumeclaim }} is {{ printf \"%.1f\" ($value * 100) }}% full"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/storage-quota"
+          auto_remediation: "cleanup_old_data,notify_tenant"
+
+  # ====================================================================
+  # TENANT-SPECIFIC PERFORMANCE MONITORING
+  # ====================================================================
+  - name: tenant_performance_analytics
+    interval: 15s
+    rules:
+      - alert: TenantSpecificLatencySpike
+        expr: |
+          histogram_quantile(0.95, 
+            rate(http_request_duration_seconds_bucket{job="spotify-ai-agent"}[5m])
+          ) by (tenant_id) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+          category: tenant_performance
+          team: platform
+        annotations:
+          summary: "High latency for tenant {{ $labels.tenant_id }}"
+          description: "P95 latency is {{ printf \"%.3f\" $value }}s for tenant {{ $labels.tenant_id }}"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/tenant-latency"
+          tenant_dashboard: "https://grafana.spotify-ai-agent.com/d/tenant-performance?var-tenant={{ $labels.tenant_id }}"
+
+      - alert: TenantErrorRateAnomaly
+        expr: |
+          (
+            rate(http_requests_total{status=~"5.."}[5m]) by (tenant_id)
+            /
+            rate(http_requests_total[5m]) by (tenant_id)
+          ) > 0.02
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+          category: tenant_reliability
+          team: platform
+        annotations:
+          summary: "High error rate for tenant {{ $labels.tenant_id }}"
+          description: "Error rate is {{ printf \"%.2f\" ($value * 100) }}% for tenant {{ $labels.tenant_id }}"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/tenant-errors"
+          auto_remediation: "isolate_tenant_workload,investigate_root_cause"
+
+      - alert: TenantThroughputAnomaly
+        expr: |
+          abs(
+            rate(http_requests_total[5m]) by (tenant_id) 
+            - 
+            rate(http_requests_total[5m] offset 1h) by (tenant_id)
+          ) > 0.5 * rate(http_requests_total[5m] offset 1h) by (tenant_id)
+        for: 10m
+        labels:
+          severity: info
+          service: analytics
+          category: tenant_behavior
+          team: product
+        annotations:
+          summary: "Throughput anomaly for tenant {{ $labels.tenant_id }}"
+          description: "Request rate changed significantly from 1 hour ago"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/throughput-anomaly"
+
+  # ====================================================================
+  # TENANT DATA SECURITY & PRIVACY
+  # ====================================================================
+  - name: tenant_security_monitoring
+    interval: 10s
+    rules:
+      - alert: SuspiciousCrossTenantActivity
+        expr: cross_tenant_api_calls_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: security
+          category: tenant_isolation
+          team: security
+          escalation_level: "L1"
+        annotations:
+          summary: "Suspicious cross-tenant activity detected"
+          description: "{{ $value }} unauthorized cross-tenant API calls detected"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/cross-tenant-breach"
+          auto_remediation: "block_suspicious_requests,audit_permissions"
+          affected_tenants: "{{ $labels.source_tenant_id }} -> {{ $labels.target_tenant_id }}"
+
+      - alert: TenantDataExfiltrationAttempt
+        expr: |
+          rate(data_export_requests_total[1m]) by (tenant_id, user_id) > 10
+        for: 30s
+        labels:
+          severity: high
+          service: security
+          category: data_protection
+          team: security
+        annotations:
+          summary: "Potential data exfiltration attempt for tenant {{ $labels.tenant_id }}"
+          description: "High rate of data export requests from user {{ $labels.user_id }}"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/data-exfiltration"
+          auto_remediation: "rate_limit_exports,require_mfa"
+
+      - alert: TenantUnusualDataAccess
+        expr: |
+          data_access_anomaly_score by (tenant_id) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+          category: anomaly_detection
+          team: security
+        annotations:
+          summary: "Unusual data access pattern for tenant {{ $labels.tenant_id }}"
+          description: "ML anomaly detection scored {{ printf \"%.3f\" $value }} for data access patterns"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/data-access-anomaly"
+          investigation_required: "true"
+
+  # ====================================================================
+  # TENANT BILLING & COST MANAGEMENT
+  # ====================================================================
+  - name: tenant_cost_optimization
+    interval: 60s
+    rules:
+      - alert: TenantCostAnomalyDetected
+        expr: |
+          abs(
+            tenant_hourly_cost - tenant_hourly_cost offset 24h
+          ) > 0.3 * tenant_hourly_cost offset 24h
+        for: 2h
+        labels:
+          severity: warning
+          service: billing
+          category: cost_management
+          team: finance
+        annotations:
+          summary: "Cost anomaly detected for tenant {{ $labels.tenant_id }}"
+          description: "Hourly cost changed by {{ printf \"%.1f\" (($value / (tenant_hourly_cost offset 24h) - 1) * 100) }}% from yesterday"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/cost-anomaly"
+          current_cost: "${{ printf \"%.2f\" $value }}/hour"
+
+      - alert: TenantBudgetThresholdExceeded
+        expr: |
+          (
+            sum_over_time(tenant_hourly_cost[24h]) * 30
+          ) > tenant_monthly_budget * 0.8
+        for: 1h
+        labels:
+          severity: warning
+          service: billing
+          category: budget_management
+          team: finance
+        annotations:
+          summary: "Tenant {{ $labels.tenant_id }} approaching budget limit"
+          description: "Projected monthly cost will exceed 80% of budget"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/budget-exceeded"
+          auto_remediation: "notify_tenant_admin,suggest_optimization"
+
+  # ====================================================================
+  # TENANT-SPECIFIC ML MODEL MONITORING
+  # ====================================================================
+  - name: tenant_ml_model_health
+    interval: 30s
+    rules:
+      - alert: TenantModelPerformanceDegradation
+        expr: |
+          ml_model_accuracy{model_type="recommendation"} by (tenant_id) < 0.85
+        for: 10m
+        labels:
+          severity: warning
+          service: ml_pipeline
+          category: model_quality
+          team: ml_engineering
+        annotations:
+          summary: "ML model performance degraded for tenant {{ $labels.tenant_id }}"
+          description: "Recommendation model accuracy dropped to {{ printf \"%.2f\" $value }}"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/model-degradation"
+          auto_remediation: "retrain_tenant_model,fallback_to_global_model"
+
+      - alert: TenantSpecificDataDrift
+        expr: |
+          data_drift_score{} by (tenant_id) > 0.2
+        for: 15m
+        labels:
+          severity: warning
+          service: ml_pipeline
+          category: data_quality
+          team: ml_engineering
+        annotations:
+          summary: "Data drift detected for tenant {{ $labels.tenant_id }}"
+          description: "Data distribution has changed significantly (drift score: {{ printf \"%.3f\" $value }})"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/data-drift"
+          auto_remediation: "update_feature_pipeline,retrain_model"
+
+  # ====================================================================
+  # TENANT SLA & SERVICE LEVEL MONITORING
+  # ====================================================================
+  - name: tenant_sla_compliance
+    interval: 60s
+    rules:
+      - alert: TenantSLAViolation
+        expr: |
+          (
+            (
+              sum(rate(http_requests_total{status!~"5.."}[5m])) by (tenant_id)
+              /
+              sum(rate(http_requests_total[5m])) by (tenant_id)
+            ) < bool 0.999
+          ) * on(tenant_id) group_left(sla_tier) 
+          tenant_sla_tier{sla_tier="premium"}
+        for: 5m
+        labels:
+          severity: critical
+          service: sla_monitoring
+          category: availability
+          team: platform
+          escalation_level: "L2"
+        annotations:
+          summary: "SLA violation for premium tenant {{ $labels.tenant_id }}"
+          description: "Availability dropped below 99.9% SLA commitment"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/sla-violation"
+          business_impact: "Potential financial penalties and customer churn"
+          auto_remediation: "priority_resource_allocation,escalate_to_management"
+
+      - alert: TenantResponseTimeCommitmentBreach
+        expr: |
+          (
+            histogram_quantile(0.95, 
+              rate(http_request_duration_seconds_bucket[5m])
+            ) by (tenant_id) > bool 0.2
+          ) * on(tenant_id) group_left(sla_tier) 
+          tenant_sla_tier{sla_tier=~"premium|enterprise"}
+        for: 3m
+        labels:
+          severity: high
+          service: sla_monitoring
+          category: performance
+          team: platform
+        annotations:
+          summary: "Response time SLA breach for tenant {{ $labels.tenant_id }}"
+          description: "P95 response time {{ printf \"%.3f\" $value }}s exceeds SLA commitment"
+          runbook_url: "https://docs.spotify-ai-agent.com/runbooks/response-time-sla"
+          sla_commitment: "200ms P95 response time"

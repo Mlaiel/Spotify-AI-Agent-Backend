@@ -1,0 +1,748 @@
+# Elasticsearch Advanced Configuration Template for Enterprise Tenant Templates
+# ==========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced Elasticsearch architecture with AI search optimization
+# - Senior Backend Developer: Python/FastAPI/Django Elasticsearch enterprise patterns
+# - DBA & Data Engineer: Elasticsearch performance tuning, clustering, and indexing strategies
+# - Backend Security Specialist: Elasticsearch security hardening and encryption
+# - Microservices Architect: Elasticsearch service mesh integration and monitoring
+
+# ==========================================
+# ELASTICSEARCH ENTERPRISE CONFIGURATION
+# ==========================================
+
+elasticsearch:
+  # Connection Configuration
+  connection:
+    # Basic Connection Settings
+    hosts:
+      - host: "${ELASTICSEARCH_HOST_1:-localhost}"
+        port: ${ELASTICSEARCH_PORT_1:-9200}
+        use_ssl: ${ELASTICSEARCH_USE_SSL_1:-false}
+      - host: "${ELASTICSEARCH_HOST_2:-localhost}"
+        port: ${ELASTICSEARCH_PORT_2:-9201}
+        use_ssl: ${ELASTICSEARCH_USE_SSL_2:-false}
+      - host: "${ELASTICSEARCH_HOST_3:-localhost}"
+        port: ${ELASTICSEARCH_PORT_3:-9202}
+        use_ssl: ${ELASTICSEARCH_USE_SSL_3:-false}
+    
+    # Authentication
+    authentication:
+      username: "${ELASTICSEARCH_USERNAME:-elastic}"
+      password: "${ELASTICSEARCH_PASSWORD:-changeme}"
+      api_key: "${ELASTICSEARCH_API_KEY:-}"
+      
+      # Certificate Authentication
+      ca_certs: "${ELASTICSEARCH_CA_CERTS:-}"
+      client_cert: "${ELASTICSEARCH_CLIENT_CERT:-}"
+      client_key: "${ELASTICSEARCH_CLIENT_KEY:-}"
+    
+    # Connection Pool Settings
+    pool:
+      maxsize: ${ELASTICSEARCH_POOL_MAXSIZE:-25}
+      max_retries: ${ELASTICSEARCH_MAX_RETRIES:-3}
+      retry_on_status: "${ELASTICSEARCH_RETRY_ON_STATUS:-502,503,504,429}"
+      retry_on_timeout: ${ELASTICSEARCH_RETRY_ON_TIMEOUT:-true}
+      
+      # Timeouts
+      timeout: ${ELASTICSEARCH_TIMEOUT:-10}
+      connection_timeout: ${ELASTICSEARCH_CONNECTION_TIMEOUT:-10}
+      read_timeout: ${ELASTICSEARCH_READ_TIMEOUT:-60}
+      
+      # Keep-alive
+      http_keepalive: ${ELASTICSEARCH_HTTP_KEEPALIVE:-true}
+      http_keepalive_timeout: ${ELASTICSEARCH_HTTP_KEEPALIVE_TIMEOUT:-60}
+    
+    # Load Balancing
+    load_balancing:
+      strategy: "${ELASTICSEARCH_LOAD_BALANCING:-round_robin}"  # round_robin, random, sniff
+      sniff_on_start: ${ELASTICSEARCH_SNIFF_ON_START:-true}
+      sniff_on_connection_fail: ${ELASTICSEARCH_SNIFF_ON_CONNECTION_FAIL:-true}
+      sniff_timeout: ${ELASTICSEARCH_SNIFF_TIMEOUT:-0.1}
+
+  # Cluster Configuration
+  cluster:
+    # Basic Cluster Settings
+    name: "${ELASTICSEARCH_CLUSTER_NAME:-spotify-ai-search-cluster}"
+    
+    # Node Configuration
+    nodes:
+      # Master Nodes
+      master_nodes:
+        count: ${ELASTICSEARCH_MASTER_NODES_COUNT:-3}
+        heap_size: "${ELASTICSEARCH_MASTER_HEAP_SIZE:-2g}"
+        
+        # Master Node Settings
+        settings:
+          node.master: true
+          node.data: false
+          node.ingest: false
+          node.ml: false
+          discovery.seed_hosts: "${ELASTICSEARCH_SEED_HOSTS:-localhost:9300,localhost:9301,localhost:9302}"
+          cluster.initial_master_nodes: "${ELASTICSEARCH_INITIAL_MASTER_NODES:-master-1,master-2,master-3}"
+      
+      # Data Nodes
+      data_nodes:
+        count: ${ELASTICSEARCH_DATA_NODES_COUNT:-6}
+        heap_size: "${ELASTICSEARCH_DATA_HEAP_SIZE:-8g}"
+        
+        # Data Node Settings
+        settings:
+          node.master: false
+          node.data: true
+          node.ingest: false
+          node.ml: false
+          
+          # Storage Settings
+          path.data: "${ELASTICSEARCH_DATA_PATH:-/var/lib/elasticsearch/data}"
+          path.logs: "${ELASTICSEARCH_LOGS_PATH:-/var/log/elasticsearch}"
+          
+          # Index Settings
+          indices.fielddata.cache.size: "${ELASTICSEARCH_FIELDDATA_CACHE_SIZE:-40%}"
+          indices.requests.cache.size: "${ELASTICSEARCH_REQUEST_CACHE_SIZE:-2%}"
+          indices.queries.cache.size: "${ELASTICSEARCH_QUERY_CACHE_SIZE:-10%}"
+      
+      # Ingest Nodes
+      ingest_nodes:
+        count: ${ELASTICSEARCH_INGEST_NODES_COUNT:-2}
+        heap_size: "${ELASTICSEARCH_INGEST_HEAP_SIZE:-4g}"
+        
+        # Ingest Node Settings
+        settings:
+          node.master: false
+          node.data: false
+          node.ingest: true
+          node.ml: false
+      
+      # Machine Learning Nodes
+      ml_nodes:
+        count: ${ELASTICSEARCH_ML_NODES_COUNT:-2}
+        heap_size: "${ELASTICSEARCH_ML_HEAP_SIZE:-6g}"
+        
+        # ML Node Settings
+        settings:
+          node.master: false
+          node.data: false
+          node.ingest: false
+          node.ml: true
+          xpack.ml.max_machine_memory_percent: ${ELASTICSEARCH_ML_MAX_MEMORY_PERCENT:-30}
+    
+    # Shard Allocation
+    shard_allocation:
+      # Allocation Settings
+      cluster.routing.allocation.node_concurrent_recoveries: ${ELASTICSEARCH_NODE_CONCURRENT_RECOVERIES:-2}
+      cluster.routing.allocation.cluster_concurrent_rebalance: ${ELASTICSEARCH_CLUSTER_CONCURRENT_REBALANCE:-2}
+      cluster.routing.allocation.disk.threshold_enabled: ${ELASTICSEARCH_DISK_THRESHOLD_ENABLED:-true}
+      cluster.routing.allocation.disk.watermark.low: "${ELASTICSEARCH_DISK_WATERMARK_LOW:-85%}"
+      cluster.routing.allocation.disk.watermark.high: "${ELASTICSEARCH_DISK_WATERMARK_HIGH:-90%}"
+      cluster.routing.allocation.disk.watermark.flood_stage: "${ELASTICSEARCH_DISK_WATERMARK_FLOOD:-95%}"
+      
+      # Shard Balancing
+      cluster.routing.rebalance.enable: "${ELASTICSEARCH_REBALANCE_ENABLE:-all}"  # all, primaries, replicas, none
+      cluster.routing.allocation.allow_rebalance: "${ELASTICSEARCH_ALLOW_REBALANCE:-indices_all_active}"
+      
+      # Awareness
+      cluster.routing.allocation.awareness.attributes: "${ELASTICSEARCH_AWARENESS_ATTRIBUTES:-zone,rack}"
+      cluster.routing.allocation.awareness.force.zone.values: "${ELASTICSEARCH_FORCE_ZONE_VALUES:-zone1,zone2,zone3}"
+
+  # Index Configuration
+  indices:
+    # Default Index Settings
+    default_settings:
+      # Shards and Replicas
+      number_of_shards: ${ELASTICSEARCH_DEFAULT_SHARDS:-5}
+      number_of_replicas: ${ELASTICSEARCH_DEFAULT_REPLICAS:-1}
+      
+      # Refresh and Flush
+      refresh_interval: "${ELASTICSEARCH_REFRESH_INTERVAL:-1s}"
+      flush_threshold_size: "${ELASTICSEARCH_FLUSH_THRESHOLD:-512mb}"
+      
+      # Memory Settings
+      max_result_window: ${ELASTICSEARCH_MAX_RESULT_WINDOW:-10000}
+      max_rescore_window: ${ELASTICSEARCH_MAX_RESCORE_WINDOW:-10000}
+      
+      # Analysis Settings
+      analysis:
+        analyzer:
+          # Custom Analyzers for Music Search
+          music_analyzer:
+            type: "custom"
+            tokenizer: "standard"
+            filter: ["lowercase", "stop", "snowball", "music_synonyms"]
+          
+          # Autocomplete Analyzer
+          autocomplete_analyzer:
+            type: "custom"
+            tokenizer: "keyword"
+            filter: ["lowercase", "edge_ngram_filter"]
+          
+          # Artist/Track Name Analyzer
+          name_analyzer:
+            type: "custom"
+            tokenizer: "standard"
+            filter: ["lowercase", "asciifolding", "remove_duplicates"]
+        
+        # Custom Tokenizers
+        tokenizer:
+          music_tokenizer:
+            type: "pattern"
+            pattern: "[\\W&&[^\\s]]+"
+        
+        # Custom Filters
+        filter:
+          music_synonyms:
+            type: "synonym"
+            synonyms_path: "synonyms/music_synonyms.txt"
+          
+          edge_ngram_filter:
+            type: "edge_ngram"
+            min_gram: 2
+            max_gram: 20
+          
+          remove_duplicates:
+            type: "unique"
+            only_on_same_position: true
+    
+    # Index Templates
+    templates:
+      # Music Tracks Template
+      music_tracks:
+        index_patterns: ["tracks-*", "albums-*"]
+        settings:
+          number_of_shards: ${ELASTICSEARCH_MUSIC_SHARDS:-3}
+          number_of_replicas: ${ELASTICSEARCH_MUSIC_REPLICAS:-1}
+          refresh_interval: "${ELASTICSEARCH_MUSIC_REFRESH_INTERVAL:-5s}"
+        
+        mappings:
+          properties:
+            track_id:
+              type: "keyword"
+            title:
+              type: "text"
+              analyzer: "music_analyzer"
+              fields:
+                keyword:
+                  type: "keyword"
+                autocomplete:
+                  type: "text"
+                  analyzer: "autocomplete_analyzer"
+            artist:
+              type: "text"
+              analyzer: "name_analyzer"
+              fields:
+                keyword:
+                  type: "keyword"
+            genre:
+              type: "keyword"
+            duration:
+              type: "integer"
+            release_date:
+              type: "date"
+            popularity:
+              type: "float"
+            audio_features:
+              type: "nested"
+              properties:
+                danceability:
+                  type: "float"
+                energy:
+                  type: "float"
+                valence:
+                  type: "float"
+                tempo:
+                  type: "float"
+      
+      # User Behavior Template
+      user_behavior:
+        index_patterns: ["user-behavior-*", "listening-history-*"]
+        settings:
+          number_of_shards: ${ELASTICSEARCH_BEHAVIOR_SHARDS:-5}
+          number_of_replicas: ${ELASTICSEARCH_BEHAVIOR_REPLICAS:-1}
+          refresh_interval: "${ELASTICSEARCH_BEHAVIOR_REFRESH_INTERVAL:-10s}"
+        
+        mappings:
+          properties:
+            user_id:
+              type: "keyword"
+            session_id:
+              type: "keyword"
+            track_id:
+              type: "keyword"
+            timestamp:
+              type: "date"
+            action:
+              type: "keyword"
+            duration_played:
+              type: "integer"
+            device_type:
+              type: "keyword"
+            location:
+              type: "geo_point"
+    
+    # Lifecycle Management (ILM)
+    lifecycle:
+      # Hot-Warm-Cold Architecture
+      policies:
+        music_data_policy:
+          phases:
+            hot:
+              actions:
+                rollover:
+                  max_size: "${ELASTICSEARCH_ILM_HOT_MAX_SIZE:-50gb}"
+                  max_age: "${ELASTICSEARCH_ILM_HOT_MAX_AGE:-7d}"
+                set_priority:
+                  priority: 100
+            
+            warm:
+              min_age: "${ELASTICSEARCH_ILM_WARM_MIN_AGE:-7d}"
+              actions:
+                allocate:
+                  number_of_replicas: 0
+                  include:
+                    box_type: "warm"
+                set_priority:
+                  priority: 50
+                shrink:
+                  number_of_shards: 1
+            
+            cold:
+              min_age: "${ELASTICSEARCH_ILM_COLD_MIN_AGE:-30d}"
+              actions:
+                allocate:
+                  number_of_replicas: 0
+                  include:
+                    box_type: "cold"
+                set_priority:
+                  priority: 0
+            
+            delete:
+              min_age: "${ELASTICSEARCH_ILM_DELETE_MIN_AGE:-365d}"
+
+  # Security Configuration
+  security:
+    # X-Pack Security
+    xpack:
+      enabled: ${ELASTICSEARCH_XPACK_SECURITY_ENABLED:-true}
+      
+      # Authentication
+      authentication:
+        # Realms
+        realms:
+          native:
+            native1:
+              order: 0
+              enabled: ${ELASTICSEARCH_NATIVE_REALM_ENABLED:-true}
+          
+          ldap:
+            ldap1:
+              order: 1
+              enabled: ${ELASTICSEARCH_LDAP_REALM_ENABLED:-false}
+              url: "${ELASTICSEARCH_LDAP_URL:-ldaps://ldap.example.com:636}"
+              bind_dn: "${ELASTICSEARCH_LDAP_BIND_DN:-cn=admin,dc=example,dc=com}"
+              bind_password: "${ELASTICSEARCH_LDAP_BIND_PASSWORD:-}"
+              user_search:
+                base_dn: "${ELASTICSEARCH_LDAP_USER_BASE_DN:-ou=users,dc=example,dc=com}"
+                filter: "(uid={0})"
+              group_search:
+                base_dn: "${ELASTICSEARCH_LDAP_GROUP_BASE_DN:-ou=groups,dc=example,dc=com}"
+          
+          saml:
+            saml1:
+              order: 2
+              enabled: ${ELASTICSEARCH_SAML_REALM_ENABLED:-false}
+              idp.metadata.path: "${ELASTICSEARCH_SAML_IDP_METADATA:-/etc/elasticsearch/saml/idp-metadata.xml}"
+              idp.entity_id: "${ELASTICSEARCH_SAML_IDP_ENTITY_ID:-}"
+              sp.entity_id: "${ELASTICSEARCH_SAML_SP_ENTITY_ID:-}"
+              sp.acs: "${ELASTICSEARCH_SAML_SP_ACS:-}"
+      
+      # Authorization
+      authorization:
+        # Role-based Access Control
+        roles:
+          # Admin Role
+          admin:
+            cluster:
+              - "all"
+            indices:
+              - names: ["*"]
+                privileges: ["all"]
+          
+          # Read-only Role
+          read_only:
+            cluster:
+              - "monitor"
+            indices:
+              - names: ["tracks-*", "albums-*", "artists-*"]
+                privileges: ["read"]
+          
+          # Music Curator Role
+          music_curator:
+            cluster:
+              - "monitor"
+            indices:
+              - names: ["tracks-*", "albums-*", "artists-*"]
+                privileges: ["read", "write", "create_index"]
+              - names: ["user-behavior-*"]
+                privileges: ["read"]
+          
+          # Analytics Role
+          analytics:
+            cluster:
+              - "monitor"
+            indices:
+              - names: ["*-analytics-*", "user-behavior-*"]
+                privileges: ["read", "write", "create_index"]
+        
+        # Users
+        users:
+          admin_user:
+            password: "${ELASTICSEARCH_ADMIN_PASSWORD:-changeme}"
+            roles: ["admin"]
+          
+          curator_user:
+            password: "${ELASTICSEARCH_CURATOR_PASSWORD:-changeme}"
+            roles: ["music_curator"]
+          
+          analytics_user:
+            password: "${ELASTICSEARCH_ANALYTICS_PASSWORD:-changeme}"
+            roles: ["analytics"]
+      
+      # Encryption
+      encryption:
+        # Transport SSL
+        transport:
+          ssl:
+            enabled: ${ELASTICSEARCH_TRANSPORT_SSL_ENABLED:-true}
+            verification_mode: "${ELASTICSEARCH_TRANSPORT_SSL_VERIFICATION:-certificate}"
+            keystore.path: "${ELASTICSEARCH_TRANSPORT_SSL_KEYSTORE:-/etc/elasticsearch/certs/transport.p12}"
+            truststore.path: "${ELASTICSEARCH_TRANSPORT_SSL_TRUSTSTORE:-/etc/elasticsearch/certs/transport.p12}"
+        
+        # HTTP SSL
+        http:
+          ssl:
+            enabled: ${ELASTICSEARCH_HTTP_SSL_ENABLED:-true}
+            keystore.path: "${ELASTICSEARCH_HTTP_SSL_KEYSTORE:-/etc/elasticsearch/certs/http.p12}"
+            truststore.path: "${ELASTICSEARCH_HTTP_SSL_TRUSTSTORE:-/etc/elasticsearch/certs/http.p12}"
+        
+        # Encryption at Rest
+        encryption_at_rest:
+          enabled: ${ELASTICSEARCH_ENCRYPTION_AT_REST_ENABLED:-false}
+          keystore_path: "${ELASTICSEARCH_ENCRYPTION_KEYSTORE:-/etc/elasticsearch/certs/encryption.keystore}"
+
+  # Performance Configuration
+  performance:
+    # JVM Settings
+    jvm:
+      # Heap Settings
+      heap_size: "${ELASTICSEARCH_HEAP_SIZE:-4g}"
+      heap_dump_on_oom: ${ELASTICSEARCH_HEAP_DUMP_ON_OOM:-true}
+      heap_dump_path: "${ELASTICSEARCH_HEAP_DUMP_PATH:-/var/lib/elasticsearch/heapdump}"
+      
+      # GC Settings
+      gc_collector: "${ELASTICSEARCH_GC_COLLECTOR:-G1GC}"  # G1GC, ConcMarkSweepGC, ParallelGC
+      gc_tuning:
+        g1gc:
+          max_gc_pause_millis: ${ELASTICSEARCH_G1GC_MAX_PAUSE:-250}
+          gc_log_enabled: ${ELASTICSEARCH_GC_LOG_ENABLED:-true}
+          gc_log_path: "${ELASTICSEARCH_GC_LOG_PATH:-/var/log/elasticsearch/gc.log}"
+    
+    # Thread Pools
+    thread_pools:
+      # Search Thread Pool
+      search:
+        size: ${ELASTICSEARCH_SEARCH_THREAD_POOL_SIZE:-13}
+        queue_size: ${ELASTICSEARCH_SEARCH_QUEUE_SIZE:-1000}
+        
+      # Index Thread Pool
+      index:
+        size: ${ELASTICSEARCH_INDEX_THREAD_POOL_SIZE:-4}
+        queue_size: ${ELASTICSEARCH_INDEX_QUEUE_SIZE:-200}
+        
+      # Bulk Thread Pool
+      bulk:
+        size: ${ELASTICSEARCH_BULK_THREAD_POOL_SIZE:-4}
+        queue_size: ${ELASTICSEARCH_BULK_QUEUE_SIZE:-50}
+        
+      # Get Thread Pool
+      get:
+        size: ${ELASTICSEARCH_GET_THREAD_POOL_SIZE:-4}
+        queue_size: ${ELASTICSEARCH_GET_QUEUE_SIZE:-1000}
+    
+    # Circuit Breakers
+    circuit_breakers:
+      # Parent Circuit Breaker
+      parent:
+        limit: "${ELASTICSEARCH_PARENT_BREAKER_LIMIT:-95%}"
+        
+      # Field Data Circuit Breaker
+      fielddata:
+        limit: "${ELASTICSEARCH_FIELDDATA_BREAKER_LIMIT:-40%}"
+        overhead: ${ELASTICSEARCH_FIELDDATA_BREAKER_OVERHEAD:-1.03}
+        
+      # Request Circuit Breaker
+      request:
+        limit: "${ELASTICSEARCH_REQUEST_BREAKER_LIMIT:-60%}"
+        overhead: ${ELASTICSEARCH_REQUEST_BREAKER_OVERHEAD:-1.0}
+        
+      # In Flight Requests Circuit Breaker
+      in_flight_requests:
+        limit: "${ELASTICSEARCH_IN_FLIGHT_BREAKER_LIMIT:-100%}"
+        overhead: ${ELASTICSEARCH_IN_FLIGHT_BREAKER_OVERHEAD:-2.0}
+
+  # Monitoring Configuration
+  monitoring:
+    # X-Pack Monitoring
+    xpack_monitoring:
+      enabled: ${ELASTICSEARCH_XPACK_MONITORING_ENABLED:-true}
+      collection:
+        enabled: ${ELASTICSEARCH_MONITORING_COLLECTION_ENABLED:-true}
+        interval: "${ELASTICSEARCH_MONITORING_COLLECTION_INTERVAL:-10s}"
+      
+      # Exporters
+      exporters:
+        local:
+          type: "local"
+          enabled: ${ELASTICSEARCH_LOCAL_EXPORTER_ENABLED:-true}
+        
+        http:
+          type: "http"
+          enabled: ${ELASTICSEARCH_HTTP_EXPORTER_ENABLED:-false}
+          host: "${ELASTICSEARCH_HTTP_EXPORTER_HOST:-}"
+          auth.username: "${ELASTICSEARCH_HTTP_EXPORTER_USERNAME:-}"
+          auth.password: "${ELASTICSEARCH_HTTP_EXPORTER_PASSWORD:-}"
+    
+    # External Monitoring
+    external_monitoring:
+      # Prometheus
+      prometheus:
+        enabled: ${ELASTICSEARCH_PROMETHEUS_ENABLED:-true}
+        exporter_port: ${ELASTICSEARCH_PROMETHEUS_PORT:-9114}
+        
+        # Metrics
+        metrics:
+          - cluster_health
+          - node_stats
+          - indices_stats
+          - search_stats
+          - indexing_stats
+      
+      # APM Integration
+      apm:
+        enabled: ${ELASTICSEARCH_APM_ENABLED:-true}
+        server_url: "${ELASTICSEARCH_APM_SERVER_URL:-http://apm-server:8200}"
+        service_name: "${ELASTICSEARCH_APM_SERVICE_NAME:-elasticsearch}"
+        environment: "${ELASTICSEARCH_APM_ENVIRONMENT:-production}"
+
+  # Machine Learning Configuration
+  machine_learning:
+    # X-Pack ML
+    xpack_ml:
+      enabled: ${ELASTICSEARCH_XPACK_ML_ENABLED:-true}
+      
+      # Node Settings
+      node_settings:
+        max_machine_memory_percent: ${ELASTICSEARCH_ML_MAX_MEMORY_PERCENT:-30}
+        max_model_memory_limit: "${ELASTICSEARCH_ML_MAX_MODEL_MEMORY:-1gb}"
+        
+      # Anomaly Detection
+      anomaly_detection:
+        enabled: ${ELASTICSEARCH_ML_ANOMALY_DETECTION_ENABLED:-true}
+        
+        # Jobs Configuration
+        jobs:
+          # User Behavior Anomaly Detection
+          user_behavior_anomaly:
+            description: "Detect anomalies in user listening behavior"
+            analysis_config:
+              bucket_span: "15m"
+              detectors:
+                - function: "count"
+                  by_field_name: "user_id"
+                - function: "mean"
+                  field_name: "duration_played"
+                  by_field_name: "user_id"
+            
+            data_description:
+              time_field: "timestamp"
+              time_format: "epoch_ms"
+            
+            model_memory_limit: "128mb"
+            background_persist_interval: "2h"
+          
+          # Track Popularity Anomaly Detection
+          track_popularity_anomaly:
+            description: "Detect unusual patterns in track popularity"
+            analysis_config:
+              bucket_span: "1h"
+              detectors:
+                - function: "count"
+                  by_field_name: "track_id"
+                - function: "rare"
+                  by_field_name: "track_id"
+            
+            data_description:
+              time_field: "timestamp"
+              time_format: "epoch_ms"
+            
+            model_memory_limit: "256mb"
+      
+      # Data Frame Analytics
+      data_frame_analytics:
+        enabled: ${ELASTICSEARCH_ML_DATA_FRAME_ANALYTICS_ENABLED:-true}
+        
+        # Analytics Jobs
+        jobs:
+          # Music Recommendation Classification
+          music_recommendation:
+            description: "Classification model for music recommendations"
+            source:
+              index: ["user-behavior-*"]
+              query:
+                bool:
+                  filter:
+                    range:
+                      timestamp:
+                        gte: "now-30d"
+            
+            dest:
+              index: "music-recommendation-model"
+            
+            analysis:
+              classification:
+                dependent_variable: "liked"
+                training_percent: 80
+                num_top_feature_importance_values: 10
+                
+            analyzed_fields:
+              includes: ["genre", "tempo", "danceability", "energy", "valence"]
+              excludes: ["user_id", "track_id", "timestamp"]
+            
+            model_memory_limit: "1gb"
+
+# ==========================================
+# TENANT-SPECIFIC CONFIGURATIONS
+# ==========================================
+
+tenant_overrides:
+  # Multi-tenant Index Management
+  index_management:
+    strategy: "${ELASTICSEARCH_TENANT_STRATEGY:-index_prefix}"  # index_prefix, separate_cluster
+    prefix: "${ELASTICSEARCH_TENANT_PREFIX:-tenant_}"
+    
+    # Tenant-specific Settings
+    tenant_settings:
+      default_shards_per_tenant: ${ELASTICSEARCH_TENANT_DEFAULT_SHARDS:-2}
+      default_replicas_per_tenant: ${ELASTICSEARCH_TENANT_DEFAULT_REPLICAS:-1}
+      
+    # Resource Isolation
+    resource_limits:
+      max_indices_per_tenant: ${ELASTICSEARCH_MAX_INDICES_PER_TENANT:-100}
+      max_storage_per_tenant: "${ELASTICSEARCH_MAX_STORAGE_PER_TENANT:-10gb}"
+      max_search_requests_per_minute: ${ELASTICSEARCH_MAX_SEARCH_REQUESTS_PER_TENANT:-1000}
+  
+  # Security Isolation
+  security_isolation:
+    # Per-tenant Authentication
+    authentication_per_tenant: ${ELASTICSEARCH_AUTH_PER_TENANT:-true}
+    
+    # Document Level Security
+    document_level_security:
+      enabled: ${ELASTICSEARCH_DOCUMENT_LEVEL_SECURITY:-true}
+      field_name: "tenant_id"
+
+# ==========================================
+# AI/ML SEARCH OPTIMIZATION
+# ==========================================
+
+ai_optimization:
+  # Neural Search
+  neural_search:
+    enabled: ${ELASTICSEARCH_NEURAL_SEARCH_ENABLED:-true}
+    
+    # Dense Vector Search
+    dense_vector:
+      enabled: ${ELASTICSEARCH_DENSE_VECTOR_ENABLED:-true}
+      dimensions: ${ELASTICSEARCH_VECTOR_DIMENSIONS:-768}
+      similarity: "${ELASTICSEARCH_VECTOR_SIMILARITY:-cosine}"  # cosine, dot_product, l2_norm
+      
+      # Model Configuration
+      model:
+        name: "${ELASTICSEARCH_VECTOR_MODEL:-sentence-transformers/all-MiniLM-L6-v2}"
+        path: "${ELASTICSEARCH_VECTOR_MODEL_PATH:-/var/lib/elasticsearch/models/}"
+    
+    # Semantic Search
+    semantic_search:
+      enabled: ${ELASTICSEARCH_SEMANTIC_SEARCH_ENABLED:-true}
+      boost_factor: ${ELASTICSEARCH_SEMANTIC_BOOST:-1.5}
+      
+      # Query Enhancement
+      query_enhancement:
+        query_expansion: ${ELASTICSEARCH_QUERY_EXPANSION:-true}
+        synonym_expansion: ${ELASTICSEARCH_SYNONYM_EXPANSION:-true}
+        typo_tolerance: ${ELASTICSEARCH_TYPO_TOLERANCE:-true}
+  
+  # Learning to Rank
+  learning_to_rank:
+    enabled: ${ELASTICSEARCH_LEARNING_TO_RANK_ENABLED:-true}
+    
+    # Feature Engineering
+    features:
+      - name: "title_match"
+        template:
+          match:
+            title: "{{query}}"
+      
+      - name: "artist_match"
+        template:
+          match:
+            artist: "{{query}}"
+      
+      - name: "popularity_score"
+        template:
+          function_score:
+            query:
+              match_all: {}
+            field_value_factor:
+              field: "popularity"
+      
+      - name: "recency_score"
+        template:
+          function_score:
+            query:
+              match_all: {}
+            gauss:
+              release_date:
+                origin: "now"
+                scale: "30d"
+                decay: 0.5
+    
+    # Model Training
+    model:
+      algorithm: "${ELASTICSEARCH_LTR_ALGORITHM:-ranknet}"  # ranknet, lambdamart, random_forest
+      training_data_index: "training_judgments"
+      model_name: "music_ranking_model"
+  
+  # Personalization
+  personalization:
+    enabled: ${ELASTICSEARCH_PERSONALIZATION_ENABLED:-true}
+    
+    # User Profile Building
+    user_profiles:
+      enabled: ${ELASTICSEARCH_USER_PROFILES_ENABLED:-true}
+      profile_index: "user_profiles"
+      update_frequency: "${ELASTICSEARCH_PROFILE_UPDATE_FREQUENCY:-1h}"
+      
+      # Profile Features
+      features:
+        - "preferred_genres"
+        - "listening_time_patterns"
+        - "device_preferences"
+        - "audio_feature_preferences"
+    
+    # Real-time Personalization
+    real_time_personalization:
+      enabled: ${ELASTICSEARCH_REAL_TIME_PERSONALIZATION:-true}
+      boost_recent_preferences: ${ELASTICSEARCH_BOOST_RECENT_PREFERENCES:-true}
+      temporal_decay_factor: ${ELASTICSEARCH_TEMPORAL_DECAY:-0.1}

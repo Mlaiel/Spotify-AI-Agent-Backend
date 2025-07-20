@@ -1,0 +1,775 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spotify-ai-agent.com/schemas/security.json",
+  "title": "Security Configuration Schema",
+  "description": "Schéma ultra-avancé de sécurité avec IA intégrée et conformité aux standards industriels",
+  "type": "object",
+  "required": ["authentication", "authorization", "encryption", "monitoring"],
+  "additionalProperties": false,
+  
+  "properties": {
+    "authentication": {
+      "type": "object",
+      "required": ["primary_method", "mfa", "session_management"],
+      "properties": {
+        "primary_method": {
+          "type": "string",
+          "enum": ["jwt", "oauth2", "saml", "ldap", "basic"],
+          "description": "Méthode d'authentification principale"
+        },
+        "jwt": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"],
+              "default": "RS256"
+            },
+            "expiration_minutes": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 1440,
+              "default": 60
+            },
+            "refresh_token": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "expiration_days": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 365,
+                  "default": 30
+                },
+                "rotation_enabled": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "key_management": {
+              "type": "object",
+              "properties": {
+                "rotation_frequency_days": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 365,
+                  "default": 90
+                },
+                "key_store": {
+                  "type": "string",
+                  "enum": ["file", "hsm", "vault", "kms"],
+                  "default": "vault"
+                }
+              }
+            }
+          }
+        },
+        "oauth2": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "client_id", "authorization_url"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": ["google", "github", "spotify", "microsoft", "apple", "facebook"]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "minLength": 10
+                  },
+                  "authorization_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "token_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "pkce_enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "mfa": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "required_for_admin": {
+              "type": "boolean",
+              "default": true
+            },
+            "methods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["totp", "sms", "email", "push", "webauthn", "hardware_key"]
+              },
+              "default": ["totp", "email"]
+            },
+            "backup_codes": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 5,
+                  "maximum": 20,
+                  "default": 10
+                }
+              }
+            },
+            "trusted_devices": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "expiration_days": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "default": 30
+                }
+              }
+            }
+          }
+        },
+        "session_management": {
+          "type": "object",
+          "required": ["timeout_minutes"],
+          "properties": {
+            "timeout_minutes": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 480,
+              "default": 60
+            },
+            "concurrent_sessions": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3
+            },
+            "remember_me": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "duration_days": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 365,
+                  "default": 30
+                }
+              }
+            }
+          }
+        },
+        "password_policy": {
+          "type": "object",
+          "properties": {
+            "min_length": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 128,
+              "default": 12
+            },
+            "require_uppercase": {
+              "type": "boolean",
+              "default": true
+            },
+            "require_lowercase": {
+              "type": "boolean",
+              "default": true
+            },
+            "require_digits": {
+              "type": "boolean",
+              "default": true
+            },
+            "require_special_chars": {
+              "type": "boolean",
+              "default": true
+            },
+            "max_age_days": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 365,
+              "default": 90
+            },
+            "history_count": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 24,
+              "default": 12
+            },
+            "lockout_attempts": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 10,
+              "default": 5
+            },
+            "lockout_duration_minutes": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 60,
+              "default": 15
+            }
+          }
+        }
+      }
+    },
+    
+    "authorization": {
+      "type": "object",
+      "required": ["rbac", "permissions"],
+      "properties": {
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "permissions"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_-]+$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "inherits_from": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "hierarchical": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "permissions": {
+          "type": "object",
+          "properties": {
+            "granularity": {
+              "type": "string",
+              "enum": ["coarse", "fine", "attribute_based"],
+              "default": "fine"
+            },
+            "cache_ttl_seconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 3600,
+              "default": 300
+            },
+            "dynamic_permissions": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "abac": {
+          "type": "object",
+          "description": "Attribute-Based Access Control",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "policy_engine": {
+              "type": "string",
+              "enum": ["xacml", "opa", "cedar"],
+              "default": "opa"
+            },
+            "attributes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["string", "number", "boolean", "array", "object"]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": ["user", "resource", "environment", "action"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "encryption": {
+      "type": "object",
+      "required": ["data_at_rest", "data_in_transit"],
+      "properties": {
+        "data_at_rest": {
+          "type": "object",
+          "required": ["enabled", "algorithm"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256-GCM", "AES-192-GCM", "AES-128-GCM", "ChaCha20-Poly1305"],
+              "default": "AES-256-GCM"
+            },
+            "key_management": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": ["vault", "kms", "hsm", "local"],
+                  "default": "vault"
+                },
+                "rotation_frequency_days": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 365,
+                  "default": 90
+                },
+                "master_key_backup": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "fields_to_encrypt": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Champs à chiffrer automatiquement"
+            }
+          }
+        },
+        "data_in_transit": {
+          "type": "object",
+          "required": ["tls_version", "cipher_suites"],
+          "properties": {
+            "tls_version": {
+              "type": "string",
+              "enum": ["1.2", "1.3"],
+              "default": "1.3"
+            },
+            "cipher_suites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Suites de chiffrement autorisées"
+            },
+            "hsts_enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "hsts_max_age_seconds": {
+              "type": "integer",
+              "minimum": 3600,
+              "maximum": 31536000,
+              "default": 31536000
+            },
+            "certificate_pinning": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "field_level_encryption": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "pii_fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "search_enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Chiffrement préservant la recherche"
+            }
+          }
+        }
+      }
+    },
+    
+    "monitoring": {
+      "type": "object",
+      "required": ["security_events", "anomaly_detection"],
+      "properties": {
+        "security_events": {
+          "type": "object",
+          "properties": {
+            "logging_enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_level": {
+              "type": "string",
+              "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+              "default": "INFO"
+            },
+            "events_to_log": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "login_success",
+                  "login_failure",
+                  "logout",
+                  "password_change",
+                  "permission_change",
+                  "data_access",
+                  "admin_action",
+                  "api_access",
+                  "suspicious_activity"
+                ]
+              }
+            },
+            "retention_days": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 2555,
+              "default": 365
+            }
+          }
+        },
+        "anomaly_detection": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "ai_powered": {
+              "type": "boolean",
+              "default": true
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["behavioral", "statistical", "ml_based", "rule_based"]
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium"
+                  },
+                  "training_data_days": {
+                    "type": "integer",
+                    "minimum": 7,
+                    "maximum": 365,
+                    "default": 30
+                  }
+                }
+              }
+            },
+            "real_time_analysis": {
+              "type": "boolean",
+              "default": true
+            },
+            "automatic_response": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["block_user", "require_mfa", "notify_admin", "increase_monitoring"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "threat_intelligence": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["misp", "stix", "yara", "custom"]
+              }
+            },
+            "ip_reputation": {
+              "type": "boolean",
+              "default": true
+            },
+            "malware_detection": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "standards": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["GDPR", "CCPA", "HIPAA", "PCI-DSS", "SOX", "ISO27001", "SOC2"]
+          }
+        },
+        "data_classification": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "levels": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": ["public", "internal", "confidential", "restricted"]
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "retention_days": {
+                    "type": "integer"
+                  },
+                  "encryption_required": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "audit_trail": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "immutable": {
+              "type": "boolean",
+              "default": true
+            },
+            "digital_signatures": {
+              "type": "boolean",
+              "default": true
+            },
+            "retention_years": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 7
+            }
+          }
+        }
+      }
+    },
+    
+    "vulnerability_management": {
+      "type": "object",
+      "properties": {
+        "scanning": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "frequency": {
+              "type": "string",
+              "enum": ["daily", "weekly", "monthly"],
+              "default": "weekly"
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["owasp_zap", "nessus", "qualys", "rapid7", "custom"]
+              }
+            }
+          }
+        },
+        "dependency_scanning": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "auto_update": {
+              "type": "boolean",
+              "default": false
+            },
+            "severity_threshold": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"],
+              "default": "medium"
+            }
+          }
+        }
+      }
+    },
+    
+    "incident_response": {
+      "type": "object",
+      "properties": {
+        "playbooks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "trigger_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "automated_actions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "notification_channels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "forensics": {
+          "type": "object",
+          "properties": {
+            "evidence_preservation": {
+              "type": "boolean",
+              "default": true
+            },
+            "chain_of_custody": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "default": "1.0.0"
+        },
+        "last_security_review": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_review_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "security_officer": {
+          "type": "string"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "medium"
+        }
+      }
+    }
+  },
+  
+  "additionalMetadata": {
+    "enterprise_security": true,
+    "zero_trust_ready": true,
+    "ai_enhanced_security": true,
+    "compliance_frameworks": ["GDPR", "SOC2", "ISO27001"],
+    "security_certifications": ["OWASP", "NIST"]
+  }
+}

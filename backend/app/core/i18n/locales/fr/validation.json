@@ -1,0 +1,11 @@
+{
+  "required": "Ce champ est obligatoire.",
+  "invalid_email": "Adresse e-mail invalide.",
+  "min_length": "Longueur minimale : {min} caractères.",
+  "max_length": "Longueur maximale : {max} caractères.",
+  "invalid_choice": "Choix invalide.",
+  "password_mismatch": "Les mots de passe ne correspondent pas.",
+  "unique": "Cette valeur doit être unique.",
+  "invalid_format": "Format invalide.",
+  "number_only": "Chiffres uniquement autorisés."
+}

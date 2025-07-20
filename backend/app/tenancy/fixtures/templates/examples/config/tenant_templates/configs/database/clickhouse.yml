@@ -1,0 +1,382 @@
+# ClickHouse Advanced Configuration Template for Enterprise Tenant Templates
+# =========================================================================
+# Developed by Expert Team led by Fahed Mlaiel
+# 
+# Contributors:
+# - Lead Dev + AI Architect: Fahed Mlaiel - Advanced ClickHouse architecture with AI analytics optimization
+# - Senior Backend Developer: Python/FastAPI/Django ClickHouse enterprise patterns
+# - DBA & Data Engineer: ClickHouse performance tuning, clustering, and compression
+# - Backend Security Specialist: ClickHouse security hardening and encryption
+# - Microservices Architect: ClickHouse service mesh integration and monitoring
+
+# ==========================================
+# CLICKHOUSE ENTERPRISE CONFIGURATION
+# ==========================================
+
+clickhouse:
+  # Connection Configuration
+  connection:
+    # Basic Connection Settings
+    host: "${CLICKHOUSE_HOST:-localhost}"
+    port: ${CLICKHOUSE_PORT:-9000}
+    database: "${CLICKHOUSE_DATABASE:-spotify_ai_analytics}"
+    username: "${CLICKHOUSE_USERNAME:-default}"
+    password: "${CLICKHOUSE_PASSWORD:-}"
+    
+    # HTTP Interface Settings
+    http_port: ${CLICKHOUSE_HTTP_PORT:-8123}
+    https_port: ${CLICKHOUSE_HTTPS_PORT:-8443}
+    
+    # Advanced Connection Options
+    secure: ${CLICKHOUSE_SECURE:-false}
+    verify_ssl_cert: ${CLICKHOUSE_VERIFY_SSL:-true}
+    ca_certs: "${CLICKHOUSE_CA_CERTS:-}"
+    client_name: "${CLICKHOUSE_CLIENT_NAME:-spotify-ai-agent}"
+    
+    # Connection Pool Settings
+    pool:
+      max_connections: ${CLICKHOUSE_POOL_MAX:-50}
+      min_connections: ${CLICKHOUSE_POOL_MIN:-5}
+      connection_timeout: ${CLICKHOUSE_CONNECTION_TIMEOUT:-10}
+      send_receive_timeout: ${CLICKHOUSE_SEND_RECEIVE_TIMEOUT:-300}
+      sync_request_timeout: ${CLICKHOUSE_SYNC_TIMEOUT:-5}
+      
+      # Connection Retry Settings
+      retry_on_failure: ${CLICKHOUSE_RETRY_ON_FAILURE:-true}
+      max_retries: ${CLICKHOUSE_MAX_RETRIES:-3}
+      retry_delay: ${CLICKHOUSE_RETRY_DELAY:-1}
+      exponential_backoff: ${CLICKHOUSE_EXPONENTIAL_BACKOFF:-true}
+
+  # Cluster Configuration
+  cluster:
+    # Distributed Configuration
+    enabled: ${CLICKHOUSE_CLUSTER_ENABLED:-false}
+    cluster_name: "${CLICKHOUSE_CLUSTER_NAME:-spotify_analytics_cluster}"
+    
+    # Shard Configuration
+    shards:
+      - name: "shard1"
+        replicas:
+          - host: "${CLICKHOUSE_SHARD1_REPLICA1_HOST:-localhost}"
+            port: ${CLICKHOUSE_SHARD1_REPLICA1_PORT:-9000}
+            weight: ${CLICKHOUSE_SHARD1_REPLICA1_WEIGHT:-1}
+          - host: "${CLICKHOUSE_SHARD1_REPLICA2_HOST:-localhost}"
+            port: ${CLICKHOUSE_SHARD1_REPLICA2_PORT:-9001}
+            weight: ${CLICKHOUSE_SHARD1_REPLICA2_WEIGHT:-1}
+      
+      - name: "shard2"
+        replicas:
+          - host: "${CLICKHOUSE_SHARD2_REPLICA1_HOST:-localhost}"
+            port: ${CLICKHOUSE_SHARD2_REPLICA1_PORT:-9002}
+            weight: ${CLICKHOUSE_SHARD2_REPLICA1_WEIGHT:-1}
+          - host: "${CLICKHOUSE_SHARD2_REPLICA2_HOST:-localhost}"
+            port: ${CLICKHOUSE_SHARD2_REPLICA2_PORT:-9003}
+            weight: ${CLICKHOUSE_SHARD2_REPLICA2_WEIGHT:-1}
+    
+    # Load Balancing
+    load_balancing:
+      strategy: "${CLICKHOUSE_LOAD_BALANCING:-round_robin}"  # random, first_or_random, in_order
+      health_check_interval: ${CLICKHOUSE_HEALTH_CHECK_INTERVAL:-30}
+      unhealthy_threshold: ${CLICKHOUSE_UNHEALTHY_THRESHOLD:-3}
+
+  # Performance Configuration
+  performance:
+    # Query Settings
+    query:
+      max_memory_usage: "${CLICKHOUSE_MAX_MEMORY_USAGE:-10000000000}"  # 10GB
+      max_bytes_before_external_group_by: "${CLICKHOUSE_MAX_BYTES_EXTERNAL_GROUP_BY:-8000000000}"
+      max_bytes_before_external_sort: "${CLICKHOUSE_MAX_BYTES_EXTERNAL_SORT:-8000000000}"
+      max_execution_time: ${CLICKHOUSE_MAX_EXECUTION_TIME:-600}  # 10 minutes
+      max_query_size: ${CLICKHOUSE_MAX_QUERY_SIZE:-262144}  # 256KB
+      
+      # Parallel Processing
+      max_threads: ${CLICKHOUSE_MAX_THREADS:-0}  # Auto-detect
+      max_distributed_connections: ${CLICKHOUSE_MAX_DISTRIBUTED_CONNECTIONS:-1024}
+      distributed_aggregation_memory_efficient: ${CLICKHOUSE_DISTRIBUTED_AGG_MEMORY_EFFICIENT:-true}
+      
+      # Join Settings
+      join_algorithm: "${CLICKHOUSE_JOIN_ALGORITHM:-hash}"  # hash, partial_merge, auto
+      max_rows_in_join: ${CLICKHOUSE_MAX_ROWS_IN_JOIN:-0}  # Unlimited
+      max_bytes_in_join: ${CLICKHOUSE_MAX_BYTES_IN_JOIN:-0}  # Unlimited
+      join_use_nulls: ${CLICKHOUSE_JOIN_USE_NULLS:-false}
+    
+    # Compression Settings
+    compression:
+      method: "${CLICKHOUSE_COMPRESSION_METHOD:-lz4}"  # lz4, zstd, none
+      level: ${CLICKHOUSE_COMPRESSION_LEVEL:-1}
+      min_part_size: ${CLICKHOUSE_MIN_PART_SIZE:-10485760}  # 10MB
+      min_part_size_ratio: ${CLICKHOUSE_MIN_PART_SIZE_RATIO:-0.01}
+    
+    # Cache Settings
+    cache:
+      # Mark Cache
+      mark_cache_size: "${CLICKHOUSE_MARK_CACHE_SIZE:-5368709120}"  # 5GB
+      
+      # Uncompressed Cache
+      uncompressed_cache_size: "${CLICKHOUSE_UNCOMPRESSED_CACHE_SIZE:-8589934592}"  # 8GB
+      uncompressed_cache_policy: "${CLICKHOUSE_UNCOMPRESSED_CACHE_POLICY:-LRU}"
+      
+      # Query Cache
+      query_cache_size: "${CLICKHOUSE_QUERY_CACHE_SIZE:-1073741824}"  # 1GB
+      query_cache_max_size_in_bytes: ${CLICKHOUSE_QUERY_CACHE_MAX_SIZE:-134217728}  # 128MB per query
+      query_cache_max_entries: ${CLICKHOUSE_QUERY_CACHE_MAX_ENTRIES:-1024}
+      
+      # Compiled Expression Cache
+      compiled_expression_cache_size: ${CLICKHOUSE_COMPILED_EXPRESSION_CACHE_SIZE:-134217728}  # 128MB
+      compiled_expression_cache_elements_size: ${CLICKHOUSE_COMPILED_EXPRESSION_CACHE_ELEMENTS:-10000}
+
+  # Storage Configuration
+  storage:
+    # Data Storage
+    data_path: "${CLICKHOUSE_DATA_PATH:-/var/lib/clickhouse/data/}"
+    tmp_path: "${CLICKHOUSE_TMP_PATH:-/var/lib/clickhouse/tmp/}"
+    metadata_path: "${CLICKHOUSE_METADATA_PATH:-/var/lib/clickhouse/metadata/}"
+    
+    # Storage Policies
+    policies:
+      default:
+        volumes:
+          - name: "hot"
+            disk: "hot_disk"
+          - name: "cold"
+            disk: "cold_disk"
+        move_factor: 0.2
+    
+    disks:
+      hot_disk:
+        path: "${CLICKHOUSE_HOT_DISK_PATH:-/var/lib/clickhouse/hot/}"
+        keep_free_space_bytes: "${CLICKHOUSE_HOT_DISK_KEEP_FREE:-10737418240}"  # 10GB
+      cold_disk:
+        path: "${CLICKHOUSE_COLD_DISK_PATH:-/var/lib/clickhouse/cold/}"
+        keep_free_space_bytes: "${CLICKHOUSE_COLD_DISK_KEEP_FREE:-5368709120}"  # 5GB
+    
+    # Table Settings
+    table:
+      # MergeTree Settings
+      merge_tree:
+        max_parts_in_total: ${CLICKHOUSE_MAX_PARTS_IN_TOTAL:-100000}
+        parts_to_delay_insert: ${CLICKHOUSE_PARTS_TO_DELAY_INSERT:-150}
+        parts_to_throw_insert: ${CLICKHOUSE_PARTS_TO_THROW_INSERT:-300}
+        max_delay_to_insert: ${CLICKHOUSE_MAX_DELAY_TO_INSERT:-1}
+        
+        # Index Settings
+        index_granularity: ${CLICKHOUSE_INDEX_GRANULARITY:-8192}
+        index_granularity_bytes: ${CLICKHOUSE_INDEX_GRANULARITY_BYTES:-10485760}  # 10MB
+        min_index_granularity_bytes: ${CLICKHOUSE_MIN_INDEX_GRANULARITY_BYTES:-1024}  # 1KB
+        
+        # TTL Settings
+        merge_with_ttl_timeout: ${CLICKHOUSE_MERGE_WITH_TTL_TIMEOUT:-86400}  # 24 hours
+        ttl_only_drop_parts: ${CLICKHOUSE_TTL_ONLY_DROP_PARTS:-false}
+
+  # Security Configuration
+  security:
+    # Authentication
+    authentication:
+      # User Management
+      users:
+        - name: "${CLICKHOUSE_ADMIN_USER:-admin}"
+          password: "${CLICKHOUSE_ADMIN_PASSWORD:-}"
+          password_sha256_hex: "${CLICKHOUSE_ADMIN_PASSWORD_SHA256:-}"
+          networks:
+            - "::/0"  # Allow from any IP (configure restrictively in production)
+          profile: "admin_profile"
+          quota: "admin_quota"
+          
+        - name: "${CLICKHOUSE_APP_USER:-app_user}"
+          password: "${CLICKHOUSE_APP_PASSWORD:-}"
+          password_sha256_hex: "${CLICKHOUSE_APP_PASSWORD_SHA256:-}"
+          networks:
+            - "${CLICKHOUSE_APP_ALLOWED_NETWORKS:-127.0.0.1/32}"
+          profile: "app_profile"
+          quota: "app_quota"
+      
+      # Profiles
+      profiles:
+        admin_profile:
+          max_memory_usage: "20000000000"  # 20GB
+          use_uncompressed_cache: 1
+          load_balancing: "round_robin"
+          readonly: 0
+        
+        app_profile:
+          max_memory_usage: "10000000000"  # 10GB
+          use_uncompressed_cache: 1
+          load_balancing: "round_robin"
+          readonly: 1
+          allow_ddl: 0
+      
+      # Quotas
+      quotas:
+        admin_quota:
+          interval:
+            duration: 3600
+            queries: 0  # Unlimited
+            errors: 1000
+            result_rows: 0  # Unlimited
+            read_rows: 0  # Unlimited
+            execution_time: 0  # Unlimited
+        
+        app_quota:
+          interval:
+            duration: 3600
+            queries: 10000
+            errors: 100
+            result_rows: 1000000000  # 1B rows per hour
+            read_rows: 10000000000  # 10B rows per hour
+            execution_time: 36000  # 10 hours
+    
+    # SSL/TLS Configuration
+    ssl:
+      enabled: ${CLICKHOUSE_SSL_ENABLED:-false}
+      certificate_file: "${CLICKHOUSE_SSL_CERT:-/etc/clickhouse-server/server.crt}"
+      private_key_file: "${CLICKHOUSE_SSL_KEY:-/etc/clickhouse-server/server.key}"
+      ca_certificate_file: "${CLICKHOUSE_SSL_CA:-/etc/clickhouse-server/ca.crt}"
+      verification_mode: "${CLICKHOUSE_SSL_VERIFICATION:-strict}"  # none, relaxed, strict
+      
+      # Cipher Configuration
+      ciphers: "${CLICKHOUSE_SSL_CIPHERS:-ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS}"
+      protocols: "${CLICKHOUSE_SSL_PROTOCOLS:-TLSv1.2,TLSv1.3}"
+    
+    # Access Control
+    access_control:
+      # Row Level Security
+      row_policy_enabled: ${CLICKHOUSE_ROW_POLICY_ENABLED:-false}
+      
+      # Query Restrictions
+      restrictions:
+        max_concurrent_queries_for_user: ${CLICKHOUSE_MAX_CONCURRENT_QUERIES_USER:-100}
+        max_concurrent_queries_for_all_users: ${CLICKHOUSE_MAX_CONCURRENT_QUERIES_ALL:-1000}
+
+  # Monitoring Configuration
+  monitoring:
+    # Metrics Export
+    metrics:
+      enabled: ${CLICKHOUSE_METRICS_ENABLED:-true}
+      prometheus:
+        enabled: ${CLICKHOUSE_PROMETHEUS_ENABLED:-true}
+        endpoint: "${CLICKHOUSE_PROMETHEUS_ENDPOINT:-/metrics}"
+        port: ${CLICKHOUSE_PROMETHEUS_PORT:-9363}
+        update_period: ${CLICKHOUSE_PROMETHEUS_UPDATE_PERIOD:-10}
+      
+      # System Tables
+      system_tables:
+        enabled: ${CLICKHOUSE_SYSTEM_TABLES_ENABLED:-true}
+        retention_period: "${CLICKHOUSE_SYSTEM_TABLES_RETENTION:-7 DAYS}"
+    
+    # Logging Configuration
+    logging:
+      level: "${CLICKHOUSE_LOG_LEVEL:-information}"  # trace, debug, information, warning, error
+      console: ${CLICKHOUSE_LOG_CONSOLE:-true}
+      file:
+        enabled: ${CLICKHOUSE_LOG_FILE_ENABLED:-true}
+        path: "${CLICKHOUSE_LOG_FILE_PATH:-/var/log/clickhouse-server/clickhouse-server.log}"
+        size: "${CLICKHOUSE_LOG_FILE_SIZE:-1000M}"
+        count: ${CLICKHOUSE_LOG_FILE_COUNT:-10}
+      
+      # Query Logging
+      query_log:
+        enabled: ${CLICKHOUSE_QUERY_LOG_ENABLED:-true}
+        database: "${CLICKHOUSE_QUERY_LOG_DATABASE:-system}"
+        table: "${CLICKHOUSE_QUERY_LOG_TABLE:-query_log}"
+        partition_by: "${CLICKHOUSE_QUERY_LOG_PARTITION:-toYYYYMM(event_date)}"
+        flush_interval_milliseconds: ${CLICKHOUSE_QUERY_LOG_FLUSH_INTERVAL:-7500}
+      
+      # Trace Logging
+      trace_log:
+        enabled: ${CLICKHOUSE_TRACE_LOG_ENABLED:-false}
+        database: "${CLICKHOUSE_TRACE_LOG_DATABASE:-system}"
+        table: "${CLICKHOUSE_TRACE_LOG_TABLE:-trace_log}"
+        partition_by: "${CLICKHOUSE_TRACE_LOG_PARTITION:-toYYYYMM(event_date)}"
+        flush_interval_milliseconds: ${CLICKHOUSE_TRACE_LOG_FLUSH_INTERVAL:-7500}
+    
+    # Health Checks
+    health_check:
+      enabled: ${CLICKHOUSE_HEALTH_CHECK_ENABLED:-true}
+      endpoint: "${CLICKHOUSE_HEALTH_CHECK_ENDPOINT:-/ping}"
+      timeout: ${CLICKHOUSE_HEALTH_CHECK_TIMEOUT:-5}
+      
+      # Distributed Health Check
+      distributed_health_check:
+        enabled: ${CLICKHOUSE_DISTRIBUTED_HEALTH_CHECK_ENABLED:-true}
+        timeout: ${CLICKHOUSE_DISTRIBUTED_HEALTH_CHECK_TIMEOUT:-10}
+
+  # Backup Configuration
+  backup:
+    # Backup Settings
+    enabled: ${CLICKHOUSE_BACKUP_ENABLED:-true}
+    storage_type: "${CLICKHOUSE_BACKUP_STORAGE_TYPE:-local}"  # local, s3, gcs, azure
+    
+    # Local Backup
+    local:
+      path: "${CLICKHOUSE_BACKUP_LOCAL_PATH:-/var/lib/clickhouse/backup/}"
+      compression: "${CLICKHOUSE_BACKUP_COMPRESSION:-gzip}"
+      retention_days: ${CLICKHOUSE_BACKUP_RETENTION_DAYS:-30}
+    
+    # S3 Backup
+    s3:
+      endpoint: "${CLICKHOUSE_BACKUP_S3_ENDPOINT:-}"
+      bucket: "${CLICKHOUSE_BACKUP_S3_BUCKET:-}"
+      region: "${CLICKHOUSE_BACKUP_S3_REGION:-us-east-1}"
+      access_key: "${CLICKHOUSE_BACKUP_S3_ACCESS_KEY:-}"
+      secret_key: "${CLICKHOUSE_BACKUP_S3_SECRET_KEY:-}"
+      encryption: "${CLICKHOUSE_BACKUP_S3_ENCRYPTION:-AES256}"
+    
+    # Scheduling
+    schedule:
+      # Full Backup
+      full_backup:
+        enabled: ${CLICKHOUSE_FULL_BACKUP_ENABLED:-true}
+        cron: "${CLICKHOUSE_FULL_BACKUP_CRON:-0 2 * * 0}"  # Weekly on Sunday 2 AM
+        retention_count: ${CLICKHOUSE_FULL_BACKUP_RETENTION:-4}  # Keep 4 full backups
+      
+      # Incremental Backup
+      incremental_backup:
+        enabled: ${CLICKHOUSE_INCREMENTAL_BACKUP_ENABLED:-true}
+        cron: "${CLICKHOUSE_INCREMENTAL_BACKUP_CRON:-0 3 * * 1-6}"  # Daily except Sunday 3 AM
+        retention_count: ${CLICKHOUSE_INCREMENTAL_BACKUP_RETENTION:-14}  # Keep 14 incremental backups
+
+# ==========================================
+# TENANT-SPECIFIC CONFIGURATIONS
+# ==========================================
+
+tenant_overrides:
+  # Multi-tenant database naming
+  database_naming:
+    strategy: "${CLICKHOUSE_TENANT_NAMING_STRATEGY:-prefix}"  # prefix, suffix, separate_db
+    prefix: "${CLICKHOUSE_TENANT_PREFIX:-tenant_}"
+    suffix: "${CLICKHOUSE_TENANT_SUFFIX:-_analytics}"
+  
+  # Resource Limits per Tenant
+  resource_limits:
+    max_memory_per_tenant: "${CLICKHOUSE_MAX_MEMORY_PER_TENANT:-5000000000}"  # 5GB
+    max_concurrent_queries_per_tenant: ${CLICKHOUSE_MAX_CONCURRENT_QUERIES_PER_TENANT:-50}
+    max_execution_time_per_tenant: ${CLICKHOUSE_MAX_EXECUTION_TIME_PER_TENANT:-300}  # 5 minutes
+  
+  # Data Isolation
+  isolation:
+    strategy: "${CLICKHOUSE_ISOLATION_STRATEGY:-database_per_tenant}"  # database_per_tenant, table_prefix
+    encryption_per_tenant: ${CLICKHOUSE_ENCRYPTION_PER_TENANT:-true}
+
+# ==========================================
+# AI/ML OPTIMIZATION SETTINGS
+# ==========================================
+
+ai_optimization:
+  # Query Optimization
+  query_optimization:
+    enabled: ${CLICKHOUSE_AI_QUERY_OPTIMIZATION:-true}
+    ml_model_path: "${CLICKHOUSE_ML_MODEL_PATH:-/var/lib/clickhouse/ml_models/}"
+    auto_index_creation: ${CLICKHOUSE_AUTO_INDEX_CREATION:-true}
+    query_plan_optimization: ${CLICKHOUSE_QUERY_PLAN_OPTIMIZATION:-true}
+  
+  # Predictive Caching
+  predictive_caching:
+    enabled: ${CLICKHOUSE_PREDICTIVE_CACHING:-true}
+    cache_prediction_model: "${CLICKHOUSE_CACHE_PREDICTION_MODEL:-lstm}"
+    prediction_window: ${CLICKHOUSE_PREDICTION_WINDOW:-3600}  # 1 hour
+  
+  # Analytics Workload Optimization
+  analytics_optimization:
+    columnar_optimization: ${CLICKHOUSE_COLUMNAR_OPTIMIZATION:-true}
+    materialized_view_auto_creation: ${CLICKHOUSE_AUTO_MATERIALIZED_VIEWS:-true}
+    aggregation_optimization: ${CLICKHOUSE_AGGREGATION_OPTIMIZATION:-true}

@@ -1,0 +1,91 @@
+# Configuration tenant Enterprise - Spotify AI Agent
+# Tenant de niveau Enterprise avec ressources étendues
+
+tenant_id: "enterprise_001"
+tier: "enterprise"
+scaling_mode: "intelligent"
+priority: 10
+
+# Limites de ressources généreuses
+resource_limits:
+  min_cpu: 1.0
+  max_cpu: 50.0
+  min_memory: "2Gi"
+  max_memory: "200Gi"
+  min_replicas: 2
+  max_replicas: 100
+  max_nodes: 20
+  storage_limit: "1Ti"
+
+# Budget mensuel élevé
+cost_budget: 10000.0  # $10,000/mois
+
+# SLA stricts
+sla_requirements:
+  availability: 99.99
+  max_response_time_ms: 100
+  max_error_rate_percent: 0.1
+  recovery_time_objective_minutes: 5
+  recovery_point_objective_minutes: 1
+
+# Politiques de scaling optimisées
+scaling_policies:
+  api-service:
+    target_cpu_utilization: 60      # Plus conservateur
+    target_memory_utilization: 70
+    scale_up_stabilization: 120     # Très réactif
+    scale_down_stabilization: 300
+    scale_up_percent: 100
+    scale_down_percent: 50
+    metrics_server_delay: 15        # Monitoring fréquent
+  
+  ml-service:
+    target_cpu_utilization: 65
+    target_memory_utilization: 80
+    scale_up_stabilization: 180
+    scale_down_stabilization: 600
+    scale_up_percent: 100
+    scale_down_percent: 33
+    metrics_server_delay: 30
+  
+  audio-processor:
+    target_cpu_utilization: 70
+    target_memory_utilization: 75
+    scale_up_stabilization: 90      # Très réactif
+    scale_down_stabilization: 450
+    scale_up_percent: 150
+    scale_down_percent: 25
+    metrics_server_delay: 15
+  
+  streaming-service:
+    target_cpu_utilization: 55     # Très conservateur
+    target_memory_utilization: 65
+    scale_up_stabilization: 60
+    scale_down_stabilization: 240
+    scale_up_percent: 200
+    scale_down_percent: 40
+    metrics_server_delay: 10        # Monitoring en temps réel
+  
+  cache-service:
+    target_cpu_utilization: 50
+    target_memory_utilization: 80
+    scale_up_stabilization: 180
+    scale_down_stabilization: 600
+    scale_up_percent: 75
+    scale_down_percent: 25
+    metrics_server_delay: 20
+
+# Configuration avancée
+advanced_features:
+  predictive_scaling: true
+  cost_optimization: true
+  multi_zone_deployment: true
+  dedicated_nodes: true
+  premium_storage: true
+  enhanced_monitoring: true
+  
+# Alertes personnalisées
+alerting:
+  channels: ["slack", "email", "pagerduty"]
+  escalation_policy: "enterprise"
+  response_time_sla: 5  # 5 minutes

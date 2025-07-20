@@ -1,0 +1,136 @@
+# Microsoft Teams Templates pour Alertes Spotify AI Agent
+# Ce fichier contient les templates pour les cartes adaptatives Teams
+
+# Template principal pour les alertes
+teams_alert_template: |
+  {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "{% if alert.severity == 'critical' %}FF4444{% elif alert.severity == 'high' %}FF8800{% elif alert.severity == 'medium' %}FFCC00{% else %}00AA00{% endif %}",
+    "summary": "Spotify AI Agent Alert: {{ alert.name }}",
+    "sections": [
+      {
+        "activityTitle": "🎵 Spotify AI Agent Alert",
+        "activitySubtitle": "{{ alert.name }}",
+        "activityImage": "https://developer.spotify.com/assets/branding-guidelines/icon4@2x.png",
+        "facts": [
+          {
+            "name": "Severity",
+            "value": "{% if alert.severity == 'critical' %}🔴 CRITICAL{% elif alert.severity == 'high' %}🟠 HIGH{% elif alert.severity == 'medium' %}🟡 MEDIUM{% else %}🟢 LOW{% endif %}"
+          },
+          {
+            "name": "Service",
+            "value": "{{ alert.service | default('Unknown') }}"
+          },
+          {
+            "name": "Environment",
+            "value": "{{ alert.environment | default('production') }}"
+          },
+          {
+            "name": "Tenant",
+            "value": "{{ tenant.name | default('default') }} ({{ tenant.tier | title | default('Free') }})"
+          }
+        ],
+        "markdown": true,
+        "text": "**Description:** {{ alert.description }}"
+      }
+    ],
+    "potentialAction": [
+      {
+        "@type": "OpenUri",
+        "name": "✅ Acknowledge Alert",
+        "targets": [
+          {
+            "os": "default",
+            "uri": "{{ links.acknowledge }}"
+          }
+        ]
+      }
+    ]
+  }
+
+# Template pour alertes critiques
+teams_critical_template: |
+  {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "FF0000",
+    "summary": "🚨 CRITICAL ALERT: {{ alert.name }}",
+    "sections": [
+      {
+        "activityTitle": "🚨 CRITICAL ALERT - Immediate Action Required",
+        "activitySubtitle": "{{ alert.name }}",
+        "activityImage": "https://developer.spotify.com/assets/branding-guidelines/icon4@2x.png",
+        "facts": [
+          {
+            "name": "Service",
+            "value": "{{ alert.service | default('Unknown') }}"
+          },
+          {
+            "name": "Environment",
+            "value": "{{ alert.environment | default('production') }}"
+          },
+          {
+            "name": "Impact",
+            "value": "{{ alert.impact.users_affected | default('Unknown') }} users affected"
+          }
+        ],
+        "markdown": true,
+        "text": "**🔴 CRITICAL:** {{ alert.description }}\n\n**Immediate action required!**"
+      }
+    ],
+    "potentialAction": [
+      {
+        "@type": "OpenUri",
+        "name": "🏠 Join War Room",
+        "targets": [
+          {
+            "os": "default",
+            "uri": "{{ links.war_room }}"
+          }
+        ]
+      },
+      {
+        "@type": "OpenUri",
+        "name": "✅ Acknowledge",
+        "targets": [
+          {
+            "os": "default",
+            "uri": "{{ links.acknowledge }}"
+          }
+        ]
+      }
+    ]
+  }
+
+# Template pour résolution d'alertes
+teams_resolution_template: |
+  {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "00AA00",
+    "summary": "✅ Alert Resolved: {{ alert.name }}",
+    "sections": [
+      {
+        "activityTitle": "✅ Alert Resolved",
+        "activitySubtitle": "{{ alert.name }}",
+        "activityImage": "https://developer.spotify.com/assets/branding-guidelines/icon4@2x.png",
+        "facts": [
+          {
+            "name": "Service",
+            "value": "{{ alert.service | default('Unknown') }}"
+          },
+          {
+            "name": "Duration",
+            "value": "{{ (alert.resolution_time - alert.start_time) | duration_format }}"
+          },
+          {
+            "name": "Resolved by",
+            "value": "{{ alert.resolved_by | default('Auto-resolution') }}"
+          }
+        ],
+        "markdown": true,
+        "text": "🎉 **{{ alert.name }}** has been successfully resolved!"
+      }
+    ]
+  }

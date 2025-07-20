@@ -1,0 +1,408 @@
+# Tenant Database Configuration Template
+# =====================================
+# This template defines the base structure for tenant-specific database configurations
+# Each tenant inherits from this template and can override specific settings
+
+tenant_template:
+  # Tenant identification
+  tenant_info:
+    tenant_id: "${TENANT_ID}"
+    tenant_name: "${TENANT_NAME}"
+    tenant_type: "${TENANT_TYPE}"  # enterprise, premium, standard, free
+    
+    # Tenant metadata
+    metadata:
+      created_at: "${TENANT_CREATED_AT}"
+      updated_at: "${TENANT_UPDATED_AT}"
+      contact_email: "${TENANT_CONTACT_EMAIL}"
+      region: "${TENANT_REGION}"
+      timezone: "${TENANT_TIMEZONE}"
+      
+    # Billing and subscription info
+    subscription:
+      plan: "${SUBSCRIPTION_PLAN}"
+      billing_cycle: "${BILLING_CYCLE}"
+      max_users: ${MAX_USERS}
+      max_storage_gb: ${MAX_STORAGE_GB}
+      max_api_calls_per_month: ${MAX_API_CALLS}
+      
+  # Database allocation per tenant
+  databases:
+    # Primary databases
+    postgresql:
+      enabled: ${POSTGRESQL_ENABLED:-true}
+      database_name: "${TENANT_ID}_${ENVIRONMENT}"
+      
+      # Tenant-specific schema isolation
+      schemas:
+        tenant_data: "${TENANT_ID}_data"
+        tenant_analytics: "${TENANT_ID}_analytics"
+        tenant_ml: "${TENANT_ID}_ml"
+        tenant_audit: "${TENANT_ID}_audit"
+        
+      # Resource allocation based on tenant tier
+      resources:
+        cpu_cores: ${POSTGRESQL_CPU_CORES}
+        memory_gb: ${POSTGRESQL_MEMORY_GB}
+        storage_gb: ${POSTGRESQL_STORAGE_GB}
+        max_connections: ${POSTGRESQL_MAX_CONNECTIONS}
+        
+    mongodb:
+      enabled: ${MONGODB_ENABLED:-true}
+      database_name: "${TENANT_ID}_${ENVIRONMENT}"
+      
+      # Collection-level tenant isolation
+      collections:
+        users: "${TENANT_ID}_users"
+        tracks: "${TENANT_ID}_tracks"
+        playlists: "${TENANT_ID}_playlists"
+        listening_history: "${TENANT_ID}_listening_history"
+        recommendations: "${TENANT_ID}_recommendations"
+        analytics: "${TENANT_ID}_analytics"
+        
+      # Sharding strategy for large tenants
+      sharding:
+        enabled: ${MONGODB_SHARDING_ENABLED:-false}
+        shard_key: "tenant_id"
+        
+      resources:
+        cpu_cores: ${MONGODB_CPU_CORES}
+        memory_gb: ${MONGODB_MEMORY_GB}
+        storage_gb: ${MONGODB_STORAGE_GB}
+        
+    redis:
+      enabled: ${REDIS_ENABLED:-true}
+      
+      # Database allocation per tenant
+      database_mapping:
+        cache: ${REDIS_CACHE_DB:-0}
+        sessions: ${REDIS_SESSION_DB:-1}
+        rate_limiting: ${REDIS_RATE_LIMIT_DB:-2}
+        analytics: ${REDIS_ANALYTICS_DB:-3}
+        
+      # Key namespacing
+      namespaces:
+        cache: "cache:${TENANT_ID}:"
+        session: "session:${TENANT_ID}:"
+        analytics: "analytics:${TENANT_ID}:"
+        rate_limit: "rate_limit:${TENANT_ID}:"
+        
+      resources:
+        memory_mb: ${REDIS_MEMORY_MB}
+        max_connections: ${REDIS_MAX_CONNECTIONS}
+        
+    # Additional databases for enterprise tenants
+    clickhouse:
+      enabled: ${CLICKHOUSE_ENABLED:-false}
+      database_name: "${TENANT_ID}_analytics"
+      
+      resources:
+        cpu_cores: ${CLICKHOUSE_CPU_CORES:-2}
+        memory_gb: ${CLICKHOUSE_MEMORY_GB:-8}
+        storage_gb: ${CLICKHOUSE_STORAGE_GB:-100}
+        
+    timescaledb:
+      enabled: ${TIMESCALEDB_ENABLED:-false}
+      database_name: "${TENANT_ID}_timeseries"
+      
+      resources:
+        cpu_cores: ${TIMESCALEDB_CPU_CORES:-2}
+        memory_gb: ${TIMESCALEDB_MEMORY_GB:-4}
+        storage_gb: ${TIMESCALEDB_STORAGE_GB:-50}
+        
+  # Security configuration per tenant
+  security:
+    # Tenant-specific encryption
+    encryption:
+      enabled: ${ENCRYPTION_ENABLED:-true}
+      key_id: "${TENANT_ENCRYPTION_KEY_ID}"
+      algorithm: "AES-256-GCM"
+      
+    # Access control
+    access_control:
+      # Tenant administrator
+      admin_users:
+        - username: "${TENANT_ID}_admin"
+          password: "${TENANT_ADMIN_PASSWORD}"
+          roles: ["tenant_admin"]
+          
+      # Application users
+      app_users:
+        - username: "${TENANT_ID}_app"
+          password: "${TENANT_APP_PASSWORD}"
+          roles: ["tenant_app"]
+          
+      # Read-only users for analytics
+      readonly_users:
+        - username: "${TENANT_ID}_readonly"
+          password: "${TENANT_READONLY_PASSWORD}"
+          roles: ["tenant_readonly"]
+          
+    # Network security
+    network:
+      allowed_ips: ${TENANT_ALLOWED_IPS}
+      vpc_id: "${TENANT_VPC_ID}"
+      subnet_ids: ${TENANT_SUBNET_IDS}
+      
+    # SSL/TLS configuration
+    ssl:
+      enabled: ${SSL_ENABLED:-true}
+      cert_path: "/etc/ssl/${TENANT_ID}/"
+      
+  # Backup and disaster recovery per tenant
+  backup:
+    enabled: ${BACKUP_ENABLED:-true}
+    
+    # Backup schedule based on tenant tier
+    schedule:
+      full_backup: "${BACKUP_FULL_SCHEDULE}"
+      incremental_backup: "${BACKUP_INCREMENTAL_SCHEDULE}"
+      
+    # Backup storage
+    storage:
+      type: "${BACKUP_STORAGE_TYPE}"
+      location: "${BACKUP_STORAGE_LOCATION}/${TENANT_ID}"
+      encryption: ${BACKUP_ENCRYPTION_ENABLED:-true}
+      retention_days: ${BACKUP_RETENTION_DAYS}
+      
+    # Cross-region backup for enterprise
+    cross_region:
+      enabled: ${CROSS_REGION_BACKUP_ENABLED:-false}
+      regions: ${BACKUP_REGIONS}
+      
+  # Monitoring per tenant
+  monitoring:
+    enabled: ${MONITORING_ENABLED:-true}
+    
+    # Metrics collection
+    metrics:
+      collection_interval: ${METRICS_COLLECTION_INTERVAL:-60}
+      retention_days: ${METRICS_RETENTION_DAYS:-30}
+      
+    # Alerting
+    alerts:
+      enabled: ${ALERTS_ENABLED:-true}
+      channels:
+        email: "${TENANT_ALERT_EMAIL}"
+        slack: "${TENANT_SLACK_WEBHOOK}"
+        webhook: "${TENANT_WEBHOOK_URL}"
+        
+    # Performance monitoring
+    performance:
+      slow_query_threshold: ${SLOW_QUERY_THRESHOLD:-1000}
+      resource_usage_alerts: ${RESOURCE_ALERTS_ENABLED:-true}
+      
+  # Compliance and governance per tenant
+  compliance:
+    # Data governance
+    data_governance:
+      classification: ${DATA_CLASSIFICATION_ENABLED:-true}
+      lineage: ${DATA_LINEAGE_ENABLED:-true}
+      retention: ${DATA_RETENTION_ENABLED:-true}
+      
+    # Regulatory requirements
+    regulations: ${COMPLIANCE_REGULATIONS}
+    
+    # Audit logging
+    auditing:
+      enabled: ${AUDIT_LOGGING_ENABLED:-true}
+      retention_period: "${AUDIT_RETENTION_PERIOD}"
+      
+  # Performance tiers based on subscription
+  performance_tier:
+    # Resource limits
+    limits:
+      cpu_limit: ${CPU_LIMIT}
+      memory_limit: ${MEMORY_LIMIT}
+      storage_limit: ${STORAGE_LIMIT}
+      connection_limit: ${CONNECTION_LIMIT}
+      
+    # QoS settings
+    qos:
+      priority: ${QOS_PRIORITY:-normal}
+      guaranteed_iops: ${GUARANTEED_IOPS:-0}
+      burst_iops: ${BURST_IOPS:-0}
+      
+  # Integration settings per tenant
+  integrations:
+    # Spotify API integration
+    spotify_api:
+      client_id: "${SPOTIFY_CLIENT_ID}"
+      client_secret: "${SPOTIFY_CLIENT_SECRET}"
+      redirect_uri: "${SPOTIFY_REDIRECT_URI}"
+      
+    # Analytics integration
+    analytics:
+      enabled: ${ANALYTICS_ENABLED:-true}
+      data_warehouse: ${DATA_WAREHOUSE_TYPE}
+      
+    # ML/AI integration
+    ml_services:
+      enabled: ${ML_SERVICES_ENABLED:-false}
+      model_storage: "${ML_MODEL_STORAGE_PATH}/${TENANT_ID}"
+      
+  # Environment-specific overrides
+  environment_overrides:
+    development:
+      # Relaxed settings for development
+      security:
+        ssl:
+          enabled: false
+      monitoring:
+        alerts:
+          enabled: false
+      backup:
+        enabled: false
+        
+    staging:
+      # Production-like but with reduced resources
+      resources:
+        scale_factor: 0.5
+      backup:
+        retention_days: 7
+        
+    production:
+      # Full production settings
+      security:
+        ssl:
+          enabled: true
+        encryption:
+          enabled: true
+      monitoring:
+        alerts:
+          enabled: true
+      backup:
+        enabled: true
+        cross_region:
+          enabled: true
+          
+# Template variables with defaults
+template_variables:
+  # Tenant identification
+  TENANT_ID: "example_tenant"
+  TENANT_NAME: "Example Tenant"
+  TENANT_TYPE: "standard"
+  TENANT_REGION: "us-east-1"
+  TENANT_TIMEZONE: "UTC"
+  
+  # Subscription settings
+  SUBSCRIPTION_PLAN: "standard"
+  BILLING_CYCLE: "monthly"
+  MAX_USERS: 1000
+  MAX_STORAGE_GB: 100
+  MAX_API_CALLS: 1000000
+  
+  # Database enablement
+  POSTGRESQL_ENABLED: true
+  MONGODB_ENABLED: true
+  REDIS_ENABLED: true
+  CLICKHOUSE_ENABLED: false
+  TIMESCALEDB_ENABLED: false
+  
+  # Resource allocation (standard tier)
+  POSTGRESQL_CPU_CORES: 2
+  POSTGRESQL_MEMORY_GB: 8
+  POSTGRESQL_STORAGE_GB: 100
+  POSTGRESQL_MAX_CONNECTIONS: 100
+  
+  MONGODB_CPU_CORES: 2
+  MONGODB_MEMORY_GB: 8
+  MONGODB_STORAGE_GB: 100
+  MONGODB_SHARDING_ENABLED: false
+  
+  REDIS_MEMORY_MB: 1024
+  REDIS_MAX_CONNECTIONS: 1000
+  REDIS_CACHE_DB: 0
+  REDIS_SESSION_DB: 1
+  REDIS_RATE_LIMIT_DB: 2
+  REDIS_ANALYTICS_DB: 3
+  
+  # Security settings
+  ENCRYPTION_ENABLED: true
+  SSL_ENABLED: true
+  
+  # Backup settings
+  BACKUP_ENABLED: true
+  BACKUP_FULL_SCHEDULE: "0 2 * * 0"
+  BACKUP_INCREMENTAL_SCHEDULE: "0 2 * * 1-6"
+  BACKUP_STORAGE_TYPE: "s3"
+  BACKUP_RETENTION_DAYS: 30
+  BACKUP_ENCRYPTION_ENABLED: true
+  CROSS_REGION_BACKUP_ENABLED: false
+  
+  # Monitoring settings
+  MONITORING_ENABLED: true
+  METRICS_COLLECTION_INTERVAL: 60
+  METRICS_RETENTION_DAYS: 30
+  ALERTS_ENABLED: true
+  SLOW_QUERY_THRESHOLD: 1000
+  RESOURCE_ALERTS_ENABLED: true
+  
+  # Compliance settings
+  DATA_CLASSIFICATION_ENABLED: true
+  DATA_LINEAGE_ENABLED: true
+  DATA_RETENTION_ENABLED: true
+  AUDIT_LOGGING_ENABLED: true
+  AUDIT_RETENTION_PERIOD: "2 years"
+  COMPLIANCE_REGULATIONS: ["GDPR"]
+  
+  # Performance limits
+  CPU_LIMIT: "2000m"
+  MEMORY_LIMIT: "8Gi"
+  STORAGE_LIMIT: "100Gi"
+  CONNECTION_LIMIT: 1000
+  QOS_PRIORITY: "normal"
+  GUARANTEED_IOPS: 0
+  BURST_IOPS: 0
+  
+  # Integration settings
+  ANALYTICS_ENABLED: true
+  ML_SERVICES_ENABLED: false
+  DATA_WAREHOUSE_TYPE: "snowflake"
+
+# Tenant tier definitions
+tenant_tiers:
+  free:
+    max_users: 10
+    max_storage_gb: 1
+    max_api_calls: 10000
+    postgresql_memory_gb: 1
+    mongodb_memory_gb: 1
+    redis_memory_mb: 128
+    backup_enabled: false
+    monitoring_enabled: false
+    
+  standard:
+    max_users: 1000
+    max_storage_gb: 100
+    max_api_calls: 1000000
+    postgresql_memory_gb: 8
+    mongodb_memory_gb: 8
+    redis_memory_mb: 1024
+    backup_enabled: true
+    monitoring_enabled: true
+    
+  premium:
+    max_users: 10000
+    max_storage_gb: 1000
+    max_api_calls: 10000000
+    postgresql_memory_gb: 32
+    mongodb_memory_gb: 32
+    redis_memory_mb: 4096
+    backup_enabled: true
+    monitoring_enabled: true
+    clickhouse_enabled: true
+    
+  enterprise:
+    max_users: 100000
+    max_storage_gb: 10000
+    max_api_calls: 100000000
+    postgresql_memory_gb: 64
+    mongodb_memory_gb: 64
+    redis_memory_mb: 8192
+    backup_enabled: true
+    monitoring_enabled: true
+    clickhouse_enabled: true
+    timescaledb_enabled: true
+    cross_region_backup_enabled: true
+    ml_services_enabled: true

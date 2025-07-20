@@ -1,0 +1,604 @@
+# Redis Production Environment Overrides
+# =====================================
+# This configuration overrides default Redis settings for production environments
+# Optimized for maximum performance, reliability, security, and high availability
+
+redis:
+  # Production cluster configuration
+  cluster:
+    enabled: true
+    
+    # Redis Cluster nodes
+    nodes:
+      # Master nodes
+      - host: redis-prod-master-01.internal
+        port: 6379
+        role: master
+        slots: "0-5460"
+      - host: redis-prod-master-02.internal
+        port: 6379
+        role: master
+        slots: "5461-10922"
+      - host: redis-prod-master-03.internal
+        port: 6379
+        role: master
+        slots: "10923-16383"
+        
+      # Replica nodes
+      - host: redis-prod-replica-01.internal
+        port: 6379
+        role: replica
+        master: redis-prod-master-01.internal
+      - host: redis-prod-replica-02.internal
+        port: 6379
+        role: replica
+        master: redis-prod-master-02.internal
+      - host: redis-prod-replica-03.internal
+        port: 6379
+        role: replica
+        master: redis-prod-master-03.internal
+        
+    # Cluster settings
+    cluster_config:
+      cluster_enabled: true
+      cluster_config_file: "/etc/redis/nodes.conf"
+      cluster_node_timeout: 15000
+      cluster_slave_validity_factor: 10
+      cluster_migration_barrier: 1
+      cluster_require_full_coverage: true
+      
+  # Production connection settings
+  connection:
+    # Connection via cluster endpoints
+    hosts:
+      - redis-prod-master-01.internal:6379
+      - redis-prod-master-02.internal:6379
+      - redis-prod-master-03.internal:6379
+      
+    password: "${REDIS_PROD_PASSWORD}"
+    
+    # Production connection pool
+    pool:
+      max_connections: 1000
+      health_check_interval: 30
+      socket_timeout: 10.0
+      socket_connect_timeout: 10.0
+      socket_keepalive: true
+      socket_keepalive_options:
+        TCP_KEEPIDLE: 60
+        TCP_KEEPINTVL: 30
+        TCP_KEEPCNT: 3
+      retry_on_timeout: true
+      retry_on_error: 
+        - ConnectionError
+        - TimeoutError
+      max_retries: 3
+      
+    # SSL/TLS configuration
+    ssl:
+      enabled: true
+      cert_file: "/etc/ssl/redis/prod-client.crt"
+      key_file: "/etc/ssl/redis/prod-client.key"
+      ca_cert_file: "/etc/ssl/redis/prod-ca.crt"
+      check_hostname: true
+      
+  # Production memory management
+  memory:
+    maxmemory: "16GB"  # Per instance memory limit
+    maxmemory_policy: allkeys-lru
+    maxmemory_samples: 10  # Higher sampling for better eviction
+    
+    # Memory optimization for production
+    hash_max_ziplist_entries: 512
+    hash_max_ziplist_value: 64
+    list_max_ziplist_size: -2
+    list_compress_depth: 0
+    set_max_intset_entries: 512
+    zset_max_ziplist_entries: 128
+    zset_max_ziplist_value: 64
+    
+    # Active memory defragmentation
+    activedefrag: true
+    active_defrag_ignore_bytes: "100mb"
+    active_defrag_threshold_lower: 10
+    active_defrag_threshold_upper: 100
+    active_defrag_cycle_min: 5
+    active_defrag_cycle_max: 75
+    
+  # Production persistence configuration
+  persistence:
+    # RDB persistence for production
+    save_enabled: true
+    save_intervals:
+      - "3600 1"     # Save if at least 1 key changed in 1 hour
+      - "300 100"    # Save if at least 100 keys changed in 5 minutes
+      - "60 10000"   # Save if at least 10000 keys changed in 1 minute
+      
+    # RDB settings
+    rdb_compression: true
+    rdb_checksum: true
+    dbfilename: "dump-${TENANT_ID}-prod.rdb"
+    dir: "/var/lib/redis/prod"
+    
+    # AOF persistence for durability
+    appendonly: true
+    appendfilename: "appendonly-${TENANT_ID}-prod.aof"
+    appendfsync: everysec  # Balance between performance and durability
+    no_appendfsync_on_rewrite: false
+    auto_aof_rewrite_percentage: 100
+    auto_aof_rewrite_min_size: "64mb"
+    aof_load_truncated: true
+    aof_use_rdb_preamble: true
+    
+  # Production security configuration
+  security:
+    # Strong authentication
+    auth:
+      enabled: true
+      password: "${REDIS_PROD_PASSWORD}"
+      
+    # ACL (Access Control List) for fine-grained permissions
+    acl:
+      enabled: true
+      users:
+        # Application user with limited permissions
+        app_user:
+          password: "${REDIS_APP_PASSWORD}"
+          commands: 
+            - "+@read"
+            - "+@write"
+            - "+@string"
+            - "+@list"
+            - "+@set"
+            - "+@sorted_set"
+            - "+@hash"
+            - "+@bitmap"
+            - "+@hyperloglog"
+            - "+@stream"
+            - "-@dangerous"
+          patterns:
+            - "spotify:${TENANT_ID}:*"
+            
+        # Analytics user with read-only access
+        analytics_user:
+          password: "${REDIS_ANALYTICS_PASSWORD}"
+          commands:
+            - "+@read"
+            - "-@dangerous"
+          patterns:
+            - "analytics:${TENANT_ID}:*"
+            - "stats:${TENANT_ID}:*"
+            
+        # Cache user for session and temporary data
+        cache_user:
+          password: "${REDIS_CACHE_PASSWORD}"
+          commands:
+            - "+@read"
+            - "+@write"
+            - "+@string"
+            - "+@hash"
+            - "+expire"
+            - "+ttl"
+            - "+exists"
+          patterns:
+            - "cache:${TENANT_ID}:*"
+            - "session:${TENANT_ID}:*"
+            
+        # Admin user for maintenance
+        admin_user:
+          password: "${REDIS_ADMIN_PASSWORD}"
+          commands:
+            - "+@all"
+          patterns:
+            - "*"
+            
+    # Network security
+    network:
+      bind_addresses:
+        - 127.0.0.1
+        - redis-internal-network  # Internal network interface
+      protected_mode: true
+      port: 6379
+      tcp_backlog: 2048
+      
+    # Command security
+    commands:
+      # Disable dangerous commands
+      disabled_commands:
+        - FLUSHDB
+        - FLUSHALL
+        - KEYS
+        - CONFIG
+        - SHUTDOWN
+        - DEBUG
+        - EVAL
+        - EVALSHA
+        - SCRIPT
+        
+      # Rename sensitive commands for admin access
+      renamed_commands:
+        FLUSHDB: "FLUSHDB_${REDIS_ADMIN_SECRET}"
+        FLUSHALL: "FLUSHALL_${REDIS_ADMIN_SECRET}"
+        CONFIG: "CONFIG_${REDIS_ADMIN_SECRET}"
+        SHUTDOWN: "SHUTDOWN_${REDIS_ADMIN_SECRET}"
+        
+  # Production logging configuration
+  logging:
+    level: notice  # Minimal logging for production performance
+    file: "/var/log/redis/prod-${TENANT_ID}.log"
+    syslog_enabled: true
+    syslog_ident: "redis-${TENANT_ID}-prod"
+    syslog_facility: local0
+    
+    # Slow log configuration
+    slowlog:
+      enabled: true
+      slower_than: 10000  # 10ms threshold
+      max_len: 10000
+      
+  # Production performance optimization
+  performance:
+    # Timeout settings
+    timeout: 0  # No client timeout in production (managed by load balancer)
+    tcp_keepalive: 300
+    
+    # Client limits
+    maxclients: 50000
+    
+    # Background task frequency
+    hz: 10
+    
+    # Memory and CPU optimization
+    tcp_backlog: 2048
+    
+    # Lazy freeing for better performance
+    lazyfree_lazy_eviction: true
+    lazyfree_lazy_expire: true
+    lazyfree_lazy_server_del: true
+    replica_lazy_flush: true
+    
+    # Threading (Redis 6+)
+    io_threads: 4
+    io_threads_do_reads: true
+    
+    # Client output buffer limits
+    client_output_buffer_limit:
+      normal: "0 0 0"
+      replica: "256mb 64mb 60"
+      pubsub: "32mb 8mb 60"
+      
+  # Production replication configuration
+  replication:
+    # Master-replica settings
+    repl_diskless_sync: true
+    repl_diskless_sync_delay: 5
+    repl_ping_replica_period: 10
+    repl_timeout: 60
+    
+    # Replica settings
+    replica_serve_stale_data: true
+    replica_read_only: true
+    replica_priority: 100
+    
+    # Backlog settings
+    repl_backlog_size: "256mb"
+    repl_backlog_ttl: 3600
+    
+  # Production data management
+  data_management:
+    # Key namespacing strategy
+    namespaces:
+      cache: "cache:${TENANT_ID}:"
+      session: "session:${TENANT_ID}:"
+      analytics: "analytics:${TENANT_ID}:"
+      rate_limit: "rate_limit:${TENANT_ID}:"
+      recommendations: "rec:${TENANT_ID}:"
+      user_data: "user:${TENANT_ID}:"
+      playlist_cache: "playlist:${TENANT_ID}:"
+      search_cache: "search:${TENANT_ID}:"
+      
+    # TTL policies for different data types
+    ttl_policies:
+      user_sessions: 86400        # 24 hours
+      api_responses: 3600         # 1 hour
+      search_results: 1800        # 30 minutes
+      recommendation_cache: 7200  # 2 hours
+      rate_limit_counters: 3600   # 1 hour
+      temporary_tokens: 900       # 15 minutes
+      playlist_cache: 3600        # 1 hour
+      user_preferences: 86400     # 24 hours
+      
+    # Data compression for large values
+    compression:
+      enabled: true
+      algorithm: "lz4"
+      min_size: 1024  # Compress values larger than 1KB
+      
+  # Production monitoring and alerting
+  monitoring:
+    enabled: true
+    
+    # Metrics collection
+    metrics:
+      collection_interval: 15
+      retention_days: 90
+      detailed_metrics: true
+      
+    # Performance monitoring
+    performance_monitoring:
+      enabled: true
+      slow_query_threshold: 10  # 10ms
+      memory_usage_monitoring: true
+      connection_monitoring: true
+      command_stats: true
+      
+    # Health checks
+    health_checks:
+      ping_check: true
+      memory_check: true
+      replication_check: true
+      cluster_health_check: true
+      
+    # Alerting configuration
+    alerts:
+      enabled: true
+      channels:
+        - pagerduty: "${PAGERDUTY_INTEGRATION_KEY}"
+        - slack: "#production-alerts"
+        - email: "production-team@company.com"
+        
+      thresholds:
+        memory_usage_percent: 90
+        connection_count: 40000
+        slow_queries_per_minute: 1000
+        error_rate_percent: 1
+        replication_lag_seconds: 30
+        cluster_slots_ok: false
+        
+  # Production backup strategy
+  backup:
+    enabled: true
+    
+    # Backup schedule
+    schedule:
+      rdb_backup: "0 */6 * * *"    # Every 6 hours
+      aof_backup: "0 2 * * *"      # Daily AOF backup
+      
+    # Backup storage
+    storage:
+      type: s3
+      bucket: "spotify-ai-prod-redis-backups"
+      prefix: "${TENANT_ID}/redis"
+      encryption: true
+      encryption_key: "${BACKUP_ENCRYPTION_KEY}"
+      compression: true
+      
+    # Backup retention
+    retention:
+      rdb_backups: 168  # Keep 7 days of RDB backups
+      aof_backups: 30   # Keep 30 days of AOF backups
+      
+  # Production high availability
+  high_availability:
+    # Redis Sentinel for automatic failover
+    sentinel:
+      enabled: true
+      
+      # Sentinel nodes
+      sentinels:
+        - host: redis-sentinel-01.internal
+          port: 26379
+        - host: redis-sentinel-02.internal
+          port: 26379
+        - host: redis-sentinel-03.internal
+          port: 26379
+          
+      # Sentinel configuration
+      config:
+        master_name: "redis-${TENANT_ID}-prod"
+        quorum: 2
+        down_after_milliseconds: 5000
+        failover_timeout: 60000
+        parallel_syncs: 1
+        
+    # Load balancing
+    load_balancing:
+      enabled: true
+      algorithm: "least_connections"
+      health_check_interval: 10
+      
+  # Production caching strategies
+  caching:
+    # Cache warming strategies
+    warming:
+      enabled: true
+      strategies:
+        user_preferences:
+          schedule: "0 */2 * * *"  # Every 2 hours
+          data_source: user_service
+          
+        popular_tracks:
+          schedule: "0 1 * * *"    # Daily
+          data_source: analytics_service
+          
+        recommendation_models:
+          schedule: "0 3 * * *"    # Daily
+          data_source: ml_service
+          
+    # Cache invalidation strategies
+    invalidation:
+      enabled: true
+      strategies:
+        time_based: true
+        event_based: true
+        pattern_based: true
+        
+    # Cache partitioning
+    partitioning:
+      enabled: true
+      strategy: "consistent_hashing"
+      virtual_nodes: 150
+      
+  # Production integration settings
+  integrations:
+    # Application integration
+    applications:
+      spotify_api:
+        connection_pool: 100
+        timeout: 5000
+        retry_attempts: 3
+        
+      recommendation_engine:
+        connection_pool: 50
+        timeout: 10000
+        
+      analytics_service:
+        connection_pool: 30
+        timeout: 15000
+        
+    # Monitoring integration
+    monitoring:
+      prometheus:
+        enabled: true
+        port: 9121
+        
+      grafana:
+        enabled: true
+        dashboard_url: "${GRAFANA_DASHBOARD_URL}"
+        
+      datadog:
+        enabled: true
+        api_key: "${DATADOG_API_KEY}"
+        
+  # Production maintenance
+  maintenance:
+    # Automated maintenance tasks
+    automated_tasks:
+      key_expiration_cleanup: true
+      memory_defragmentation: true
+      slow_log_rotation: true
+      
+    # Maintenance windows
+    maintenance_windows:
+      - day: sunday
+        start_time: "02:00"
+        duration: "2h"
+        timezone: "UTC"
+        tasks:
+          - memory_analysis
+          - key_space_analysis
+          - performance_optimization
+          - backup_verification
+          
+# Production environment variables
+environment_variables:
+  REDIS_PROD_PASSWORD: "${REDIS_PROD_PASSWORD}"
+  REDIS_APP_PASSWORD: "${REDIS_APP_PASSWORD}"
+  REDIS_ANALYTICS_PASSWORD: "${REDIS_ANALYTICS_PASSWORD}"
+  REDIS_CACHE_PASSWORD: "${REDIS_CACHE_PASSWORD}"
+  REDIS_ADMIN_PASSWORD: "${REDIS_ADMIN_PASSWORD}"
+  REDIS_ADMIN_SECRET: "${REDIS_ADMIN_SECRET}"
+  BACKUP_ENCRYPTION_KEY: "${BACKUP_ENCRYPTION_KEY}"
+  PAGERDUTY_INTEGRATION_KEY: "${PAGERDUTY_INTEGRATION_KEY}"
+  GRAFANA_DASHBOARD_URL: "${GRAFANA_DASHBOARD_URL}"
+  DATADOG_API_KEY: "${DATADOG_API_KEY}"
+  
+  # Connection URLs
+  REDIS_URL: "rediss://:${REDIS_PROD_PASSWORD}@redis-prod-master-01.internal:6379"
+  REDIS_CLUSTER_URL: "rediss://:${REDIS_PROD_PASSWORD}@redis-prod-master-01.internal:6379,redis-prod-master-02.internal:6379,redis-prod-master-03.internal:6379"
+  REDIS_CACHE_URL: "rediss://:${REDIS_CACHE_PASSWORD}@redis-prod-master-01.internal:6379"
+  
+# Production deployment configuration
+deployment:
+  # Infrastructure requirements
+  infrastructure:
+    # Master nodes
+    masters:
+      instance_type: "r5.2xlarge"  # 8 vCPU, 64 GB RAM
+      storage_type: "gp3"
+      storage_size: "100GB"
+      instance_count: 3
+      
+    # Replica nodes
+    replicas:
+      instance_type: "r5.xlarge"   # 4 vCPU, 32 GB RAM
+      storage_type: "gp3"
+      storage_size: "100GB"
+      instance_count: 3
+      
+    # Sentinel nodes
+    sentinels:
+      instance_type: "t3.medium"   # 2 vCPU, 4 GB RAM
+      instance_count: 3
+      
+  # Auto-scaling configuration
+  auto_scaling:
+    enabled: true
+    
+    # Memory-based scaling
+    memory_scaling:
+      scale_up_threshold: 80
+      scale_down_threshold: 40
+      
+    # Connection-based scaling
+    connection_scaling:
+      scale_up_threshold: 80
+      scale_down_threshold: 40
+      
+# Production compliance and governance
+compliance:
+  # Data governance
+  data_governance:
+    data_classification: true
+    data_encryption: true
+    access_logging: true
+    
+  # Regulatory compliance
+  regulations:
+    - GDPR
+    - CCPA
+    - SOX
+    
+  # Audit requirements
+  auditing:
+    enabled: true
+    command_logging: true
+    access_logging: true
+    retention_period: "2 years"
+    
+# Disaster recovery configuration
+disaster_recovery:
+  # Recovery objectives
+  rto: "30 minutes"   # Recovery Time Objective
+  rpo: "5 minutes"    # Recovery Point Objective
+  
+  # Cross-region replication
+  cross_region:
+    enabled: true
+    regions:
+      primary: "us-east-1"
+      secondary: "us-west-2"
+      
+  # Backup and restore procedures
+  backup_procedures:
+    automated_testing: true
+    testing_frequency: daily
+    restoration_testing: weekly
+    
+# Metadata
+metadata:
+  environment: production
+  purpose: "Production Redis cluster for caching and session management"
+  maintainer: "Cache Team"
+  last_updated: "2025-07-16"
+  notes: |
+    This production configuration provides:
+    - High availability with Redis Cluster and Sentinel
+    - Maximum security with ACL, SSL/TLS, and command restrictions
+    - Optimized performance for production workloads
+    - Comprehensive monitoring and alerting
+    - Automated backup and disaster recovery
+    - Compliance with enterprise governance requirements
+    
+    This configuration is designed for mission-critical production
+    environments requiring maximum performance, reliability, and security.

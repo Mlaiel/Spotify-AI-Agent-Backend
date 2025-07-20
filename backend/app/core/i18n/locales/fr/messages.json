@@ -1,0 +1,11 @@
+{
+  "welcome": "Bienvenue sur Spotify AI Agent !",
+  "goodbye": "Au revoir !",
+  "login_success": "Connexion réussie.",
+  "logout_success": "Déconnexion réussie.",
+  "profile_updated": "Profil mis à jour avec succès.",
+  "settings_saved": "Paramètres enregistrés.",
+  "action_confirmed": "Action confirmée.",
+  "email_sent": "E-mail envoyé.",
+  "password_reset": "Mot de passe réinitialisé avec succès."
+}

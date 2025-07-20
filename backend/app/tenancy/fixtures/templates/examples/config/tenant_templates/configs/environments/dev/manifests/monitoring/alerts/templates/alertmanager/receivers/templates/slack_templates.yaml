@@ -1,0 +1,229 @@
+# Slack Block Template pour Alertes Spotify AI Agent
+# Ce fichier contient les templates Jinja2 pour générer les blocs Slack dynamiquement
+
+# Template principal pour les alertes
+slack_alert_template: |
+  {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🎵 Spotify AI Agent Alert",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Alert:* {{ alert.name }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Severity:* {% if alert.severity == 'critical' %}🔴 CRITICAL{% elif alert.severity == 'high' %}🟠 HIGH{% elif alert.severity == 'medium' %}🟡 MEDIUM{% else %}🟢 LOW{% endif %}"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Description:* {{ alert.description }}"
+        }
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Service:* {{ alert.service | default('Unknown') }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:* {{ alert.environment | default('production') }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Tenant:* {{ tenant.name | default('default') }} ({{ tenant.tier | title | default('Free') }})"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Started:* {{ alert.timestamp | strftime('%Y-%m-%d %H:%M:%S UTC') }}"
+          }
+        ]
+      }
+    ],
+    "attachments": [
+      {
+        "color": "{% if alert.severity == 'critical' %}danger{% elif alert.severity == 'high' %}warning{% elif alert.severity == 'medium' %}#ffcc00{% else %}good{% endif %}",
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "{% if alert.severity == 'critical' %}🚨 This is a *CRITICAL* alert requiring immediate attention!{% elif alert.severity == 'high' %}⚠️ This is a *HIGH* priority alert.{% elif alert.severity == 'medium' %}ℹ️ This is a *MEDIUM* priority alert.{% else %}✅ This is a *LOW* priority alert.{% endif %}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+# Template pour alertes critiques avec actions d'urgence
+slack_critical_template: |
+  {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚨 CRITICAL ALERT - Spotify AI Agent",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "🔴 *{{ alert.name }}* 🔴\n{{ alert.description }}"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Service:* {{ alert.service | default('Unknown') }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:* {{ alert.environment | default('production') }}"
+          }
+        ]
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "🏠 Join War Room",
+              "emoji": true
+            },
+            "style": "danger",
+            "url": "{{ links.war_room }}",
+            "action_id": "join_war_room"
+          },
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "✅ Acknowledge",
+              "emoji": true
+            },
+            "style": "primary",
+            "url": "{{ links.acknowledge }}",
+            "action_id": "acknowledge_alert"
+          }
+        ]
+      }
+    ]
+  }
+
+# Template pour résumé d'alertes multiples
+slack_summary_template: |
+  {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "📊 Alert Summary - Spotify AI Agent",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Alert Summary for {{ tenant.name | default('default') }}*\nTotal Alerts: {{ alerts | length }}"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Critical:* {{ alerts | selectattr('severity', 'equalto', 'critical') | list | length }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*High:* {{ alerts | selectattr('severity', 'equalto', 'high') | list | length }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Medium:* {{ alerts | selectattr('severity', 'equalto', 'medium') | list | length }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Low:* {{ alerts | selectattr('severity', 'equalto', 'low') | list | length }}"
+          }
+        ]
+      }
+    ]
+  }
+
+# Template pour notifications de résolution
+slack_resolution_template: |
+  {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "✅ Alert Resolved - Spotify AI Agent",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "🎉 *{{ alert.name }}* has been resolved!\n*Duration:* {{ (alert.resolution_time - alert.start_time) | duration_format }}"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Service:* {{ alert.service | default('Unknown') }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Resolved by:* {{ alert.resolved_by | default('Auto-resolution') }}"
+          }
+        ]
+      }
+    ],
+    "attachments": [
+      {
+        "color": "good",
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "✅ All systems are now operating normally."
+            }
+          }
+        ]
+      }
+    ]
+  }

@@ -1,0 +1,385 @@
+{
+  "tenant_info": {
+    "tenant_id": "enterprise_corp_001",
+    "tenant_name": "Enterprise Corporation",
+    "tier": "enterprise",
+    "generated_at": "2024-12-19T10:30:00Z",
+    "description": "Comprehensive dataset for enterprise tier with full feature set and compliance"
+  },
+  "profile": {
+    "num_users": 50000,
+    "num_tracks": 500000,
+    "num_albums": 100000,
+    "num_artists": 150000,
+    "num_playlists": 25000,
+    "num_listening_events": 5000000,
+    "user_activity_level": 1.0,
+    "music_diversity": 1.0,
+    "geographic_spread": ["US", "GB", "FR", "DE", "ES", "IT", "CA", "AU", "JP", "BR"],
+    "gdpr_compliant": true,
+    "pii_anonymization": true,
+    "generate_load_data": true,
+    "concurrent_users": 5000
+  },
+  "data": {
+    "artists": [
+      {
+        "artist_id": "enterprise_corp_001_artist_000001",
+        "tenant_id": "enterprise_corp_001",
+        "name": "Global Harmony Collective",
+        "biography": "[ANONYMIZED]",
+        "genres": ["World", "Electronic", "Jazz", "Classical"],
+        "country": "US",
+        "formed_year": 2010,
+        "is_verified": true,
+        "monthly_listeners": 25000000,
+        "social_media": {
+          "spotify_url": "https://open.spotify.com/artist/enterprise_corp_001_artist_000001",
+          "website": "[ANONYMIZED]",
+          "instagram": "@globalharmonycollective"
+        },
+        "created_at": "2010-01-01T00:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "albums": [
+      {
+        "album_id": "enterprise_corp_001_album_000001",
+        "tenant_id": "enterprise_corp_001",
+        "artist_id": "enterprise_corp_001_artist_000001",
+        "artist_name": "Global Harmony Collective",
+        "title": "Universal Frequencies",
+        "album_type": "album",
+        "release_date": "2024-03-15",
+        "genres": ["World", "Electronic"],
+        "total_tracks": 18,
+        "duration_ms": 4320000,
+        "label": "Universal Music Enterprise",
+        "copyright": "(C) 2024 Universal Music Enterprise",
+        "is_explicit": false,
+        "popularity": 95,
+        "markets": ["US", "GB", "FR", "DE", "ES", "IT", "CA", "AU", "JP", "BR", "MX", "IN", "KR"],
+        "images": [
+          {
+            "url": "https://i.scdn.co/image/universal_frequencies_640x640",
+            "height": 640,
+            "width": 640
+          }
+        ],
+        "created_at": "2024-03-15T00:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "tracks": [
+      {
+        "track_id": "enterprise_corp_001_track_000001",
+        "tenant_id": "enterprise_corp_001",
+        "name": "Quantum Resonance",
+        "album_id": "enterprise_corp_001_album_000001",
+        "album_name": "Universal Frequencies",
+        "artist_id": "enterprise_corp_001_artist_000001",
+        "artist_name": "Global Harmony Collective",
+        "disc_number": 1,
+        "track_number": 1,
+        "duration_ms": 385000,
+        "explicit": false,
+        "is_playable": true,
+        "popularity": 98,
+        "preview_url": "https://p.scdn.co/mp3-preview/enterprise_corp_001_track_000001",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/enterprise_corp_001_track_000001"
+        },
+        "genres": ["World", "Electronic"],
+        "mood": "Uplifting",
+        "audio_features": {
+          "danceability": 0.85,
+          "energy": 0.92,
+          "key": 2,
+          "loudness": -5.2,
+          "mode": 1,
+          "speechiness": 0.02,
+          "acousticness": 0.15,
+          "instrumentalness": 0.75,
+          "liveness": 0.08,
+          "valence": 0.88,
+          "tempo": 128.0,
+          "time_signature": 4
+        },
+        "markets": ["US", "GB", "FR", "DE", "ES", "IT", "CA", "AU", "JP", "BR"],
+        "created_at": "2024-03-15T00:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "users": [
+      {
+        "user_id": "enterprise_corp_001_user_000001",
+        "tenant_id": "enterprise_corp_001",
+        "display_name": "User 1",
+        "email": "user_1@enterprise_corp_001.anonymized",
+        "birth_date": null,
+        "country": "US",
+        "subscription_type": "premium",
+        "subscription_start_date": "2022-01-15",
+        "is_verified": true,
+        "followers": 2450,
+        "following": 890,
+        "preferences": {
+          "explicit_content": true,
+          "language": "en",
+          "preferred_genres": ["Electronic", "World", "Jazz", "Classical", "Hip-Hop"],
+          "discovery_mode": "adventurous"
+        },
+        "activity_metrics": {
+          "total_listening_time_ms": 45000000,
+          "tracks_played": 8500,
+          "playlists_created": 125,
+          "artists_followed": 340,
+          "last_active": "2024-12-19T09:45:00Z"
+        },
+        "device_info": {
+          "devices": ["smartphone", "desktop", "smart_speaker"],
+          "primary_device": "smartphone"
+        },
+        "privacy_settings": {
+          "public_playlists": true,
+          "show_recently_played": true,
+          "allow_recommendations": true
+        },
+        "created_at": "2022-01-15T10:00:00Z",
+        "updated_at": "2024-12-19T10:30:00Z"
+      }
+    ],
+    "playlists": [
+      {
+        "playlist_id": "enterprise_corp_001_playlist_000001",
+        "tenant_id": "enterprise_corp_001",
+        "name": "Global Fusion Workspace",
+        "description": "Curated selection of world music for productive work sessions",
+        "owner_id": "enterprise_corp_001_user_000001",
+        "owner_name": "User 1",
+        "is_public": true,
+        "is_collaborative": true,
+        "total_tracks": 85,
+        "duration_ms": 18750000,
+        "followers": 12450,
+        "tracks": [
+          {
+            "track_id": "enterprise_corp_001_track_000001",
+            "added_at": "2024-03-20T10:30:00Z",
+            "added_by": "enterprise_corp_001_user_000001",
+            "position": 0
+          }
+        ],
+        "images": [
+          {
+            "url": "https://mosaic.scdn.co/640/enterprise_corp_001_playlist_000001",
+            "height": 640,
+            "width": 640
+          }
+        ],
+        "genres": ["World", "Electronic", "Jazz", "Classical"],
+        "mood_distribution": {
+          "Uplifting": 0.35,
+          "Energetic": 0.25,
+          "Peaceful": 0.20,
+          "Intense": 0.15,
+          "Dreamy": 0.05
+        },
+        "created_at": "2022-06-01T14:20:00Z",
+        "updated_at": "2024-12-18T16:45:00Z"
+      }
+    ],
+    "listening_history": [
+      {
+        "event_id": "enterprise_corp_001_event_000000001",
+        "tenant_id": "enterprise_corp_001",
+        "user_id": "enterprise_corp_001_user_000001",
+        "track_id": "enterprise_corp_001_track_000001",
+        "track_name": "Quantum Resonance",
+        "artist_id": "enterprise_corp_001_artist_000001",
+        "artist_name": "Global Harmony Collective",
+        "album_id": "enterprise_corp_001_album_000001",
+        "played_at": "2024-12-19T09:45:15Z",
+        "duration_ms": 385000,
+        "track_duration_ms": 385000,
+        "completion_percentage": 100.0,
+        "context": {
+          "type": "playlist",
+          "uri": "spotify:playlist:enterprise_corp_001_playlist_000001"
+        },
+        "device": {
+          "type": "desktop",
+          "is_private_session": false,
+          "volume_percent": 85
+        },
+        "skip_reason": null,
+        "is_shuffle": false,
+        "is_repeat": "context",
+        "location": {
+          "country": "US",
+          "city": "New York",
+          "timezone": "EST"
+        },
+        "created_at": "2024-12-19T09:45:15Z"
+      }
+    ],
+    "recommendations": [
+      {
+        "recommendation_id": "enterprise_corp_001_rec_000000001",
+        "tenant_id": "enterprise_corp_001",
+        "user_id": "enterprise_corp_001_user_000001",
+        "type": "discover_weekly",
+        "title": "Discover Weekly",
+        "description": "Your weekly mixtape of fresh music tailored to your taste",
+        "tracks": [
+          {
+            "track_id": "enterprise_corp_001_track_000001",
+            "reason": "Similar to your taste in Global Harmony Collective",
+            "confidence_score": 0.95,
+            "position": 0
+          }
+        ],
+        "generated_at": "2024-12-16T00:00:00Z",
+        "expires_at": "2024-12-23T00:00:00Z",
+        "model_version": "v4.2",
+        "engagement_metrics": {
+          "views": 1,
+          "clicks": 1,
+          "plays": 8,
+          "saves": 3
+        },
+        "created_at": "2024-12-16T00:00:00Z"
+      }
+    ],
+    "analytics_events": [
+      {
+        "event_id": "enterprise_corp_001_analytics_000000001",
+        "tenant_id": "enterprise_corp_001",
+        "user_id": "enterprise_corp_001_user_000001",
+        "event_type": "app_open",
+        "timestamp": "2024-12-19T09:30:00Z",
+        "session_id": "ses_12345678-90ab-cdef-1234-567890abcdef",
+        "properties": {
+          "user_subscription": "premium",
+          "user_country": "US"
+        },
+        "device": {
+          "type": "desktop",
+          "os": "Windows",
+          "app_version": "1.2.5"
+        },
+        "location": {
+          "country": "US",
+          "city": "New York",
+          "ip_address": "0.0.0.0"
+        },
+        "created_at": "2024-12-19T09:30:00Z"
+      }
+    ],
+    "ml_features": {
+      "user_features": [
+        {
+          "user_id": "enterprise_corp_001_user_000001",
+          "tenant_id": "enterprise_corp_001",
+          "age_group": "25_34",
+          "subscription_tenure_days": 1070,
+          "activity_score": 0.92,
+          "diversity_score": 0.85,
+          "discovery_score": 0.78,
+          "preferred_genres_vector": [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "listening_time_per_day": 6.5,
+          "device_affinity": {
+            "smartphone": 0.8,
+            "desktop": 0.9,
+            "tablet": 0.3,
+            "smart_speaker": 0.6
+          },
+          "time_of_day_preference": {
+            "morning": 0.7,
+            "afternoon": 0.9,
+            "evening": 0.8,
+            "night": 0.4
+          },
+          "social_engagement": 0.75,
+          "feature_updated_at": "2024-12-19T10:30:00Z"
+        }
+      ],
+      "track_features": [
+        {
+          "track_id": "enterprise_corp_001_track_000001",
+          "tenant_id": "enterprise_corp_001",
+          "audio_features": {
+            "danceability": 0.85,
+            "energy": 0.92,
+            "key": 2,
+            "loudness": -5.2,
+            "mode": 1,
+            "speechiness": 0.02,
+            "acousticness": 0.15,
+            "instrumentalness": 0.75,
+            "liveness": 0.08,
+            "valence": 0.88,
+            "tempo": 128.0,
+            "time_signature": 4
+          },
+          "genre_vector": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "popularity_score": 0.98,
+          "release_recency": 0.85,
+          "artist_popularity": 0.95,
+          "mood_vector": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+          "feature_updated_at": "2024-12-19T10:30:00Z"
+        }
+      ],
+      "interaction_features": [
+        {
+          "interaction_id": "enterprise_corp_001_interaction_000000001",
+          "tenant_id": "enterprise_corp_001",
+          "user_id": "enterprise_corp_001_user_000001",
+          "track_id": "enterprise_corp_001_track_000001",
+          "interaction_type": "play",
+          "completion_rate": 1.0,
+          "context": "playlist",
+          "time_of_day": 9,
+          "day_of_week": 3,
+          "device_type": "desktop",
+          "feature_timestamp": "2024-12-19T09:45:15Z"
+        }
+      ],
+      "feature_metadata": {
+        "version": "1.0",
+        "generated_at": "2024-12-19T10:30:00Z",
+        "total_users": 50000,
+        "total_tracks": 500000,
+        "total_interactions": 10000
+      }
+    }
+  },
+  "stats": {
+    "total_entities": {
+      "artists": 150000,
+      "albums": 100000,
+      "tracks": 500000,
+      "users": 50000,
+      "playlists": 25000,
+      "listening_events": 5000000,
+      "analytics_events": 2500000,
+      "recommendations": 500000,
+      "ml_features": 75000
+    },
+    "data_size_estimate": "~15GB",
+    "generation_time": "~45 minutes",
+    "compliance_features": {
+      "gdpr_compliant": true,
+      "pii_anonymized": true,
+      "audit_trail": "complete",
+      "data_encryption": "AES-256",
+      "retention_policies": "applied"
+    },
+    "performance_characteristics": {
+      "concurrent_users": 5000,
+      "peak_throughput": "10000 requests/second",
+      "avg_response_time": "< 50ms",
+      "data_distribution": "multi-region"
+    }
+  }
+}
